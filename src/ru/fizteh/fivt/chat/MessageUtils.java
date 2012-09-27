@@ -16,20 +16,36 @@ public final class MessageUtils {
         return getMessageBytes(MessageType.HELLO, name.getBytes());
     }
 
-    public static byte[] message(String message) {
-        return getMessageBytes(MessageType.MESSAGE, message.getBytes());
+    public static byte[] message(String name, String message) {
+        return getMessageBytes(
+                MessageType.MESSAGE,
+                name.getBytes(),
+                message.getBytes()
+        );
     }
 
     public static byte[] bye() {
-        return getMessageBytes(MessageType.BYE, new byte[0]);
+        return getMessageBytes(MessageType.BYE);
     }
 
-    private static byte[] getMessageBytes(MessageType type, byte[] content) {
-        return ByteBuffer.allocate(1 + 4 + content.length)
-                .order(ByteOrder.BIG_ENDIAN)
-                .put(type.getId())
-                .putInt(content.length)
-                .put(content)
-                .array();
+    public static byte[] error(String message) {
+        return getMessageBytes(MessageType.ERROR, message.getBytes());
+    }
+
+    private static byte[] getMessageBytes(MessageType type, byte[]... messages) {
+        int messagesLength = 0;
+        for (byte[] bytes : messages) {
+            messagesLength += 4 + bytes.length;
+        }
+        // message-type (1 byte) + messages count (1 byte)
+        // + messages counts * (message-length (4 byte) + message body)
+        ByteBuffer buffer = ByteBuffer.allocate(1 + 1 + messagesLength)
+                .order(ByteOrder.BIG_ENDIAN);
+        buffer.put(type.getId());
+        buffer.put((byte) messages.length);
+        for (byte[] bytes : messages) {
+            buffer.putInt(bytes.length).put(bytes);
+        }
+        return buffer.array();
     }
 }
