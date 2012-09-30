@@ -9,8 +9,9 @@
 1. [JVM, JLS, примитивные типы, стек и куча.](http://yadi.sk/d/qlPOmXMluvS6)
 2. [Массивы, операции с примитивными типам, Object, String, equals.]
 (http://yadi.sk/d/Ucj7jVOTuq82)
-3. Механизм исключений, классы, nested классы, интерфейсы, enum, наследование,
-полиморфизм
+3. [Механизм исключений, наследование, nested классы, интерфейсы, enum,
+generics, коллекции](http://yadi.sk/d/O-tmiXHIxuhs)
+4. Аннотации, Reflection, IO
 
 ## Семинары
 В папке [tasks](fizteh-java-task/tree/master/tasks) находятся описания заданий на
