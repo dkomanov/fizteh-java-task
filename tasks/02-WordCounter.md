@@ -42,3 +42,10 @@ d 1
 ```
 
 Считается, что памяти достаточно.
+
+Примеры вызовов программы:
+```
+java WordCounter -l file.txt file2.txt
+java WordCounter -wU file.txt
+java WordCounter -w -u -a file.txt
+```
