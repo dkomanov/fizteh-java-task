@@ -1,3 +1,5 @@
+package ru.fizteh.fivt.students.FedyuninV.WordCounter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

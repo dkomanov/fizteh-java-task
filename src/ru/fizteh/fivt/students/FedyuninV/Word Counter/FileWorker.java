@@ -1,8 +1,11 @@
+package ru.fizteh.fivt.students.FedyuninV.WordCounter;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.LineNumberReader;
 import java.util.Scanner;
+
 
 /**
  * Fedyunin Valeriy
