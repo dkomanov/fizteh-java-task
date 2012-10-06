@@ -25,7 +25,7 @@ public class Counter {
         List<File> files = null;
         try {
             files = settings.processArgs(args);
-        } catch (UnsupportedOperationException ex) {
+        } catch (CounterUsageException ex) {
             System.out.println(ex.getMessage());
             System.exit(1);
         }
@@ -128,7 +128,7 @@ class Settings {
      * if neccessary. Returns a list of files
      */
     public List<File> processArgs(String[] args)
-            throws UnsupportedOperationException {
+            throws CounterUsageException {
         List<File> result = new ArrayList<File>();
         for (String arg : args) {
             if (arg.startsWith("-")) {
@@ -144,27 +144,27 @@ class Settings {
                     uniqueNonSensitive = true;
                 }
                 else {
-                    throw new UnsupportedOperationException("Unknown option " + arg);
+                    throw new CounterUsageException("Unknown option " + arg);
                 }
             } else {
                 File file = new File(arg);
                 if (!file.exists()) {
-                    throw new UnsupportedOperationException("File " + file + " not found");
+                    throw new CounterUsageException("File " + file + " not found");
                 }
                 result.add(file);
             }
         }
         if (result.isEmpty()) {
-            throw new UnsupportedOperationException("usage: java ru.fizteh.fivt.students.harius.counter.Counter [arguments] [files]");
+            throw new CounterUsageException("usage: java ru.fizteh.fivt.students.harius.counter.Counter [arguments] [files]");
         }
         if (!words && !lines) {
             words = true;
         }
         if (!Settings.ALLOW_WL && words && lines) {
-            throw new UnsupportedOperationException("Error: -w and -l cannot be used together");
+            throw new CounterUsageException("Error: -w and -l cannot be used together");
         }
         if (!Settings.ALLOW_UU && uniqueNonSensitive && uniqueSensitive) {
-            throw new UnsupportedOperationException("Error: -u and -U cannot be used together");
+            throw new CounterUsageException("Error: -u and -U cannot be used together");
         }
         return result;
     }
@@ -227,5 +227,15 @@ class CounterResult {
             }
         }
         return result;
+    }
+}
+
+/*
+ * Exception to be used by Counter
+ */
+class CounterUsageException extends Exception {
+    /* constructor */
+    public CounterUsageException(String why) {
+        super(why);
     }
 }
