@@ -47,22 +47,20 @@ public class Calculator {
         if (node == null) {
             return 0;
         }
-        if (node.token.tokenType == TokenType.INTEGER) {
-            return Integer.parseInt(node.token.value);
+        switch (node.token.tokenType) {
+            case INTEGER:
+                return Integer.parseInt(node.token.value);
+            case SIGN_PLUS:
+                return safeAddition(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
+            case SIGN_MINUS:
+                return safeSubtraction(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
+            case SIGN_MULTIPLY:
+                return safeMultiplication(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
+            case SIGN_DIVIDE:
+                return safeDivision(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
+            default:
+                throw new ParseException("Unexpected token type when calculating expression value");
         }
-        if (node.token.tokenType == TokenType.SIGN_PLUS) {
-            return safeAddition(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
-        }
-        if (node.token.tokenType == TokenType.SIGN_MINUS) {
-            return safeSubtraction(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
-        }
-        if (node.token.tokenType == TokenType.SIGN_MULTIPLY) {
-            return safeMultiplication(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
-        }
-        if (node.token.tokenType == TokenType.SIGN_DIVIDE) {
-            return safeDivision(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
-        }
-        throw new ParseException("Unexpected token type when calculating expression value");
     }
 
     public int calculate() throws ParseException, ArithmeticException {
