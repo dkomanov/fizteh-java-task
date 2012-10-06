@@ -132,19 +132,23 @@ class Settings {
         List<File> result = new ArrayList<File>();
         for (String arg : args) {
             if (arg.startsWith("-")) {
-                if (arg.equals("-a")) {
-                    aggregate = true;
-                } else if (arg.equals("-w")) {
-                    words = true;
-                } else if (arg.equals("-l")) {
-                    lines = true;
-                } else if (arg.equals("-u")) {
-                    uniqueSensitive = true;
-                } else if (arg.equals("-U")) {
-                    uniqueNonSensitive = true;
-                }
-                else {
-                    throw new CounterUsageException("Unknown option " + arg);
+                String longopt = arg.substring(1);
+                for (int index = 0; index < longopt.length(); ++index) {
+                    char opt = longopt.charAt(index);
+                    if (opt == 'a') {
+                        aggregate = true;
+                    } else if (opt == 'w') {
+                        words = true;
+                    } else if (opt == 'l') {
+                        lines = true;
+                    } else if (opt == 'u') {
+                        uniqueSensitive = true;
+                    } else if (opt == 'U') {
+                        uniqueNonSensitive = true;
+                    }
+                    else {
+                        throw new CounterUsageException("Unknown option " + opt);
+                    }
                 }
             } else {
                 File file = new File(arg);
