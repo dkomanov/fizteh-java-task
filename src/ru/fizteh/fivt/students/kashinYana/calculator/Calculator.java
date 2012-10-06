@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.KashinYana.calculator;
+package ru.fizteh.fivt.students.kashinYana.calculator;
 
 
 public class Calculator {

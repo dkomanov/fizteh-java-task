@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.KashinYana.counter;
+package ru.fizteh.fivt.students.kashinYana.counter;
 
 import org.omg.CORBA.IntHolder;
 
