@@ -1,4 +1,4 @@
-package javacode.wordCounter;
+package fizteh.fivt.students.KashinYana.counter;
 
 import org.omg.CORBA.IntHolder;
 

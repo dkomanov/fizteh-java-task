@@ -1,4 +1,4 @@
-package fizteh.fivt.students.KashinYana.calculator;
+package ru.fizteh.fivt.students.KashinYana.calculator;
 
 import java.util.*;
 import java.io.*;
