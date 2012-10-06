@@ -7,7 +7,7 @@
 
 package ru.fizteh.fivt.students.dmitriyBelyakov.calculator;
 
-import brain.Brain;
+import ru.fizteh.fivt.students.dmitriyBelyakov.calculator.brain.Brain;
 import java.math.BigInteger;
 
 /**
