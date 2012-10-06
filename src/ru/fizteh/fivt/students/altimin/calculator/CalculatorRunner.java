@@ -7,13 +7,12 @@ public class CalculatorRunner {
             System.exit(0);
         }
         String expression = "";
-        for (String expression_part: args)
+        for (String expression_part : args)
             expression += expression_part;
         try {
             Calculator calculator = new Calculator(expression);
             System.out.println(calculator.calculate());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println(e.getMessage());
         }
     }

@@ -11,9 +11,9 @@ public class Token {
 
     boolean isSign() {
         return tokenType.equals(TokenType.SIGN_DIVIDE) ||
-               tokenType.equals(TokenType.SIGN_MULTIPLY) ||
-               tokenType.equals(TokenType.SIGN_PLUS) ||
-               tokenType.equals(TokenType.SIGN_MINUS);
+                tokenType.equals(TokenType.SIGN_MULTIPLY) ||
+                tokenType.equals(TokenType.SIGN_PLUS) ||
+                tokenType.equals(TokenType.SIGN_MINUS);
     }
 
     boolean isAdditionSign() {

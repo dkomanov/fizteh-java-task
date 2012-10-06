@@ -5,6 +5,7 @@ public class SyntaxTree {
         public Token token;
         public SyntaxTreeNode left;
         public SyntaxTreeNode right;
+
         SyntaxTreeNode(Token token) {
             this.token = token;
         }

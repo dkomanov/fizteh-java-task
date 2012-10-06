@@ -19,21 +19,20 @@ public class SyntaxTreeParser {
         SyntaxTree.SyntaxTreeNode result = parseSummand();
         while (parsedTokenList.get(currentPosition).isAdditionSign()) {
             Token currentToken = parsedTokenList.get(currentPosition);
-            currentPosition ++;
+            currentPosition++;
             result = new SyntaxTree.SyntaxTreeNode(
-                currentToken,
-                result,
-                parseSummand());
+                    currentToken,
+                    result,
+                    parseSummand());
         }
         return result;
     }
 
-    private SyntaxTree.SyntaxTreeNode parseSummand() throws ParseException
-    {
+    private SyntaxTree.SyntaxTreeNode parseSummand() throws ParseException {
         SyntaxTree.SyntaxTreeNode result = parseFactor();
         while (parsedTokenList.get(currentPosition).isMultiplicationSign()) {
             Token currentToken = parsedTokenList.get(currentPosition);
-            currentPosition ++;
+            currentPosition++;
             result = new SyntaxTree.SyntaxTreeNode(currentToken, result, parseFactor());
         }
         return result;
@@ -41,7 +40,7 @@ public class SyntaxTreeParser {
 
     private SyntaxTree.SyntaxTreeNode parseFactor() throws ParseException {
         Token currentToken = parsedTokenList.get(currentPosition);
-        currentPosition ++;
+        currentPosition++;
         if (currentToken.tokenType == TokenType.INTEGER) {
             return new SyntaxTree.SyntaxTreeNode(currentToken);
         }
@@ -50,7 +49,7 @@ public class SyntaxTreeParser {
             SyntaxTree.SyntaxTreeNode result = parseFormula();
             if (parsedTokenList.get(currentPosition).tokenType != TokenType.CLOSE_BRACKET)
                 throw new ParseException("No match for opening bracket at position " + oldPosition);
-            currentPosition ++;
+            currentPosition++;
             return result;
         }
         if (currentToken.isAdditionSign()) { // is unary plus possible?

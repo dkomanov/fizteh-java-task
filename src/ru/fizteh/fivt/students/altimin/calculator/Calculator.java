@@ -2,11 +2,11 @@ package ru.fizteh.fivt.students.altimin.calculator;
 
 import java.util.Vector;
 
-public class Calculator
-{
+public class Calculator {
     Calculator(String expression) {
         this.expression = expression;
     }
+
     private String expression;
 
     private void check(long value) throws ArithmeticException {
@@ -39,7 +39,7 @@ public class Calculator
         return lhs / rhs;
     }
 
-    private int calculateSubtreeExpression(SyntaxTree.SyntaxTreeNode node) throws  ArithmeticException, ParseException {
+    private int calculateSubtreeExpression(SyntaxTree.SyntaxTreeNode node) throws ArithmeticException, ParseException {
         if (node == null) return 0;
         if (node.token.tokenType == TokenType.INTEGER) {
             return Integer.parseInt(node.token.value);
