@@ -1,3 +1,5 @@
+package ru.fizteh.fivt.students.dmitriyBelyakov.wordCounter;
+
 import java.util.*;
 import java.io.*;
 

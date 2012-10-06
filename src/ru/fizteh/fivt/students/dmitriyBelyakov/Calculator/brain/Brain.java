@@ -4,7 +4,7 @@
  *
  * The Java programming language, MIPT
  */
-package brain;
+package ru.fizteh.fivt.students.dmitriyBelyakov.calculator/brain;
 
 import java.util.Stack;
 import java.lang.RuntimeException;

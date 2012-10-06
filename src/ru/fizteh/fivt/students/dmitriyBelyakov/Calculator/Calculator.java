@@ -5,6 +5,8 @@
  * The Java programming language, MIPT
  */
 
+package ru.fizteh.fivt.students.dmitriyBelyakov.calculator;
+
 import brain.Brain;
 import java.math.BigInteger;
 
