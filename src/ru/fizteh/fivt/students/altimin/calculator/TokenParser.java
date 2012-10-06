@@ -8,7 +8,9 @@ public class TokenParser {
 
     TokenParser(String expression) throws ParseException {
         expression.replace(" ", "");
-        if (expression.contains(".")) throw new ParseException("Found illegal symbol '.'");
+        if (expression.contains(".")) {
+            throw new ParseException("Found illegal symbol '.'");
+        }
         this.expression = expression + ".";
     }
 
@@ -37,10 +39,12 @@ public class TokenParser {
                 currentPosition++;
                 return new Token(TokenType.CLOSE_BRACKET, expression.substring(oldPosition, oldPosition + 1));
             default:
-                if (!Character.isDigit(expression.charAt(currentPosition)))
+                if (!Character.isDigit(expression.charAt(currentPosition))) {
                     throw new ParseException("Unknown symbol at position " + currentPosition);
-                while (Character.isDigit(expression.charAt(currentPosition)))
+                }
+                while (Character.isDigit(expression.charAt(currentPosition))) {
                     currentPosition++;
+                }
                 return new Token(TokenType.INTEGER, expression.substring(oldPosition, currentPosition));
         }
     }

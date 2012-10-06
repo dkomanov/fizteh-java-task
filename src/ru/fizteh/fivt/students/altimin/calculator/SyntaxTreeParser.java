@@ -47,8 +47,9 @@ public class SyntaxTreeParser {
         if (currentToken.tokenType == TokenType.OPEN_BRACKET) {
             int oldPosition = currentPosition;
             SyntaxTree.SyntaxTreeNode result = parseFormula();
-            if (parsedTokenList.get(currentPosition).tokenType != TokenType.CLOSE_BRACKET)
+            if (parsedTokenList.get(currentPosition).tokenType != TokenType.CLOSE_BRACKET) {
                 throw new ParseException("No match for opening bracket at position " + oldPosition);
+            }
             currentPosition++;
             return result;
         }

@@ -10,8 +10,9 @@ public class Calculator {
     private String expression;
 
     private void check(long value) throws ArithmeticException {
-        if (!(Integer.MIN_VALUE <= value && value <= Integer.MAX_VALUE))
+        if (!(Integer.MIN_VALUE <= value && value <= Integer.MAX_VALUE)) {
             throw new ArithmeticException("Integer overflow");
+        }
     }
 
     private int safeAddition(int lhs, int rhs) throws ArithmeticException {
@@ -33,25 +34,34 @@ public class Calculator {
     }
 
     private int safeDivision(int lhs, int rhs) throws ArithmeticException {
-        if (rhs == 0) throw new ArithmeticException("Division by zero");
-        if (lhs == -Integer.MIN_VALUE && rhs == -1)
+        if (rhs == 0) {
+            throw new ArithmeticException("Division by zero");
+        }
+        if (lhs == -Integer.MIN_VALUE && rhs == -1) {
             throw new ArithmeticException("It's impossible to divide -2^31 by -1 and get integer result. You're unlucky");
+        }
         return lhs / rhs;
     }
 
     private int calculateSubtreeExpression(SyntaxTree.SyntaxTreeNode node) throws ArithmeticException, ParseException {
-        if (node == null) return 0;
+        if (node == null) {
+            return 0;
+        }
         if (node.token.tokenType == TokenType.INTEGER) {
             return Integer.parseInt(node.token.value);
         }
-        if (node.token.tokenType == TokenType.SIGN_PLUS)
+        if (node.token.tokenType == TokenType.SIGN_PLUS) {
             return safeAddition(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
-        if (node.token.tokenType == TokenType.SIGN_MINUS)
+        }
+        if (node.token.tokenType == TokenType.SIGN_MINUS) {
             return safeSubtraction(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
-        if (node.token.tokenType == TokenType.SIGN_MULTIPLY)
+        }
+        if (node.token.tokenType == TokenType.SIGN_MULTIPLY) {
             return safeMultiplication(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
-        if (node.token.tokenType == TokenType.SIGN_DIVIDE)
+        }
+        if (node.token.tokenType == TokenType.SIGN_DIVIDE) {
             return safeDivision(calculateSubtreeExpression(node.left), calculateSubtreeExpression(node.right));
+        }
         throw new ParseException("Unexpected token type when calculating expression value");
     }
 
