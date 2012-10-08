@@ -1,12 +1,6 @@
 package ru.fizteh.fivt.students.kashinYana.counter;
 
-import org.omg.CORBA.IntHolder;
-
-import java.io.DataInput;
 import java.io.FileInputStream;
-import java.io.DataInputStream;
-import java.io.LineNumberInputStream;
-import java.io.StreamTokenizer;
 import java.util.*;
 
 /**
@@ -47,7 +41,7 @@ public class Counter {
             setFlags();
         } catch (Exception e) {
             System.out.print(e.getMessage());
-            System.exit(0);
+            System.exit(1);
         }
         if (filesSize == 0) {
             System.out.println("-l - countLines\n-w - countWords \n-u - count dif words -U\n" +
@@ -62,7 +56,7 @@ public class Counter {
             }
         } catch (Exception e) {
             System.out.print(e.getMessage());
-            System.exit(0);
+            System.exit(1);
         }
     }
 
