@@ -30,6 +30,8 @@ public class Calc {
     }
 
     public static boolean checkOverflow(int a, int b, char operand) {
+        if (operand == '/')
+            return false;
         String res_str = new String();
         if (operand == '+') {
             res_str = new String(Integer.toString(a + b));
@@ -45,7 +47,6 @@ public class Calc {
         BigInteger b_big = new BigInteger(b_str);
         if (operand == '+') {
             return !res.equals(a_big.add(b_big));
-
         } else if (operand == '-') {
             return !res.equals(b_big.subtract(a_big));
 
@@ -53,8 +54,6 @@ public class Calc {
             return !res.equals(a_big.multiply(b_big));
 
         }
-        if (operand == '/')
-            return false;
         return true;
     }
 
