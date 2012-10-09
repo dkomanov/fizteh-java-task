@@ -24,7 +24,7 @@ public class FileWorker {
             reader = new BufferedReader(fReader);
             while ((incomingData = reader.readLine()) != null) {
                 if (!readLines) {
-                    String[] tokens = incomingData.split(" \t\n.!?,:;");
+                    String[] tokens = incomingData.split("[ \t\n.!?,:;]+");
                     for (int i = 0; i < tokens.length; i++) {
                         result.add(tokens[i]);
                     }
