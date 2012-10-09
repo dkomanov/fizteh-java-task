@@ -180,7 +180,7 @@ public class WordsCounter {
                         if (countLines) { 
                             lineNumber[indx]++; 
                         }
-                        String words[] = line.split("\\s+");
+                        String words[] = line.split("[\\s\\.:;,\\\"\\\'\\(\\)!]+");
                         for (String s : words) {
                         	putToArray(array, s, indx, wordsNumber);
                         }
