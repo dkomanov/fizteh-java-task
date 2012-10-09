@@ -121,7 +121,7 @@ public class WordCounter {
                 String str;
                 while ((str = bufReader.readLine()) != null) {
                     if (mode == Mode.MINUS_W) {
-                        String[] words = str.split("\\s+");
+                        String[] words = str.split("[\\s\\.,:;\\\"\\\'\\(\\)!]+");
                         if (unique == ModeUnique.NONE) {
                             BigInteger tmp = new BigInteger(Integer.toString(words.length));
                             count = count.add(tmp);
