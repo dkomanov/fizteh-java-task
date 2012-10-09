@@ -135,7 +135,7 @@ public class Counter {
             HashMap<String, Integer> map = new HashMap<String, Integer>();
             BufferedReader in = null;
             try {
-               in = new BufferedReader(new FileReader(files[i]));
+                in = new BufferedReader(new FileReader(files[i]));
                 int totalNumber = 0;
                 while (in.ready()) {
                     String currentLine = in.readLine();
