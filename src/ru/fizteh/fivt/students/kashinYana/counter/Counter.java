@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.kashinYana.counter;
 
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.util.*;
 
 /**
@@ -132,20 +133,22 @@ public class Counter {
     private static void countWords(String[] files, int filesSize) throws Exception {
         for (int i = 0; i < filesSize; i++) {
             HashMap<String, Integer> map = new HashMap<String, Integer>();
-            FileInputStream inFile = new FileInputStream(files[i]);
-            Scanner in = new Scanner(inFile);
+            FileInputStream inFile = null;
+            Scanner in = null;
             try {
+                inFile = new FileInputStream(files[i]);
+                in = new Scanner(inFile);
                 int totalNumber = 0;
                 while (in.hasNext()) {
                     String currentWord = in.next();
                     if (isU) {
                         currentWord = currentWord.toLowerCase();
                     }
-                    if (map.containsKey(currentWord)) {
-                        map.put(currentWord, map.get(currentWord) + 1);
-                    } else {
-                        map.put(currentWord, 1);
+                    Integer count = map.get(currentWord);
+                    if (count == null) {
+                        count = 0;
                     }
+                    map.put(currentWord, count + 1);
                     totalNumber++;
                 }
                 if (!isA) {
@@ -159,8 +162,12 @@ public class Counter {
                     System.out.println(totalNumber);
                 }
             } finally {
-                inFile.close();
-                in.close();
+                if(inFile != null) {
+                    inFile.close();
+                }
+                if (in != null) {
+                    in.close();
+                }
             }
         }
     }
@@ -168,20 +175,22 @@ public class Counter {
     private static void countLines(String[] files, int filesSize) throws Exception {
         HashMap<String, Integer> map = new HashMap<String, Integer>();
         for (int i = 0; i < filesSize; i++) {
-            FileInputStream inFile = new FileInputStream(files[i]);
-            Scanner in = new Scanner(inFile);
+            FileInputStream inFile = null;
+            Scanner in = null;
             try {
+                inFile = new FileInputStream(files[i]);
+                in = new Scanner(inFile);
                 int totalNumber = 0;
                 while (in.hasNext()) {
                     String currentWord = in.nextLine();
                     if (isU) {
                         currentWord = currentWord.toLowerCase();
                     }
-                    if (map.containsKey(currentWord)) {
-                        map.put(currentWord, map.get(currentWord) + 1);
-                    } else {
-                        map.put(currentWord, 1);
+                    Integer count = map.get(currentWord);
+                    if (count == null) {
+                        count = 0;
                     }
+                    map.put(currentWord, count + 1);
                     totalNumber++;
                 }
                 if (!isA) {
@@ -195,8 +204,12 @@ public class Counter {
                     }
                 }
             } finally {
-                in.close();
-                inFile.close();
+                if (in != null) {
+                    in.close();
+                }
+                if (inFile != null) {
+                    inFile.close();
+                }
             }
         }
     }
