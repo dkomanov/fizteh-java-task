@@ -1,4 +1,4 @@
-//package ru.fizteh.fivt.students.fedyuninV.wordCounter;
+package ru.fizteh.fivt.students.fedyuninV.wordCounter;
 
 import java.util.List;
 
