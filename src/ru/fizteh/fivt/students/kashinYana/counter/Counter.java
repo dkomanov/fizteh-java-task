@@ -1,6 +1,6 @@
 package ru.fizteh.fivt.students.kashinYana.counter;
 
-import java.io.FileInputStream;
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
 
@@ -133,23 +133,25 @@ public class Counter {
     private static void countWords(String[] files, int filesSize) throws Exception {
         for (int i = 0; i < filesSize; i++) {
             HashMap<String, Integer> map = new HashMap<String, Integer>();
-            FileInputStream inFile = null;
-            Scanner in = null;
+            BufferedReader in = null;
             try {
-                inFile = new FileInputStream(files[i]);
-                in = new Scanner(inFile);
+               in = new BufferedReader(new FileReader(files[i]));
                 int totalNumber = 0;
-                while (in.hasNext()) {
-                    String currentWord = in.next();
-                    if (isU) {
-                        currentWord = currentWord.toLowerCase();
+                while (in.ready()) {
+                    String currentLine = in.readLine();
+                    String[] words = currentLine.split(" ");
+                    for (int j = 0; j < words.length; j++) {
+                        String currentWord = words[j];
+                        if (isU) {
+                            currentWord = currentWord.toLowerCase();
+                        }
+                        Integer count = map.get(currentWord);
+                        if (count == null) {
+                            count = 0;
+                        }
+                        map.put(currentWord, count + 1);
+                        totalNumber++;
                     }
-                    Integer count = map.get(currentWord);
-                    if (count == null) {
-                        count = 0;
-                    }
-                    map.put(currentWord, count + 1);
-                    totalNumber++;
                 }
                 if (!isA) {
                     System.out.println(files[i] + ":");
@@ -162,9 +164,6 @@ public class Counter {
                     System.out.println(totalNumber);
                 }
             } finally {
-                if(inFile != null) {
-                    inFile.close();
-                }
                 if (in != null) {
                     in.close();
                 }
@@ -175,14 +174,12 @@ public class Counter {
     private static void countLines(String[] files, int filesSize) throws Exception {
         HashMap<String, Integer> map = new HashMap<String, Integer>();
         for (int i = 0; i < filesSize; i++) {
-            FileInputStream inFile = null;
-            Scanner in = null;
+            BufferedReader in = null;
             try {
-                inFile = new FileInputStream(files[i]);
-                in = new Scanner(inFile);
+                in = new BufferedReader(new FileReader(files[i]));
                 int totalNumber = 0;
-                while (in.hasNext()) {
-                    String currentWord = in.nextLine();
+                while (in.ready()) {
+                    String currentWord = in.readLine();
                     if (isU) {
                         currentWord = currentWord.toLowerCase();
                     }
@@ -206,9 +203,6 @@ public class Counter {
             } finally {
                 if (in != null) {
                     in.close();
-                }
-                if (inFile != null) {
-                    inFile.close();
                 }
             }
         }
