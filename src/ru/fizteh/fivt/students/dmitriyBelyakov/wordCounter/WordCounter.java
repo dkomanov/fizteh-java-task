@@ -180,7 +180,7 @@ public class WordCounter {
                 if (reader != null) {
                     reader.close();
                 }
-                if(bufReader != null) {
+                if (bufReader != null) {
                     bufReader.close();
                 }
             }
