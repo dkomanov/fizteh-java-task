@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.MuhinMihail.Calculator;
+package ru.fizteh.fivt.students.myhinMihail;
 
 import java.util.*;
 import java.math.BigInteger;
@@ -121,7 +121,7 @@ public class Calculator {
         System.out.println(str);
 
         try {
-            if ((args.length == 0) || str.replaceAll("\\s", "").equals("")) {
+            if ((args.length == 0) || str.replaceAll("\\s", "").isEmpty()) {
                 System.err.println("Error: No arguments. Mathematical expression as argement is expected");
                 System.exit(1); 
             }

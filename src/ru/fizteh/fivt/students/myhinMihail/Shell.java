@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.MuhinMihail.Shell;
+package ru.fizteh.fivt.students.myhinMihail;
 
 import java.io.*;
 import java.util.Vector;
@@ -136,7 +136,7 @@ public class Shell {
 					
 				case ' ':
 					if (!quote) {
-						if (!str.substring(start, i).replaceAll("\\s", "").equals("")) {
+						if (!str.substring(start, i).replaceAll("\\s", "").isEmpty()) {
 							vct.add(str.substring(start, i));
 						}
 						start = i + 1;
@@ -144,7 +144,7 @@ public class Shell {
 					break;
 			}
 		} 
-		if (!str.substring(start, str.length()).replaceAll("\\s", "").equals("")) {
+		if (!str.substring(start, str.length()).replaceAll("\\s", "").isEmpty()) {
 			vct.add(str.substring(start, str.length()));
 		}
 		return vct;
