@@ -46,7 +46,7 @@ public class Shell {
             try {
                 recognizeCommand(command);
             } catch (Exception e) {
-                System.err.print(e.toString());
+                System.err.print(e.getMessage());
                 System.exit(1);
             }
         }
