@@ -27,8 +27,9 @@ public class ResultContainer {
             return;
         }
         for (Map.Entry<String, Integer> entry: given.container.entrySet()) {
-            if (container.get(entry.getKey()) != null) {
-                container.put(entry.getKey(), entry.getValue() + entry.getValue());
+            Integer currCount = container.get(entry.getKey());
+            if (currCount != null) {
+                container.put(entry.getKey(), currCount + entry.getValue());
             } else {
                 container.put(entry.getKey(), entry.getValue());
             }
