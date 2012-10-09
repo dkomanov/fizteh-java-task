@@ -46,7 +46,7 @@ public class Counter {
         if (filesSize == 0) {
             System.out.println("-l - countLines\n-w - countWords \n-u - count dif words -U\n" +
                     "-u - count dif words in lower case\n-a - don't write name file");
-            System.exit(0);
+            System.exit(1);
         }
         try {
             if (isw) {
@@ -134,29 +134,34 @@ public class Counter {
             HashMap<String, Integer> map = new HashMap<String, Integer>();
             FileInputStream inFile = new FileInputStream(files[i]);
             Scanner in = new Scanner(inFile);
-            while (in.hasNext()) {
-                String currentWord = in.next();
-                if (isU) {
-                    currentWord = currentWord.toLowerCase();
+            try {
+                int totalNumber = 0;
+                while (in.hasNext()) {
+                    String currentWord = in.next();
+                    if (isU) {
+                        currentWord = currentWord.toLowerCase();
+                    }
+                    if (map.containsKey(currentWord)) {
+                        map.put(currentWord, map.get(currentWord) + 1);
+                    } else {
+                        map.put(currentWord, 1);
+                    }
+                    totalNumber++;
                 }
-                if (map.containsKey(currentWord)) {
-                    map.put(currentWord, map.get(currentWord) + 1);
+                if (!isA) {
+                    System.out.println(files[i] + ":");
+                }
+                if (isu || isU) {
+                    for (Object it : map.keySet()) {
+                        System.out.println(it + " " + map.get(it));
+                    }
                 } else {
-                    map.put(currentWord, 1);
+                    System.out.println(totalNumber);
                 }
+            } finally {
+                inFile.close();
+                in.close();
             }
-            if (!isA) {
-                System.out.println(files[i] + ":");
-            }
-            if (isu || isU) {
-                for (Object it : map.keySet()) {
-                    System.out.println(it + " " + map.get(it));
-                }
-            } else {
-                System.out.println(map.size());
-            }
-            inFile.close();
-            in.close();
         }
     }
 
@@ -165,29 +170,34 @@ public class Counter {
         for (int i = 0; i < filesSize; i++) {
             FileInputStream inFile = new FileInputStream(files[i]);
             Scanner in = new Scanner(inFile);
-            while (in.hasNext()) {
-                String currentWord = in.nextLine();
-                if (isU) {
-                    currentWord = currentWord.toLowerCase();
+            try {
+                int totalNumber = 0;
+                while (in.hasNext()) {
+                    String currentWord = in.nextLine();
+                    if (isU) {
+                        currentWord = currentWord.toLowerCase();
+                    }
+                    if (map.containsKey(currentWord)) {
+                        map.put(currentWord, map.get(currentWord) + 1);
+                    } else {
+                        map.put(currentWord, 1);
+                    }
+                    totalNumber++;
                 }
-                if (map.containsKey(currentWord)) {
-                    map.put(currentWord, map.get(currentWord) + 1);
+                if (!isA) {
+                    System.out.println(files[i] + ":");
+                }
+                if(!isu && !isU) {
+                    System.out.println(totalNumber);
                 } else {
-                    map.put(currentWord, 1);
+                    for (Object it : map.keySet()) {
+                        System.out.println(it + " " + map.get(it));
+                    }
                 }
+            } finally {
+                in.close();
+                inFile.close();
             }
-            if (!isA) {
-                System.out.println(files[i] + ":");
-            }
-            if(!isu && !isU) {
-                System.out.println(map.size());
-            } else {
-                for (Object it : map.keySet()) {
-                    System.out.println(it + " " + map.get(it));
-                }
-            }
-            in.close();
-            inFile.close();
         }
     }
 }

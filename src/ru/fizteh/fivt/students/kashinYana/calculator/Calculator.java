@@ -12,7 +12,7 @@ public class Calculator {
 
         if (inputString.length() == 0) {
             System.out.println("Write formula");
-            System.exit(0);
+            System.exit(1);
         }
         try {
             CalculatorBody calculatorBody = new CalculatorBody(inputString);
