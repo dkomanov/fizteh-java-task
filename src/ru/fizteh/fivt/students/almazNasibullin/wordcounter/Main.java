@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.almazNasibullin.wordcounter;
+package wordcounter;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -14,18 +14,42 @@ public class Main {
         try {
             int len = args.length;
             int startFile = -1; // номер, с которого начинаются имена файлов
-            boolean [] keys = new boolean[5]; // ключи среди аргументов
-            for (int i = 0; i < 0; ++i) {
-                keys[i] = false;
-            }
-
+            boolean lines = false;
+            boolean words = false;
+            boolean uniqWithReg = false;
+            boolean uniqWithoutReg = false;
+            boolean all = false;
             if (len == 0) {
-                throw new Exception("No arguments!");
+                throw new Exception("Use format: [keys] FILE1 FILE2 ...");
             }
             for (int i = 0; i < len; ++i) {
+                if (args[i].length() == 0) {
+                    throw new Exception("Use format: [keys] FILE1 FILE2 ...");
+                }
                 if (args[i].charAt(0) == '-') {
                     // выделяем все входные ключи
-                    getKey(args[i], keys);
+                    for (int j = 1; j < args[i].length(); ++j) {
+                        switch (args[i].charAt(j)) {
+                            case 'l':
+                                lines = true;
+                                break;
+                            case 'w':
+                                words = true;
+                                break;
+                            case 'u':
+                                uniqWithReg = true;
+                                break;
+                            case 'U':
+                                uniqWithoutReg = true;
+                                break;
+                            case 'a':
+                                all = true;
+                                break;
+                            default:
+                                throw new Exception("Invalid keys: " +
+                                        args[i].charAt(j));
+                        }
+                    }
                 } else {
                     startFile = i;
                     break;
@@ -35,14 +59,18 @@ public class Main {
                 throw new Exception("There are no files in arguments!");
             }
             if (startFile == 0) {
-                keys[0] = true;
+                words = true;
             }
-            checkKey(keys);
-            if (keys[4]) { // указан ключ агрегировать результаты
-                printInfo(args, keys, startFile);
+            if ((uniqWithReg || uniqWithoutReg) && !lines && !words) {
+                words = true; // случай когда указан только ключ -U или -u
+            }
+            checkKey(words, lines, uniqWithReg, uniqWithoutReg);
+            if (all) { // указан ключ агрегировать результаты
+                printInfo(args, words, lines, uniqWithReg, uniqWithoutReg,
+                        startFile);
             } else {
                 for (int i = startFile; i < args.length; ++i) {
-                    printInfo(args[i], keys);
+                    printInfo(args[i], words, lines, uniqWithReg, uniqWithoutReg);
                 }
             }
         } catch (Exception e) {
@@ -51,51 +79,35 @@ public class Main {
         }
     }
 
-    static void getKey(String s, boolean [] keys) throws Exception {
-        for (int j = 1; j < s.length(); ++j) {
-            switch (s.charAt(j)) {
-                case 'l':
-                    keys[0] = true;
-                    break;
-                case 'w':
-                    keys[1] = true;
-                    break;
-                case 'u':
-                    keys[2] = true;
-                    break;
-                case 'U':
-                    keys[3] = true;
-                    break;
-                case 'a':
-                    keys[4] = true;
-                    break;
-                default:
-                    throw new Exception("Invalid keys!");
-            }
+    static void checkKey(boolean words, boolean lines,
+            boolean uniqWithReg, boolean uniqWithoutReg) throws Exception {
+        if (words && lines) { // указаны ключи -w и -l одновременно
+            throw new Exception("Keys '-w', '-l' are not compatible!");
+        }
+        if (uniqWithReg && uniqWithoutReg) { // указаны ключи -U и -u одновременно
+            throw new Exception("Keys '-U', '-u' are not compatible!");
+        }
+        if (lines && uniqWithoutReg) { // указаны ключи -U и -l одновременно
+            throw new Exception("Keys '-U', '-l' are not compatible!");
+        }
+        if (lines && uniqWithReg) { // указаны ключи -u и -l одновременно
+            throw new Exception("Keys '-u', '-l' are not compatible!");
         }
     }
 
-    static void checkKey(boolean [] keys) throws Exception {
-        if (keys[0] && keys[1]) { // указаны ключи -w и -l одновременно
-            throw new Exception("Keys are not compatible!");
-        }
-        if (keys[2] && keys[3]) { // указаны ключи -U и -u одновременно
-            throw new Exception("Keys are not compatible!");
-        }
-    }
-
-    static void printInfo(String s, boolean [] keys) throws Exception {
+    static void printInfo(String s, boolean words, boolean lines,
+            boolean uniqWithReg, boolean uniqWithoutReg) throws Exception {
         // печатаем запрашиваемую информацию для одного файла
-        if (keys[0] && !keys[2] && !keys[3]) { // кол-во строк
+        if (lines) { // кол-во строк
             int count = FileRead.countLines(s);
             System.out.println(s + ":");
             System.out.println(count);
-        } else if (keys[1] && !keys[2] && !keys[3]) { // кол-во слов
+        } else if (words && !uniqWithReg && !uniqWithoutReg) { // кол-во слов
             int count = FileRead.countWords(s);
             System.out.println(s + ":");
             System.out.println(count);
-        } else if (keys[1] && keys[2]) { // уникальные слова с учетом регистра
-            Map m = new TreeMap();
+        } else if (words && uniqWithReg) { // уникальные слова с учетом регистра
+            Map<String, Integer> m = new TreeMap<String, Integer>();
             m = FileRead.countUniqWordsWithRegistr(s);
             System.out.println(s + ":");
             Iterator it = m.entrySet().iterator();
@@ -104,8 +116,8 @@ public class Main {
                 System.out.println(pairs.getKey() + " " + pairs.getValue());
             }
             m.clear();
-        } else if (keys[1] && keys[3]) {// уникальные слова без учетом регистра
-            Map m = new TreeMap();
+        } else if (words && uniqWithoutReg) {// уникальные слова без учетом регистра
+            Map<String, Integer> m = new TreeMap<String, Integer>();
             m = FileRead.countUniqWordsWithoutRegistr(s);
             System.out.println(s + ":");
             Iterator it = m.entrySet().iterator();
@@ -114,28 +126,27 @@ public class Main {
                 System.out.println(pairs.getKey() + " " + pairs.getValue());
             }
             m.clear();
-        } else {
-            throw new Exception("Keys are not compatible!");
         }
     }
 
-    static void printInfo(String [] args, boolean [] keys, int startFile)
+    static void printInfo(String [] args, boolean words, boolean lines,
+            boolean uniqWithReg, boolean uniqWithoutReg, int startFile)
             throws Exception {
         // печатаем запрашиваемую информацию для всех файлов
-        if (keys[0] && !keys[2] && !keys[3]) { // кол-во строк
+        if (lines) { // кол-во строк
             int count = 0;
             for (int i = startFile; i < args.length; ++i) {
                 count += FileRead.countLines(args[i]);
             }
             System.out.println(count);
-        } else if (keys[1] && !keys[2] && !keys[3]) { // кол-во слов
+        } else if (words && !uniqWithReg && !uniqWithoutReg) { // кол-во слов
             int count = 0;
             for (int i = startFile; i < args.length; ++i) {
                 count += FileRead.countWords(args[i]);
             }
             System.out.println(count);
-        } else if (keys[1] && keys[2]) { // уникальные слова с учетом регистра
-            Map m = new TreeMap();
+        } else if (words && uniqWithReg) { // уникальные слова с учетом регистра
+            Map<String, Integer> m = new TreeMap<String, Integer>();
             for (int i = startFile; i < args.length; ++i) {
                 m.putAll(FileRead.countUniqWordsWithRegistr(args[i]));
             }
@@ -145,8 +156,8 @@ public class Main {
                 System.out.println(pairs.getKey() + " " + pairs.getValue());
             }
             m.clear();
-        } else if (keys[1] && keys[3]) {// уникальные слова без учетом регистра
-            Map m = new TreeMap();
+        } else if (words && uniqWithoutReg) {// уникальные слова без учетом регистра
+            Map<String, Integer> m = new TreeMap<String, Integer>();
             for (int i = startFile; i < args.length; ++i) {
                 m.putAll(FileRead.countUniqWordsWithoutRegistr(args[i]));
             }

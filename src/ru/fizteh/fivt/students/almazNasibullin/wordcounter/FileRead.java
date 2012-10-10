@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.almazNasibullin.wordcounter;
+package wordcounter;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,89 +17,94 @@ public class FileRead {
      * из файлов
      */
     public static int countLines(String fileName) throws Exception {
-        BufferedReader br;
+        BufferedReader br = null;
         try {
             br = new BufferedReader (new FileReader(new File(fileName)));
+            int count = 0;
+            while (br.readLine() != null) {
+                ++count;
+            }
+            return count;
         } catch (Exception e) {
             throw e;
+        } finally {
+            br.close();
         }
-        int count = 0;
-        while (br.readLine() != null) {
-            ++count;
-        }
-        br.close();
-        return count;
+        
     }
 
     public static int countWords(String fileName) throws Exception {
-        BufferedReader br;
+        BufferedReader br = null;
         try {
             br = new BufferedReader (new FileReader(new File(fileName)));
+            int count = 0;
+            String str;
+            while ((str = br.readLine()) != null) {
+                StringTokenizer st = new StringTokenizer(str, " \t!?';:,.)(@#<>");
+                while (st.hasMoreTokens()) {
+                    str = st.nextToken();
+                    ++count;
+                }
+            }
+            return count;
         } catch (Exception e) {
             throw e;
+        } finally {
+            br.close();
         }
-        int count = 0;
-        String str;
-        while ((str = br.readLine()) != null) {
-            StringTokenizer st = new StringTokenizer(str, " \t");
-            while (st.hasMoreTokens()) {
-                str = st.nextToken();
-                ++count;
-            }
-        }
-        br.close();
-        return count;
     }
 
     public static TreeMap countUniqWordsWithRegistr(String fileName) throws Exception {
-        BufferedReader br;
+        BufferedReader br = null;
         try {
             br = new BufferedReader (new FileReader(new File(fileName)));
-        } catch (Exception e) {
-            throw e;
-        }
-        Map m = new TreeMap();
-        String str;
-        while ((str = br.readLine()) != null) {
-            StringTokenizer st = new StringTokenizer(str, " \t");
-            while (st.hasMoreTokens()) {
-                String cur = st.nextToken();
-                if (m.containsKey(cur)) {
-                    int count = (Integer)m.get(cur);
-                    m.put(cur, count + 1);
-                } else {
-                    m.put(cur, 1);
+            Map<String, Integer> m = new TreeMap<String, Integer>();
+            String str;
+            while ((str = br.readLine()) != null) {
+                StringTokenizer st = new StringTokenizer(str, " \t!?';:,.)(@#<>");
+                while (st.hasMoreTokens()) {
+                    String cur = st.nextToken();
+                    if (m.containsKey(cur)) {
+                        int count = (Integer)m.get(cur);
+                        m.put(cur, count + 1);
+                    } else {
+                        m.put(cur, 1);
+                    }
                 }
             }
+            return (TreeMap) m;
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            br.close();
         }
-        br.close();
-        return (TreeMap) m;
     }
 
     public static TreeMap countUniqWordsWithoutRegistr(String fileName)
             throws Exception {
-        BufferedReader br;
+        BufferedReader br = null;
         try {
             br = new BufferedReader (new FileReader(new File(fileName)));
-        } catch (Exception e) {
-            throw e;
-        }
-        Map m = new TreeMap();
-        String str;
-        while ((str = br.readLine()) != null) {
-            StringTokenizer st = new StringTokenizer(str, " \t");
-            while (st.hasMoreTokens()) {
-                String cur = st.nextToken();
-                cur = cur.toLowerCase();
-                if (m.containsKey(cur)) {
-                    int count = (Integer)m.get(cur);
-                    m.put(cur, count + 1);
-                } else {
-                    m.put(cur, 1);
+            Map<String, Integer> m = new TreeMap<String, Integer>();
+            String str;
+            while ((str = br.readLine()) != null) {
+                StringTokenizer st = new StringTokenizer(str, " \t!?';:,.)(@#<>");
+                while (st.hasMoreTokens()) {
+                    String cur = st.nextToken();
+                    cur = cur.toLowerCase();
+                    if (m.containsKey(cur)) {
+                        int count = (Integer)m.get(cur);
+                        m.put(cur, count + 1);
+                    } else {
+                        m.put(cur, 1);
+                    }
                 }
             }
+            return (TreeMap) m;
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            br.close();
         }
-        br.close();
-        return (TreeMap) m;
     }
 }
