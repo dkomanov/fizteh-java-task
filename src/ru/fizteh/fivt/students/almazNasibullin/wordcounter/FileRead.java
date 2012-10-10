@@ -18,8 +18,10 @@ public class FileRead {
      */
     public static int countLines(String fileName) throws Exception {
         BufferedReader br = null;
+        FileReader fr = null;
         try {
-            br = new BufferedReader (new FileReader(new File(fileName)));
+            fr = new FileReader(new File(fileName));
+            br = new BufferedReader (fr);
             int count = 0;
             while (br.readLine() != null) {
                 ++count;
@@ -28,6 +30,7 @@ public class FileRead {
         } catch (Exception e) {
             throw e;
         } finally {
+            fr.close();
             br.close();
         }
         
@@ -35,8 +38,10 @@ public class FileRead {
 
     public static int countWords(String fileName) throws Exception {
         BufferedReader br = null;
+        FileReader fr = null;
         try {
-            br = new BufferedReader (new FileReader(new File(fileName)));
+            fr = new FileReader(new File(fileName));
+            br = new BufferedReader (fr);
             int count = 0;
             String str;
             while ((str = br.readLine()) != null) {
@@ -50,14 +55,17 @@ public class FileRead {
         } catch (Exception e) {
             throw e;
         } finally {
+            fr.close();
             br.close();
         }
     }
 
     public static TreeMap countUniqWordsWithRegistr(String fileName) throws Exception {
         BufferedReader br = null;
+        FileReader fr = null;
         try {
-            br = new BufferedReader (new FileReader(new File(fileName)));
+            fr = new FileReader(new File(fileName));
+            br = new BufferedReader (fr);
             Map<String, Integer> m = new TreeMap<String, Integer>();
             String str;
             while ((str = br.readLine()) != null) {
@@ -76,6 +84,7 @@ public class FileRead {
         } catch (Exception e) {
             throw e;
         } finally {
+            fr.close();
             br.close();
         }
     }
@@ -83,8 +92,10 @@ public class FileRead {
     public static TreeMap countUniqWordsWithoutRegistr(String fileName)
             throws Exception {
         BufferedReader br = null;
+        FileReader fr = null;
         try {
-            br = new BufferedReader (new FileReader(new File(fileName)));
+            fr = new FileReader(new File(fileName));
+            br = new BufferedReader (fr);
             Map<String, Integer> m = new TreeMap<String, Integer>();
             String str;
             while ((str = br.readLine()) != null) {
@@ -104,6 +115,7 @@ public class FileRead {
         } catch (Exception e) {
             throw e;
         } finally {
+            fr.close();
             br.close();
         }
     }
