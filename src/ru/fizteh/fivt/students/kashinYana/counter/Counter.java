@@ -134,12 +134,14 @@ public class Counter {
         for (int i = 0; i < filesSize; i++) {
             HashMap<String, Integer> map = new HashMap<String, Integer>();
             BufferedReader in = null;
+            FileReader file = null;
             try {
-                in = new BufferedReader(new FileReader(files[i]));
+                file = new FileReader(files[i]);
+                in = new BufferedReader(file);
                 int totalNumber = 0;
                 while (in.ready()) {
                     String currentLine = in.readLine();
-                    String[] words = currentLine.split(" ");
+                    String[] words = currentLine.split("[ \\t\\n.!?,:;]+");
                     for (int j = 0; j < words.length; j++) {
                         String currentWord = words[j];
                         if (isU) {
@@ -167,6 +169,9 @@ public class Counter {
                 if (in != null) {
                     in.close();
                 }
+                if (file != null) {
+                    file.close();
+                }
             }
         }
     }
@@ -175,8 +180,10 @@ public class Counter {
         HashMap<String, Integer> map = new HashMap<String, Integer>();
         for (int i = 0; i < filesSize; i++) {
             BufferedReader in = null;
+            FileReader file = null;
             try {
-                in = new BufferedReader(new FileReader(files[i]));
+                file = new FileReader(files[i]);
+                in = new BufferedReader(file);
                 int totalNumber = 0;
                 while (in.ready()) {
                     String currentWord = in.readLine();
@@ -203,6 +210,9 @@ public class Counter {
             } finally {
                 if (in != null) {
                     in.close();
+                }
+                if (file != null) {
+                    file.close();
                 }
             }
         }
