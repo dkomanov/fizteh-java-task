@@ -1,4 +1,4 @@
-package wordcounter;
+package ru.fizteh.fivt.students.almazNasibullin.wordcounter;
 
 import java.io.BufferedReader;
 import java.io.File;

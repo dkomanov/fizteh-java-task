@@ -1,4 +1,4 @@
-package wordcounter;
+package ru.fizteh.fivt.students.almazNasibullin.wordcounter;
 
 import java.util.Iterator;
 import java.util.Map;
