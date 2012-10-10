@@ -10,13 +10,12 @@ public class WordCounter {
 	private static boolean aggregation;
 	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		if (args.length == 0) {
 			help();
-			System.exit(0);
+			System.exit(1);
 		}
 		
-		boolean keys_end = false;
+		boolean keysEnd = false;
 		ArrayList<String> filenames = new ArrayList<String>();
 		ArrayList<String> keys = new ArrayList<String>();
 		keys.add("-w");
@@ -29,18 +28,15 @@ public class WordCounter {
 		uniqueCaseSensitive = false;
 		uniqueNotCaseSensitive = false;
 		aggregation = false;
-		for (String arg:args)
-		{
+		for (String arg:args) {
 			if (keys.contains(arg) || (arg.length() > 1 && arg.charAt(0) == '-' && arg.indexOf('.') < 0)) {
-				//System.out.println("jhgffj");
-				if (keys_end) {
+				if (keysEnd) {
 					System.out.println("Wrong usage");
 					help();
-					System.exit(0);
+					System.exit(1);
 				}
 				try {
 					if (arg.length() == 2) {
-						//System.out.println("lalala");
 						parseKey(arg);
 					} else {
 						for (int i = 1; i < arg.length(); i++) {
@@ -49,23 +45,23 @@ public class WordCounter {
 							
 					}
 				} catch (Exception e) {
-					System.out.println(e.getMessage());
+					System.err.println(e.getMessage());
 					System.exit(1);
 				}
 					
 			} else {
-				keys_end = true;
+				keysEnd = true;
 				filenames.add(arg);
 			}
 		}
 		
 		if ((word && lines) || (uniqueCaseSensitive && uniqueNotCaseSensitive)) {
 			System.out.println("can't combine these key");
-			System.exit(0);
+			System.exit(1);
 		}
 		
 		if (!(word || lines ||  uniqueCaseSensitive || uniqueNotCaseSensitive)) {
-			word=true;
+			word = true;
 		}
 			
 		WordWorker myCounter = new WordWorker(word, lines, uniqueCaseSensitive, uniqueNotCaseSensitive, aggregation, filenames);
@@ -73,13 +69,12 @@ public class WordCounter {
 		try {
 			myCounter.count();
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			System.err.println(e.getMessage());
 		}
 	}
 
 	
-	public static void help()
-	{
+	public static void help() {
 		System.out.println("Usage: java WordCounter [keys] FILE1 FILE2 ...");
 		System.out.println("Keys:");
 		System.out.println("-w (default) - number of words");
@@ -89,8 +84,7 @@ public class WordCounter {
 		System.out.println("-a - aggregation of information");
 	}
 	
-	public static void parseKey(String arg) throws Exception
-	{
+	public static void parseKey(String arg) throws Exception {
 		if (arg.equals("-w") || arg.equals("w")) {
 			word = true;
 		} else if (arg.equals("-l") || arg.equals("l")) {
