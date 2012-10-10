@@ -34,57 +34,72 @@ public class WordWorker {
 		HashMap<String, Integer> allUniqueNotCaseSens = new HashMap<String, Integer>();
 		for (int i=0; i<mFilenames.size(); i++)
 		{
-			
 			FileInputStream fstream = new FileInputStream(mFilenames.get(i));
 			try {
 				DataInputStream in = new DataInputStream(fstream);
 				try {
 					BufferedReader br = new BufferedReader(new InputStreamReader(in));
 					try {
-					String strLine;
-					int lines = 0;
-					int words = 0;
-					HashMap<String, Integer> unique = new HashMap<String, Integer>();
-					HashMap<String, Integer> uniqueNotCaseSens = new HashMap<String, Integer>();
-					while ((strLine = br.readLine()) != null) {
-						if (mLines) {
-							if (mAggregation) {
-								all_lines++;
-							} else {
-								lines++;
-							}	
+						String strLine;
+						int lines = 0;
+						int words = 0;
+						HashMap<String, Integer> unique = new HashMap<String, Integer>();
+						HashMap<String, Integer> uniqueNotCaseSens = new HashMap<String, Integer>();
+						while ((strLine = br.readLine()) != null) {
+							if (mLines) {
+								if (mAggregation) {
+									all_lines++;
+								} else {
+									lines++;
+								}	
+							}
+							if (mWords || mUniqueNotCaseSensitive || mUniqueCaseSensitive) {
+								String[] result = strLine.split("\\s");
+							    for (int x = 0; x < result.length; x++) {
+							    	if (result[x].length() < 1)
+							    		continue;
+							    	if (mWords) {
+							    		if (mAggregation) {
+							    			all_words++;
+							    		} else {
+							    			words++;
+							    		}	
+							    	}
+							    	
+							    	if (mUniqueCaseSensitive) {
+							    		if (mAggregation) {
+							    			putValueInMap(allUnique, result[x]);
+							    		} else {
+							    			putValueInMap(unique, result[x]);
+							    		}
+							    	} else if (mUniqueNotCaseSensitive) {
+							    		if (mAggregation) {
+							    			putValueInMap(allUniqueNotCaseSens, result[x].toLowerCase());
+							    		} else {
+							    			putValueInMap(uniqueNotCaseSens, result[x].toLowerCase());
+							    		}
+							    	}
+							    }
+							}
 						}
-						if (mWords || mUniqueNotCaseSensitive || mUniqueCaseSensitive) {
-							String[] result = strLine.split("\\s");
-						    for (int x = 0; x < result.length; x++) {
-						    	if (result[x].length() < 1)
-						    		continue;
-						    	if (mWords) {
-						    		if (mAggregation) {
-						    			all_words++;
-						    		} else {
-						    			words++;
-						    		}	
-						    	}
-						    }
+						
+						if (!mAggregation) {
+							System.out.println(mFilenames.get(i));
+							printResults(words, lines, unique, uniqueNotCaseSens);
 						}
 					}
-				} 
-				finally {
-					br.close();
-				} 
-				finally {
-					fstream.close();
-				}
 					finally {
-						in.close();
+						br.close();
 					}
-						    	
-				if (!mAggregation) {
-					System.out.println(mFilenames.get(i));
-					printResults(words, lines, unique, uniqueNotCaseSens);
 				}
+				finally {
+					in.close();
+				}
+			}
 			
+			finally {
+				fstream.close();
+			}	
 		}
 		if (mAggregation) {
 			printResults(all_words, all_lines, allUnique, allUniqueNotCaseSens);
@@ -96,7 +111,7 @@ public class WordWorker {
 		if (count != null) {
 		  myMap.put(key, count + 1);
 		} else {
-			myMap.put(key, count);
+			myMap.put(key, 1);
 		}
 	}
 	
