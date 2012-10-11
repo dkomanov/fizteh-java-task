@@ -171,12 +171,13 @@ public class WordsCounter {
                 }
                 
                 File file = new File(path);
+
                 FileReader fr = new FileReader(file);
                 BufferedReader reader = new BufferedReader(fr);
                 String line;
-                
+
                 try {
-                	while ((line = reader.readLine()) != null) {
+                    while ((line = reader.readLine()) != null) {
                         if (countLines) { 
                             lineNumber[indx]++; 
                         }
@@ -186,7 +187,8 @@ public class WordsCounter {
                         }
                     } 
                 } finally {
-                	reader.close();
+                    reader.close();
+                    fr.close();
                 }
                 currentParam++;
             }
