@@ -6,10 +6,11 @@ import java.math.*;
 public class Calc {
 
     public static boolean isNumber(String s) {
-        if (s.length() != 0)
+        if (s.length() != 0) {
             if (Character.isDigit(s.charAt(0))) {
                 return true;
             }
+        }
         return false;
 
     }
@@ -29,9 +30,27 @@ public class Calc {
         return depth == 0;
     }
 
+    public static boolean checkCorrectness(String s) {
+
+        boolean prevNumber = false;
+        for (int i = 0; i < s.length(); ++i) {
+            if ((prevNumber) && ((s.charAt(i) == '('))) {
+                return false;
+            }
+            if (Character.isDigit(s.charAt(i))) {
+                prevNumber = true;
+            } else {
+                prevNumber = false;
+            }
+        }
+        return true;
+
+    }
+
     public static boolean checkOverflow(int a, int b, char operand) {
-        if (operand == '/')
+        if (operand == '/') {
             return false;
+        }
         String res_str = new String();
         if (operand == '+') {
             res_str = new String(Integer.toString(a + b));
@@ -63,14 +82,13 @@ public class Calc {
         boolean is_prev_num = false;
         for (String s : args) {
             if (is_prev_num) {
-                if ((s.charAt(0) >= '0') && (s.charAt(0) <= '9')) {
+                if (Character.isDigit(s.charAt(0))) {
                     System.err.println("Error: Incorrect Input");
                     System.exit(1);
                 }
             }
             builder.append(s);
-            if ((s.charAt(s.length() - 1) >= '0')
-                    && (s.charAt(s.length() - 1) <= '9')) {
+            if (Character.isDigit(s.charAt(s.length() - 1))) {
                 is_prev_num = true;
             } else {
                 is_prev_num = false;
@@ -85,7 +103,13 @@ public class Calc {
             System.exit(1);
         }
         if (expr.isEmpty()) {
-            System.err.println("Usage");
+            System.err
+                    .println("Usage: calc (expression with numbers, (), +, - , *, /)");
+            System.exit(1);
+        }
+        if (!(checkCorrectness(expr)))
+        {
+            System.err.println("Incorrect input");
             System.exit(1);
         }
         ReversePolishNotation converter = new ReversePolishNotation();
@@ -131,7 +155,7 @@ public class Calc {
         if (!polish_stack.empty()) {
             System.out.println(polish_stack.peek());
         } else {
-            System.err.println("Error");
+            System.err.println("Incorrect Input");
             System.exit(1);
         }
     }
