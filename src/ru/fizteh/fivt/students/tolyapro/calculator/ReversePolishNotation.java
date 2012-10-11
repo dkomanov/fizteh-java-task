@@ -14,25 +14,25 @@ public class ReversePolishNotation {
     }
 
     public String toPolish(String expr) throws Exception, RuntimeException {
-        boolean in_number = false;
+        boolean inNumber = false;
         String number = new String();
         String output = new String();
         Stack<Character> st = new Stack<Character>();
         for (int i = 0; i < expr.length(); ++i) {
             char ch = expr.charAt(i);
             if (Character.isDigit(ch)) {
-                if (!in_number) {
-                    in_number = true;
+                if (!inNumber) {
+                    inNumber = true;
                     number += ch;
                 } else {
                     number += ch;
                 }
             } else if ((ch == '+') || (ch == '-') || (ch == '*') || (ch == '/')) {
-                if (in_number) {
+                if (inNumber) {
                     output += number;
                     output += " ";
                     number = "";
-                    in_number = false;
+                    inNumber = false;
                 }
                 if (!(st.empty())) {
                     char tmp = st.peek();
@@ -48,22 +48,22 @@ public class ReversePolishNotation {
                 }
                 st.push(ch);
             } else if (ch == '(') {
-                if (in_number) {
+                if (inNumber) {
                     output += number;
                     output += " ";
                     number = "";
-                    in_number = false;
+                    inNumber = false;
                     st.push(ch);
                 } else {
                     st.push(ch);
 
                 }
             } else if (ch == ')') {
-                if (in_number) {
+                if (inNumber) {
                     output += number;
                     output += " ";
                     number = "";
-                    in_number = false;
+                    inNumber = false;
                 }
                 if (!st.empty()) {
                     char tmp = st.peek();
@@ -81,7 +81,7 @@ public class ReversePolishNotation {
 
             }
         }
-        if (in_number) {
+        if (inNumber) {
             output += number;
             output += " ";
         }
