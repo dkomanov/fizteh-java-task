@@ -80,23 +80,27 @@ public class Main {
     }
 
     static void checkKey(boolean words, boolean lines,
-            boolean uniqWithReg, boolean uniqWithoutReg) throws Exception {
+            boolean uniqWithReg, boolean uniqWithoutReg) {
         if (words && lines) { // указаны ключи -w и -l одновременно
-            throw new Exception("Keys '-w', '-l' are not compatible!");
+            System.out.println("Keys '-w', '-l' are not compatible!");
+            System.exit(0);
         }
         if (uniqWithReg && uniqWithoutReg) { // указаны ключи -U и -u одновременно
-            throw new Exception("Keys '-U', '-u' are not compatible!");
+            System.out.println("Keys '-U', '-u' are not compatible!");
+            System.exit(0);
         }
         if (lines && uniqWithoutReg) { // указаны ключи -U и -l одновременно
-            throw new Exception("Keys '-U', '-l' are not compatible!");
+            System.out.println("Keys '-U', '-l' are not compatible!");
+            System.exit(0);
         }
         if (lines && uniqWithReg) { // указаны ключи -u и -l одновременно
-            throw new Exception("Keys '-u', '-l' are not compatible!");
+            System.out.println("Keys '-u', '-l' are not compatible!");
+            System.exit(0);
         }
     }
 
     static void printInfo(String s, boolean words, boolean lines,
-            boolean uniqWithReg, boolean uniqWithoutReg) throws Exception {
+            boolean uniqWithReg, boolean uniqWithoutReg) {
         // печатаем запрашиваемую информацию для одного файла
         if (lines) { // кол-во строк
             int count = FileRead.countLines(s);
@@ -130,8 +134,7 @@ public class Main {
     }
 
     static void printInfo(String [] args, boolean words, boolean lines,
-            boolean uniqWithReg, boolean uniqWithoutReg, int startFile)
-            throws Exception {
+            boolean uniqWithReg, boolean uniqWithoutReg, int startFile) {
         // печатаем запрашиваемую информацию для всех файлов
         if (lines) { // кол-во строк
             int count = 0;
@@ -168,7 +171,8 @@ public class Main {
             }
             m.clear();
         } else {
-            throw new Exception("Keys are not compatible!");
+            System.out.println("Keys are not compatible!");
+            System.exit(0);
         }
     }
 }

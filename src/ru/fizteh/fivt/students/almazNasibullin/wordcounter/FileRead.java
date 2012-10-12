@@ -3,6 +3,7 @@ package ru.fizteh.fivt.students.almazNasibullin.wordcounter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -16,33 +17,39 @@ public class FileRead {
      * в данном классе реализованы функции считывания и подсчета информации
      * из файлов
      */
-    public static int countLines(String fileName) throws Exception {
+    public static int countLines(String fileName) {
         BufferedReader br = null;
         FileReader fr = null;
+        int count = 0;
         try {
             fr = new FileReader(new File(fileName));
             br = new BufferedReader (fr);
-            int count = 0;
             while (br.readLine() != null) {
                 ++count;
             }
             return count;
-        } catch (Exception e) {
-            throw e;
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
         } finally {
-            fr.close();
-            br.close();
+            try {
+                fr.close();
+                br.close();
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
         }
-        
+        return count;
     }
 
-    public static int countWords(String fileName) throws Exception {
+    public static int countWords(String fileName) {
         BufferedReader br = null;
         FileReader fr = null;
+        int count = 0;
         try {
             fr = new FileReader(new File(fileName));
             br = new BufferedReader (fr);
-            int count = 0;
             String str;
             while ((str = br.readLine()) != null) {
                 StringTokenizer st = new StringTokenizer(str, " \t!?';:,.)(@#<>");
@@ -52,21 +59,28 @@ public class FileRead {
                 }
             }
             return count;
-        } catch (Exception e) {
-            throw e;
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
         } finally {
-            fr.close();
-            br.close();
+            try {
+                fr.close();
+                br.close();
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
         }
+        return count;
     }
 
-    public static TreeMap countUniqWordsWithRegistr(String fileName) throws Exception {
+    public static TreeMap<String, Integer> countUniqWordsWithRegistr(String fileName) {
         BufferedReader br = null;
         FileReader fr = null;
+        Map<String, Integer> m = new TreeMap<String, Integer>();
         try {
             fr = new FileReader(new File(fileName));
             br = new BufferedReader (fr);
-            Map<String, Integer> m = new TreeMap<String, Integer>();
             String str;
             while ((str = br.readLine()) != null) {
                 StringTokenizer st = new StringTokenizer(str, " \t!?';:,.)(@#<>");
@@ -80,23 +94,28 @@ public class FileRead {
                     }
                 }
             }
-            return (TreeMap) m;
-        } catch (Exception e) {
-            throw e;
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
         } finally {
-            fr.close();
-            br.close();
+            try {
+                fr.close();
+                br.close();
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
         }
+        return (TreeMap)m;
     }
 
-    public static TreeMap countUniqWordsWithoutRegistr(String fileName)
-            throws Exception {
+    public static TreeMap<String, Integer> countUniqWordsWithoutRegistr(String fileName) {
         BufferedReader br = null;
         FileReader fr = null;
+        Map<String, Integer> m = new TreeMap<String, Integer>();
         try {
             fr = new FileReader(new File(fileName));
             br = new BufferedReader (fr);
-            Map<String, Integer> m = new TreeMap<String, Integer>();
             String str;
             while ((str = br.readLine()) != null) {
                 StringTokenizer st = new StringTokenizer(str, " \t!?';:,.)(@#<>");
@@ -111,12 +130,18 @@ public class FileRead {
                     }
                 }
             }
-            return (TreeMap) m;
-        } catch (Exception e) {
-            throw e;
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
         } finally {
-            fr.close();
-            br.close();
+            try {
+                fr.close();
+                br.close();
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
         }
+        return (TreeMap)m;
     }
 }
