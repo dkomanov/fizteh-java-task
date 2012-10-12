@@ -46,34 +46,33 @@ public class Shell {
             try {
                 recognizeCommand(command);
             } catch (Exception e) {
-                System.err.print(e.getMessage());
-                System.exit(1);
+                System.err.println(e.getMessage());
             }
         }
     }
 
     static void recognizeCommand(String command) throws Exception{
-        String[] parse = command.split(" ");
-        if (parse[0].equals("exit")) {
+        String[] parseCommand = command.split("[ \t]");
+        if (parseCommand[0].equals("exit")) {
             System.exit(0);
         }
-        if (parse[0].equals("cd")) {
-            if (parse.length != 2) {
+        if (parseCommand[0].equals("cd")) {
+            if (parseCommand.length != 2) {
                 throw new Exception("strange numbers of argv");
             }
-            File newPath = getFile(parse[1]);
+            File newPath = getFile(parseCommand[1]);
             if(newPath.isDirectory()) {
                 path = newPath;
             } else {
-                System.err.println("cd: \'" + parse[1] + "\': No such file or directory");
+                System.err.println("cd: \'" + parseCommand[1] + "\': No such file or directory");
             }
-        } else if(parse[0].equals("pwd")){
-            if (parse.length != 1) {
+        } else if(parseCommand[0].equals("pwd")){
+            if (parseCommand.length != 1) {
                 throw new Exception("strange numbers of argv");
             }
             System.out.println(path.getCanonicalPath());
-        } else if(parse[0].equals("dir")) {
-            if (parse.length != 1) {
+        } else if(parseCommand[0].equals("dir")) {
+            if (parseCommand.length != 1) {
                 throw new Exception("strange numbers of argv");
             }
             String[] list;
@@ -81,56 +80,59 @@ public class Shell {
             for (int i = 0; i < list.length; i++) {
                 System.out.println(list[i]);
             }
-        } else if (parse[0].equals("mkdir")) {
-            if (parse.length != 2) {
+        } else if (parseCommand[0].equals("mkdir")) {
+            if (parseCommand.length != 2) {
                 throw new Exception("strange numbers of argv");
             }
-            File newPath = getFile(parse[1]);
+            File newPath = getFile(parseCommand[1]);
             if(!newPath.mkdir()) {
-                System.err.println("mkdir: cannot create directory \'" + parse[1] + "\': No such file or directory");
+                System.err.println("mkdir: cannot create directory \'" + parseCommand[1] +
+                                   "\': No such file or directory");
             }
-        } else if (parse[0].equals("rm")){
-            if (parse[1].equals("-r")) {
-                File newPath = getFile(parse[2]);
+        } else if (parseCommand[0].equals("rm")){
+            if (parseCommand[1].equals("-r")) {
+                File newPath = getFile(parseCommand[2]);
                 if(newPath.exists()) {
                     newPath.delete();
                 } else {
-                    System.err.println("rm: cannot remove \'" + parse[1] + "\': No such file or directory");
+                    System.err.println("rm: cannot remove \'" + parseCommand[1] + "\': No such file or directory");
                 }
             } else {
-                File newPath = getFile(parse[1]);
+                File newPath = getFile(parseCommand[1]);
                 if(newPath.isFile()) {
                     newPath.delete();
                 } else if (newPath.exists()){
-                    System.err.println("rm: cannot remove \'" + parse[1] + "\': Is a directory");
+                    System.err.println("rm: cannot remove \'" + parseCommand[1] + "\': Is a directory");
                 } else {
-                    System.err.println("rm: cannot remove \'" + parse[1] + "\': No such file or directory");
+                    System.err.println("rm: cannot remove \'" + parseCommand[1] + "\': No such file or directory");
                 }
             }
-        } else if(parse[0].equals("mv")){
-            if (parse.length != 3) {
+        } else if(parseCommand[0].equals("mv")){
+            if (parseCommand.length != 3) {
                 throw new Exception("strange numbers of argv");
             }
-            File firstPath = getFile(parse[1]);
-            File secondPath = getFile(parse[2]);
+            File firstPath = getFile(parseCommand[1]);
+            File secondPath = getFile(parseCommand[2]);
             if (!firstPath.exists()) {
-                System.err.println("mv: cannot stat \'" + parse[1] + "\': No such file or directory");
+                System.err.println("mv: cannot stat \'" + parseCommand[1] + "\': No such file or directory");
             }
             if (!firstPath.renameTo(secondPath)) {
-                System.err.println("mv: cannot move \'" + parse[1] + "\' to \'" + parse[2] +  "\': No such file or directory");
+                System.err.println("mv: cannot move \'" + parseCommand[1] + "\' to \'" + parseCommand[2]
+                                   +  "\': No such file or directory");
             }
             firstPath.delete();
-        } else if(parse[0].equals("cp")) {
-            if (parse.length != 3) {
+        } else if(parseCommand[0].equals("cp")) {
+            if (parseCommand.length != 3) {
                 throw new Exception("strange numbers of argv");
             }
-            File firstPath = getFile(parse[1]);
-            File secondPath = getFile(parse[2]);
+            File firstPath = getFile(parseCommand[1]);
+            File secondPath = getFile(parseCommand[2]);
             if (!firstPath.exists()) {
-                System.err.println("cp: cannot stat \'" + parse[1] + "\': No such file or directory");
+                System.err.println("cp: cannot stat \'" + parseCommand[1] + "\': No such file or directory");
             }
             if (!firstPath.renameTo(secondPath)) {
-                System.err.println("cp: cannot create regular file \'" + parse[2] +  "\': No such file or directory");
+                System.err.println("cp: cannot create regular file \'" + parseCommand[2] +
+                                   "\': No such file or directory");
             }
             firstPath.delete();
         } else {
