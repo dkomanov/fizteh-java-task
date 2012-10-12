@@ -171,24 +171,29 @@ public class WordsCounter {
                 }
                 
                 File file = new File(path);
-
-                FileReader fr = new FileReader(file);
-                BufferedReader reader = new BufferedReader(fr);
-                String line;
-
+                FileReader fr = null;
+                BufferedReader reader = null;
+                
                 try {
+                    fr = new FileReader(file);
+                    reader = new BufferedReader(fr);
+                    String line;
+                
                     while ((line = reader.readLine()) != null) {
                         if (countLines) { 
                             lineNumber[indx]++; 
                         }
                         String words[] = line.split("[\\s\\.:;,\\\"\\\'\\(\\)!]+");
                         for (String s : words) {
-                        	putToArray(array, s, indx, wordsNumber);
+                            putToArray(array, s, indx, wordsNumber);
                         }
                     } 
                 } finally {
-                    reader.close();
-                    fr.close();
+                    try {
+                        reader.close();
+                        fr.close();
+                    } catch (Exception expt) { 
+                    }
                 }
                 currentParam++;
             }
