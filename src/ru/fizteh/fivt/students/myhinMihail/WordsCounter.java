@@ -189,10 +189,11 @@ public class WordsCounter {
                         }
                     } 
                 } finally {
-                    try {
-                        reader.close();
+                    if (fr != null) {
                         fr.close();
-                    } catch (Exception expt) { 
+                    }
+                    if (reader != null) {
+                        reader.close();
                     }
                 }
                 currentParam++;
