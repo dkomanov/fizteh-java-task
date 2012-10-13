@@ -31,7 +31,6 @@ public class Calc {
     }
 
     public static boolean checkCorrectness(String s) {
-
         boolean prevNumber = false;
         for (int i = 0; i < s.length(); ++i) {
             if ((prevNumber) && ((s.charAt(i) == '('))) {
@@ -68,20 +67,18 @@ public class Calc {
             return !res.equals(a_big.add(b_big));
         } else if (operand == '-') {
             return !res.equals(b_big.subtract(a_big));
-
         } else if (operand == '*') {
             return !res.equals(a_big.multiply(b_big));
-
         }
         return true;
     }
 
     public static void main(String[] args) throws Exception {
-        String expr = new String();
+        String expr;
         StringBuilder builder = new StringBuilder();
-        boolean is_prev_num = false;
+        boolean isPrevNum = false;
         for (String s : args) {
-            if (is_prev_num) {
+            if (isPrevNum) {
                 if (Character.isDigit(s.charAt(0))) {
                     System.err.println("Error: Incorrect Input");
                     System.exit(1);
@@ -89,11 +86,10 @@ public class Calc {
             }
             builder.append(s);
             if (Character.isDigit(s.charAt(s.length() - 1))) {
-                is_prev_num = true;
+                isPrevNum = true;
             } else {
-                is_prev_num = false;
+                isPrevNum = false;
             }
-
         }
         expr = builder.toString();
         expr.replaceAll("\"", "");
@@ -107,42 +103,41 @@ public class Calc {
                     .println("Usage: calc (expression with numbers, (), +, - , *, /)");
             System.exit(1);
         }
-        if (!(checkCorrectness(expr)))
-        {
+        if (!(checkCorrectness(expr))) {
             System.err.println("Incorrect input");
             System.exit(1);
         }
         ReversePolishNotation converter = new ReversePolishNotation();
         String output = converter.toPolish(expr);
         String[] tokens = output.split(" ");
-        Stack<String> polish_stack = new Stack<String>();
+        Stack<String> polishStack = new Stack<String>();
         for (int i = 0; i < tokens.length; ++i) {
             if (isNumber(tokens[i])) {
-                polish_stack.push(tokens[i]);
+                polishStack.push(tokens[i]);
             } else {
                 try {
-                    if (polish_stack.empty()) {
+                    if (polishStack.empty()) {
                         throw new Exception("Incorrect Input");
                     }
-                    int a = new Integer(polish_stack.peek());
-                    polish_stack.pop();
-                    if (polish_stack.empty()) {
+                    int a = new Integer(polishStack.peek());
+                    polishStack.pop();
+                    if (polishStack.empty()) {
                         throw new Exception("Incorrect Input");
                     }
-                    int b = new Integer(polish_stack.peek());
-                    polish_stack.pop();
+                    int b = new Integer(polishStack.peek());
+                    polishStack.pop();
                     char operand = tokens[i].charAt(0);
                     if (checkOverflow(a, b, operand)) {
                         throw new Exception("Overflow!");
                     } else {
                         if (operand == '+') {
-                            polish_stack.push(Integer.toString(a + b));
+                            polishStack.push(Integer.toString(a + b));
                         } else if (operand == '-') {
-                            polish_stack.push(Integer.toString(b - a));
+                            polishStack.push(Integer.toString(b - a));
                         } else if (operand == '*') {
-                            polish_stack.push(Integer.toString(a * b));
+                            polishStack.push(Integer.toString(a * b));
                         } else if (operand == '/') {
-                            polish_stack.push(Integer.toString(b / a));
+                            polishStack.push(Integer.toString(b / a));
                         }
                     }
                 } catch (Exception e) {
@@ -152,8 +147,8 @@ public class Calc {
                 }
             }
         }
-        if (!polish_stack.empty()) {
-            System.out.println(polish_stack.peek());
+        if (!polishStack.empty()) {
+            System.out.println(polishStack.peek());
         } else {
             System.err.println("Incorrect Input");
             System.exit(1);
