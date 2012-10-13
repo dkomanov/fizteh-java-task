@@ -1,7 +1,5 @@
 package ru.fizteh.fivt.students.verytable.calc;
 
-import java.io.BufferedReader;
-import java.util.Arrays;
 import java.util.Stack;
 
 /**
@@ -203,10 +201,8 @@ public class ConsoleCalculation {
     public static void main(String[] args) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < args.length; ++i) {
-            System.out.println(args[i]);
             sb.append(args[i]);
         }
-        System.out.println(sb);
         String s = sb.toString();
         try {
             System.out.println(calc(s));
