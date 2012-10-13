@@ -14,7 +14,7 @@ public class TokenParser {
     }
 
     private Token getNextToken() throws ParseException {
-        while (expression.charAt(currentPosition) == ' ') {
+        while (Character.isWhitespace(expression.charAt(currentPosition))) {
             currentPosition++;
         }
         int oldPosition = currentPosition;
