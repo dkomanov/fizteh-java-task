@@ -33,8 +33,17 @@ public class FileRead {
             System.exit(1);
         } finally {
             try {
-                fr.close();
-                br.close();
+                if (fr != null) {
+                    fr.close();
+                }
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
+            try {
+                if (br != null) {
+                    br.close();
+                }
             } catch (IOException e) {
                 System.err.println(e.getMessage());
                 System.exit(1);
@@ -64,8 +73,17 @@ public class FileRead {
             System.exit(1);
         } finally {
             try {
-                fr.close();
-                br.close();
+                if (fr != null) {
+                    fr.close();
+                }
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
+            try {
+                if (br != null) {
+                    br.close();
+                }
             } catch (IOException e) {
                 System.err.println(e.getMessage());
                 System.exit(1);
@@ -99,8 +117,17 @@ public class FileRead {
             System.exit(1);
         } finally {
             try {
-                fr.close();
-                br.close();
+                if (fr != null) {
+                    fr.close();
+                }
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
+            try {
+                if (br != null) {
+                    br.close();
+                }
             } catch (IOException e) {
                 System.err.println(e.getMessage());
                 System.exit(1);
@@ -135,8 +162,17 @@ public class FileRead {
             System.exit(1);
         } finally {
             try {
-                fr.close();
-                br.close();
+                if (fr != null) {
+                    fr.close();
+                }
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
+            try {
+                if (br != null) {
+                    br.close();
+                }
             } catch (IOException e) {
                 System.err.println(e.getMessage());
                 System.exit(1);
