@@ -45,6 +45,9 @@ public class Shell {
                 System.out.println("console: i/o error: " + ioEx.getMessage());
                 System.exit(1);
             }
+            if (cmd == null) {
+                exit();
+            }
             executeCommand(cmd);
         }
     }
@@ -61,6 +64,9 @@ public class Shell {
     /* Execute a single command */
     private void executeSingleCommand(String cmd) {
         ListIterator<String> parsed = splitCommand(cmd);
+        if (!parsed.hasNext()) {
+            return;
+        }
         String operation = parsed.next();
         try {
             if (operation.equals("cd")) {
