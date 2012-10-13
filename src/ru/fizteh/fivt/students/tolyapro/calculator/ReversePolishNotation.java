@@ -13,9 +13,13 @@ public class ReversePolishNotation {
         return -1;
     }
 
+    public static boolean isOperand(char ch) {
+        return ((ch == '+') || (ch == '-') || (ch == '*') || (ch == '/'));
+    }
+
     public String toPolish(String expr) throws Exception, RuntimeException {
         boolean inNumber = false;
-        String number = new String();
+        StringBuilder builderNumber = new StringBuilder();
         String output = new String();
         Stack<Character> st = new Stack<Character>();
         for (int i = 0; i < expr.length(); ++i) {
@@ -23,46 +27,45 @@ public class ReversePolishNotation {
             if (Character.isDigit(ch)) {
                 if (!inNumber) {
                     inNumber = true;
-                    number += ch;
+                    builderNumber.append(ch);
                 } else {
-                    number += ch;
+                    builderNumber.append(ch);
                 }
-            } else if ((ch == '+') || (ch == '-') || (ch == '*') || (ch == '/')) {
+            } else if (isOperand(ch)) {
                 if (inNumber) {
-                    output += number;
+                    output += builderNumber.toString();
                     output += " ";
-                    number = "";
+                    builderNumber.delete(0, builderNumber.length());
                     inNumber = false;
                 }
                 if (!(st.empty())) {
                     char tmp = st.peek();
-                    while (((tmp == '+') || (tmp == '-') || (tmp == '*') || (tmp == '/'))
-                            && (priority(ch) <= priority(tmp))) {
+                    while ((isOperand(ch)) && (priority(ch) <= priority(tmp))) {
                         output += tmp;
                         output += " ";
                         st.pop();
-                        if (st.empty())
+                        if (st.empty()) {
                             break;
+                        }
                         tmp = st.peek();
                     }
                 }
                 st.push(ch);
             } else if (ch == '(') {
                 if (inNumber) {
-                    output += number;
+                    output += builderNumber.toString();
                     output += " ";
-                    number = "";
+                    builderNumber.delete(0, builderNumber.length());
                     inNumber = false;
                     st.push(ch);
                 } else {
                     st.push(ch);
-
                 }
             } else if (ch == ')') {
                 if (inNumber) {
-                    output += number;
+                    output += builderNumber.toString();
                     output += " ";
-                    number = "";
+                    builderNumber.delete(0, builderNumber.length());
                     inNumber = false;
                 }
                 if (!st.empty()) {
@@ -78,11 +81,10 @@ public class ReversePolishNotation {
                     }
                     st.pop();
                 }
-
             }
         }
         if (inNumber) {
-            output += number;
+            output += builderNumber.toString();
             output += " ";
         }
         while (!(st.empty())) {
