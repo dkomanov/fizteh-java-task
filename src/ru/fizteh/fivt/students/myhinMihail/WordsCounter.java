@@ -22,7 +22,7 @@ public class WordsCounter {
             str = str.toLowerCase();
         }
         
-        if (!str.equals("")) {
+        if (!str.isEmpty()) {
             if (countUnique) {
                 if (array.elementAt(indx).get(str) == null) {
                     array.elementAt(indx).put(str, 1);
@@ -48,7 +48,7 @@ public class WordsCounter {
     public static int readKeys(String[] args) {
         int params = 0;
         for (String str : args) {
-            if (str.equals("")) {
+            if (str.isEmpty()) {
                 params++;
                 continue;
             }
@@ -161,7 +161,7 @@ public class WordsCounter {
             int currentParam = 0;
             
             for (int i = 0; i < args.length; ++i) {
-                if (args[i].equals("") || args[i].charAt(0) == '-') {
+                if (args[i].isEmpty() || args[i].charAt(0) == '-') {
                     continue;
                 }
                 String path = args[i];
@@ -183,7 +183,7 @@ public class WordsCounter {
                         if (countLines) { 
                             lineNumber[indx]++; 
                         }
-                        String words[] = line.split("\\s+");
+                        String words[] = line.split("[\\s\\.:;,\\\"\\\'\\(\\)!]+");
                         for (String s : words) {
                             putToArray(array, s, indx, wordsNumber);
                         }
@@ -202,7 +202,7 @@ public class WordsCounter {
             int badName = 0 ;
             if (!forEach) {
                 for (int i = 0; i < args.length; ++i) {
-                    if (args[i].equals("") || args[i].charAt(0) == '-') {
+                    if (args[i].isEmpty() || args[i].charAt(0) == '-') {
                         badName++;
                         continue;
                     }
@@ -217,7 +217,7 @@ public class WordsCounter {
             
             currentParam = 0;
             for (int i = 0; i < args.length; ++i) {
-                if (args[i].equals("") || args[i].charAt(0) == '-') {
+                if (args[i].isEmpty() || args[i].charAt(0) == '-') {
                     continue;
                 }
                 
