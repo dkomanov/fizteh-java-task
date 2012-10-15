@@ -275,15 +275,20 @@ public class Shell {
                         break;
                     
                     default:
-                        File newPath = new File(params.elementAt(1));
+                        File newPath = new File(currentPath + "/" + params.elementAt(1));
+                        File newPath2 = new File(params.elementAt(1));
                         if (newPath.exists()) {
                             currentPath = newPath.getAbsolutePath();
                         } else {
-                            System.err.println("cd: path " + params.elementAt(1) + " does not exists");
-                            if (!console) {
-                                System.exit(1);
+                            if (newPath2.exists()) {
+                                currentPath = newPath2.getAbsolutePath();
+                            } else {
+                                System.err.println("cd: path " + params.elementAt(1) + " does not exists");
+                                if (!console) {
+                                    System.exit(1);
+                                }
                             }
-                        }
+                        }  
                         break;
                 }
                 return true;
