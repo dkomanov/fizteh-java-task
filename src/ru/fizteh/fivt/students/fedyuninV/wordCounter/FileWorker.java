@@ -17,12 +17,14 @@ public class FileWorker {
                                    boolean readLines, boolean agregate, boolean unique) {
         ResultContainer result = new ResultContainer(ignoreCase);
         String incomingData;
+        FileReader fReader = null;
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new FileReader(fileName));
+            fReader = new FileReader(fileName);
+            reader = new BufferedReader(fReader);
             while ((incomingData = reader.readLine()) != null) {
                 if (!readLines) {
-                    String[] tokens = incomingData.split(" ");
+                    String[] tokens = incomingData.split("[ \t\n.!?,:;]+");
                     for (int i = 0; i < tokens.length; i++) {
                         result.add(tokens[i]);
                     }
@@ -38,9 +40,12 @@ public class FileWorker {
             System.err.println(ex.getMessage());
             return null;
         } finally {
-            if (reader != null) {
+            if (fReader != null) {
                 try {
-                    reader.close();
+                    fReader.close();
+                    if (reader != null) {
+                        reader.close();
+                    }
                 } catch (Exception ex) {
                     System.err.println(ex.getMessage());
                 }

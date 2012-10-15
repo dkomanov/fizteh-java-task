@@ -14,7 +14,6 @@ public class WordCounter {
     private static boolean ignoreCase;
     private static boolean readLines;
     private static boolean unique;
-    private static boolean errorOccured;
 
 
     private static void initFlags() {
@@ -22,7 +21,6 @@ public class WordCounter {
         ignoreCase = false;
         readLines = false;
         unique = false;
-        errorOccured = false;
     }
 
     private static void parametersParser(String parameters) {
@@ -67,19 +65,17 @@ public class WordCounter {
         FileWorker worker = new FileWorker();
 
         for (; currArgIndex < args.length; currArgIndex++) {
+            ResultContainer temp = worker.run(args[currArgIndex], ignoreCase, readLines, agregate, unique);
             if (agregate) {
-                ResultContainer temp = worker.run(args[currArgIndex], ignoreCase, readLines, agregate, unique);
-                errorOccured = errorOccured || (temp == null);
                 result.add(temp);
-            } else {
-                worker.run(args[currArgIndex], ignoreCase, readLines, agregate, unique);
+            }
+            if (temp == null) {
+                System.exit(1);
             }
         }
         if (agregate) {
             result.print(unique);
         }
-        if (errorOccured) {
-            System.exit(1);
-        }
+
     }
 }
