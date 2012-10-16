@@ -12,7 +12,9 @@
 3. [Механизм исключений, наследование, nested классы, интерфейсы, enum,
 generics, коллекции](http://yadi.sk/d/O-tmiXHIxuhs)
 4. [final, Аннотации, IO, Начало reflection](http://yadi.sk/d/auiDAoma071pm)
-5. Reflection, многопоточность
+5. [Reflection: Class, ClassLoader. Многопоточность: Thread, wait/notify,
+spurious wake up](http://yadi.sk/d/IUVaBNVg0Eh1k)
+6. Многопоточность
 
 ## Семинары
 В папке [tasks](fizteh-java-task/tree/master/tasks) находятся описания заданий на
