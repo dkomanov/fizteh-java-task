@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.kashinYana.counter;
 
-import java.io.FileInputStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.*;
 
 /**
@@ -46,7 +47,7 @@ public class Counter {
         if (filesSize == 0) {
             System.out.println("-l - countLines\n-w - countWords \n-u - count dif words -U\n" +
                     "-u - count dif words in lower case\n-a - don't write name file");
-            System.exit(0);
+            System.exit(1);
         }
         try {
             if (isw) {
@@ -132,62 +133,88 @@ public class Counter {
     private static void countWords(String[] files, int filesSize) throws Exception {
         for (int i = 0; i < filesSize; i++) {
             HashMap<String, Integer> map = new HashMap<String, Integer>();
-            FileInputStream inFile = new FileInputStream(files[i]);
-            Scanner in = new Scanner(inFile);
-            while (in.hasNext()) {
-                String currentWord = in.next();
-                if (isU) {
-                    currentWord = currentWord.toLowerCase();
+            BufferedReader in = null;
+            FileReader file = null;
+            try {
+                file = new FileReader(files[i]);
+                in = new BufferedReader(file);
+                int totalNumber = 0;
+                while (in.ready()) {
+                    String currentLine = in.readLine();
+                    String[] words = currentLine.split("[ \\t\\n.!?,:;]+");
+                    for (int j = 0; j < words.length; j++) {
+                        String currentWord = words[j];
+                        if (isU) {
+                            currentWord = currentWord.toLowerCase();
+                        }
+                        Integer count = map.get(currentWord);
+                        if (count == null) {
+                            count = 0;
+                        }
+                        map.put(currentWord, count + 1);
+                        totalNumber++;
+                    }
                 }
-                if (map.containsKey(currentWord)) {
-                    map.put(currentWord, map.get(currentWord) + 1);
+                if (!isA) {
+                    System.out.println(files[i] + ":");
+                }
+                if (isu || isU) {
+                    for (Object it : map.keySet()) {
+                        System.out.println(it + " " + map.get(it));
+                    }
                 } else {
-                    map.put(currentWord, 1);
+                    System.out.println(totalNumber);
+                }
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+                if (file != null) {
+                    file.close();
                 }
             }
-            if (!isA) {
-                System.out.println(files[i] + ":");
-            }
-            if (isu || isU) {
-                for (Object it : map.keySet()) {
-                    System.out.println(it + " " + map.get(it));
-                }
-            } else {
-                System.out.println(map.size());
-            }
-            inFile.close();
-            in.close();
         }
     }
 
     private static void countLines(String[] files, int filesSize) throws Exception {
         HashMap<String, Integer> map = new HashMap<String, Integer>();
         for (int i = 0; i < filesSize; i++) {
-            FileInputStream inFile = new FileInputStream(files[i]);
-            Scanner in = new Scanner(inFile);
-            while (in.hasNext()) {
-                String currentWord = in.nextLine();
-                if (isU) {
-                    currentWord = currentWord.toLowerCase();
+            BufferedReader in = null;
+            FileReader file = null;
+            try {
+                file = new FileReader(files[i]);
+                in = new BufferedReader(file);
+                int totalNumber = 0;
+                while (in.ready()) {
+                    String currentWord = in.readLine();
+                    if (isU) {
+                        currentWord = currentWord.toLowerCase();
+                    }
+                    Integer count = map.get(currentWord);
+                    if (count == null) {
+                        count = 0;
+                    }
+                    map.put(currentWord, count + 1);
+                    totalNumber++;
                 }
-                if (map.containsKey(currentWord)) {
-                    map.put(currentWord, map.get(currentWord) + 1);
+                if (!isA) {
+                    System.out.println(files[i] + ":");
+                }
+                if(!isu && !isU) {
+                    System.out.println(totalNumber);
                 } else {
-                    map.put(currentWord, 1);
+                    for (Object it : map.keySet()) {
+                        System.out.println(it + " " + map.get(it));
+                    }
+                }
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+                if (file != null) {
+                    file.close();
                 }
             }
-            if (!isA) {
-                System.out.println(files[i] + ":");
-            }
-            if(!isu && !isU) {
-                System.out.println(map.size());
-            } else {
-                for (Object it : map.keySet()) {
-                    System.out.println(it + " " + map.get(it));
-                }
-            }
-            in.close();
-            inFile.close();
         }
     }
 }
