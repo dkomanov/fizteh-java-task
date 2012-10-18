@@ -46,14 +46,14 @@ public class CommandExecutor {
             }
             File newCurDir;
             if ((newCurDir = new File(curDirPath.get(0) + fileSeparator + command[1])).exists()) {
-                if(!newCurDir.isDirectory()) {
+                if (!newCurDir.isDirectory()) {
                     throw new RuntimeException("'" + curDirPath.get(0) + fileSeparator + command[1]
                             + "': isn't a directory.");
                 }
                 curDirPath.add(newCurDir.getCanonicalPath());
                 curDirPath.remove(0);
             } else if ((newCurDir = new File(command[1])).exists()) {
-                if(!newCurDir.isDirectory()) {
+                if (!newCurDir.isDirectory()) {
                     throw new RuntimeException("'" + curDirPath.get(0) + fileSeparator + command[1]
                             + "': isn't a directory.");
                 }
@@ -110,7 +110,7 @@ public class CommandExecutor {
                     remove(curDirPath + fileSeparator + name, s);
                 }
             }
-            if(!delFile.delete()) {
+            if (!delFile.delete()) {
                 throw new RuntimeException("cannot remove file or directory");
             }
         } else if ((delFile = new File(name)).exists()) {
@@ -120,7 +120,7 @@ public class CommandExecutor {
                     remove(curDirPath, name + fileSeparator + s);
                 }
             }
-            if(!delFile.delete()) {
+            if (!delFile.delete()) {
                 throw new RuntimeException("cannot remove file or directory");
             }
         } else {
@@ -134,7 +134,7 @@ public class CommandExecutor {
         if (!file.exists()) {
             file = new File(name);
         }
-        if(!file.exists()) {
+        if (!file.exists()) {
             throw new RuntimeException("cannot find file or directory.");
         }
         if (file.isDirectory()) {
@@ -148,7 +148,7 @@ public class CommandExecutor {
             }
         } else {
             File fileTo = new File(curDirPath + fileSeparator + to);
-            if(fileTo.isDirectory()) {
+            if (fileTo.isDirectory()) {
                 fileTo = new File(curDirPath + fileSeparator + to + fileSeparator + name);
             }
             FileReader reader = null;
@@ -171,12 +171,21 @@ public class CommandExecutor {
                     if (reader != null) {
                         reader.close();
                     }
+                } catch (Exception e) {
+                }
+                try {
                     if (bufReader != null) {
                         bufReader.close();
                     }
+                } catch (Exception e) {
+                }
+                try {
                     if (bufWriter != null) {
                         bufWriter.close();
                     }
+                } catch (Exception e) {
+                }
+                try {
                     if (writer != null) {
                         bufWriter.close();
                     }
