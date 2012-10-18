@@ -50,25 +50,25 @@ public class Calc {
         if (operand == '/') {
             return false;
         }
-        String res_str = new String();
+        String resStr = new String();
         if (operand == '+') {
-            res_str = new String(Integer.toString(a + b));
+            resStr = new String(Integer.toString(a + b));
         } else if (operand == '-') {
-            res_str = new String(Integer.toString(b - a));
+            resStr = new String(Integer.toString(b - a));
         } else if (operand == '*') {
-            res_str = new String(Integer.toString(a * b));
+            resStr = new String(Integer.toString(a * b));
         }
-        String a_str = new String(Integer.toString(a));
-        String b_str = new String(Integer.toString(b));
-        BigInteger res = new BigInteger(res_str);
-        BigInteger a_big = new BigInteger(a_str);
-        BigInteger b_big = new BigInteger(b_str);
+        String aStr = Integer.toString(a);
+        String bStr = Integer.toString(b);
+        BigInteger res = new BigInteger(resStr);
+        BigInteger aBig = new BigInteger(aStr);
+        BigInteger bBig = new BigInteger(bStr);
         if (operand == '+') {
-            return !res.equals(a_big.add(b_big));
+            return !res.equals(aBig.add(bBig));
         } else if (operand == '-') {
-            return !res.equals(b_big.subtract(a_big));
+            return !res.equals(bBig.subtract(aBig));
         } else if (operand == '*') {
-            return !res.equals(a_big.multiply(b_big));
+            return !res.equals(aBig.multiply(bBig));
         }
         return true;
     }
