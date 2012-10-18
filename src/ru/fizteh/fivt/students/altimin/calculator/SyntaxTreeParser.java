@@ -64,6 +64,10 @@ public class SyntaxTreeParser {
 
     public SyntaxTree parse() throws ParseException {
         currentPosition = 0;
-        return new SyntaxTree(parseFormula());
+        SyntaxTree result = new SyntaxTree(parseFormula());
+        if (parsedTokenList.get(currentPosition).tokenType != TokenType.END) {
+            throw new ParseException("Some trash after end of expression");
+        }
+        return result;
     }
 }
