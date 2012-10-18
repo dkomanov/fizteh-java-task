@@ -6,47 +6,38 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.*;
-import static java.nio.file.StandardCopyOption.*;
-import java.nio.file.attribute.*;
-import static java.nio.file.FileVisitResult.*;
 import java.io.IOException;
 import java.util.*;
 
 public class CommandWorker {
-	static private File mPath = new File(".");
-	public CommandWorker() {};
+    static private File mPath = new File(".");
+    public CommandWorker() {};
 	public void executeCommand(String command) throws Exception {
-		//System.out.println(command);
-		
-		//System.out.println(command);
 		
 		String commandArguments[] = command.split("\\s+");
-		if (commandArguments[0].equals("exit")) {
+		String commandName = commandArguments[0];
+		if (commandName.equals("exit")) {
 			throw new Exception("wrong number of arguments");
-		} else if (commandArguments[0].equals("cd")) {
+		} else if (commandName.equals("cd")) {
 			changeDir(commandArguments);
-		} else if (commandArguments[0].equals("mkdir")) {
+		} else if (commandName.equals("mkdir")) {
 			createDir(commandArguments);
-			
-		} else if (commandArguments[0].equals("pwd")) {
+		} else if (commandName.equals("pwd")) {
 			printwd(commandArguments);
-		} else if (commandArguments[0].equals("rm")) {
+		} else if (commandName.equals("rm")) {
 			removePF(commandArguments);
-		} else if (commandArguments[0].equals("dir")) {
+		} else if (commandName.equals("dir")) {
 			printDir(commandArguments);
-		} else if (commandArguments[0].equals("mv")) {
+		} else if (commandName.equals("mv")) {
 			moveDirectoryFile(commandArguments);
-		} else if (commandArguments[0].equals("cp")) {
+		} else if (commandName.equals("cp")) {
 			copyFileorDir(commandArguments);
 		} else {
-			System.err.println(commandArguments[0]+": unknown command");
-		}
-		
-		
+			System.err.println(commandName+": unknown command");
+		}	
 	}
 	private void copyFileorDir(String[] commandArgs) throws Exception {
-		if (commandArgs.length!=3) {
+		if (commandArgs.length != 3) {
 			System.err.println("cp: wrong number of args");
 		} else {
 			File fileDir = getFile(commandArgs[1]);
@@ -232,5 +223,5 @@ public class CommandWorker {
 		}
 		
 	}
-
+	
 }

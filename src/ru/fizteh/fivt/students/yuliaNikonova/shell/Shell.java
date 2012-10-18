@@ -30,8 +30,7 @@ public class Shell {
 		String[] commands = commandLine.split(";");
 		CommandWorker worker = new CommandWorker();
 		for (String command:commands) {
-			command = command.replaceAll("^\\s+", "");
-			command = command.replaceAll("$\\s+", "");
+			command = command.trim();
 			if (command.equals("exit")) {
 				if (err) {
 					System.exit(1);
