@@ -32,7 +32,7 @@ public class WordsCounter {
             }
             
             if (countWords) {
-            	wordsCount[indx]++;
+                wordsCount[indx]++;
             }
         }
     }
@@ -46,7 +46,7 @@ public class WordsCounter {
     }
     
     public static int readKeys(String[] args) {
-    	int params = 0;
+        int params = 0;
         for (String str : args) {
             if (str.isEmpty()) {
                 params++;
@@ -114,7 +114,7 @@ public class WordsCounter {
         }
         
         return params;
-    	
+        
     }
 
     public static void main(String[] args) throws Exception {
@@ -130,11 +130,11 @@ public class WordsCounter {
             int wordsNumber[] = null;
             
             if (countLines) {
-            	lineNumber = new int[realArgs];
+                lineNumber = new int[realArgs];
             }
             
             if (countWords) {
-            	wordsNumber = new int[realArgs];
+                wordsNumber = new int[realArgs];
             }
             
             Vector<Map<String, Integer>> array = new Vector<Map<String, Integer>>();
@@ -145,11 +145,11 @@ public class WordsCounter {
                 }
                 
                 if (countWords) {
-                	wordsNumber[i] = 0;
+                    wordsNumber[i] = 0;
                 }
                 
                 if (countLines) {
-                	lineNumber[i] = 0;
+                    lineNumber[i] = 0;
                 }
                 
                 if (!forEach) {
