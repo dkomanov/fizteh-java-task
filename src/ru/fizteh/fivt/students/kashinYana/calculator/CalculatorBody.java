@@ -1,7 +1,5 @@
 package ru.fizteh.fivt.students.kashinYana.calculator;
 
-import java.util.*;
-import java.io.*;
 
 public class CalculatorBody {
     private String inputString;
@@ -64,10 +62,12 @@ public class CalculatorBody {
                         }
                     }
                 }
+            } catch (NumberFormatException e) {
+                throw new Exception("Overflow");
             } catch (IndexOutOfBoundsException e) {
                 throw new Exception("Out of range. Write letter to programmer.");
             } catch (Exception e) {
-                throw new Exception(e.getMessage() + "Error in pos " + i);
+                throw new Exception(e.getMessage() + "Error in pos " + i + ".");
             }
         }
         while (operationSize > 0) {
@@ -116,10 +116,19 @@ public class CalculatorBody {
         stackSize--;
         if (operation == '+') {
             stack[stackSize++] = (l + r);
+            if(l != stack[stackSize-1] - r) {
+                throw new Exception("Overflow. ");
+            }
         } else if (operation == '-') {
             stack[stackSize++] = (l - r);
+            if(l != stack[stackSize-1] + r) {
+                throw new Exception("Overflow. ");
+            }
         } else if (operation == '*') {
             stack[stackSize++] = (l * r);
+            if(l != stack[stackSize-1] / r) {
+                throw new Exception("Overflow. ");
+            }
         } else if (operation == '/') {
             if (r == 0) {
                 throw new Exception("Exists delete zero.");
