@@ -12,11 +12,9 @@ import java.util.TreeMap;
 public class ResultContainer {
 
     private TreeMap<String, Integer> container = null;
-    public boolean error;
 
 
     public ResultContainer(boolean ignoreCase) {
-        error = false;
         if (ignoreCase) {
             container = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
         } else {
@@ -29,8 +27,9 @@ public class ResultContainer {
             return;
         }
         for (Map.Entry<String, Integer> entry: given.container.entrySet()) {
-            if (container.get(entry.getKey()) != null) {
-                container.put(entry.getKey(), container.get(entry.getKey()) + entry.getValue());
+            Integer currCount = container.get(entry.getKey());
+            if (currCount != null) {
+                container.put(entry.getKey(), currCount + entry.getValue());
             } else {
                 container.put(entry.getKey(), entry.getValue());
             }
@@ -39,8 +38,9 @@ public class ResultContainer {
     }
 
     public void add(String word) {
-        if (container.get(word) != null) {
-            container.put(word, container.get(word) + 1);
+        Integer currCount = container.get(word);
+        if (currCount != null) {
+            container.put(word, currCount + 1);
         } else {
             container.put(word, 1);
         }
