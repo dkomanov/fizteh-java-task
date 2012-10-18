@@ -17,6 +17,7 @@ public class FileRead {
      * в данном классе реализованы функции считывания и подсчета информации
      * из файлов
      */
+    
     public static void closeOrExit(FileReader fr, BufferedReader br) {
         try {
             if (fr != null) {
