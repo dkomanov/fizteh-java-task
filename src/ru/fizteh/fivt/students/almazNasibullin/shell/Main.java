@@ -56,7 +56,7 @@ public class Main {
     }
 
     public static void handlerCommand(String str) { // обработчик каждой команды
-        StringTokenizer st = new StringTokenizer(str, " ");
+        StringTokenizer st = new StringTokenizer(str, " \t\n");
         boolean commandExecute = false;
         /* выполнилась или нет команда в текущем наборе аргументов */
         while (st.hasMoreTokens()) {
@@ -235,23 +235,23 @@ public class Main {
             if (from.isDirectory()) {
                 File[] files = from.listFiles();
                 for (int i = 0; i < files.length; ++i ) {
-                    CopyFile(files[i], to);
+                    copyFile(files[i], to);
                 }
             } else {
-                CopyFile(from, to);
+                copyFile(from, to);
             }
         } else {
-            CopyFile(from, to);
+            copyFile(from, to);
         }
     }
 
-    public static void CopyFile(File from, File to) { // рекурсивное копирование
+    public static void copyFile(File from, File to) { // рекурсивное копирование
         if (from.isDirectory()) {
             File f = new File(to.getAbsolutePath() + "/" + from.getName());
             f.mkdir();
             File[] file = from.listFiles();
             for (int i = 0; i < file.length; i++) {
-                CopyFile(file[i], f);
+                copyFile(file[i], f);
             }
         } else {
             FileChannel srcChannel = null;
