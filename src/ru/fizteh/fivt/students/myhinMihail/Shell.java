@@ -75,8 +75,8 @@ public class Shell {
             if (!dest.isFile() && (dest.exists())) {
                 dest2 = new File(dest.getAbsolutePath() + "/" + source.getName());
             }
-            if (!copyFile(source, dest2, command)){
-                System.err.println(command + ": Can not copy " + source + " to " + dest);
+            if (!copyFile(source, dest2, command)) {
+                System.err.println(command + ": Can not copy " + source + " to " + dest2);
                 if (!console) {
                     System.exit(1);
                 }
@@ -85,7 +85,7 @@ public class Shell {
         } else {
             dest2 = new File(dest.getAbsolutePath() + "/" + source.getName());
             if ((!dest2.exists() && !dest2.mkdirs()) || !source.exists()) {
-                System.err.println(command + ": Can not copy " + source + " to " + dest);
+                System.err.println(command + ": Can not copy " + source + " to " + dest2);
                 if (!console) {
                     System.exit(1);
                 }
@@ -216,16 +216,26 @@ public class Shell {
                 if (!checkCommandsCount(params, 3)) {
                     return false;
                 }
-                File src = new File(params.elementAt(1));
+                File src1 = new File(params.elementAt(1));
+                File src2 = new File( currentPath + "/" + params.elementAt(1));
                 File dst = new File(params.elementAt(2));
-                if (!src.equals(dst)) {
-                    if (!src.exists()) {
-                        System.err.println("cp: \'" + src.getAbsolutePath() + "\' do not exists");
-                        if (!console){
-                            System.exit(1);
+                
+                if (!dst.isAbsolute()) {
+                	dst = new File(currentPath + "/" + params.elementAt(2));
+                }
+                
+                if (!src1.equals(dst) && !src2.equals(dst)) {
+                    if (!src1.exists()) {
+                    	if (!src2.exists()) {
+                            System.err.println("cp: \'" + src1.getAbsolutePath() + "\' do not exists");
+                            if (!console){
+                                System.exit(1);
+                            }
+                        } else {
+                            copy(src2, dst, "cp");
                         }
                     } else {
-                        copy(src, dst, "cp");
+                        copy(src1, dst, "cp");
                     }
                 }
                 return true;
@@ -234,18 +244,25 @@ public class Shell {
                 if (!checkCommandsCount(params, 2)) {
                     return false;
                 }
-                File from = new File(params.elementAt(1));
+                File from = new File(currentPath + "/" + params.elementAt(1));
                 File to = new File(params.elementAt(2));
                 if (!from.exists()) {
-                    System.err.println("mv: \'" + from.getAbsolutePath() + "\' do not exists");
-                    if (!console) {
-                        System.exit(1);
-                    }
+                	from = new File(params.elementAt(1));
+                	if (!from.exists()) {
+                        System.err.println("mv: \'" + from.getAbsolutePath() + "\' do not exists");
+                        if (!console) {
+                            System.exit(1);
+                        }
+                	}
                 }
                 
                 File fullFrom = new File(from.getAbsolutePath());
                 File fullTo = new File(to.getAbsolutePath());
-                try {
+                if (!to.isAbsolute()) {
+                	fullTo = new File(currentPath + "/" + to);
+                }
+                
+				try {
                     if (fullFrom.getParentFile().equals(fullTo.getParentFile())) {
                         if (!from.renameTo(to)) {
                             moveFile(fullFrom, fullTo);
@@ -288,7 +305,8 @@ public class Shell {
                                     System.exit(1);
                                 }
                             }
-                        }  
+                        }
+                            
                         break;
                 }
                 return true;
