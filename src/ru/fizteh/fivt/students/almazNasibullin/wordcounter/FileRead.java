@@ -17,37 +17,40 @@ public class FileRead {
      * в данном классе реализованы функции считывания и подсчета информации
      * из файлов
      */
+    public static void closeOrExit(FileReader fr, BufferedReader br) {
+        try {
+            if (fr != null) {
+                fr.close();
+            }
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+        try {
+            if (br != null) {
+                br.close();
+            }
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+    }
+
     public static int countLines(String fileName) {
         BufferedReader br = null;
         FileReader fr = null;
         int count = 0;
         try {
             fr = new FileReader(new File(fileName));
-            br = new BufferedReader (fr);
+            br = new BufferedReader(fr);
             while (br.readLine() != null) {
                 ++count;
             }
-            return count;
         } catch (IOException e) {
             System.err.println(e.getMessage());
             System.exit(1);
         } finally {
-            try {
-                if (fr != null) {
-                    fr.close();
-                }
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
-            try {
-                if (br != null) {
-                    br.close();
-                }
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
+            closeOrExit(fr, br);
         }
         return count;
     }
@@ -58,7 +61,7 @@ public class FileRead {
         int count = 0;
         try {
             fr = new FileReader(new File(fileName));
-            br = new BufferedReader (fr);
+            br = new BufferedReader(fr);
             String str;
             while ((str = br.readLine()) != null) {
                 StringTokenizer st = new StringTokenizer(str, " \t!?';:,.)(@#<>");
@@ -67,27 +70,11 @@ public class FileRead {
                     ++count;
                 }
             }
-            return count;
         } catch (IOException e) {
             System.err.println(e.getMessage());
             System.exit(1);
         } finally {
-            try {
-                if (fr != null) {
-                    fr.close();
-                }
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
-            try {
-                if (br != null) {
-                    br.close();
-                }
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
+            closeOrExit(fr, br);
         }
         return count;
     }
@@ -98,7 +85,7 @@ public class FileRead {
         Map<String, Integer> m = new TreeMap<String, Integer>();
         try {
             fr = new FileReader(new File(fileName));
-            br = new BufferedReader (fr);
+            br = new BufferedReader(fr);
             String str;
             while ((str = br.readLine()) != null) {
                 StringTokenizer st = new StringTokenizer(str, " \t!?';:,.)(@#<>");
@@ -116,22 +103,7 @@ public class FileRead {
             System.err.println(e.getMessage());
             System.exit(1);
         } finally {
-            try {
-                if (fr != null) {
-                    fr.close();
-                }
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
-            try {
-                if (br != null) {
-                    br.close();
-                }
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
+            closeOrExit(fr, br);
         }
         return (TreeMap)m;
     }
@@ -142,7 +114,7 @@ public class FileRead {
         Map<String, Integer> m = new TreeMap<String, Integer>();
         try {
             fr = new FileReader(new File(fileName));
-            br = new BufferedReader (fr);
+            br = new BufferedReader(fr);
             String str;
             while ((str = br.readLine()) != null) {
                 StringTokenizer st = new StringTokenizer(str, " \t!?';:,.)(@#<>");
@@ -161,22 +133,7 @@ public class FileRead {
             System.err.println(e.getMessage());
             System.exit(1);
         } finally {
-            try {
-                if (fr != null) {
-                    fr.close();
-                }
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
-            try {
-                if (br != null) {
-                    br.close();
-                }
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
+            closeOrExit(fr, br);
         }
         return (TreeMap)m;
     }

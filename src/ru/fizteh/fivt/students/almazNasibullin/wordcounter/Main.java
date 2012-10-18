@@ -82,20 +82,20 @@ public class Main {
     static void checkKey(boolean words, boolean lines,
             boolean uniqWithReg, boolean uniqWithoutReg) {
         if (words && lines) { // указаны ключи -w и -l одновременно
-            System.out.println("Keys '-w', '-l' are not compatible!");
-            System.exit(0);
+            System.err.println("Keys '-w', '-l' are not compatible!");
+            System.exit(1);
         }
         if (uniqWithReg && uniqWithoutReg) { // указаны ключи -U и -u одновременно
-            System.out.println("Keys '-U', '-u' are not compatible!");
-            System.exit(0);
+            System.err.println("Keys '-U', '-u' are not compatible!");
+            System.exit(1);
         }
         if (lines && uniqWithoutReg) { // указаны ключи -U и -l одновременно
-            System.out.println("Keys '-U', '-l' are not compatible!");
-            System.exit(0);
+            System.err.println("Keys '-U', '-l' are not compatible!");
+            System.exit(1);
         }
         if (lines && uniqWithReg) { // указаны ключи -u и -l одновременно
-            System.out.println("Keys '-u', '-l' are not compatible!");
-            System.exit(0);
+            System.err.println("Keys '-u', '-l' are not compatible!");
+            System.exit(1);
         }
     }
 
@@ -170,9 +170,6 @@ public class Main {
                 System.out.println(pairs.getKey() + " " + pairs.getValue());
             }
             m.clear();
-        } else {
-            System.out.println("Keys are not compatible!");
-            System.exit(0);
         }
     }
 }
