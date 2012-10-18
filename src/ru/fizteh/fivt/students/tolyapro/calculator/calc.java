@@ -52,11 +52,11 @@ public class Calc {
         }
         String resStr = new String();
         if (operand == '+') {
-            resStr = new String(Integer.toString(a + b));
+            resStr = Integer.toString(a + b);
         } else if (operand == '-') {
-            resStr = new String(Integer.toString(b - a));
+            resStr = Integer.toString(b - a);
         } else if (operand == '*') {
-            resStr = new String(Integer.toString(a * b));
+            resStr = Integer.toString(a * b);
         }
         String aStr = Integer.toString(a);
         String bStr = Integer.toString(b);
