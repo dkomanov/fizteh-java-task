@@ -26,6 +26,13 @@ public class WordCounter {
             br = new BufferedReader(fr);
         } catch (IOException ex) {
             System.err.println(fileName + " failed to open.");
+            try {
+                fr.close();
+                br.close();
+            } catch (NullPointerException ex1) {
+                System.out.println(" failed to close");
+                throw ex1;
+            }
             throw ex;
         }
         return br;
@@ -50,8 +57,9 @@ public class WordCounter {
         String curToken;
         while (tokenizer.hasMoreTokens()) {
             curToken = tokenizer.nextToken();
-            if (elements.containsKey(curToken)) {
-                elements.put(curToken, elements.get(curToken) + 1);
+            Integer curTokenPos = elements.get(curToken);
+            if (curTokenPos != null) {
+                elements.put(curToken, curTokenPos + 1);
             } else {
                 elements.put(curToken, 1);
             }
@@ -80,7 +88,8 @@ public class WordCounter {
             try {
                 while ((curStr = br.readLine()) != null) {
                     curStr = curStr.toLowerCase();
-                    if (elements.containsKey(curStr)) {
+                    Integer curStrPos = elements.get(curStr);
+                    if (curStrPos != null) {
                         elements.put(curStr, elements.get(curStr) + 1);
                     } else {
                         elements.put(curStr, 1);
@@ -92,8 +101,9 @@ public class WordCounter {
         } else {
             try {
                 while ((curStr = br.readLine()) != null) {
-                    if (elements.containsKey(curStr)) {
-                        elements.put(curStr, elements.get(curStr) + 1);
+                    Integer curStrPos = elements.get(curStr);
+                    if (curStrPos != null) {
+                        elements.put(curStr, curStrPos + 1);
                     } else {
                         elements.put(curStr, 1);
                     }
@@ -106,28 +116,26 @@ public class WordCounter {
     }
 
     static void countForFile(HashMap<String, Integer> elements, String fileName,
-                             boolean keys[]) throws Exception {
+                             Keys keys) throws Exception {
         BufferedReader br = null;
         try {
             br = openFile(fileName);
-            if (keys[0]) {
-                textLinesCounter(elements, br, keys[3]);
+            if (keys.isLinesCountKey) {
+                textLinesCounter(elements, br, keys.isUpperCaseUniqueKey);
             } else {
-                textWordsCounter(elements, br, keys[3]);
+                textWordsCounter(elements, br, keys.isUpperCaseUniqueKey);
             }
-        } catch (Exception ex) {
-            throw ex;
-        } finally {
+        }
+        finally {
             closeFile(fileName, br);
-
         }
     }
 
-    static boolean count(String data[], int lastKeyPosition, boolean keys[]) {
+    static boolean count(String data[], int lastKeyPosition, Keys keys) {
         boolean wasFilesError = false;
         HashMap<String, Integer> elements = new HashMap<String, Integer>();
-        if (keys[4]) {
-            if (keys[2] || keys[3]) {
+        if (keys.isAggregateKey) {
+            if (keys.isLowerCaseUniqueKey || keys.isUpperCaseUniqueKey) {
                 for (int i = lastKeyPosition + 1; i < data.length; ++i) {
                     try {
                         countForFile(elements, data[i], keys);
@@ -171,7 +179,8 @@ public class WordCounter {
                     wasCurFileError = true;
                 }
                 if (!wasCurFileError) {
-                    if (!keys[2] && !keys[3]) {
+                    if (!keys.isLowerCaseUniqueKey
+                        && !keys.isUpperCaseUniqueKey) {
                         int sum = 0;
                         Iterator it = elements.entrySet().iterator();
                         Map.Entry me;
@@ -199,12 +208,7 @@ public class WordCounter {
         return (c == 'l' || c == 'w' || c == 'u' || c == 'U' || c == 'a');
     }
 
-    static void parseKeys(String keysString, boolean keys[]) throws Exception {
-        //keys[0] isLinesCountKey;
-        //keys[1] isWordsCountKey;
-        //keys[2] isLowerCaseUniqueKey;
-        //keys[3] isUpperCaseUniqueKey;
-        //keys[4] isAggregateKey;
+    static void parseKeys(String keysString, Keys keys) throws Exception {
         boolean wasKey;
 
         for (int i = 0; i < keysString.length(); ++i) {
@@ -217,23 +221,23 @@ public class WordCounter {
                            || Character.isSpaceChar(keysString.charAt(i)))) {
                         switch (keysString.charAt(i)) {
                             case 'l':
-                                keys[0] = true;
+                                keys.isLinesCountKey = true;
                                 wasKey = true;
                                 break;
                             case 'w':
-                                keys[1] = true;
+                                keys.isWordsCountKey = true;
                                 wasKey = true;
                                 break;
                             case 'u':
-                                keys[2] = true;
+                                keys.isLowerCaseUniqueKey = true;
                                 wasKey = true;
                                 break;
                             case 'U':
-                                keys[3] = true;
+                                keys.isUpperCaseUniqueKey = true;
                                 wasKey = true;
                                 break;
                             case 'a':
-                                keys[4] = true;
+                                keys.isAggregateKey = true;
                                 wasKey = true;
                                 break;
                         }
@@ -260,8 +264,9 @@ public class WordCounter {
         }
     }
 
-    static boolean isCorrectKeySet(boolean[] keys) {
-        return !(keys[0] && keys[1] || keys[2] && keys[3]);
+    static boolean isCorrectKeySet(Keys keys) {
+        return !(keys.isLinesCountKey && keys.isWordsCountKey
+                 || keys.isLowerCaseUniqueKey && keys.isUpperCaseUniqueKey);
     }
 
     public static void main(String args[]) {
@@ -291,7 +296,7 @@ public class WordCounter {
             System.exit(1);
         }
 
-        boolean keys[] = new boolean[5];
+        Keys keys = new Keys();
         for (int i = 0; i <= lastKeyPosition; ++i) {
             try {
                 parseKeys(args[i], keys);
@@ -301,8 +306,8 @@ public class WordCounter {
                 System.exit(1);
             }
         }
-        if (!keys[0]) {
-            keys[1] = true;
+        if (!keys.isLinesCountKey) {
+            keys.isWordsCountKey = true;
         }
         if (!isCorrectKeySet(keys)) {
             System.err.println("Unacceptable key sequence: "
@@ -315,5 +320,13 @@ public class WordCounter {
             System.exit(1);
         }
     }
+}
+
+class Keys {
+    boolean isLinesCountKey = false;
+    boolean isWordsCountKey = false;
+    boolean isLowerCaseUniqueKey = false;
+    boolean isUpperCaseUniqueKey = false;
+    boolean isAggregateKey = false;
 }
 
