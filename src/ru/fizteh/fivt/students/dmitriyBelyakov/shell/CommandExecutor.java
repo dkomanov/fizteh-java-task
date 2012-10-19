@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.dmitriyBelyakov.shell;
 
 import java.io.*;
 import java.util.ArrayList;
+import ru.fizteh.fivt.students.dmitriyBelyakov.shell.*;
 
 public class CommandExecutor {
     private static final String fileSeparator = System.getProperty("file.separator");
@@ -135,20 +136,20 @@ public class CommandExecutor {
             file = new File(name);
         }
         if (!file.exists()) {
-            throw new RuntimeException("cannot find file or directory.");
+            throw new RuntimeException(name + ": cannot find file or directory.");
         }
         if (file.isDirectory()) {
             File dirTo = new File(curDirPath + fileSeparator + to + fileSeparator + name);
             if (!dirTo.mkdir()) {
-                throw new RuntimeException("cannot create directory '" + to + "'.");
+                throw new RuntimeException(to + ": cannot create directory.");
             }
             String[] children = file.list();
             for (String s : children) {
-                copy(curDirPath, name + fileSeparator + s, to + fileSeparator + s);
+                copy(curDirPath, name + fileSeparator + s, to);
             }
         } else {
             File fileTo = new File(curDirPath + fileSeparator + to);
-            if (fileTo.isDirectory()) {
+            if (fileTo.exists() && fileTo.isDirectory()) {
                 fileTo = new File(curDirPath + fileSeparator + to + fileSeparator + name);
             }
             FileReader reader = null;
@@ -162,35 +163,15 @@ public class CommandExecutor {
                 bufWriter = new BufferedWriter(writer);
                 int i;
                 while ((i = bufReader.read()) != -1) {
-                    bufWriter.write((char) i);
+                    bufWriter.write((byte) i);
                 }
             } catch (Exception e) {
-                throw new RuntimeException("cannot read the file");
+                throw new RuntimeException(e.getMessage());
             } finally {
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (Exception e) {
-                }
-                try {
-                    if (bufReader != null) {
-                        bufReader.close();
-                    }
-                } catch (Exception e) {
-                }
-                try {
-                    if (bufWriter != null) {
-                        bufWriter.close();
-                    }
-                } catch (Exception e) {
-                }
-                try {
-                    if (writer != null) {
-                        bufWriter.close();
-                    }
-                } catch (Exception e) {
-                }
+                IoUtils.close(bufReader);
+                IoUtils.close(reader);
+                IoUtils.close(bufWriter);
+                IoUtils.close(writer);
             }
         }
     }
