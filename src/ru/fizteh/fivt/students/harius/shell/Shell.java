@@ -15,6 +15,8 @@ import java.util.*;
 public class Shell {
     /* Current directory */
     private File current;
+    /* True if shell terminates on error */
+    private boolean strict = false;
 
     /* Start the shell */
     public static void main(String[] args) {
@@ -22,15 +24,27 @@ public class Shell {
         if (args.length == 0) {
             jsh.startInteractive();
         } else {
-            for(String cmd : args) {
-                jsh.executeCommand(cmd);
+            jsh.strict = true;
+            StringBuilder all = new StringBuilder();
+            for (String cmd : args) {
+                all.append(cmd);
+                all.append(" ");
             }
+            jsh.executeCommand(all.toString());
         }
     }
 
     /* Init current directory */
     public Shell() {
         current = new File(System.getProperty("user.dir"));
+    }
+
+    /* Print error message and exit if neccessary */
+    private void panic(String message) {
+        System.err.println(message);
+        if (strict) {
+            System.exit(1);
+        }
     }
 
     /* Start reading commands from stdin */
@@ -42,11 +56,10 @@ public class Shell {
             try {
                 cmd = input.readLine();
             } catch (IOException ioEx) {
-                System.out.println("console: i/o error: " + ioEx.getMessage());
-                System.exit(1);
+                panic("console: i/o error: " + ioEx.getMessage());
             }
             if (cmd == null) {
-                exit();
+                System.exit(0);
             }
             executeCommand(cmd);
         }
@@ -74,7 +87,7 @@ public class Shell {
             } else if (operation.equals("mkdir")) {
                 mkdir(parsed);
             } else if (operation.equals("pwd")) {
-                pwd();
+                pwd(parsed);
             } else if (operation.equals("rm")) {
                 rm(parsed);
             } else if (operation.equals("cp")) {
@@ -84,19 +97,22 @@ public class Shell {
             } else if (operation.equals("dir")) {
                 dir(parsed);
             } else if (operation.equals("exit")) {
-                exit();
+                exit(parsed);
             } else {
-                System.out.println("console: " + operation + ": wrong operation");
-                while (parsed.hasNext()) {
-                    parsed.next();
-                }
-            }
-            if (parsed.hasNext()) {
-                System.out.println("console: " + operation + ": too many arguments");
+                panic("console: " + operation + ": wrong operation");
             }
         } catch (NoSuchElementException noArg) {
-            System.out.println("console: " + operation + ": too few arguments");
+            panic("console: " + operation + ": too few arguments");
         }
+    }
+
+    /* True if too many arguments were provided */
+    private boolean argOverflow(ListIterator<String> args, String operation) {
+        if (args.hasNext()) {
+            panic("console: " + operation + ": too many arguments");
+            return true;
+        }
+        return false;
     }
 
     /* Utility to get file from its path */
@@ -115,69 +131,93 @@ public class Shell {
 
     private void cd(ListIterator<String> args) {
         String filename = args.next();
+        if (argOverflow(args, "cd")) {
+            return;
+        }
         File dest = getFile(filename);
         if (!dest.exists()) {
-            System.out.println("cd: '" + filename + "': no such directory");
+            panic("cd: '" + filename + "': no such directory");
         } else if (!dest.isDirectory()) {
-            System.out.println("cd: '" + filename + "': not a directory");
+            panic("cd: '" + filename + "': not a directory");
         } else {
             current = dest;
         }
         try {
             current = current.getCanonicalFile();
         } catch (IOException ioEx) {
-            System.out.println("console: i/o error: " + ioEx.getMessage());
-            System.exit(1);
+            panic("console: i/o error: " + ioEx.getMessage());
         }
     }
 
     private void mkdir(ListIterator<String> args) {
         String filename = args.next();
+        if (argOverflow(args, "mkdir")) {
+            return;
+        }
         File dest = getFile(filename);
         if (!dest.mkdir()) {
-            System.out.println("mkdir: cannot create the folder");
+            panic("mkdir: cannot create the folder");
         }
     }
 
-    private void pwd() {
+    private void pwd(ListIterator<String> args) {
+        if (argOverflow(args, "pwd")) {
+            return;
+        }
         try {
             System.out.println(current.getCanonicalPath());
         } catch (IOException ioEx) {
-            System.out.println("console: i/o error: " + ioEx.getMessage());
-            System.exit(1);
+            panic("console: i/o error: " + ioEx.getMessage());
         }
+    }
+
+    /* Utility to remove file or folder recursively */
+    private boolean recursiveRm(File file) {
+        if (!file.exists()) {
+            panic("rm: '" + file.getAbsolutePath() + "': no such file or directory");
+            return false;
+        }
+        if (file.isDirectory()) {
+            for (File child : file.listFiles()) {
+                if (!recursiveRm(child)) {
+                    panic("rm: '" + child.getAbsolutePath() + "': cannot remove the file");
+                    return false;
+                }
+            }
+        }
+        boolean ok = file.delete();
+        if (!ok) {
+            panic("rm: '" + file.getAbsolutePath() + "': cannot remove the file");
+        }
+        return ok;
     }
 
     private void rm(ListIterator<String> args) {
         String filename = args.next();
-        File dest = getFile(filename);
-        if (!dest.exists()) {
-            System.out.println("rm: '" + filename + "': no such file or directory");
+        if (argOverflow(args, "rm")) {
             return;
         }
-        if (dest.isDirectory()) {
-            for (File child : dest.listFiles()) {
-                if (!child.delete()) {
-                    System.out.println("rm: '" + filename + File.separator +
-                        child.getName() + "': cannot remove the file");
-                    return;
-                }
+        File dest = getFile(filename);
+        try {
+            if (current.getCanonicalPath().startsWith(dest.getCanonicalPath())) {
+                panic("rm: cannot remove the root of current directory");
+                return;
             }
+        } catch (IOException ioEx) {
+            panic("console: i/o error: " + ioEx.getMessage());
         }
-        if (!dest.delete()) {
-            System.out.println("rm: '" + filename + "': cannot remove the file");
-        }
+        recursiveRm(dest);
     }
 
-    /* Get a file to move or copy to */
+    /* Get a file to move or to copy to */
     private File getPair(File from, String filename2, String command) {
         if (!from.exists()) {
-            System.out.println(command + ": '" + from.getAbsolutePath() + "': no such file or directory");
+            panic(command + ": '" + from.getAbsolutePath() + "': no such file or directory");
             return null;
         }
         File to = getFile(filename2);
         if (to.exists() && !to.isDirectory() && from.isDirectory()) {
-            System.out.println(command + ": cannot override non-directory with directory");
+            panic(command + ": cannot override non-directory with directory");
             return null;
         }
         if (to.exists() && to.isDirectory()) {
@@ -188,8 +228,11 @@ public class Shell {
 
     private void cp(ListIterator<String> args) {
         String filename1 = args.next();
-        File from = getFile(filename1);
         String filename2 = args.next();
+        if (argOverflow(args, "cp")) {
+            return;
+        }
+        File from = getFile(filename1);
         File to = getPair(from, filename2, "cp");
         if (to != null) {
             FileReader read = null;
@@ -206,7 +249,7 @@ public class Shell {
                     write.write(buffer, 0, size);
                 }
             } catch (IOException ioEx) {
-                System.err.println("mv: i/o error");
+                panic("mv: i/o error");
             } finally {
                 try {
                     read.close();
@@ -218,8 +261,11 @@ public class Shell {
 
     private void mv(ListIterator<String> args) {
         String filename1 = args.next();
-        File from = getFile(filename1);
         String filename2 = args.next();
+        if (argOverflow(args, "mv")) {
+            return;
+        }
+        File from = getFile(filename1);
         File to = getPair(from, filename2, "mv");
         if (to != null) {
             from.renameTo(to);
@@ -227,12 +273,18 @@ public class Shell {
     }
 
     private void dir(ListIterator<String> args) {
+        if (argOverflow(args, "dir")) {
+            return;
+        }
         for (String child : current.list()) {
             System.out.println(child);
         }
     }
 
-    private void exit() {
+    private void exit(ListIterator<String> args) {
+        if (argOverflow(args, "exit")) {
+            return;
+        }
         System.exit(0);
     }
 
