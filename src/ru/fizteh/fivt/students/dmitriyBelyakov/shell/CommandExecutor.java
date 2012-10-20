@@ -34,12 +34,12 @@ public class CommandExecutor {
         String[] command = cmd.split("\\s+");
         String result = new String();
         if (command[0].equals("exit")) {
-            if(command.length != 1) {
+            if (command.length != 1) {
                 throw new RuntimeException("use: exit");
             }
             System.exit(0);
         } else if (command[0].equals("pwd")) {
-            if(command.length != 1) {
+            if (command.length != 1) {
                 throw new RuntimeException("use: pwd");
             }
             result = curDirPath.get(0);
@@ -76,7 +76,7 @@ public class CommandExecutor {
             }
             remove(curDirPath.get(0), command[1]);
         } else if (command[0].equals("dir")) {
-            if(command.length != 1) {
+            if (command.length != 1) {
                 throw new RuntimeException("use: dir.");
             }
             File file = new File(curDirPath.get(0));
@@ -108,7 +108,7 @@ public class CommandExecutor {
     static void mkDir(String curDirPath, String dirName) {
         String newDir = curDirPath + fileSeparator + dirName;
         File nDir = new File(newDir);
-        if(nDir.exists()) {
+        if (nDir.exists()) {
             throw new RuntimeException("cannot create directory: file exists.");
         }
         if (!(nDir.mkdir())) {
