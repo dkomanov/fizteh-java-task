@@ -34,8 +34,14 @@ public class CommandExecutor {
         String[] command = cmd.split("\\s+");
         String result = new String();
         if (command[0].equals("exit")) {
+            if(command.length != 1) {
+                throw new RuntimeException("use: exit");
+            }
             System.exit(0);
         } else if (command[0].equals("pwd")) {
+            if(command.length != 1) {
+                throw new RuntimeException("use: pwd");
+            }
             result = curDirPath.get(0);
         } else if (command[0].equals("mkdir")) {
             if (command.length != 2) {
@@ -70,6 +76,9 @@ public class CommandExecutor {
             }
             remove(curDirPath.get(0), command[1]);
         } else if (command[0].equals("dir")) {
+            if(command.length != 1) {
+                throw new RuntimeException("use: dir.");
+            }
             File file = new File(curDirPath.get(0));
             String[] children = file.list();
             StringBuilder builder = new StringBuilder();
