@@ -23,7 +23,11 @@ public class Shell {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
                 try {
                     String commands = reader.readLine();
-                    CommandExecutor.executeCommands(commands, curDir, true);
+                    if(commands != null) {
+                        CommandExecutor.executeCommands(commands, curDir, true);
+                    } else {
+                        System.exit(0);
+                    }
                 } catch (IOException e) {
                     System.err.println("Error: cannot read the command.");
                     System.exit(1);

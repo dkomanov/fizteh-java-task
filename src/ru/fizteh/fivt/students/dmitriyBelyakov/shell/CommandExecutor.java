@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.dmitriyBelyakov.shell;
 
 import java.io.*;
 import java.util.ArrayList;
+
 import ru.fizteh.fivt.students.dmitriyBelyakov.shell.*;
 
 public class CommandExecutor {
@@ -152,25 +153,20 @@ public class CommandExecutor {
             if (fileTo.exists() && fileTo.isDirectory()) {
                 fileTo = new File(curDirPath + fileSeparator + to + fileSeparator + name);
             }
-            FileReader reader = null;
-            BufferedReader bufReader = null;
-            FileWriter writer = null;
-            BufferedWriter bufWriter = null;
+            FileInputStream reader = null;
+            FileOutputStream writer = null;
             try {
-                reader = new FileReader(file.getPath());
-                bufReader = new BufferedReader(reader);
-                writer = new FileWriter(fileTo.getPath());
-                bufWriter = new BufferedWriter(writer);
-                int i;
-                while ((i = bufReader.read()) != -1) {
-                    bufWriter.write((byte) i);
+                reader = new FileInputStream(file);
+                writer = new FileOutputStream(fileTo);
+                byte[] buf = new byte[1024];
+                int bytesLength;
+                while ((bytesLength = reader.read(buf)) >= 0) {
+                    writer.write(buf, 0, bytesLength);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage());
             } finally {
-                IoUtils.close(bufReader);
                 IoUtils.close(reader);
-                IoUtils.close(bufWriter);
                 IoUtils.close(writer);
             }
         }
