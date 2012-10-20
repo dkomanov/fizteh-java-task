@@ -107,7 +107,11 @@ public class CommandExecutor {
 
     static void mkDir(String curDirPath, String dirName) {
         String newDir = curDirPath + fileSeparator + dirName;
-        if (!(new File(newDir).mkdir())) {
+        File nDir = new File(newDir);
+        if(nDir.exists()) {
+            throw new RuntimeException("cannot create directory: file exists.");
+        }
+        if (!(nDir.mkdir())) {
             throw new RuntimeException("cannot create directory '" + dirName + "'.");
         }
     }
