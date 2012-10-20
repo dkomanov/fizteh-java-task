@@ -23,7 +23,7 @@ public class Shell {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
                 try {
                     String commands = reader.readLine();
-                    if(commands != null) {
+                    if (commands != null) {
                         CommandExecutor.executeCommands(commands, curDir, true);
                     } else {
                         System.exit(0);
