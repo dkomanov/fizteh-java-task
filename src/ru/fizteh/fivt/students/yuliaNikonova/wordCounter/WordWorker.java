@@ -3,7 +3,6 @@ package ru.fizteh.fivt.students.yuliaNikonova.wordCounter;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,83 +26,88 @@ public class WordWorker {
 		
 	}
 	
-	public void count() throws IOException{
-		int all_words = 0;
-		int all_lines = 0;
+	public int count() throws Exception{
+		int allWords = 0;
+		int allLines = 0;
 		HashMap<String, Integer> allUnique = new HashMap<String, Integer>();
 		HashMap<String, Integer> allUniqueNotCaseSens = new HashMap<String, Integer>();
 		for (int i=0; i<mFilenames.size(); i++)
 		{
-			FileInputStream fstream = new FileInputStream(mFilenames.get(i));
+			FileInputStream fstream = null;
+			DataInputStream in = null;
+			BufferedReader br = null;
 			try {
-				DataInputStream in = new DataInputStream(fstream);
-				try {
-					BufferedReader br = new BufferedReader(new InputStreamReader(in));
-					try {
-						String strLine;
-						int lines = 0;
-						int words = 0;
-						HashMap<String, Integer> unique = new HashMap<String, Integer>();
-						HashMap<String, Integer> uniqueNotCaseSens = new HashMap<String, Integer>();
-						while ((strLine = br.readLine()) != null) {
-							if (mLines) {
+				fstream = new FileInputStream(mFilenames.get(i));
+				in = new DataInputStream(fstream);
+				br = new BufferedReader(new InputStreamReader(in));
+				String strLine;
+				int lines = 0;
+				int words = 0;
+				HashMap<String, Integer> unique = new HashMap<String, Integer>();
+				HashMap<String, Integer> uniqueNotCaseSens = new HashMap<String, Integer>();
+				while ((strLine = br.readLine()) != null) {
+					if (mLines) {
+						if (mAggregation) {
+							allLines++;
+						} else {
+							lines++;
+						}	
+					}
+					if (mWords || mUniqueNotCaseSensitive || mUniqueCaseSensitive) {
+						String[] result = strLine.split("[,;:\\s!\\.]");
+						for (int x = 0; x < result.length; x++) {
+							if (result[x].length() < 1) {
+								continue;
+							}	
+							if (mWords) {
 								if (mAggregation) {
-									all_lines++;
+									allWords++;
 								} else {
-									lines++;
+									words++;
 								}	
 							}
-							if (mWords || mUniqueNotCaseSensitive || mUniqueCaseSensitive) {
-								String[] result = strLine.split("\\s");
-							    for (int x = 0; x < result.length; x++) {
-							    	if (result[x].length() < 1)
-							    		continue;
-							    	if (mWords) {
-							    		if (mAggregation) {
-							    			all_words++;
-							    		} else {
-							    			words++;
-							    		}	
-							    	}
-							    	
-							    	if (mUniqueCaseSensitive) {
-							    		if (mAggregation) {
-							    			putValueInMap(allUnique, result[x]);
-							    		} else {
-							    			putValueInMap(unique, result[x]);
-							    		}
-							    	} else if (mUniqueNotCaseSensitive) {
-							    		if (mAggregation) {
-							    			putValueInMap(allUniqueNotCaseSens, result[x].toLowerCase());
-							    		} else {
-							    			putValueInMap(uniqueNotCaseSens, result[x].toLowerCase());
-							    		}
-							    	}
+							if (mUniqueCaseSensitive) {
+								if (mAggregation) {
+									putValueInMap(allUnique, result[x]);
+							    } else {
+							    	putValueInMap(unique, result[x]);
 							    }
+							} else if (mUniqueNotCaseSensitive) {
+								if (mAggregation) {
+									putValueInMap(allUniqueNotCaseSens, result[x].toLowerCase());
+								} else {
+									putValueInMap(uniqueNotCaseSens, result[x].toLowerCase());
+								}
 							}
 						}
-						
-						if (!mAggregation) {
-							System.out.println(mFilenames.get(i));
-							printResults(words, lines, unique, uniqueNotCaseSens);
-						}
-					}
-					finally {
-						br.close();
 					}
 				}
-				finally {
+				
+				if (!mAggregation) {
+					System.out.println(mFilenames.get(i));
+					printResults(words, lines, unique, uniqueNotCaseSens);
+				}
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+				return 2;
+			}
+			finally {
+				if (br!=null) {
+					br.close();
+				}
+				if (in!=null) {
 					in.close();
 				}
+				if (fstream!=null) {
+					fstream.close();
+				}
 			}
-			
-			finally {
-				fstream.close();
-			}	
 		}
 		if (mAggregation) {
-			printResults(all_words, all_lines, allUnique, allUniqueNotCaseSens);
-		}		
+			printResults(allWords, allLines, allUnique, allUniqueNotCaseSens);
+		}
+		
+		return 0;
 	}
 
 	private void putValueInMap(HashMap<String, Integer> myMap, String key) {

@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.yuliaNikonova.calculator;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -36,8 +37,8 @@ public class Calculator {
 			} else {
 				System.out.println("OPN: " + myExpressionOPNString);
 				try {
-						int result = calculateOPN(myExpressionOPN);
-						System.out.println("Result: " + result);
+						BigInteger result = calculateOPN(myExpressionOPN);
+						System.out.println("Result: " + result.toString());
 				} catch(Exception e) {
 					System.out.println("Error: invalid expression");
 				}
@@ -136,34 +137,34 @@ public class Calculator {
 		return myExpressionOPN;
 	}
 
-	public static int calculateOPN(ArrayList<String> myExpressionOPN) {
-		ArrayList<Integer> integerStack = new ArrayList<Integer>();		
+	public static BigInteger calculateOPN(ArrayList<String> myExpressionOPN) {
+		ArrayList<BigInteger> integerStack = new ArrayList<BigInteger>();		
 		for (String op:myExpressionOPN) {
 			if (op.length() > 0) {
 				if (Character.isDigit(op.charAt(0)) || ((op.length() > 1) && Character.isDigit(op.charAt(1)))) {
-					integerStack.add(Integer.parseInt(op));
+					integerStack.add(new BigInteger(op));
 				} else {
 					if (integerStack.size() > 1) {
-						Integer op1 = integerStack.get(integerStack.size() - 1);
-						Integer op2 = integerStack.get(integerStack.size() - 2);
+						BigInteger op1 = integerStack.get(integerStack.size() - 1);
+						BigInteger op2 = integerStack.get(integerStack.size() - 2);
 						if (myOperators.contains(op)) {
 							integerStack.remove(integerStack.size() - 1);
 							integerStack.remove(integerStack.size() - 1);
 							if (op.equals("+")) {
-								integerStack.add(op1 + op2);
+								integerStack.add(op1.add(op2));
 							} else if (op.equals("-")) {
-								integerStack.add(op2 - op1);
+								integerStack.add(op2.subtract(op1));
 							} else if (op.equals("*")) {
-								integerStack.add(op1 * op2);
+								integerStack.add(op1.multiply(op2));
 							} else if (op.equals("/")) {
-								integerStack.add(op2 / op1);
+								integerStack.add(op2.divide(op1));
 							}
 						}
 					}
 				}
 			}
 		}
-		return  (int) integerStack.get(integerStack.size() - 1);
+		return  integerStack.get(integerStack.size() - 1);
 	}
 }
 

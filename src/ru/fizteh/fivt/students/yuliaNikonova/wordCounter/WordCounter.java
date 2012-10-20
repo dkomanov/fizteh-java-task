@@ -67,7 +67,10 @@ public class WordCounter {
 		WordWorker myCounter = new WordWorker(word, lines, uniqueCaseSensitive, uniqueNotCaseSensitive, aggregation, filenames);
 			
 		try {
-			myCounter.count();
+			int result = myCounter.count();
+			if (result!=0) {
+				System.exit(result);
+			}
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
