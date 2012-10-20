@@ -30,7 +30,7 @@ public class Counter {
         files = new String[args.length];
         filesSize = 0;
         int maxFlags = 0;
-        for(int i = 0; i < args.length; i++) {
+        for (int i = 0; i < args.length; i++) {
             maxFlags += args[i].length();
         }
         flags = new Character[maxFlags];
@@ -52,7 +52,7 @@ public class Counter {
         try {
             if (isw) {
                 countWords(files, filesSize);
-            }  else if (isl) {
+            } else if (isl) {
                 countLines(files, filesSize);
             }
         } catch (Exception e) {
@@ -118,10 +118,10 @@ public class Counter {
                 isU = true;
             }
         }
-        if (!(isl || isw )) {
+        if (!(isl || isw)) {
             isw = true;     // w - активен по умолчанию
         }
-        if(!((isw || isl) && (isw != isl) && !(isu && isU))) {
+        if (!((isw || isl) && (isw != isl) && !(isu && isU))) {
             throw new Exception("Don't use this set keys.");
         }
     }
@@ -134,7 +134,7 @@ public class Counter {
         HashMap<String, Integer> map = new HashMap<String, Integer>();
         int totalNumber = 0;
         for (int i = 0; i < filesSize; i++) {
-            if(!isA) {
+            if (!isA) {
                 map.clear();
                 totalNumber = 0;
             }
@@ -178,7 +178,7 @@ public class Counter {
                 }
             }
         }
-        if(isA) {
+        if (isA) {
             if (isu || isU) {
                 for (Object it : map.keySet()) {
                     System.out.println(it + " " + map.get(it));
@@ -193,7 +193,7 @@ public class Counter {
         HashMap<String, Integer> map = new HashMap<String, Integer>();
         int totalNumber = 0;
         for (int i = 0; i < filesSize; i++) {
-            if(!isA) {
+            if (!isA) {
                 totalNumber = 0;
                 map.clear();
             }
@@ -216,7 +216,7 @@ public class Counter {
                 }
                 if (!isA) {
                     System.out.println(files[i] + ":");
-                    if(!isu && !isU) {
+                    if (!isu && !isU) {
                         System.out.println(totalNumber);
                     } else {
                         for (Object it : map.keySet()) {
@@ -233,8 +233,8 @@ public class Counter {
                 }
             }
         }
-        if(isA) {
-            if(!isu && !isU) {
+        if (isA) {
+            if (!isu && !isU) {
                 System.out.println(totalNumber);
             } else {
                 for (Object it : map.keySet()) {
