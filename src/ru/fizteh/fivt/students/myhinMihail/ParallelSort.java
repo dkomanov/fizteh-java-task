@@ -15,8 +15,8 @@ class SortPiece {
 }
 
 public class ParallelSort {
-    final static int MAX_LENGTH = 17;
-    final static int MIN_LENGTH = 13;
+    final static int MAX_LENGTH = 10000;
+    final static int MIN_LENGTH = 1000;
     
     public static boolean onlyUnique = false;
     public static boolean caseSensetive = false;
