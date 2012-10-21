@@ -2,7 +2,7 @@
 Консольное приложение, выводящее календарь.
 
 ```
-java Calendar [-m MONTH] [-y YEAR] [-w] [t TIMEZONE]
+java Calendar [-m MONTH] [-y YEAR] [-w] [-t TIMEZONE]
 ```
 
 Ключи:
