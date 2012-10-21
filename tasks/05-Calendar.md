@@ -47,3 +47,6 @@ Mo Tu We Th Fr Sa Su
 
 Now: 2012.10.19 15:25:00 Omsk Time
 ```
+
+[Пример работы с классами Calendar, TimeZone и SimpleDateFormat]
+(../fizteh-java-task/tree/master/src/ru/fizteh/fivt/examples/CalendarExample.java)
