@@ -67,7 +67,7 @@ public class Shell {
             if(newPath.isDirectory()) {
                 path = newPath;
             } else {
-                System.err.println("cd: \'" + parseCommand[1] + "\': No such file or directory");
+                throw new Exception("cd: \'" + parseCommand[1] + "\': No such file or directory");
             }
         } else if(nameCommand.equals("pwd")){
             if (parseCommand.length != 1) {
@@ -89,7 +89,7 @@ public class Shell {
             }
             File newPath = getFile(parseCommand[1]);
             if(!newPath.mkdir()) {
-                System.err.println("mkdir: cannot create directory \'" + parseCommand[1] +
+                throw new Exception("mkdir: cannot create directory \'" + parseCommand[1] +
                                    "\': No such file or directory");
             }
         } else if (nameCommand.equals("rm")){
@@ -98,16 +98,16 @@ public class Shell {
                 if(newPath.exists()) {
                     newPath.delete();
                 } else {
-                    System.err.println("rm: cannot remove \'" + parseCommand[1] + "\': No such file or directory");
+                    throw new Exception("rm: cannot remove \'" + parseCommand[1] + "\': No such file or directory");
                 }
             } else {
                 File newPath = getFile(parseCommand[1]);
                 if(newPath.isFile()) {
                     newPath.delete();
                 } else if (newPath.exists()){
-                    System.err.println("rm: cannot remove \'" + parseCommand[1] + "\': Is a directory");
+                    throw new Exception("rm: cannot remove \'" + parseCommand[1] + "\': Is a directory");
                 } else {
-                    System.err.println("rm: cannot remove \'" + parseCommand[1] + "\': No such file or directory");
+                    throw new Exception("rm: cannot remove \'" + parseCommand[1] + "\': No such file or directory");
                 }
             }
         } else if(nameCommand.equals("mv")){
@@ -117,10 +117,10 @@ public class Shell {
             File firstPath = getFile(parseCommand[1]);
             File secondPath = getFile(parseCommand[2]);
             if (!firstPath.exists()) {
-                System.err.println("mv: cannot stat \'" + parseCommand[1] + "\': No such file or directory");
+                throw new Exception("mv: cannot stat \'" + parseCommand[1] + "\': No such file or directory");
             }
             if (!firstPath.renameTo(secondPath)) {
-                System.err.println("mv: cannot move \'" + parseCommand[1] + "\' to \'" + parseCommand[2]
+                throw new Exception("mv: cannot move \'" + parseCommand[1] + "\' to \'" + parseCommand[2]
                                    +  "\': No such file or directory");
             }
             firstPath.delete();
@@ -131,10 +131,10 @@ public class Shell {
             File firstPath = getFile(parseCommand[1]);
             File secondPath = getFile(parseCommand[2]);
             if (!firstPath.exists()) {
-                System.err.println("cp: cannot stat \'" + parseCommand[1] + "\': No such file or directory");
+                throw new Exception("cp: cannot stat \'" + parseCommand[1] + "\': No such file or directory");
             }
             if (!firstPath.renameTo(secondPath)) {
-                System.err.println("cp: cannot create regular file \'" + parseCommand[2] +
+                throw new Exception("cp: cannot create regular file \'" + parseCommand[2] +
                                    "\': No such file or directory");
             }
             firstPath.delete();
@@ -154,3 +154,4 @@ public class Shell {
         return newPath;
     }
 }
+
