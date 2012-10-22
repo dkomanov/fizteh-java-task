@@ -1,3 +1,5 @@
+package ru.fizteh.fivt.students.konstantinPavlov;
+
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -5,49 +7,56 @@ public class Calculator {
     public static void main(String[] args) {
 
         // compiling input expression
+        StringBuilder builder = new StringBuilder();
         String str = new String();
         for (int i = 0; i < args.length; ++i) {
-            str += args[i] + " ";
+            builder.append(args[i]).append(" ");
         }
-
-        str = str.trim();
-
-        // checking if input expression is empty
-        if (str.isEmpty()) {
-            System.err.println("Error: the expression is empty. No arguments.");
-            return;
-        }
-
-        // checking brackets
-        int closedBrakets = 0, openedBrakets = 0;
-        for (int i = 0; i < str.length(); ++i) {
-            if (str.charAt(i) == '(')
-                ++openedBrakets;
-            else if (str.charAt(i) == ')')
-                --openedBrakets;
-            if (openedBrakets < 0) {
-                closedBrakets = 0;
-                break;
+        
+        str=builder.toString();
+        
+        try {
+            str = str.trim();
+    
+            // checking if input expression is empty
+            if (str.isEmpty()) {
+                System.err.println("Error: the expression is empty. No arguments.");
+                return;
             }
+    
+            // checking brackets
+            int closedBrakets = 0, openedBrakets = 0;
+            for (int i = 0; i < str.length(); ++i) {
+                if (str.charAt(i) == '(')
+                    ++openedBrakets;
+                else if (str.charAt(i) == ')')
+                    --openedBrakets;
+                if (openedBrakets < 0) {
+                    closedBrakets = 0;
+                    break;
+                }
+            }
+            if (closedBrakets != 0 || openedBrakets != 0) {
+                System.err
+                        .println("Error: wrong input. Something wrong with brakets.");
+                return;
+            }
+    
+            ArrayList<String> parsedInput = parse(toRpn(str));
+    
+            if (!checkRpn(parsedInput)) {
+                System.err.println("Error: wrong input");
+                return;
+            }
+    
+            System.out.println("Input: " + str);
+            System.out.println("Answer: " + calculate(parsedInput));
+        } catch (Exception expt) {
+            System.err.println("Error: " + expt.getMessage());
         }
-        if (closedBrakets != 0 || openedBrakets != 0) {
-            System.err
-                    .println("Error: wrong input. Something wrong with brakets.");
-            return;
-        }
-
-        ArrayList<String> parsedInput = Parse(ToRPN(str));
-
-        if (!CheckRPN(parsedInput)) {
-            System.err.println("Error: wrong input");
-            return;
-        }
-
-        System.out.println("Input: " + str);
-        System.out.println("Answer: " + Calculate(parsedInput));
     }
 
-    private static boolean CheckRPN(ArrayList<String> array) {
+    private static boolean checkRpn(ArrayList<String> array) {
         int countOfDigs = 0;
         int countOfOperands = 0;
         for (int i = 0; i < array.size(); ++i) {
@@ -65,7 +74,7 @@ public class Calculator {
         }
     }
 
-    private static String ToRPN(String str) {
+    private static String toRpn(String str) {
         Stack<Character> s = new Stack<Character>();
         String resStr = new String();
         char strArray[] = str.toCharArray();
@@ -125,7 +134,7 @@ public class Calculator {
         return resStr;
     }
 
-    private static ArrayList<String> Parse(String str) {
+    private static ArrayList<String> parse(String str) {
         ArrayList<String> res_array = new ArrayList<String>();
         char str_array[] = str.toCharArray();
         String cur = new String();
@@ -140,7 +149,7 @@ public class Calculator {
         return res_array;
     }
 
-    private static int Calculate(ArrayList<String> array)
+    private static int calculate(ArrayList<String> array)
             throws RuntimeException {
         int res;
         Stack<String> s = new Stack<String>();
@@ -156,7 +165,8 @@ public class Calculator {
                         cur = a + b;
                         if ((a > 0 && b > 0 && cur < 0)
                                 || (a < 0 && b < 0 && cur > 0)) {
-                            throw new RuntimeException("Integer overflow");
+                            System.err.println("Error: Integer overflow");
+                            System.exit(1);
                         }
                         s.push(Integer.toString(cur));
                     }
@@ -164,13 +174,15 @@ public class Calculator {
                         cur = a - b;
                         if ((a > 0 && b < 0 && cur < 0)
                                 || (a < 0 && b > 0 && cur > 0)) {
-                            throw new RuntimeException("Integer overflow");
+                            System.err.println("Error: Integer overflow");
+                            System.exit(1);
                         }
                         s.push(Integer.toString(cur));
                     }
                     if (array.get(i).equals("/")) {
                         if (b == 0) {
-                            throw new RuntimeException("Division by 0");
+                            System.err.println("Error: Division by 0");
+                            System.exit(1);
                         }
                         cur = a / b;
                         s.push(Integer.toString(cur));
@@ -178,7 +190,8 @@ public class Calculator {
                     if (array.get(i).equals("*")) {
                         cur = a * b;
                         if (cur / a != b) {
-                            throw new RuntimeException("Integer overflow");
+                            System.err.println("Error: Integer overflow");
+                            System.exit(1);
                         }
                         s.push(Integer.toString(cur));
                     }
