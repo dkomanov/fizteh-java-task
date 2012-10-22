@@ -29,7 +29,7 @@ public class Shell {
             input.append(args[i] + " ");
         }
         String commands = input.toString();
-        String[] command = commands.split("[ ]*[;][ ]*");
+        String[] command = commands.split("[\\s]*[;][\\s]*");
         for (int i = 0; i < command.length; i++) {
             try {
                 recognizeCommand(command[i]);
