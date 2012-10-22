@@ -133,6 +133,19 @@ public class Main {
         }
     }
 
+    public static void unionMaps(Map<String, Integer> m, TreeMap<String, Integer> tm) {
+        Iterator iter = tm.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry pair = (Map.Entry)iter.next();
+            String s = (String)pair.getKey();
+            Integer count = (Integer)pair.getValue();
+            Integer total = count;
+            if (m.containsKey(s)) {
+                total = count + m.get(s);
+            }
+            m.put(s, total);
+        }
+    }
     static void printInfo(String [] args, boolean words, boolean lines,
             boolean uniqWithReg, boolean uniqWithoutReg, int startFile) {
         // печатаем запрашиваемую информацию для всех файлов
@@ -151,7 +164,8 @@ public class Main {
         } else if (words && uniqWithReg) { // уникальные слова с учетом регистра
             Map<String, Integer> m = new TreeMap<String, Integer>();
             for (int i = startFile; i < args.length; ++i) {
-                m.putAll(FileRead.countUniqWordsWithRegistr(args[i]));
+                TreeMap<String, Integer> tm = FileRead.countUniqWordsWithRegistr(args[i]);
+                unionMaps(m, tm);
             }
             Iterator it = m.entrySet().iterator();
             while (it.hasNext()) {
@@ -162,7 +176,8 @@ public class Main {
         } else if (words && uniqWithoutReg) {// уникальные слова без учетом регистра
             Map<String, Integer> m = new TreeMap<String, Integer>();
             for (int i = startFile; i < args.length; ++i) {
-                m.putAll(FileRead.countUniqWordsWithoutRegistr(args[i]));
+                TreeMap<String, Integer> tm = FileRead.countUniqWordsWithoutRegistr(args[i]);
+                unionMaps(m, tm);
             }
             Iterator it = m.entrySet().iterator();
             while (it.hasNext()) {
