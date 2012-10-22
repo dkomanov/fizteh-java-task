@@ -56,7 +56,12 @@ public class CalendarExample {
                             usageError();
                         } else {
                             i++;
-                            month = Integer.parseInt(args[i]);
+                            try {
+                                month = Integer.parseInt(args[i]);
+                            } catch (NumberFormatException ex) {
+                                System.err.println(ex.getMessage());
+                                System.exit(1);
+                            }
                             month--;
                             if(calendar.getActualMinimum(Calendar.MONTH) > month
                                     ||  calendar.getActualMaximum(Calendar.MONTH) < month) {
@@ -69,7 +74,12 @@ public class CalendarExample {
                             usageError();
                         } else {
                             i++;
-                            year = Integer.parseInt(args[i]);
+                            try {
+                                year = Integer.parseInt(args[i]);
+                            } catch (NumberFormatException ex) {
+                                System.err.println(ex.getMessage());
+                                System.exit(1);
+                            }
                             if(calendar.getActualMinimum(Calendar.YEAR) > year
                                     ||  calendar.getActualMaximum(Calendar.YEAR) < year) {
                                 usageError();
