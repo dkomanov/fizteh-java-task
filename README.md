@@ -14,7 +14,9 @@ generics, коллекции](http://yadi.sk/d/O-tmiXHIxuhs)
 4. [final, Аннотации, IO, Начало reflection](http://yadi.sk/d/auiDAoma071pm)
 5. [Reflection: Class, ClassLoader. Многопоточность: Thread, wait/notify,
 spurious wake up](http://yadi.sk/d/IUVaBNVg0Eh1k)
-6. Многопоточность
+6. [Многопоточность: ThreadState, проблемы синхронизации, примитивы синхронизации]
+(http://yadi.sk/d/iLL3rXzm0LGE1)
+7. Многопоточность, байт-код
 
 ## Семинары
 В папке [tasks](fizteh-java-task/tree/master/tasks) находятся описания заданий на
