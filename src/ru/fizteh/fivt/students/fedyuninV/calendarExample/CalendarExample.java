@@ -33,8 +33,23 @@ public class CalendarExample {
     }
 
 
+    private static Integer parseOrExit(String[] args, int index, Integer data) {
+        if(args.length <= index  ||  data != null) {
+            usageError();
+        } else {
+            try {
+                return Integer.parseInt(args[index]);
+            } catch (NumberFormatException ex) {
+                System.err.println(ex.getMessage());
+                System.exit(1);
+            }
+        }
+        return null;
+    }
+
+
     private static void usageError() {
-        System.out.println("Usage: java Calendar [-m MONTH] [-y YEAR] [-w] [t TIMEZONE]");
+        System.out.println("Usage: java CalendarExample [-m MONTH] [-y YEAR] [-w] [t TIMEZONE]");
         System.exit(1);
     }
 
@@ -52,38 +67,20 @@ public class CalendarExample {
                         }
                         break;
                     case 'm':
-                        if (args.length == i + 1  ||  month != null) {
+                        i++;
+                        month = parseOrExit(args, i, month);
+                        month--;
+                        if(calendar.getActualMinimum(Calendar.MONTH) > month
+                                ||  calendar.getActualMaximum(Calendar.MONTH) < month) {
                             usageError();
-                        } else {
-                            i++;
-                            try {
-                                month = Integer.parseInt(args[i]);
-                            } catch (NumberFormatException ex) {
-                                System.err.println(ex.getMessage());
-                                System.exit(1);
-                            }
-                            month--;
-                            if(calendar.getActualMinimum(Calendar.MONTH) > month
-                                    ||  calendar.getActualMaximum(Calendar.MONTH) < month) {
-                                usageError();
-                            }
                         }
                         break;
                     case 'y':
-                        if (args.length == i + 1  ||  year != null) {
+                        i++;
+                        year = parseOrExit(args, i, year);
+                        if(calendar.getActualMinimum(Calendar.YEAR) > year
+                                ||  calendar.getActualMaximum(Calendar.YEAR) < year) {
                             usageError();
-                        } else {
-                            i++;
-                            try {
-                                year = Integer.parseInt(args[i]);
-                            } catch (NumberFormatException ex) {
-                                System.err.println(ex.getMessage());
-                                System.exit(1);
-                            }
-                            if(calendar.getActualMinimum(Calendar.YEAR) > year
-                                    ||  calendar.getActualMaximum(Calendar.YEAR) < year) {
-                                usageError();
-                            }
                         }
                         break;
                     case 'w':
