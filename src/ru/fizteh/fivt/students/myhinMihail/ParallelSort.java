@@ -109,13 +109,14 @@ public class ParallelSort {
                         
                         case 't':
                             threadsCount = Integer.parseInt(args[++i]);
+                            int proc = Runtime.getRuntime().availableProcessors();
                             if (threadsCount < 1) {
                                 System.err.println("Error: threads count is lower then 1");
                                 System.exit(1);
                             }
                             
-                            if (threadsCount > 16) {
-                                System.err.println("Error: threads count is higher then 16");
+                            if (threadsCount > proc * 4) {
+                                System.err.println("Error: threads count is higher then " + proc * 4);
                                 System.exit(1);
                             }
                             toBreak = true;
@@ -180,13 +181,12 @@ public class ParallelSort {
     }
         
     public static void main(String[] args) {
+        BufferedWriter out = null;
         try {
             String separator = System.getProperty("line.separator");
             List<String> list = new ArrayList<String>();
             
             readKeys(args, list);
-        
-            BufferedWriter out = null;
         
             if (threadsCount == 0) {
                 threadsCount = Runtime.getRuntime().availableProcessors() + 1;
@@ -277,7 +277,6 @@ public class ParallelSort {
                     synchronized (synchronizer) {
                         synchronizer.wait();
                     }
-                    System.out.println("ewwe");
                 }
                 
                 while (mergeRange.size() > 2) {
@@ -311,12 +310,17 @@ public class ParallelSort {
                     out.write(list.get(i) + separator);
                 }
             }
-            if (!output.isEmpty()) {
-                out.close();
-            }
             
         } catch (Exception expt) {
             System.err.println("Error: " + expt.getMessage());
+        } finally {
+            if (!output.isEmpty()) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    System.err.println("Error: can not close" + output);
+                }
+            }
         }
         
     }
