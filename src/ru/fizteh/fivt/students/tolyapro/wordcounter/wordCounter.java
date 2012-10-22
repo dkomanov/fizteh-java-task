@@ -4,38 +4,36 @@ import java.io.*;
 
 import java.util.*;
 
+enum Mode {
+    Err, None, Lu, LU, Wu, WU, L, W
+}
+
 public class Counter {
 
-    public static boolean checkParam(int param) {
-        return ((!((param < 100) || (param > 221) || ((param / 10) % 10 > 2))) || (param == 0));
+    public static boolean modeWords(Mode mode) {
+        return ((mode == Mode.Wu) || (mode == Mode.WU) || (mode == Mode.W));
     }
 
-    public static boolean modeWords(int param) {
-        return (param / 100 == 2);
+    public static boolean modeLines(Mode mode) {
+        return ((mode == Mode.Lu) || (mode == Mode.LU) || (mode == Mode.L));
     }
 
-    public static boolean modeLines(int param) {
-        return (param / 100 == 1);
+    public static boolean modeUniqueWithReg(Mode mode) {
+        return ((mode == Mode.WU) || (mode == Mode.LU));
     }
 
-    public static boolean modeUniqueWithReg(int param) {
-        return ((param % 100) / 10 == 2);
-    }
-
-    public static boolean modeUnique(int param) {
-        return ((param % 100) / 10 != 0);
+    public static boolean modeUnique(Mode mode) {
+        return ((mode == Mode.Wu) || (mode == Mode.Lu));
     }
 
     public static boolean checkEmpty(String[] args) {
         return ((args.length == 1) && (args[0].isEmpty()));
     }
 
-    public static boolean modeAgregate(int param) {
-        return (param % 10 == 1);
-    }
+    public static boolean modeAgregate = false;
 
-    public static void addWord(Map<String, Integer> dict, String word, int param) {
-        if (modeUniqueWithReg(param)) {
+    public static void addWord(Map<String, Integer> dict, String word, Mode mode) {
+        if (modeUniqueWithReg(mode)) {
             Integer amount;
             amount = dict.get(word);
             if (amount != null) {
@@ -43,7 +41,6 @@ public class Counter {
             } else {
                 dict.put(word, 1);
             }
-
         } else {
             Integer amount;
             word = word.toLowerCase();
@@ -57,40 +54,60 @@ public class Counter {
 
     }
 
-    public static int getParam(char c) {
-        int param = 0;
+    public static Mode getParam(char c, Mode mode) {
         if (c == 'l') {
-            param += 100;
+            if (mode == Mode.None) {
+                mode = Mode.L;
+            } else {
+                return Mode.Err;
+            }
+
         } else if (c == 'w') {
-            param += 200;
+            if (mode == Mode.None) {
+                mode = Mode.W;
+            } else {
+                return Mode.Err;
+            }
         } else if (c == 'u') {
-            param += 10;
+            if (mode == Mode.L) {
+                mode = Mode.Lu;
+            } else if (mode == Mode.W) {
+                mode = Mode.Wu;
+            } else {
+                return Mode.Err;
+            }
         } else if (c == 'U') {
-            param += 20;
+            if (mode == Mode.L) {
+                mode = Mode.LU;
+            } else if (mode == Mode.W) {
+                mode = Mode.WU;
+            } else {
+                return Mode.Err;
+            }
         } else if (c == 'a') {
-            param += 1;
+            modeAgregate = true;
         } else {
-            param += 555;
+            mode = Mode.Err;
         }
-        return param;
+        return mode;
     }
 
     public static void main(String[] args) throws Exception {
+        Mode mode = Mode.None;
         if (checkEmpty(args)) {
             System.out.println("Usage: java Counter [keys] FILE1 FILE2 ...");
         }
-        int param = 0;
         int paramNumb = 0;
         for (String s : args) {
             char c = s.charAt(0);
             if ((c == '-') && (s.length() > 1)) {
                 c = s.charAt(1);
-                param += getParam(c);
+                mode = getParam(c, mode);
                 paramNumb++;
                 int i;
                 for (i = 2; i < s.length(); ++i) {
                     c = s.charAt(i);
-                    param += getParam(c);
+                    mode = getParam(c, mode);
                     paramNumb++;
                 }
                 if (i > 2) {
@@ -100,12 +117,12 @@ public class Counter {
                 break;
             }
         }
-        if (!checkParam(param)) {
+        if (mode == Mode.Err) {
             System.out.println("Wrong parametres combination");
             System.exit(1);
         }
-        if (paramNumb == 0) {
-            param = 200;
+        if ((paramNumb == 0) || (mode == Mode.None)) {
+            mode = Mode.W;
         }
         Map<String, Integer> dict = new HashMap<String, Integer>();
         for (int i = paramNumb; i < args.length; ++i) {
@@ -119,14 +136,14 @@ public class Counter {
                 br = new BufferedReader(new InputStreamReader(in));
                 String strLine;
                 while ((strLine = br.readLine()) != null) {
-                    if (modeWords(param)) {
-                        String[] words = strLine.split(" ");
+                    if (modeWords(mode)) {
+                        String[] words = strLine.split("[\\s|\t|:;,.()\\[\\]]");
                         for (String word : words) {
-                            addWord(dict, word, param);
+                            addWord(dict, word, mode);
                         }
                     } else {
-                        if (modeLines(param)) {
-                            addWord(dict, strLine, param);
+                        if (modeLines(mode)) {
+                            addWord(dict, strLine, mode);
                         }
                     }
                 }
@@ -142,19 +159,20 @@ public class Counter {
                     br.close();
                 }
                 System.exit(1);
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+                if (fstream != null) {
+                    fstream.close();
+                }
+                if (br != null) {
+                    br.close();
+                }
             }
-            if (!modeAgregate(param)) {
-                if (modeUnique(param)) {
-                    System.out.print(args[i] + " ");
-                    if (in != null) {
-                        in.close();
-                    }
-                    if (fstream != null) {
-                        fstream.close();
-                    }
-                    if (br != null) {
-                        br.close();
-                    }
+            if (!modeAgregate) {
+                if (modeUnique(mode)) {
+                    System.out.print("File " + args[i] + " ");
                     System.out.println(dict.size());
                     dict.clear();
                 } else {
@@ -170,27 +188,9 @@ public class Counter {
                     dict.clear();
                 }
             }
-            try {
-                in.close();
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
-            try {
-                br.close();
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
-            try {
-                fstream.close();
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
         }
-        if (modeAgregate(param)) {
-            if (modeUnique(param)) {
+        if (modeAgregate) {
+            if (modeUnique(mode)) {
                 System.out.print(dict.size());
                 System.exit(0);
             }
