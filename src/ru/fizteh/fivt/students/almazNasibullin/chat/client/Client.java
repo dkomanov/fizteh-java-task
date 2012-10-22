@@ -41,8 +41,7 @@ public class Client {
             String nick = ""; // ник клиента
 
             if (args.length == 0) {
-                System.err.println("Put your nick");
-                System.exit(1);
+                printErrorAndExit("Put your nick");
             } else {
                 nick = args[0];
             }
@@ -62,8 +61,32 @@ public class Client {
                 }
             }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            printErrorAndExit(e.getMessage());
+        }
+    }
+
+    public static void printErrorAndExit(String error) {
+        System.err.println(error);
+        System.exit(1);
+    }
+
+    public static void closeChannel(SocketChannel sc) {
+        try {
+            if (sc != null) {
+                sc.close();
+            }
+        } catch (Exception e) {
+            printErrorAndExit("Bad closing: " + e.getMessage());
+        }
+    }
+
+    public static void closeSelector(Selector selector) {
+        try {
+            if (selector != null) {
+                selector.close();
+            }
+        } catch (Exception e) {
+            printErrorAndExit("Bad closing: " + e.getMessage());
         }
     }
 
@@ -102,21 +125,17 @@ public class Client {
                             sendMessage(channels.get(curServerNumber.t),
                                     MessageUtils.hello(nick));
                         } catch (Exception e) {
-                            System.err.println(e.getMessage());
-                            System.exit(1);
+                            printErrorAndExit(e.getMessage());
                         }
                     }
                 } else {
-                    System.err.println("Usage: /connect host:port");
-                    System.exit(1);
+                    printErrorAndExit("Usage: /connect host:port");
                 }
             } else {
-                System.err.println("Usage: /connect host port");
-                System.exit(1);
+                printErrorAndExit("Usage: /connect host port");
             }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            printErrorAndExit("Bad connecting: " + e.getMessage());
         }
     }
 
@@ -124,34 +143,12 @@ public class Client {
             WrapperPrimitive<String> curServer, WrapperPrimitive<Integer> curServerNumber,
             WrapperPrimitive<Boolean> connected, List<SocketChannel> channels,
             List<Selector> selectors) {
-        try {
-            sendMessage(channels.get(curServerNumber.t),
-                    MessageUtils.bye());
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        } finally {
-            try {
-                if (channels.get(curServerNumber.t) != null) {
-                    channels.get(curServerNumber.t).close();
-                }
-            } catch (Exception e) {
-                System.err.println("Bad closing: " + e.getMessage());
-                System.exit(1);
-            }
-            try {
-                if (selectors.get(curServerNumber.t)!= null) {
-                    selectors.get(curServerNumber.t).close();
-                }
-            } catch (Exception e) {
-                System.err.println("Bad closing: " + e.getMessage());
-                System.exit(1);
-            }
-        }
+        sendMessage(channels.get(curServerNumber.t), MessageUtils.bye());
+        closeChannel(channels.get(curServerNumber.t));
+        closeSelector(selectors.get(curServerNumber.t));
         servers.remove(curServer.t);
         connected.t = false;
         curServerNumber.t = -1;
-
         System.out.println("You are disconnected from " + curServer.t);
     }
 
@@ -193,12 +190,10 @@ public class Client {
                             curServer.t = host;
                             curServerNumber.t = servers.get(curServer.t);
                         } else {
-                            System.err.println(host + ": there is no such server");
-                            System.exit(1);
+                            printErrorAndExit(host + ": there is no such server");
                         }
                     } else {
-                        System.err.println("Usage: /use hostName");
-                        System.exit(1);
+                        printErrorAndExit("Usage: /use hostName");
                     }
                 } else if (cmd.equals("/exit")) {
                     Iterator it = servers.entrySet().iterator();
@@ -206,22 +201,8 @@ public class Client {
                         Map.Entry pair = (Map.Entry)it.next();
                         sendMessage(channels.get((Integer)pair.getValue()),
                                 MessageUtils.bye());
-                        try {
-                            if (channels.get((Integer)pair.getValue()) != null) {
-                                channels.get((Integer)pair.getValue()).close();
-                            }
-                        } catch (Exception e) {
-                            System.err.println("Bad closing: " + e.getMessage());
-                            System.exit(1);
-                        }
-                        try {
-                            if (selectors.get((Integer)pair.getValue()) != null) {
-                                selectors.get((Integer)pair.getValue()).close();
-                            }
-                        } catch (Exception e) {
-                            System.err.println("Bad closing: " + e.getMessage());
-                            System.exit(1);
-                        }
+                        closeChannel(channels.get((Integer)pair.getValue()));
+                        closeSelector(selectors.get((Integer)pair.getValue()));
                     }
                     servers.clear();
                     channels.clear();
@@ -239,8 +220,7 @@ public class Client {
                 }
             }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            printErrorAndExit(e.getMessage());
         }
     }
 
@@ -253,7 +233,8 @@ public class Client {
             Iterator iter = keys.iterator();
             while (iter.hasNext()) {
                 SelectionKey key = (SelectionKey)iter.next();
-                if (key.isReadable()) {
+                if ((key.readyOps() & SelectionKey.OP_READ) ==
+                        SelectionKey.OP_READ) {
                     // в SocketChannel пришло новое сообщение
                     SocketChannel sc = (SocketChannel)key.channel();
                     ByteBuffer mes = ByteBuffer.allocate(512);
@@ -296,12 +277,10 @@ public class Client {
                 ByteBuffer bf = ByteBuffer.wrap(message);
                 sc.write(bf);
             } else {
-                System.err.println("Bad SocketChannel");
-                System.exit(1);
+                printErrorAndExit("Bad SocketChannel");
             }
         } catch (Exception e) {
-            System.err.println("Bad sending message!" + e.getMessage());
-            System.exit(1);
+            printErrorAndExit("Bad sending message!" + e.getMessage());
         }
     }
 
@@ -317,8 +296,7 @@ public class Client {
                         channels, selectors);
             }
         } catch (Exception e) {
-            System.err.println("Bad geting message!" + e.getMessage());
-            System.exit(1);
+            printErrorAndExit("Bad geting message!" + e.getMessage());
         }
     }
 }
