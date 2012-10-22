@@ -4,7 +4,7 @@ import java.text.*;
 import java.util.*;
 
 public class MonthCalendar {
-    public static Calendar calendar  = Calendar.getInstance();
+    public static Calendar calendar = Calendar.getInstance();
     public static Date date = new Date();
     public static TimeZone timeZone = null;
     public static int month = -1;
@@ -91,20 +91,20 @@ public class MonthCalendar {
         int currentDay = 1;
         int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
         
-        int j = 1;
+        int k = 1;
         int emptyDays = calendar.get(Calendar.DAY_OF_WEEK);
         emptyDays--;
         if (emptyDays == 0) {
             emptyDays = 7;
         }
         
-        j = emptyDays;
+        k = emptyDays;
         while (emptyDays > 1) {
             System.out.print("    ");
             emptyDays--;
         }
         
-        while(month == calendar.get(Calendar.MONTH)) {
+        while (month == calendar.get(Calendar.MONTH)) {
             if (printWeek) {
                 if (currentWeek < 10) {
                     System.out.print(" ");
@@ -113,7 +113,7 @@ public class MonthCalendar {
                 currentWeek++;
             }
             
-            for (; j <= 7  &&  month == calendar.get(Calendar.MONTH); j++) {
+            for (int j = k; j <= 7  &&  month == calendar.get(Calendar.MONTH); j++) {
                 if (currentDay < 10) {
                     System.out.print(" ");
                 }
@@ -121,7 +121,7 @@ public class MonthCalendar {
                 currentDay++;
                 calendar.set(Calendar.DAY_OF_MONTH, currentDay);
             }
-            j = 1;
+            k = 1;
             System.out.println();
         }
         

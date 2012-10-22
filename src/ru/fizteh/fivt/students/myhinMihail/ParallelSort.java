@@ -19,18 +19,19 @@ public class ParallelSort {
     final static int MIN_LENGTH = 1000;
     
     public static boolean onlyUnique = false;
-    public static boolean caseSensetive = false;
+    public static boolean caseSensitive = false;
     public static int threadsCount = 0;
     public static String output = "";
     
     public static class Sorter extends Thread {
         private List<String> list;
+        private Object synchronizer;
         private  LinkedBlockingQueue<SortPiece> queue;
 
-        public Sorter(List<String> inList, LinkedBlockingQueue<SortPiece> q) {
+        public Sorter(List<String> inList, LinkedBlockingQueue<SortPiece> q, Object sync) {
             list = inList;
             queue = q;
-            start();
+            synchronizer = sync;
         }
         
         public void run() {
@@ -39,6 +40,11 @@ public class ParallelSort {
                 try {
                     sync = queue.take();
                     if (sync.from == sync.to) { 
+                        synchronized (synchronizer) {
+                            if (queue.isEmpty()) {
+                                synchronizer.notify();
+                            }
+                        }
                         break;
                     }
                 } catch (InterruptedException e) {
@@ -80,8 +86,7 @@ public class ParallelSort {
 
     }
     
-    public static Vector<String> readKeys(String[] args) {
-        Vector<String> files = new Vector<String>();
+    public static void readKeys(String[] args, List<String> list) {
         int params = 0;
         for (int i = 0; i < args.length; ++i) {
             if (args[i].isEmpty()) {
@@ -99,13 +104,18 @@ public class ParallelSort {
                             break;
                         
                         case 'i':
-                            caseSensetive = true;
+                            caseSensitive = true;
                             break;
                         
                         case 't':
                             threadsCount = Integer.parseInt(args[++i]);
                             if (threadsCount < 1) {
                                 System.err.println("Error: threads count is lower then 1");
+                                System.exit(1);
+                            }
+                            
+                            if (threadsCount > 16) {
+                                System.err.println("Error: threads count is higher then 16");
                                 System.exit(1);
                             }
                             toBreak = true;
@@ -127,7 +137,12 @@ public class ParallelSort {
                     }
                 }
             } else {
-                files.add(args[i]);
+                try {
+                    readFileToArray(args[i], list);
+                } catch (Exception expt) {
+                    System.err.println("Error: can not read " + args[i]);
+                    System.err.println(expt.getMessage());
+                }
             }
         }
         
@@ -135,43 +150,41 @@ public class ParallelSort {
             System.err.println("Error: No arguments.\nUsage: [-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
             System.exit(1);
         }
-        
-        return files;
-        
+       
     }
     
-    public static void readArray(Vector<String> files, List<String> list) throws Exception {
-        for (String path : files) {
-            File file = new File(path);
-            FileReader fr = null;
-            BufferedReader reader = null;
+    public static void readFileToArray(String path, List<String> list) throws Exception {
+        File file = new File(path);
+        FileReader fr = null;
+        BufferedReader reader = null;
             
-            try {
-                fr = new FileReader(file);
-                reader = new BufferedReader(fr);
-                String line;
+        try {
+            fr = new FileReader(file);
+            reader = new BufferedReader(fr);
+            String line;
             
-                while ((line = reader.readLine()) != null) {
-                    if (!line.isEmpty()) {
-                        list.add(caseSensetive ? line : line.toLowerCase());
-                    }
-                } 
+            while ((line = reader.readLine()) != null) {
+               if (!line.isEmpty()) {
+                        list.add(caseSensitive ? line : line.toLowerCase());
+                }
+            } 
                 
-            } finally {
-                if (fr != null) {
-                    fr.close();
-                }
-                if (reader != null) {
-                    reader.close();
-                }
-            }    
-        }
+        } finally {
+            if (fr != null) {
+                fr.close();
+            }
+            if (reader != null) {
+                reader.close();
+            }
+        }    
     }
         
     public static void main(String[] args) {
         try {
             String separator = System.getProperty("line.separator");
-            Vector<String> files = readKeys(args);
+            List<String> list = new ArrayList<String>();
+            
+            readKeys(args, list);
         
             BufferedWriter out = null;
         
@@ -183,16 +196,15 @@ public class ParallelSort {
                 try {
                     out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(output)));
                 } catch (Exception e) {
+                    if (out != null) {
+                        out.close();
+                    }
                     System.err.println("Can not write to " + output + "\n" + e.getMessage());
                     System.exit(1);
                 }
             } else {
                 out = new BufferedWriter(new OutputStreamWriter(System.out));
             }
-        
-            List<String> list = new ArrayList<String>();
-        
-            readArray(files, list);
             
             int linesCount = list.size();
             int portion = 0;
@@ -213,7 +225,8 @@ public class ParallelSort {
                 int curTo = 0;
                 int realTreadsCount = 0;
                 int done = 0;
-            
+                Object synchronizer = new Object();
+                
                 LinkedBlockingQueue<SortPiece> queue = new LinkedBlockingQueue<SortPiece>(threadsCount);
                 for(int i = 0; i < threadsCount; i++) {
                     curFrom = curTo ;
@@ -231,7 +244,8 @@ public class ParallelSort {
                     SortPiece sync = new SortPiece(curFrom, curTo);
                     done += curTo - curFrom;
                     queue.put(sync);
-                    new Sorter(list, queue);
+                    Sorter srt = new Sorter(list, queue, synchronizer);
+                    srt.start();
                     realTreadsCount++;
                 }
             
@@ -260,7 +274,10 @@ public class ParallelSort {
                 }
             
                 while(!queue.isEmpty()) {
-                    // Wait for all Sorter's termination
+                    synchronized (synchronizer) {
+                        synchronizer.wait();
+                    }
+                    System.out.println("ewwe");
                 }
                 
                 while (mergeRange.size() > 2) {
@@ -294,7 +311,9 @@ public class ParallelSort {
                     out.write(list.get(i) + separator);
                 }
             }
-            out.close();
+            if (!output.isEmpty()) {
+                out.close();
+            }
             
         } catch (Exception expt) {
             System.err.println("Error: " + expt.getMessage());
