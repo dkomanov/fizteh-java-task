@@ -92,8 +92,7 @@ public class Calc {
             }
         }
         expr = builder.toString();
-        expr.replaceAll("\"", "");
-        expr.replaceAll(" ", "");
+        expr = expr.replaceAll("\'|\"|\t|\\s", "");
         if (!(checkBrackets(expr))) {
             System.err.println("Incorrect input: Brackets error");
             System.exit(1);
