@@ -103,6 +103,8 @@ public class Shell {
             }
         } catch (NoSuchElementException noArg) {
             panic("console: " + operation + ": too few arguments");
+        } catch (Exception ex) {
+            panic("console: internal error: " + ex.getMessage());
         }
     }
 
