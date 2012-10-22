@@ -41,7 +41,7 @@ public class Counter {
         try {
             setFlags();
         } catch (Exception e) {
-            System.out.print(e.getMessage());
+            System.out.println(e.getMessage());
             System.exit(1);
         }
         if (filesSize == 0) {
@@ -56,7 +56,7 @@ public class Counter {
                 countLines(files, filesSize);
             }
         } catch (Exception e) {
-            System.out.print(e.getMessage());
+            System.out.println(e.getMessage());
             System.exit(1);
         }
     }

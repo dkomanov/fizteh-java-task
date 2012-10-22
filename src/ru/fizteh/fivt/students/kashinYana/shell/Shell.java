@@ -29,12 +29,12 @@ public class Shell {
             input.append(args[i] + " ");
         }
         String commands = input.toString();
-        String[] command = commands.split(";");
+        String[] command = commands.split("[ ]*[;][ ]*");
         for (int i = 0; i < command.length; i++) {
             try {
                 recognizeCommand(command[i]);
             } catch (Exception e) {
-                System.err.print(e.getMessage());
+                System.err.println(e.getMessage());
                 System.exit(1);
             }
         }
