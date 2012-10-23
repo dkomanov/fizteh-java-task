@@ -8,24 +8,23 @@ public class Shell {
 		if (args.length > 0) {
 			String commandLine = argParser.parse();
 			System.out.println(commandLine);
-			execute(commandLine);
+			execute(commandLine, true);
 		} else {
 			boolean work = true;
 			Scanner in = new Scanner(System.in);
 			while (work) {
 				System.out.print("$ ");
 				String commandLine = in.nextLine();
-				execute(commandLine);
+				execute(commandLine, false);
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
-				}
-				
+				}	
 			}
 		}
 	}
 	
-	private static void execute(String commandLine) {
+	private static void execute(String commandLine, boolean pack) {
 		boolean err = false;
 		String[] commands = commandLine.split(";");
 		CommandWorker worker = new CommandWorker();
@@ -43,6 +42,9 @@ public class Shell {
 			} catch (Exception e) {
 				err = true;
 				System.err.println(e.getMessage());
+				if (pack) {
+					System.exit(1);
+				}
 			}
 		}
 	}
