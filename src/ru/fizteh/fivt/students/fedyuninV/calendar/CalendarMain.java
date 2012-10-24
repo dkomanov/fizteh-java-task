@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.fedyuninV.calendarExample;
+package ru.fizteh.fivt.students.fedyuninV.calendar;
 
 
 import java.text.DateFormat;
@@ -13,7 +13,7 @@ import java.util.Calendar;
  * Fedyunin Valeriy
  * MIPT FIVT 195
  */
-public class CalendarExample {
+public class CalendarMain {
     private static Date date;
     private static DateFormat df;
     private static TimeZone tz;
@@ -49,7 +49,7 @@ public class CalendarExample {
 
 
     private static void usageError() {
-        System.out.println("Usage: java CalendarExample [-m MONTH] [-y YEAR] [-w] [t TIMEZONE]");
+        System.out.println("Usage: java CalendarMain [-m MONTH] [-y YEAR] [-w] [t TIMEZONE]");
         System.exit(1);
     }
 
