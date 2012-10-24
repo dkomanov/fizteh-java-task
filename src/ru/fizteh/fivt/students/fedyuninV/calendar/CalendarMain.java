@@ -1,11 +1,10 @@
-package ru.fizteh.fivt.students.fedyuninV.calendarExample;
+package ru.fizteh.fivt.students.fedyuninV.calendar;
 
 
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Calendar;
 
@@ -13,7 +12,7 @@ import java.util.Calendar;
  * Fedyunin Valeriy
  * MIPT FIVT 195
  */
-public class CalendarExample {
+public class CalendarMain {
     private static Date date;
     private static DateFormat df;
     private static TimeZone tz;
@@ -33,8 +32,23 @@ public class CalendarExample {
     }
 
 
+    private static Integer parseOrExit(String[] args, int index, Integer data) {
+        if(args.length <= index  ||  data != null) {
+            usageError();
+        } else {
+            try {
+                return Integer.parseInt(args[index]);
+            } catch (NumberFormatException ex) {
+                System.err.println(ex.getMessage());
+                System.exit(1);
+            }
+        }
+        return null;
+    }
+
+
     private static void usageError() {
-        System.out.println("Usage: java Calendar [-m MONTH] [-y YEAR] [-w] [t TIMEZONE]");
+        System.out.println("Usage: java CalendarMain [-m MONTH] [-y YEAR] [-w] [t TIMEZONE]");
         System.exit(1);
     }
 
@@ -52,28 +66,20 @@ public class CalendarExample {
                         }
                         break;
                     case 'm':
-                        if (args.length == i + 1  ||  month != null) {
+                        i++;
+                        month = parseOrExit(args, i, month);
+                        month--;
+                        if(calendar.getActualMinimum(Calendar.MONTH) > month
+                                ||  calendar.getActualMaximum(Calendar.MONTH) < month) {
                             usageError();
-                        } else {
-                            i++;
-                            month = Integer.parseInt(args[i]);
-                            month--;
-                            if(calendar.getActualMinimum(Calendar.MONTH) > month
-                                    ||  calendar.getActualMaximum(Calendar.MONTH) < month) {
-                                usageError();
-                            }
                         }
                         break;
                     case 'y':
-                        if (args.length == i + 1  ||  year != null) {
+                        i++;
+                        year = parseOrExit(args, i, year);
+                        if(calendar.getActualMinimum(Calendar.YEAR) > year
+                                ||  calendar.getActualMaximum(Calendar.YEAR) < year) {
                             usageError();
-                        } else {
-                            i++;
-                            year = Integer.parseInt(args[i]);
-                            if(calendar.getActualMinimum(Calendar.YEAR) > year
-                                    ||  calendar.getActualMaximum(Calendar.YEAR) < year) {
-                                usageError();
-                            }
                         }
                         break;
                     case 'w':
