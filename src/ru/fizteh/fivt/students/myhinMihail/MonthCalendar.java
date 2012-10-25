@@ -21,6 +21,11 @@ public class MonthCalendar {
         for (int i = 0; i < args.length; ++i) {
             if (args[i].charAt(0) == '-') {
                 
+                if (args[i].length() == 1) {
+                    System.err.println("Error: empty key");
+                    continue;
+                }
+                
                 if (args[i].charAt(1) != 'w' && args.length == i + 1) {
                     printUsageAndExit();
                 }

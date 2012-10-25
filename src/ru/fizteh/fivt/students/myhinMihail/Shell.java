@@ -69,6 +69,27 @@ public class Shell {
         return false;
     }
     
+    public static void copyErrorAndExit(File source, File dest, String command) {
+        System.err.println(command + ": Can not copy " + source + " to " + dest);
+        if (!console) {
+            System.exit(1);
+        }
+    }
+    
+    public static void pathErrorAndExit(String path, String command) {
+        System.err.println(command + ": \'" + path + "\' do not exists");
+        if (!console) {
+            System.exit(1);
+        }
+    }
+    
+    public static void errorAndExit(String error) {
+        System.err.println(error);
+        if (!console) {
+            System.exit(1);
+        }
+    }
+    
     public static boolean copy(File source, File dest, String command) {
         File dest2 = dest;
         if (source.isFile()) {
@@ -76,19 +97,13 @@ public class Shell {
                 dest2 = new File(dest.getAbsolutePath() + "/" + source.getName());
             }
             if (!copyFile(source, dest2, command)) {
-                System.err.println(command + ": Can not copy " + source + " to " + dest2);
-                if (!console) {
-                    System.exit(1);
-                }
+                copyErrorAndExit(source, dest, command);
                 return false;
             }
         } else {
             dest2 = new File(dest.getAbsolutePath() + "/" + source.getName());
             if ((!dest2.exists() && !dest2.mkdirs()) || !source.exists()) {
-                System.err.println(command + ": Can not copy " + source + " to " + dest2);
-                if (!console) {
-                    System.exit(1);
-                }
+                copyErrorAndExit(source, dest, command);
                 return false;
             }
             for (String fl : source.list()) {
@@ -109,10 +124,7 @@ public class Shell {
         }
         
         if (!deleteDirectory(source)) {
-            System.err.println("mv: Can not delete " + source);
-            if (!console) {
-                System.exit(1);
-            }
+            errorAndExit("mv: Can not delete " + source);
             return false;
         }
         
@@ -197,26 +209,17 @@ public class Shell {
                 File dir = makeAbsolute(params.elementAt(1));
                 try {
                     if (!dir.mkdir()) {
-                        System.err.println("mkdir: Can not create " + dir);
-                        if (!console) {
-                            System.exit(1);
-                        }
+                        errorAndExit("mkdir: Can not create " + dir);
                     }
                 } catch (Exception expt) {
-                    System.err.println("mkdir: " + expt.getMessage());
-                    if (!console) {
-                        System.exit(1);
-                    }
+                    errorAndExit("mkdir: " + expt.getMessage());
                 }
                 return true;
                 
             case "rm":
                 File file = makeAbsolute(params.elementAt(1));
                 if (!deleteDirectory(file)) {
-                    System.err.println("rm: Can not delete " + file);
-                    if (!console) {
-                        System.exit(1);
-                    }
+                    errorAndExit("rm: Can not delete " + file);
                 }
                 return true;
                 
@@ -229,10 +232,7 @@ public class Shell {
                 
                 if (!src.equals(dst)) {
                     if (!src.exists()) {
-                        System.err.println("cp: \'" + src.getAbsolutePath() + "\' do not exists");
-                        if (!console) {
-                            System.exit(1);
-                        }
+                        pathErrorAndExit(src.getAbsolutePath(), "cp");
                     } else {
                         copy(src, dst, "cp");
                     }
@@ -247,10 +247,8 @@ public class Shell {
                 File to = makeAbsolute(params.elementAt(2));
 
                 if (!from.exists()) {
-                    System.err.println("mv: \'" + from.getAbsolutePath() + "\' do not exists");
-                    if (!console) {
-                        System.exit(1);
-                    }
+                    pathErrorAndExit(from.getAbsolutePath(), "mv");
+                    return true;
                 }
                 
                 try {
@@ -262,10 +260,7 @@ public class Shell {
                         moveFile(from, to);
                     }
                 } catch (Exception expt) {
-                    System.err.println("mv: Can not move " + from + " to " + to);
-                    if (!console) {
-                        System.exit(1);
-                    }
+                    errorAndExit("mv: Can not move " + from + " to " + to);
                 }
                 return true;
                 
@@ -287,10 +282,7 @@ public class Shell {
                         if (newPath.exists()) {
                             currentPath = newPath.getAbsolutePath();
                         } else {
-                            System.err.println("cd: path " + params.elementAt(1) + " does not exists");
-                            if (!console) {
-                                System.exit(1);
-                            }
+                            pathErrorAndExit(params.elementAt(1), "cd");
                         }
                             
                         break;
