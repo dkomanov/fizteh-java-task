@@ -33,30 +33,30 @@ public class CommandWorker {
 		} else if (commandName.equals("cp")) {
 			copyFileorDir(commandArguments);
 		} else {
-			System.err.println(commandName+": unknown command");
+			throw new Exception(commandName+": unknown command");
 		}	
 	}
 	private void copyFileorDir(String[] commandArgs) throws Exception {
 		if (commandArgs.length != 3) {
-			System.err.println("cp: wrong number of args");
+			throw new Exception("cp: wrong number of args");
 		} else {
 			File fileDir = getFile(commandArgs[1]);
 			File destDir = getFile(commandArgs[2]);
 			if (!destDir.isDirectory()) {
-				System.err.println("cp: cannot copy to \'"+commandArgs[2]+"\' No such directory");
+				throw new Exception("cp: cannot copy to \'"+commandArgs[2]+"\' No such directory");
 			} else {
 				if (fileDir.isFile()) {
 					copyFile(commandArgs[1], commandArgs[2]);
 				} else if (fileDir.isDirectory()) {
 					copyDir(fileDir, destDir);
 				} else {
-					System.err.println("cp: cannot copy \'" + commandArgs[1] + "\': No such file or directory");
+					throw new Exception("cp: cannot copy \'" + commandArgs[1] + "\': No such file or directory");
 				}
 			}
 		}	
 	}
 	
-	private void copyDir(File original, File dest) throws IOException, InterruptedException {
+	private void copyDir(File original, File dest) throws Exception {
 		
 		String name=original.getName();
 		File destination = new File(dest.getCanonicalPath()+File.separator+name);
@@ -66,7 +66,7 @@ public class CommandWorker {
 		Thread.sleep(100);
 		boolean rr = destination.mkdir();
 		if (!rr) {
-			System.err.println("cp: cannot copy \'" + name + "\'");
+			throw new Exception("cp: cannot copy \'" + name + "\'");
 		} else {
 			String[] files = original.list();
 			for (String file:files) {
@@ -81,7 +81,7 @@ public class CommandWorker {
 			}
 		}
 	}
-	private static void copyFile(String srFile, String dtFolder) throws IOException {
+	private static void copyFile(String srFile, String dtFolder) throws Exception {
 		InputStream in = null;
 		OutputStream out = null;
 		try {
@@ -101,9 +101,9 @@ public class CommandWorker {
 			}
 			
 		} catch(FileNotFoundException ex) {
-			System.err.println("cp: \'"+srFile+"\'"+ex.getMessage());
+			throw new Exception("cp: \'"+srFile+"\'"+ex.getMessage());
 		} catch(IOException e) {
-			System.err.println("cp: \'"+srFile+"\'"+e.getMessage());  
+			throw new Exception("cp: \'"+srFile+"\'"+e.getMessage());  
 		} finally {
 			if (in != null) {
 				in.close();
@@ -118,7 +118,7 @@ public class CommandWorker {
 	
 	private void moveDirectoryFile(String[] comms) throws Exception {
 		if (comms.length != 3) {
-			System.err.println("mv: wrong number of args");
+			throw new Exception("mv: wrong number of args");
 		} else {
 			File file = getFile(comms[1]);
 			
@@ -126,14 +126,14 @@ public class CommandWorker {
 
 			boolean success = file.renameTo(new File(dir, file.getName()));
 			if (!success) {
-			    System.err.println("mv: cannot move \'" + comms[1] + "\'");
+				throw new Exception("mv: cannot move \'" + comms[1] + "\'");
 			}
 		}
 		
 	}
 	private void printDir(String[] comms) throws Exception {
 		if (comms.length != 1) {
-			System.err.println("pwd: wrong number of args");
+			throw new Exception("pwd: wrong number of args");
 		} else {
 			String [] pathFiles = mPath.list();
 			for (String name:pathFiles) {
@@ -144,11 +144,11 @@ public class CommandWorker {
 	}
 	private void removePF(String[] comms) throws Exception {
 		if (comms.length != 2) {
-			System.err.println("rm: wrong number of args");
+			throw new Exception("rm: wrong number of args");
 		} else {
 			boolean success = deleteDirectory(getFile(comms[1]));
 			if (!success) {
-				System.err.println("rm: cannot remove \'" + comms[1] + "\'");
+				throw new Exception("rm: cannot remove \'" + comms[1] + "\'");
 			}
 		}	
 	}
@@ -182,7 +182,7 @@ public class CommandWorker {
 			File newDir = getFile(commandArgs[1]);
 			boolean success = newDir.mkdir();
 			if (!success) {
-				System.err.println("mkdir: can't create \'"+commandArgs[1]+"\'");
+				throw new Exception("mkdir: can't create \'"+commandArgs[1]+"\'");
 			}
 		}
 	}
@@ -194,7 +194,7 @@ public class CommandWorker {
 			if (newPath.isDirectory()) {
 				mPath = newPath;
 			} else {
-				System.err.println("cd: \'" + commandArgs[1] + "\': No such file or directory");
+				throw new Exception("cd: \'" + commandArgs[1] + "\': No such file or directory");
 			}
 		}
 		
