@@ -96,6 +96,12 @@ public class ParallelSort {
             
             if (args[i].charAt(0) == '-') {
                 params++;
+                
+                if (args[i].length() == 1) {
+                    System.err.println("Error: empty key");
+                    continue;
+                }
+                
                 boolean toBreak = false;
                 for (int j = 1; j < args[i].length(); ++j) {
                     switch (args[i].charAt(j)) {
@@ -182,6 +188,9 @@ public class ParallelSort {
         
     public static void main(String[] args) {
         BufferedWriter out = null;
+        FileOutputStream fos = null;
+        OutputStreamWriter osw = null;
+        
         try {
             String separator = System.getProperty("line.separator");
             List<String> list = new ArrayList<String>();
@@ -194,7 +203,9 @@ public class ParallelSort {
         
             if (!output.isEmpty()) {
                 try {
-                    out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(output)));
+                    fos = new FileOutputStream(output);
+                    osw = new OutputStreamWriter(fos);
+                    out = new BufferedWriter(osw);
                 } catch (Exception e) {
                     if (out != null) {
                         out.close();
@@ -319,6 +330,22 @@ public class ParallelSort {
                     out.close();
                 } catch (IOException e) {
                     System.err.println("Error: can not close" + output);
+                }
+            }
+            
+            if (osw != null) {
+                try {
+                    osw.close();
+                } catch (IOException e) {
+                    System.err.println("Error: can not close" + osw);
+                }
+            }
+            
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    System.err.println("Error: can not close" + fos);
                 }
             }
         }
