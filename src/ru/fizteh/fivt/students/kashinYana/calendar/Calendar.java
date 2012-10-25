@@ -13,6 +13,8 @@ public class Calendar {
 
     static boolean isw = false;
     static boolean ist = false;
+    static boolean isy = false;
+    static boolean ism = false;
     static int numberMonth = -1;
     static String timeZone = "";
     static int numberYear = -1;
@@ -47,6 +49,7 @@ public class Calendar {
             if (args[i].equals("-m")) {
                 numberMonth = Integer.parseInt(args[i + 1]);
                 i += 2;
+                ism = true;
             } else if (args[i].equals("-w")) {
                 isw = true;
                 i++;
@@ -57,6 +60,7 @@ public class Calendar {
             } else if (args[i].equals("-y")) {
                 numberYear = Integer.parseInt(args[i + 1]);
                 i += 2;
+                isy = true;
             } else {
                 throw new Exception("Unknown key.");
             }
@@ -69,11 +73,11 @@ public class Calendar {
     private static void setFlags(GregorianCalendar calendar) throws Exception {
         calendar.setTimeZone(TimeZone.getTimeZone(timeZone));
         Date curData = new Date();
-        if (numberMonth == -1) {
+        if (!ism) {
             SimpleDateFormat ft = new SimpleDateFormat("M");
             numberMonth = Integer.parseInt(ft.format(curData));
         }
-        if (numberYear == -1) {
+        if (!isy) {
             SimpleDateFormat ft = new SimpleDateFormat("yyyy");
             numberYear = Integer.parseInt(ft.format(curData));
         }
