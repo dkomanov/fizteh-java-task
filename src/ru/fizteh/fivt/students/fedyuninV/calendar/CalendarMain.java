@@ -61,8 +61,17 @@ public class CalendarMain {
                             usageError();
                         } else {
                             i++;
-                            tz = TimeZone.getTimeZone(args[i]);
-                            calendar.setTimeZone(tz);
+                            String[] timeZoneNames = TimeZone.getAvailableIDs();
+                            for (int j = 0; j < timeZoneNames.length; j++) {
+                                if (args[i].equals(timeZoneNames[j])) {
+                                    tz = TimeZone.getTimeZone(args[i]);
+                                    calendar.setTimeZone(tz);
+                                }
+                            }
+                            if (tz == null) {
+                                System.err.println("Incorrect TimeZone name.");
+                                System.exit(1);
+                            }
                         }
                         break;
                     case 'm':
@@ -104,15 +113,18 @@ public class CalendarMain {
     private static void printCalendar() {
         calendar.set(year, month, 1);
         if (weeksNeeded) {
-            System.out.print("   ");
+            System.out.print("    ");
         }
         System.out.println("   " + DateFormatSymbols.getInstance().getMonths()[month] + " " + year);
         if (weeksNeeded) {
-            System.out.print("   ");
+            System.out.print("    ");
         }
         String[] dayNames = new DateFormatSymbols().getShortWeekdays();
         for (int i = 1; i <= 7; i++) {
-            System.out.print(dayNames[i % 7 + 1] + " ");
+            System.out.print(dayNames[i % 7 + 1]);
+            for (int j = 0; j < 4 - dayNames[i % 7 + 1].length(); j++) {
+                System.out.print(' ');
+            }
         }
         System.out.println();
         int currDay = 1;
@@ -151,8 +163,18 @@ public class CalendarMain {
 
     private static void printCurrentTime() {
         if (tz != null) {
+            calendar.setTimeZone(tz);
+            calendar.setTimeInMillis(new Date().getTime());
+            Calendar temp = Calendar.getInstance();
+            temp.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
+            temp.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
+            temp.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
+            temp.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
+            temp.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
+            temp.set(Calendar.SECOND, calendar.get(Calendar.SECOND));
+            temp.set(Calendar.MILLISECOND, calendar.get(Calendar.MILLISECOND));
             System.out.println();
-            System.out.println("Now: " + df.format(date) + " " + tz.getID() + " time");
+            System.out.println("Now: " + df.format(temp.getTime()) + " " + tz.getID() + " time");
         }
     }
 
