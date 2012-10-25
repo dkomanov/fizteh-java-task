@@ -54,7 +54,7 @@ public class WordWorker {
 						}	
 					}
 					if (mWords || mUniqueNotCaseSensitive || mUniqueCaseSensitive) {
-						String[] result = strLine.split("[,;:\\s!\\.]");
+						String[] result = strLine.split("[,;:\\s!\\.?]");
 						for (int x = 0; x < result.length; x++) {
 							if (result[x].length() < 1) {
 								continue;
