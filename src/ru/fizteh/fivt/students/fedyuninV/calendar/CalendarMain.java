@@ -23,7 +23,6 @@ public class CalendarMain {
 
     private static void init() {
         calendar = Calendar.getInstance();
-        date = new Date();
         df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         tz = null;
         month = null;
