@@ -61,9 +61,10 @@ public class CalendarMain {
                         } else {
                             i++;
                             String[] timeZoneNames = TimeZone.getAvailableIDs();
+                            String potentialTZName = args[i];
                             for (int j = 0; j < timeZoneNames.length; j++) {
-                                if (args[i].equals(timeZoneNames[j])) {
-                                    tz = TimeZone.getTimeZone(args[i]);
+                                if (potentialTZName.equals(timeZoneNames[j])) {
+                                    tz = TimeZone.getTimeZone(potentialTZName);
                                     calendar.setTimeZone(tz);
                                 }
                             }
