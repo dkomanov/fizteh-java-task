@@ -8,15 +8,16 @@ package ru.fizteh.fivt.students.harius.chat;
 
 import java.io.*;
 import java.net.*;
+import java.nio.channels.*;
 import ru.fizteh.fivt.chat.*;
 
 public class RegistrationService implements Runnable {
 	private Registrating managed;
-	private ServerSocket server;
+	private SocketWrapper server;
 	private ConsoleService console;
 	private boolean running = true;
 
-	public RegistrationService(Registrating managed, ServerSocket server, ConsoleService console) {
+	public RegistrationService(Registrating managed, SocketWrapper server, ConsoleService console) {
 		this.managed = managed;
 		this.server = server;
 		this.console = console;
@@ -25,16 +26,51 @@ public class RegistrationService implements Runnable {
 	@Override
 	public void run() {
 		while(running) {
-			if (!server.isBound()) {
-				continue;
+			synchronized (server) {
+				while (!server.isBound()) {
+					try {
+						console.log("waiting while server is not bound");
+						server.wait();
+						console.log("registrator invoked");
+					} catch(InterruptedException interrupted) {
+						console.log("interrupted wait for binding");
+						break;
+					}
+				}
+
+				if(!running) {
+					break;
+				}
+
+				if (!server.isBound()) {
+					continue;
+				}
+
+				try {
+					console.log("ready to accept");
+					Socket user = server.accept();
+					console.log("accepted user");
+					managed.processRegistration(user);
+				} catch (ClosedChannelException timeout) {
+					console.log("accept interrupted");
+					try {
+						server.wait();
+					} catch (InterruptedException ex) {
+						console.log("wait for server interrupted");
+						continue;
+					}
+				} catch (IOException ioEx) {
+					console.error("i/o error: " + ioEx);
+				}
+				console.log("accepted");
 			}
-			try {
-				Socket user = server.accept();
-				managed.processRegistration(user);
-			} catch (IOException ioEx) {
-				System.err.println("i/o error: " + ioEx);
-			}
+			/*try {
+				Thread.sleep(1000);
+			} catch(InterruptedException interrupted) {
+				console.error("internal error: thread interrupted");
+			}*/
 		}
+		console.log("reg service shutting down");
 	}
 
 	public void shutdown() {

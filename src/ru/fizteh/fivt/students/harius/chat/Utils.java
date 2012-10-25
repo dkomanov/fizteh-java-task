@@ -30,11 +30,30 @@ public abstract class Utils {
 		return result;
 	}
 
+	public static String getNickname(byte[] message) {
+		List<String> result = dispatch(message);
+		if (result.size() != 1) {
+			return null; //TODO: throw!
+		} else {
+			return result.get(0);
+		}
+	}
+
 	public static String messageRepr(byte[] message) {
 		List<String> parts = dispatch(message);
 		StringBuilder result = new StringBuilder();
-		result.append("[" + parts.get(0) + "]: ");
+		result.append("[" + parts.get(0) + "] ");
 		for (int i = 1; i < parts.size(); ++i) {
+			result.append(parts.get(i));
+		}
+		return result.toString();
+	}
+
+	public static String errorRepr(byte[] message) {
+		List<String> parts = dispatch(message);
+		StringBuilder result = new StringBuilder();
+		result.append("<error> ");
+		for (int i = 0; i < parts.size(); ++i) {
 			result.append(parts.get(i));
 		}
 		return result.toString();

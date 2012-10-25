@@ -29,12 +29,16 @@ public class ConsoleService implements Runnable {
 		}
 	}
 
-	public void message(String message) {
+	public synchronized void message(String message) {
 		System.out.println(message);
 	}
 
-	public void error(String error) {
+	public synchronized void error(String error) {
 		System.err.println(error);
+	}
+
+	public synchronized void log(String log) {
+		System.out.println("/log/ " + log);
 	}
 
 	public void shutdown() {

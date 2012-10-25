@@ -26,9 +26,11 @@ public class SocketService implements Runnable {
 
 	@Override
 	public void run() {
+		console.log("socketService started");
 		while(running) {
 			try {
 				byte[] message = new byte[1024];
+				console.log("waiting for a message...");
 				int length = socket.getInputStream().read(message);
 				managed.processPacket(message, this);
 			} catch (IOException ioEx) {
@@ -39,15 +41,17 @@ public class SocketService implements Runnable {
 		}
 	}
 
-	public void send(byte[] message) {
+	public synchronized void send(byte[] message) {
+		console.log("sending message...");
 		try {
 			socket.getOutputStream().write(message);
+			console.log("message sent");
 		} catch (IOException ioEx) {
 			console.error("i/o problems while connecting to remote end");
 		}
 	}
 
-	public void goodbye() {
+	private void goodbye() {
 		send(MessageUtils.bye());
 		try {
 			socket.close();
@@ -57,10 +61,19 @@ public class SocketService implements Runnable {
 	}
 
 	public void shutdown() {
+		goodbye();
 		running = false;
 	}
 
-	public String getName() {
+	public String getAddress() {
 		return socket.getInetAddress().getHostAddress();
+	}
+
+	public String getNickname() {
+		return nickname;
+	}
+
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
 	}
 }

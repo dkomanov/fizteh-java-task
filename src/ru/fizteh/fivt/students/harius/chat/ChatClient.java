@@ -33,7 +33,6 @@ public class ChatClient implements Operated {
 	}
 
 	private void endSession(int id) {
-		servers.get(id).goodbye();
 		servers.get(id).shutdown();
 		servers.remove(id);
 		if (current == id) {
@@ -41,6 +40,11 @@ public class ChatClient implements Operated {
 		} else if (current > id) {
 			--current;
 		}
+	}
+
+	private String getServerString(int id) {
+		return String.format("%c[%d] %s",
+			id == current ? '>' : ' ', id, servers.get(id).getAddress());
 	}
 
 	@Override
@@ -66,7 +70,7 @@ public class ChatClient implements Operated {
 				}
 			}
 		} else if (command.startsWith("/use")) {
-			String arg = command.substring(4);
+			String arg = command.substring(4).trim();
 			try {
 				int index = Integer.parseInt(arg);
 				if (index <= 0 || index >= servers.size()) {
@@ -84,27 +88,27 @@ public class ChatClient implements Operated {
 			console.shutdown();
 		} else if (command.equals("/list")) {
 			if (servers.isEmpty()) {
-				console.message("<no servers connected>");
+				console.message("<not connected>");
 			} else {
 				for (int i = 0; i < servers.size(); ++i) {
-					console.message(String.format("[%d] %s", i, servers.get(i).getName()));
+					console.message(getServerString(i));
 				}
 			}
 		} else if (command.equals("/whereami")) {
 			if (current == -1) {
-				console.message("Not connected to any server");
+				console.message("Not connected to any chatroom");
 			} else {
-				console.message(String.format("[%d] %s", current, servers.get(current).getName()));
+				console.message(getServerString(current));
 			}
 		} else if (command.equals("/disconnect")) {
 			if (current == -1) {
-				console.error("Not connected to any server");
+				console.error("Not connected to any chatroom");
 			} else {
 				endSession(current);
 			}
 		} else if (!command.startsWith("/")) {
 			if (current == -1) {
-				console.error("Not connected to any server");
+				console.error("Not connected to any chatroom");
 			} else {
 				servers.get(current).send(MessageUtils.message(nickname, command));
 			}
@@ -115,8 +119,19 @@ public class ChatClient implements Operated {
 
 	@Override
 	public void processPacket(byte[] packet, SocketService from) {
+		console.log("got packet from " + from.getNickname());
 		if (Utils.typeOf(packet) == MessageType.MESSAGE.getId()) {
 			console.message(Utils.messageRepr(packet));
+		} else if(Utils.typeOf(packet) == MessageType.ERROR.getId()) {
+			console.error(Utils.errorRepr(packet));
+		} else if(Utils.typeOf(packet) == MessageType.BYE.getId()) {
+			for (int i = 0; i < servers.size(); ++i) {
+				if(from == servers.get(i)) {
+					endSession(i);
+					return;
+				}
+			}
+			console.error("Internal error: bye-packet from unknown server");
 		}
 	}
 }
