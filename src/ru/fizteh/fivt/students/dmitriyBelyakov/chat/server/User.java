@@ -1,4 +1,6 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.chat;
+package ru.fizteh.fivt.students.dmitriyBelyakov.chat.server;
+
+import ru.fizteh.fivt.students.dmitriyBelyakov.parallelSort.IoUtils;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,25 +21,37 @@ class User implements Runnable {
         this.myThread.run();
     }
 
+    void close() {
+        IoUtils.close(socket);
+    }
+
+    void sendMessage(byte[] bytes) {
+        try {
+            OutputStream oStream = socket.getOutputStream();
+            oStream.write(bytes);
+        } catch(Exception e) {
+            close();
+        }
+    }
+
     public void run() {
         try {
             InputStream iStream = socket.getInputStream();
-            OutputStream oStream = socket.getOutputStream();
             int iType;
             while((iType = iStream.read()) >= 0) {
                 byte type = (byte)iType;
                 if(type == MessageType.valueOf("HELLO").getId()) {
                     if((byte)iStream.read() != 1) {
-                        // TODO error
+                        close();
                     }
                     byte[] bLength = new byte[4];
                     if(iStream.read(bLength, 0, 4) != 4) {
-                        // TODO error
+                        close();
                     }
                     int length = ByteBuffer.allocate(4).put(bLength).getInt();
                     byte[] bName = new byte[length];
                     if(iStream.read(bName, 0, length) != length) {
-                        // TODO error
+                        close();
                     }
                     name = ByteBuffer.allocate(length).put(bName).toString();
                     // information
@@ -51,7 +65,7 @@ class User implements Runnable {
                 }
             }
         } catch(Throwable t) {
-            // TODO error
+            close();
         }
 
     }

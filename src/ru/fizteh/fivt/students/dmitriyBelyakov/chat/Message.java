@@ -1,7 +1,5 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat;
 
-import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
-
 public class Message {
     private final MessageType   type;
     private final String        name;

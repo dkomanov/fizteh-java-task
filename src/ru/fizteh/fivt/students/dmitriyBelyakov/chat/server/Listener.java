@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.chat;
+package ru.fizteh.fivt.students.dmitriyBelyakov.chat.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
