@@ -8,6 +8,13 @@ public class Shell {
     public static String currentPath;
     public static boolean console = true;
     
+    public static void errorAndExit(String error) {
+        System.err.println(error);
+        if (!console) {
+            System.exit(1);
+        }
+    }
+    
     public static boolean deleteDirectory(File dir) {
         try {
             if (dir.isDirectory()) {
@@ -23,10 +30,7 @@ public class Shell {
                 return dir.delete();
             }
         } catch (Exception excpt) {
-            System.err.println("rm: " + excpt.getMessage());
-            if (!console) {
-                System.exit(1);
-            }
+            errorAndExit("rm: " + excpt.getMessage());
         }
         return false;
     }
@@ -48,10 +52,7 @@ public class Shell {
             }
             return true;
         } catch (Exception excpt) {
-            System.err.println(command +": " + excpt.getMessage());
-            if (!console) {
-                System.exit(1);
-            }
+            errorAndExit(command +": " + excpt.getMessage());
         } finally {
             if (is != null) {
                try {
@@ -69,27 +70,6 @@ public class Shell {
         return false;
     }
     
-    public static void copyErrorAndExit(File source, File dest, String command) {
-        System.err.println(command + ": Can not copy " + source + " to " + dest);
-        if (!console) {
-            System.exit(1);
-        }
-    }
-    
-    public static void pathErrorAndExit(String path, String command) {
-        System.err.println(command + ": \'" + path + "\' do not exists");
-        if (!console) {
-            System.exit(1);
-        }
-    }
-    
-    public static void errorAndExit(String error) {
-        System.err.println(error);
-        if (!console) {
-            System.exit(1);
-        }
-    }
-    
     public static boolean copy(File source, File dest, String command) {
         File dest2 = dest;
         if (source.isFile()) {
@@ -97,13 +77,13 @@ public class Shell {
                 dest2 = new File(dest.getAbsolutePath() + "/" + source.getName());
             }
             if (!copyFile(source, dest2, command)) {
-                copyErrorAndExit(source, dest, command);
+                errorAndExit(command + ": Can not copy " + source + " to " + dest);
                 return false;
             }
         } else {
             dest2 = new File(dest.getAbsolutePath() + "/" + source.getName());
             if ((!dest2.exists() && !dest2.mkdirs()) || !source.exists()) {
-                copyErrorAndExit(source, dest, command);
+                errorAndExit(command + ": Can not copy " + source + " to " + dest);
                 return false;
             }
             for (String fl : source.list()) {
@@ -164,10 +144,7 @@ public class Shell {
     
     public static boolean checkCommandsCount(Vector<String> params, int size) {
         if (params.size() < size) {
-            if (!console) {
-                System.err.println("Bad command");
-                System.exit(1);
-            }
+            errorAndExit("Bad command");
             return false;
         }
         return true;
@@ -182,7 +159,7 @@ public class Shell {
     }
     
     public static boolean executeCommand(String comm) {
-        switch (comm.replaceAll("\\s+", "")) {
+        switch (comm) {
             case "exit":
                 System.exit(0);
                 return true;
@@ -232,7 +209,7 @@ public class Shell {
                 
                 if (!src.equals(dst)) {
                     if (!src.exists()) {
-                        pathErrorAndExit(src.getAbsolutePath(), "cp");
+                        errorAndExit("cp: \'" + src.getAbsolutePath() + "\' do not exists");
                     } else {
                         copy(src, dst, "cp");
                     }
@@ -247,7 +224,7 @@ public class Shell {
                 File to = makeAbsolute(params.elementAt(2));
 
                 if (!from.exists()) {
-                    pathErrorAndExit(from.getAbsolutePath(), "mv");
+                    errorAndExit("mv: \'" + from.getAbsolutePath() + "\' do not exists");
                     return true;
                 }
                 
@@ -270,7 +247,7 @@ public class Shell {
                         try {
                             currentPath = new File(currentPath).getParentFile().getAbsolutePath();
                         } catch (Exception expt) {
-                            // it is root
+                            System.err.println("cd: it is root");
                         }
                         break;
                     
@@ -279,10 +256,18 @@ public class Shell {
                     
                     default:
                         File newPath = makeAbsolute(params.elementAt(1));
+                        if (params.elementAt(1).replaceAll("([A-Z][:][\\\\][\u002E]{2})|([/][\u002E]{2})", "!").equals("!")) {
+                            System.err.println("cd: it is root");
+                            return true;
+                        }
                         if (newPath.exists()) {
-                            currentPath = newPath.getAbsolutePath();
+                            try {
+                                currentPath = newPath.getCanonicalPath();
+                            } catch (Exception expt) {
+                                System.err.println("Error: " + expt.getMessage());
+                            }
                         } else {
-                            pathErrorAndExit(params.elementAt(1), "cd");
+                            errorAndExit("cd: \'" + params.elementAt(1) + "\' do not exists");
                         }
                             
                         break;
@@ -304,7 +289,7 @@ public class Shell {
                 BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
                 while (true) {
                     System.out.print("$ ");
-                    String commands[] = input.readLine().split(";\\s*");
+                    String commands[] = input.readLine().split("[\\s]*[;][\\s]*");
                     for (String s : commands) {
                         if (!executeCommand(s)) {
                             System.err.println("Bad command \'"+ s + "\'");
