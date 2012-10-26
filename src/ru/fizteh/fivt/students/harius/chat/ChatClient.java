@@ -58,6 +58,7 @@ public class ChatClient implements Operated {
 				String port = arg.substring(arg.indexOf(':') + 1).trim();
 				try {
 					Socket server = new Socket(host, Integer.parseInt(port));
+					// >>> nickname, really?
 					SocketService service = new SocketService(this, server, console, nickname);
 					servers.add(service);
 					service.send(MessageUtils.hello(nickname));

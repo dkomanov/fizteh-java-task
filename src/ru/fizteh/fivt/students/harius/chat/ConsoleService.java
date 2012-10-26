@@ -42,6 +42,6 @@ public class ConsoleService implements Runnable {
 	}
 
 	public void shutdown() {
-		running = false;
+		running = false; // will it actually stop?
 	}
 }
