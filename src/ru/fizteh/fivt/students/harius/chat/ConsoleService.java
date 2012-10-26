@@ -19,7 +19,7 @@ public class ConsoleService implements Runnable {
 	@Override
 	public void run() {
 		BufferedReader inp = new BufferedReader(new InputStreamReader(System.in));
-		while(running) {
+		while (running) {
 			try {
 				String cmd = inp.readLine();
 				managed.processCommand(cmd);
@@ -29,11 +29,15 @@ public class ConsoleService implements Runnable {
 		}
 	}
 
-	public void message(String message) {
+	public synchronized void message(String message) {
 		System.out.println(message);
 	}
 
-	public void error(String error) {
+	public synchronized void warn(String message) {
+		System.err.println(message);
+	}
+
+	public synchronized void error(String error) {
 		System.err.println(error);
 	}
 

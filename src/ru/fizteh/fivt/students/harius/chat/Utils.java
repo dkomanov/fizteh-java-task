@@ -30,6 +30,15 @@ public abstract class Utils {
 		return result;
 	}
 
+	public static String generalRepr(byte[] message) {
+		List<String> parts = dispatch(message);
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < parts.size(); ++i) {
+			result.append(parts.get(i));
+		}
+		return result.toString();
+	}
+
 	public static String messageRepr(byte[] message) {
 		List<String> parts = dispatch(message);
 		StringBuilder result = new StringBuilder();
@@ -38,5 +47,10 @@ public abstract class Utils {
 			result.append(parts.get(i));
 		}
 		return result.toString();
+	}
+
+	public static String helloRepr(byte[] message) {
+		List<String> parts = dispatch(message);
+		return parts.get(0);
 	}
 }

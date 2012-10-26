@@ -18,7 +18,8 @@ public class ChatServer implements Operated, Registrating {
 	private ServerSocket server;
 
 	public static void main(String[] args) {
-		new ChatServer();
+		ChatServer server = new ChatServer();
+		server.processCommand("/listen 7777");
 	}
 
 	public ChatServer() {
@@ -39,7 +40,10 @@ public class ChatServer implements Operated, Registrating {
 			console.error("Already listening port " + server.getLocalPort());
 		} else {
 			try {
+				reg.lock.lock();
 				server.bind(new InetSocketAddress(port));
+				reg.isBound.signal();
+				reg.lock.unlock();
 			} catch (IOException ioEx) {
 				console.error("Error while binding server to port " + port);
 			}
@@ -56,25 +60,76 @@ public class ChatServer implements Operated, Registrating {
 			} catch (NumberFormatException notNumber) {
 				console.error(arg + " is not a valid port number");
 			}
+		} else if (command.equals("/list")) {
+			for (SocketService client : clients) {
+				String nick = client.getNick();
+				if (nick == null) {
+					nick = "<unnamed>";
+				}
+				console.message(client.getNick() + "@" + client.getName());
+			}
+			if (clients.isEmpty()) {
+				console.message("<no clients connected>");
+			}
+		} else if (command.equals("/stop")) {
+			for (SocketService client : clients) {
+				client.goodbye();
+				client.shutdown();
+			}
+			clients.clear();
+		} else if (command.equals("/exit")) {
+			processCommand("/stop");
+			reg.shutdown();
+			console.shutdown();
+			System.exit(0);
+		} else if (command.startsWith("/sendall")) {
+			String message = command.substring(8).trim();
+			for (SocketService client : clients) {
+				client.send(MessageUtils.message("server", message));
+			}
+		} else {
+			console.error("Wrong command: " + command);
 		}
 	}
 
 	@Override
 	public void processPacket(byte[] packet, SocketService from) {
-		if (Utils.typeOf(packet) == MessageType.BYE.getId()) {
-			from.goodbye();
+		if (Utils.typeOf(packet) == MessageType.HELLO.getId()) {
+			String nick = Utils.helloRepr(packet);
+			boolean unique = true;
+			for (SocketService client : clients) {
+				if (nick.equals(client.getNick())) {
+					unique = false;
+				}
+			}
+			if (unique) {
+				from.setNick(nick);
+			} else {
+				from.send(MessageUtils.error("Nickname already in use"));
+				from.goodbye(); // strange behavior while double connect attempt
+				from.shutdown();
+				clients.remove(from);
+			}
+		}
+		else if (Utils.typeOf(packet) == MessageType.BYE.getId()) {
+			console.warn("Disconnecting " + from.getNick());
 			from.shutdown();
 			clients.remove(from);
 		} else if (Utils.typeOf(packet) == MessageType.MESSAGE.getId()) {
 			for(SocketService client : clients) {
-				client.send(packet);
+				if (client != from)
+				{
+					client.send(packet);
+				}
 			}
+		} else if (Utils.typeOf(packet) == MessageType.ERROR.getId()) {
+			console.error("Error from " + from.getNick() + ": " + Utils.generalRepr(packet));
 		}
 	}
 
 	@Override
 	public void processRegistration(Socket user) {
-		SocketService service = new SocketService(this, user, console, "server");
+		SocketService service = new SocketService(this, user, console, null);
 		clients.add(service);
 		new Thread(service).start();
 	}

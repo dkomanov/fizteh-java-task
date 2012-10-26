@@ -8,6 +8,7 @@ package ru.fizteh.fivt.students.harius.chat;
 
 import java.io.*;
 import java.net.*;
+import java.util.concurrent.locks.*;
 import ru.fizteh.fivt.chat.*;
 
 public class RegistrationService implements Runnable {
@@ -15,6 +16,9 @@ public class RegistrationService implements Runnable {
 	private ServerSocket server;
 	private ConsoleService console;
 	private boolean running = true;
+
+	public final Lock lock = new ReentrantLock();
+	public final Condition isBound = lock.newCondition();
 
 	public RegistrationService(Registrating managed, ServerSocket server, ConsoleService console) {
 		this.managed = managed;
@@ -25,8 +29,13 @@ public class RegistrationService implements Runnable {
 	@Override
 	public void run() {
 		while(running) {
-			if (!server.isBound()) {
-				continue;
+			lock.lock();
+			while (!server.isBound()) {
+				try {
+					isBound.await();
+				} catch (InterruptedException interrupted) {
+
+				}
 			}
 			try {
 				Socket user = server.accept();
@@ -34,6 +43,7 @@ public class RegistrationService implements Runnable {
 			} catch (IOException ioEx) {
 				System.err.println("i/o error: " + ioEx);
 			}
+			lock.unlock();
 		}
 	}
 

@@ -22,7 +22,8 @@ public class ChatClient implements Operated {
 		if (args.length == 0) {
 			System.err.println("Please provide your nickname");
 		} else {
-			new ChatClient(args[0]);
+			ChatClient client = new ChatClient(args[0]);
+			client.processCommand("/connect localhost:7777");
 		}
 	}
 
@@ -33,7 +34,6 @@ public class ChatClient implements Operated {
 	}
 
 	private void endSession(int id) {
-		servers.get(id).goodbye();
 		servers.get(id).shutdown();
 		servers.remove(id);
 		if (current == id) {
@@ -41,6 +41,10 @@ public class ChatClient implements Operated {
 		} else if (current > id) {
 			--current;
 		}
+	}
+
+	private String getServerString(int id) {
+		return String.format("%c[%d] %s", id == current ? '>' : ' ', id, servers.get(id).getName());
 	}
 
 	@Override
@@ -66,7 +70,7 @@ public class ChatClient implements Operated {
 				}
 			}
 		} else if (command.startsWith("/use")) {
-			String arg = command.substring(4);
+			String arg = command.substring(4).trim();
 			try {
 				int index = Integer.parseInt(arg);
 				if (index <= 0 || index >= servers.size()) {
@@ -79,6 +83,7 @@ public class ChatClient implements Operated {
 			}
 		} else if (command.equals("/exit")) {
 			while (!servers.isEmpty()) {
+				servers.get(0).goodbye();
 				endSession(0);
 			}
 			console.shutdown();
@@ -87,19 +92,20 @@ public class ChatClient implements Operated {
 				console.message("<no servers connected>");
 			} else {
 				for (int i = 0; i < servers.size(); ++i) {
-					console.message(String.format("[%d] %s", i, servers.get(i).getName()));
+					console.message(getServerString(i));
 				}
 			}
 		} else if (command.equals("/whereami")) {
 			if (current == -1) {
 				console.message("Not connected to any server");
 			} else {
-				console.message(String.format("[%d] %s", current, servers.get(current).getName()));
+				console.message(getServerString(current));
 			}
 		} else if (command.equals("/disconnect")) {
 			if (current == -1) {
 				console.error("Not connected to any server");
 			} else {
+				servers.get(current).goodbye();
 				endSession(current);
 			}
 		} else if (!command.startsWith("/")) {
@@ -117,6 +123,16 @@ public class ChatClient implements Operated {
 	public void processPacket(byte[] packet, SocketService from) {
 		if (Utils.typeOf(packet) == MessageType.MESSAGE.getId()) {
 			console.message(Utils.messageRepr(packet));
+		} else if(Utils.typeOf(packet) == MessageType.BYE.getId()) {
+			int id = servers.indexOf(from);
+			if (id == -1) {
+				console.error("Goodbye from strange server");
+			} else {
+				console.warn("Server " + from.getName() + " disconnected");
+				endSession(id);
+			}
+		} else if(Utils.typeOf(packet) == MessageType.ERROR.getId()) {
+			console.error("Error from server: " + Utils.generalRepr(packet));
 		}
 	}
 }

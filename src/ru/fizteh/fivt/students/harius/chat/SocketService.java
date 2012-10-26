@@ -63,4 +63,12 @@ public class SocketService implements Runnable {
 	public String getName() {
 		return socket.getInetAddress().getHostAddress();
 	}
+
+	public void setNick(String nick) {
+		nickname = nick;
+	}
+
+	public String getNick() {
+		return nickname;
+	}
 }
