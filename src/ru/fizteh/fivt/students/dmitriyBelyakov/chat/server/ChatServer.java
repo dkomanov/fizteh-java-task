@@ -8,9 +8,15 @@ public class ChatServer {
     public static void main(String[] args) {
         String command;
         Scanner scanner = new Scanner(System.in);
+        Listener listener = null;
         while((command = scanner.nextLine()) != null) {
             if(command.equals("/listen")) {
-                // TODO listen
+                listener = new Listener(6666);
+                try {
+                    listener.start();
+                } catch(Exception e) {
+                    System.exit(1);
+                }
             } else if(command.equals("/stop")) {
                 // TODO stop
             } else if(command.equals("/list")) {
@@ -22,7 +28,8 @@ public class ChatServer {
             } else if(command.equals("/kill")) {
                 // TODO kill
             } else if(command.equals("/exit")) {
-                // TODO exit
+                listener.stop();
+                System.exit(0);
             }
         }
     }

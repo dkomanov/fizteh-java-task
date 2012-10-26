@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.server;
 
+import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
+import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
 import ru.fizteh.fivt.students.dmitriyBelyakov.parallelSort.IoUtils;
 
 import java.io.InputStream;
@@ -12,11 +14,12 @@ class User implements Runnable {
     private Thread myThread;
     private String name;
     private boolean authorized;
+    private Listener myListener;
 
     public User(Socket socket) {
         this.authorized = false;
         this.name = null;
-        this.socket = new Socket();
+        this.socket = socket;
         this.myThread = new Thread(this);
         this.myThread.run();
     }
@@ -34,6 +37,79 @@ class User implements Runnable {
         }
     }
 
+    private void getHelloMessage() {
+        try {
+            InputStream iStream = socket.getInputStream();
+            if((byte)iStream.read() != 1) {
+                close();
+            }
+            byte[] bLength = new byte[4];
+            if(iStream.read(bLength, 0, 4) != 4) {
+                close();
+            }
+            ByteBuffer buffer =  ByteBuffer.allocate(4).put(bLength);
+            buffer.position(0);
+            int length = buffer.getInt();
+            byte[] bName = new byte[length];
+            if(iStream.read(bName, 0, length) != length) {
+                close();
+            }
+            name = new String(bName);
+            authorized = true;
+            // information
+            System.out.println("name: " + name);
+        } catch (Exception e) {
+        }
+    }
+
+    private void getMessage() {
+        if(!authorized) {
+            close();
+        }
+        try {
+            InputStream iStream = socket.getInputStream();
+            if((byte)iStream.read() != 2) {
+                close();
+            }
+            byte[] bLength = new byte[4];
+            if(iStream.read(bLength, 0, 4) != 4) {
+                close();
+            }
+            ByteBuffer buffer =  ByteBuffer.allocate(4).put(bLength);
+            buffer.position(0);
+            int length = buffer.getInt();
+            byte[] bName = new byte[length];
+            if(iStream.read(bName, 0, length) != length) {
+                close();
+            }
+            if(!(new String(bName).equals(name))) {
+                close();
+            }
+            bLength = new byte[4];
+            if(iStream.read(bLength, 0, 4) != 4) {
+                close();
+            }
+            buffer =  ByteBuffer.allocate(4).put(bLength);
+            buffer.position(0);
+            length = buffer.getInt();
+            byte[] bMess = new byte[length];
+            Message message = new Message(MessageType.HELLO, name, new String(bMess));
+            // TODO send all
+        } catch (Exception e) {
+            close();
+        }
+    }
+
+    private void getByeMessage() {
+        System.out.println("Bye, " + name);
+        close();
+    }
+
+    private void getErrorMessage() {
+        System.out.println("Error, " + name);
+        close();
+    }
+
     public void run() {
         try {
             InputStream iStream = socket.getInputStream();
@@ -41,27 +117,13 @@ class User implements Runnable {
             while((iType = iStream.read()) >= 0) {
                 byte type = (byte)iType;
                 if(type == MessageType.valueOf("HELLO").getId()) {
-                    if((byte)iStream.read() != 1) {
-                        close();
-                    }
-                    byte[] bLength = new byte[4];
-                    if(iStream.read(bLength, 0, 4) != 4) {
-                        close();
-                    }
-                    int length = ByteBuffer.allocate(4).put(bLength).getInt();
-                    byte[] bName = new byte[length];
-                    if(iStream.read(bName, 0, length) != length) {
-                        close();
-                    }
-                    name = ByteBuffer.allocate(length).put(bName).toString();
-                    // information
-                    System.out.println(name);
+                    getHelloMessage();
                 } else if(type == MessageType.valueOf("BYE").getId()) {
-                    // TODO bye
+                    getByeMessage();
                 } else if(type == MessageType.valueOf("MESSAGE").getId()) {
-                    // TODO message
+                    getMessage();
                 } else {
-                    // TODO error
+                    getErrorMessage();
                 }
             }
         } catch(Throwable t) {
