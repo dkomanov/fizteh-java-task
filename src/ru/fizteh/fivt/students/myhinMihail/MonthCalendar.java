@@ -57,6 +57,18 @@ public class MonthCalendar {
                         i++;
                         timeZone = TimeZone.getTimeZone(args[i]);
                         calendar.setTimeZone(timeZone);
+                        boolean find = false;
+                        for (int j = 0; j < TimeZone.getAvailableIDs().length; ++j) {
+                            if (args[i].equals(TimeZone.getAvailableIDs()[j])) {
+                                find = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!find) {
+                            System.err.println("Error: Unknown time zone");
+                            System.exit(1);
+                        }
                         break;
                     
                     default:
@@ -131,6 +143,22 @@ public class MonthCalendar {
         }
         
     }
+
+    public static void main(String[] args) {
+        try {
+            readKeys(args);
+            print();
+            if (timeZone != null) {
+                DateFormat dateFormat = new SimpleDateFormat("yyy.MM.dd HH:mm:ss");
+                dateFormat.setTimeZone(timeZone);
+                System.out.println("\nNow: " +  dateFormat.format(date) + " " + timeZone.getID() + " time");
+            }
+        } catch (Exception expt) {
+            System.err.println("Error: " + expt.getMessage());
+        }
+    }
+
+}
 
     public static void main(String[] args) {
         readKeys(args);
