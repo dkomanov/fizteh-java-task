@@ -22,7 +22,9 @@ public class ConsoleService implements Runnable {
 		while (running) {
 			try {
 				String cmd = inp.readLine();
-				managed.processCommand(cmd);
+				if (cmd != null) {
+					managed.processCommand(cmd);
+				}
 			} catch (IOException ioEx) {
 				System.err.println("i/o error: " + ioEx);
 			}
