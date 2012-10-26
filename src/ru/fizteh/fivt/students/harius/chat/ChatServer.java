@@ -95,7 +95,7 @@ public class ChatServer implements Operated, Registrating {
 	@Override
 	public void processPacket(byte[] packet, SocketService from) {
 		if (Utils.typeOf(packet) == MessageType.HELLO.getId()) {
-			String nick = Utils.helloRepr(packet);
+			String nick = Utils.helloRepr(packet);// multiple hello packets?
 			boolean unique = true;
 			for (SocketService client : clients) {
 				if (nick.equals(client.getNick())) {
@@ -103,10 +103,11 @@ public class ChatServer implements Operated, Registrating {
 				}
 			}
 			if (unique) {
+				console.warn("New user entered: " + nick);
 				from.setNick(nick);
 			} else {
 				from.send(MessageUtils.error("Nickname already in use"));
-				from.goodbye(); // strange behavior while double connect attempt
+				from.goodbye(); // strange behavior while double connect attempt?
 				from.shutdown();
 				clients.remove(from);
 			}
@@ -117,8 +118,7 @@ public class ChatServer implements Operated, Registrating {
 			clients.remove(from);
 		} else if (Utils.typeOf(packet) == MessageType.MESSAGE.getId()) {
 			for(SocketService client : clients) {
-				if (client != from)
-				{
+				if (client != from) { // nickname checking?
 					client.send(packet);
 				}
 			}
@@ -129,6 +129,7 @@ public class ChatServer implements Operated, Registrating {
 
 	@Override
 	public void processRegistration(Socket user) {
+		console.warn("User connected");
 		SocketService service = new SocketService(this, user, console, null);
 		clients.add(service);
 		new Thread(service).start();
