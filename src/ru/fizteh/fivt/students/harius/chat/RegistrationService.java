@@ -26,16 +26,16 @@ public class RegistrationService implements Runnable {
 	@Override
 	public void run() {
 		while(running) {
-			synchronized (server) {
+			//synchronized (server) {
 				while (!server.isBound()) {
-					try {
-						console.log("waiting while server is not bound");
-						server.wait();
-						console.log("registrator invoked");
-					} catch(InterruptedException interrupted) {
-						console.log("interrupted wait for binding");
-						break;
-					}
+					// try {
+					// 	console.log("waiting while server is not bound");
+					// 	server.wait();
+					// 	console.log("registrator invoked");
+					// } catch(InterruptedException interrupted) {
+					// 	console.log("interrupted wait for binding");
+					// 	break;
+					// }
 				}
 
 				if(!running) {
@@ -51,19 +51,19 @@ public class RegistrationService implements Runnable {
 					Socket user = server.accept();
 					console.log("accepted user");
 					managed.processRegistration(user);
-				} catch (ClosedChannelException timeout) {
-					console.log("accept interrupted");
-					try {
-						server.wait();
-					} catch (InterruptedException ex) {
-						console.log("wait for server interrupted");
-						continue;
-					}
+				// } catch (ClosedChannelException timeout) {
+				// 	console.log("accept interrupted");
+				// 	try {
+				// 		server.wait();
+				// 	} catch (InterruptedException ex) {
+				// 		console.log("wait for server interrupted");
+				// 		continue;
+				// 	}
 				} catch (IOException ioEx) {
 					console.error("i/o error: " + ioEx);
 				}
-				console.log("accepted");
-			}
+				// console.log("accepted");
+			//}
 			/*try {
 				Thread.sleep(1000);
 			} catch(InterruptedException interrupted) {

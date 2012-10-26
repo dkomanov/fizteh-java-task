@@ -72,7 +72,7 @@ public class ChatServer implements Operated, Registrating {
 
 	private void listen(int port) {
 		console.log("entering block for listening");
-		synchronized (server) {
+		//synchronized (server) {
 			console.log("entered block for listening");
 			if (server.isBound()) {
 				console.error("Already listening");
@@ -80,12 +80,12 @@ public class ChatServer implements Operated, Registrating {
 				try {
 					console.log("binding to port " + port);
 					server.bind(port);
-					server.notify();
+					//server.notify();
 				} catch (IOException ioEx) {
 					console.error("Error while binding server to port " + port);
 				}
 			}
-		}
+		//}
 		console.log("exited block for listening");
 	}
 
@@ -124,9 +124,9 @@ public class ChatServer implements Operated, Registrating {
 				console.log("interrupting regthread");
 				regThread.interrupt();
 				console.log("entering block for unbind");
-				synchronized (server) {
+				//synchronized (server) {
 					server.unbind();
-				}
+				//}
 				console.log("processed block for unbind");
 			} catch(IOException ioEx) {
 				console.error("i/o error while unbinding server socket");
@@ -135,9 +135,9 @@ public class ChatServer implements Operated, Registrating {
 			processCommand("/stop");
 			try {
 				console.error("entering block for closing server");
-				synchronized (server) {
+				//synchronized (server) {
 					server.close();
-				}
+				//}
 				console.error("processed block for closing server");
 			} catch (IOException ioEx) {
 				console.error("i/o error while cloing server socket");
