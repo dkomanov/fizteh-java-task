@@ -8,6 +8,13 @@ public class Shell {
     public static String currentPath;
     public static boolean console = true;
     
+    public static void errorAndExit(String error) {
+        System.err.println(error);
+        if (!console) {
+            System.exit(1);
+        }
+    }
+    
     public static boolean deleteDirectory(File dir) {
         try {
             if (dir.isDirectory()) {
@@ -23,10 +30,7 @@ public class Shell {
                 return dir.delete();
             }
         } catch (Exception excpt) {
-            System.err.println("rm: " + excpt.getMessage());
-            if (!console) {
-                System.exit(1);
-            }
+            errorAndExit("rm: " + excpt.getMessage());
         }
         return false;
     }
@@ -48,10 +52,7 @@ public class Shell {
             }
             return true;
         } catch (Exception excpt) {
-            System.err.println(command +": " + excpt.getMessage());
-            if (!console) {
-                System.exit(1);
-            }
+            errorAndExit(command +": " + excpt.getMessage());
         } finally {
             if (is != null) {
                try {
@@ -67,13 +68,6 @@ public class Shell {
             }
         }
         return false;
-    }
-    
-    public static void errorAndExit(String error) {
-        System.err.println(error);
-        if (!console) {
-            System.exit(1);
-        }
     }
     
     public static boolean copy(File source, File dest, String command) {
@@ -165,7 +159,7 @@ public class Shell {
     }
     
     public static boolean executeCommand(String comm) {
-        switch (comm.replaceAll("\\s+", "")) {
+        switch (comm) {
             case "exit":
                 System.exit(0);
                 return true;
@@ -253,7 +247,7 @@ public class Shell {
                         try {
                             currentPath = new File(currentPath).getParentFile().getAbsolutePath();
                         } catch (Exception expt) {
-                            // it is root
+                            System.err.println("cd: it is root");
                         }
                         break;
                     
@@ -262,8 +256,16 @@ public class Shell {
                     
                     default:
                         File newPath = makeAbsolute(params.elementAt(1));
+                        if (params.elementAt(1).replaceAll("([A-Z][:][\\\\][\u002E]{2})|([/][\u002E]{2})", "!").equals("!")) {
+                            System.err.println("cd: it is root");
+                            return true;
+                        }
                         if (newPath.exists()) {
-                            currentPath = newPath.getAbsolutePath();
+                            try {
+                                currentPath = newPath.getCanonicalPath();
+                            } catch (Exception expt) {
+                                System.err.println("Error: " + expt.getMessage());
+                            }
                         } else {
                             errorAndExit("cd: \'" + params.elementAt(1) + "\' do not exists");
                         }
@@ -287,7 +289,7 @@ public class Shell {
                 BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
                 while (true) {
                     System.out.print("$ ");
-                    String commands[] = input.readLine().split(";\\s*");
+                    String commands[] = input.readLine().split("[\\s]*[;][\\s]*");
                     for (String s : commands) {
                         if (!executeCommand(s)) {
                             System.err.println("Bad command \'"+ s + "\'");
