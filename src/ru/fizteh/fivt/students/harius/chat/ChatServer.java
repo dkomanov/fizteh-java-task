@@ -19,7 +19,7 @@ public class ChatServer implements Operated, Registrating {
 
 	public static void main(String[] args) {
 		ChatServer server = new ChatServer();
-		server.processCommand("/listen 7777");
+		//server.processCommand("/listen 7777");
 	}
 
 	public ChatServer() {

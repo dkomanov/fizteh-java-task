@@ -23,7 +23,7 @@ public class ChatClient implements Operated {
 			System.err.println("Please provide your nickname");
 		} else {
 			ChatClient client = new ChatClient(args[0]);
-			client.processCommand("/connect localhost:7777");
+			//client.processCommand("/connect localhost:7777");
 		}
 	}
 
@@ -73,7 +73,7 @@ public class ChatClient implements Operated {
 			String arg = command.substring(4).trim();
 			try {
 				int index = Integer.parseInt(arg);
-				if (index <= 0 || index >= servers.size()) {
+				if (index < 0 || index >= servers.size()) {
 					console.error("Wrong server id: " + index);
 				} else {
 					current = index;
@@ -122,7 +122,9 @@ public class ChatClient implements Operated {
 	@Override
 	public void processPacket(byte[] packet, SocketService from) {
 		if (Utils.typeOf(packet) == MessageType.MESSAGE.getId()) {
-			console.message(Utils.messageRepr(packet));
+			if (current != -1 && from == servers.get(current)) {
+				console.message(Utils.messageRepr(packet));
+			}
 		} else if(Utils.typeOf(packet) == MessageType.BYE.getId()) {
 			int id = servers.indexOf(from);
 			if (id == -1) {
