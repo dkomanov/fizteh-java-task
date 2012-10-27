@@ -33,6 +33,7 @@ public class SocketService implements Runnable {
 				if (length == -1) {
 					console.error("fatal i/o error while receiving packet, terminating connection");
 					shutdown();
+					break;
 				}
 				managed.processPacket(message, this);
 			} catch (IOException ioEx) {
