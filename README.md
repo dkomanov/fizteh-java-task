@@ -16,7 +16,10 @@ generics, коллекции](http://yadi.sk/d/O-tmiXHIxuhs)
 spurious wake up](http://yadi.sk/d/IUVaBNVg0Eh1k)
 6. [Многопоточность: ThreadState, проблемы синхронизации, примитивы синхронизации]
 (http://yadi.sk/d/iLL3rXzm0LGE1)
-7. Многопоточность, байт-код
+7. [Многопоточность: устройство коллекций, happens-before, Executor Framework,
+Thread.stop(), Shutdown hook. java.lang.reflect.Proxy]
+(http://yadi.sk/d/n9q6dYPI0QX67)
+8. Метаданные, байт-код
 
 ## Семинары
 В папке [tasks](fizteh-java-task/tree/master/tasks) находятся описания заданий на
