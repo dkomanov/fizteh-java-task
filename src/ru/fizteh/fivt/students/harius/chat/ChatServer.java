@@ -37,18 +37,23 @@ public class ChatServer implements Operated, Registrating {
 		new Thread(reg).start();
 	}
 
+	private void rebindServer() throws IOException {
+		server.close();
+		server = new ServerSocket();
+		reg.setSocket(server);
+	}
+
 	private void listen(int port) {
-		if (server.isBound()) {
-			console.error("Already listening port " + server.getLocalPort());
-		} else {
-			try {
-				reg.lock.lock();
-				server.bind(new InetSocketAddress(port));
-				reg.isBound.signal();
-				reg.lock.unlock();
-			} catch (IOException ioEx) {
-				console.error("Error while binding server to port " + port);
-			}
+		try {
+			console.warn("Preparing to switch port");
+			reg.lock.lock();
+			server.bind(new InetSocketAddress(port));
+			reg.isBound.signal();
+			console.warn("Port switched to " + port);
+		} catch (IOException ioEx) {
+			console.error("Error while binding server to port " + port + ": " + ioEx.getMessage());
+		} finally {
+			reg.lock.unlock();
 		}
 	}
 
@@ -92,6 +97,13 @@ public class ChatServer implements Operated, Registrating {
 			}
 		} else if (command.equals("/stop")) {
 			endAllSessions();
+			console.warn("Preparing to stop server");
+			try {
+				rebindServer();
+				console.warn("Server stopped");
+			} catch (IOException ioEx) {
+				console.error("i/o error while closing server " + ioEx.getMessage());
+			}
 		} else if (command.equals("/exit")) {
 			processCommand("/stop");
 			reg.shutdown();
@@ -159,9 +171,13 @@ public class ChatServer implements Operated, Registrating {
 				console.warn("Disconnecting " + from.getNick());
 				from.shutdown();
 			} else if (Utils.typeOf(packet) == MessageType.MESSAGE.getId()) {
-				for(SocketService client : clients) {
-					if (client != from) { // nickname checking?
-						client.send(packet);
+				if (!Utils.dispatch(packet).get(0).equals(from.getNick())) {
+					from.send(MessageUtils.error("Cheating cheater, it's not your nick!"));
+				} else {
+					for (SocketService client : clients) {
+						if (client != from) { // nickname checking?
+							client.send(packet);
+						}
 					}
 				}
 			} else if (Utils.typeOf(packet) == MessageType.ERROR.getId()) {
@@ -172,6 +188,8 @@ public class ChatServer implements Operated, Registrating {
 		} catch (BadMessageException ex) {
 			console.error(ex.getMessage());
 			from.send(MessageUtils.error("Ill-formed message received. Be careful!"));
+		} catch (Exception ex) {
+			console.error("Exception while processing message: " + ex.getMessage());
 		}
 	}
 

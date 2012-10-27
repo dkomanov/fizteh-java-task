@@ -97,7 +97,7 @@ public class ChatClient implements Operated {
 			}
 		} else if (command.equals("/whereami")) {
 			if (current == -1) {
-				console.message("Not connected to any server");
+				console.message("<not connected to any server>");
 			} else {
 				console.message(getServerString(current));
 			}
