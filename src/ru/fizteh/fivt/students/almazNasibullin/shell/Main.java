@@ -127,10 +127,15 @@ public class Main {
                 }
                 commandExecute = true;
             } else if (cur.equals("dir") && !commandExecute) {
-                File f = new File(System.getProperty("user.dir"));
-                String[] files = f.list();
-                for (int i = 0; i < files.length; ++i) {
-                    System.out.println(files[i]);
+                if (st.hasMoreTokens()) {
+                    System.err.println("'dir' does not support the arguments");
+                    System.exit(1);
+                } else {
+                    File f = new File(System.getProperty("user.dir"));
+                    String[] files = f.list();
+                    for (int i = 0; i < files.length; ++i) {
+                        System.out.println(files[i]);
+                    }
                 }
                 commandExecute = true;
             } else if (cur.equals("exit") && !commandExecute) {

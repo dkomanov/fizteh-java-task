@@ -34,9 +34,10 @@ public class Server {
             /* хранит SocketChannel клиентов, у которых не утвержден ник,
              * т.е. возможно, что ник клиента совпадает с уже имеющимся
              */
-            ServerSocketChannel ssc = ServerSocketChannel.open();
-            // для принятия новых клиетов
-            ssc.configureBlocking(false);
+            List<ServerSocketChannel> ssc = new ArrayList<ServerSocketChannel>();
+            // для того, чтобы принимать новых клиетов
+            ssc.add(ServerSocketChannel.open());
+            ssc.get(0).configureBlocking(false);
             // указываем неблокирующий режим
 
             for (;;) {
@@ -50,13 +51,27 @@ public class Server {
                 handlerClients(selector, clients, withoutName, ssc);
             }
         } catch (Exception e) {
-            System.out.println("Something bad happened: " + e.getMessage());
-            System.exit(1);
+            printErrorAndExit("Something bad happened: " + e.getMessage());
+        }
+    }
+
+    public static void printErrorAndExit(String error) {
+        System.err.println(error);
+        System.exit(1);
+    }
+
+    public static void closeChannel(SocketChannel sc) {
+        try {
+            if (sc != null) {
+                sc.close();
+            }
+        } catch (Exception e) {
+            printErrorAndExit("Bad closing: " + e.getMessage());
         }
     }
 
     public static void listen(WrapperPrimitive<Integer> port, Selector selector,
-            ServerSocketChannel ssc, Map<String, SocketChannel> clients, StringTokenizer st) {
+            List<ServerSocketChannel> ssc, Map<String, SocketChannel> clients, StringTokenizer st) {
         try {
             if (port.t == -1) { // сервер может слушать в любой момент
                 // времени только один порт
@@ -65,36 +80,37 @@ public class Server {
                     port.t = Integer.parseInt(portNumber);
                     InetSocketAddress isa = new InetSocketAddress("localhost",
                             port.t);
-                    ssc.socket().bind(isa);
+                    if (!ssc.get(0).isOpen()) {
+                        ssc.remove(0);
+                        ssc.add(ServerSocketChannel.open());
+                        ssc.get(0).configureBlocking(false);
+                    }
+                    ssc.get(0).socket().bind(isa);
                     System.out.println("Server at: " + isa.getAddress());
-                    ssc.register(selector, SelectionKey.OP_ACCEPT);
+                    ssc.get(0).register(selector, SelectionKey.OP_ACCEPT);
                     System.out.println("Listening on port: " + port.t);
                 } else {
-                    System.err.println("Usage: /listen portNumber");
-                    System.exit(1);
+                    printErrorAndExit("Usage: /listen portNumber");
                 }
             } else {
-                System.err.println("Only one port is available!");
-                System.exit(1);
+                printErrorAndExit("Only one port is available!");
             }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            printErrorAndExit(e.getMessage());
         }
     }
 
-    public static void stop(ServerSocketChannel ssc, Map<String, SocketChannel> clients,
+    public static void stop(List<ServerSocketChannel> ssc, Map<String, SocketChannel> clients,
             WrapperPrimitive<Integer> port) {
         try {
             if (port.t != -1) {
                 port.t = -1;
                 try {
-                    if (ssc != null) {
-                        ssc.socket().close();
+                    if (ssc.get(0) != null) {
+                        ssc.get(0).close();
                     }
                 } catch (Exception e) {
-                    System.err.println("Could not close the current channel: " + e.getMessage());
-                    System.exit(1);
+                    printErrorAndExit("Could not close the current channel: " + e.getMessage());
                 }
                 Iterator iter = clients.entrySet().iterator();
                 while (iter.hasNext()) {
@@ -102,24 +118,15 @@ public class Server {
                     SocketChannel cur = (SocketChannel)pair.getValue();
                     if (cur != null && cur.isConnected()) {
                         sendMessage(cur, MessageUtils.bye(), clients);
-                        try {
-                            if (cur != null) {
-                                cur.close();
-                            }
-                        } catch (Exception e) {
-                            System.err.println("Could not close the current channel: "
-                                    + e.getMessage());
-                            System.exit(1);
-                        }
+                        closeChannel(cur);
                     }
                 }
+                clients.clear();
             } else {
-                System.err.println("Nothing to stop");
-                System.exit(1);
+                printErrorAndExit("Nothing to stop");
             }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            printErrorAndExit(e.getMessage());
         }
     }
 
@@ -129,40 +136,24 @@ public class Server {
                 String name = st.nextToken();
                 if (!clients.containsKey(name)) {
                     // проверяем есть ли такой клиент вообще
-                    System.err.println(name + ": there is no such client");
-                    System.exit(1);
+                    printErrorAndExit(name + ": there is no such client");
                 } else {
                     SocketChannel clientToClose = clients.get(name);
                     clients.remove(name);
-                    try {
-                        if (clientToClose != null) {
-                            clientToClose.close();
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Bad closing: " + e.getMessage());
-                        System.exit(1);
-                    }
-                    Iterator it = clients.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry pair = (Map.Entry)it.next();
-                        SocketChannel cur = (SocketChannel)pair.getValue();
-                        String ms = name + " is offline";
-                        sendMessage(cur, MessageUtils.message("server", ms), clients);
-                    }
+                    closeChannel(clientToClose);
+                    sendMessageAll(clients, name + " is offline", "server");
                     System.out.println(name + " is offline");
                 }
             } else {
-                System.err.println("Usage: /send clientName");
-                System.exit(1);
+                printErrorAndExit("Usage: /send clientName");
             }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            printErrorAndExit(e.getMessage());
         }
     }
 
     public static void handlerConsole(BufferedReader buf, WrapperPrimitive<Integer> port,
-            Selector selector, ServerSocketChannel ssc,
+            Selector selector, List<ServerSocketChannel> ssc,
             Map<String, SocketChannel> clients) {
         try {
             String str = buf.readLine();
@@ -192,12 +183,10 @@ public class Server {
                             sendMessage(clients.get(name),
                                     MessageUtils.message("server", sb.toString()), clients);
                         } else {
-                            System.err.println(name + ": there is no such client");
-                            System.exit(1);
+                            printErrorAndExit(name + ": there is no such client");
                         }
                     } else {
-                        System.err.println("Usage: /send clientName");
-                        System.exit(1);
+                        printErrorAndExit("Usage: /send clientName");
                     }
                 } else if (cmd.equals("/sendall")) {
                     StringBuilder sb = new StringBuilder();
@@ -205,12 +194,7 @@ public class Server {
                         sb.append(st.nextToken());
                         sb.append(" ");
                     }
-                    Iterator iter = clients.entrySet().iterator();
-                    while (iter.hasNext()) {
-                        Map.Entry pair = (Map.Entry)iter.next();
-                        sendMessage((SocketChannel)pair.getValue(),
-                                MessageUtils.message("server", sb.toString()), clients);
-                    }
+                    sendMessageAll(clients, sb.toString(), "server");
                 } else if (cmd.equals("/kill")) {
                     kill(clients, st);
                 } else if (cmd.equals("/exit")) {
@@ -222,25 +206,22 @@ public class Server {
                             selector.close();
                         }
                     } catch (Exception e) {
-                        System.out.println("Bad closing selector: " + e.getMessage());
-                        System.exit(1);
+                        printErrorAndExit("Bad closing selector: " + e.getMessage());
                     }
                     clients.clear();
                     System.exit(0);
                 } else {
-                    System.err.println(cmd + ": bad command");
-                    System.exit(1);
+                    printErrorAndExit(cmd + ": bad command");
                 }
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.exit(1);
+            printErrorAndExit(e.getMessage());
         }
     }
 
     public static void handlerClients(Selector selector, 
             Map<String, SocketChannel> clients, List<SocketChannel> withoutName,
-            ServerSocketChannel ssc) {
+            List<ServerSocketChannel> ssc) {
         try {
             Set<SelectionKey> keys = selector.selectedKeys();
             Iterator iter = keys.iterator();
@@ -249,10 +230,9 @@ public class Server {
                 if ((key.readyOps() & SelectionKey.OP_ACCEPT) ==
                         SelectionKey.OP_ACCEPT) {
                     // получили новое соединение
-                    SocketChannel sc = ssc.accept();
+                    SocketChannel sc = ssc.get(0).accept();
                     if (sc == null) {
-                        System.err.println("Bad accepting");
-                        System.exit(1);
+                        printErrorAndExit("Bad accepting");
                     }
                     withoutName.add(sc);
                     sc.configureBlocking(false);
@@ -274,14 +254,7 @@ public class Server {
                                     + "another nick!"), clients);
                             sendMessage(sc, MessageUtils.bye(), clients);
                             withoutName.remove(sc);
-                            try {
-                                if (sc != null) {
-                                    sc.close();
-                                }
-                            } catch (Exception e) {
-                                System.err.println("Bad closing: " + e.getMessage());
-                                System.exit(1);
-                            }
+                            closeChannel(sc);
                         } else {
                             // если ник уникален то добавляем нового клиента
                             System.out.println(nick + " is online");
@@ -291,12 +264,8 @@ public class Server {
                                 Map.Entry pair = (Map.Entry)it.next();
                                 sb.append("\n");
                                 sb.append((String)pair.getKey());
-                                SocketChannel cur = (SocketChannel)pair.getValue();
-                                String ms = nick + " is online";
-                                sendMessage(cur, MessageUtils.message("server", ms), clients);
-                                // отправляем пользователям сообщение о
-                                // появлении нового клиента
                             }
+                            sendMessageAll(clients, nick + " is offline", "server");
                             String msg = "";
                             if (clients.isEmpty()) {
                                 msg = "You are first client!";
@@ -319,9 +288,10 @@ public class Server {
                         Iterator it = clients.entrySet().iterator();
                         while (it.hasNext()) {
                             Map.Entry pair = (Map.Entry)it.next();
-                            if (!((String)pair.getKey()).equals(nick)) {
-                                sendMessage((SocketChannel)pair.getValue(),
-                                        MessageUtils.message(nick, sb.toString()), clients);
+                            SocketChannel cur = (SocketChannel)pair.getValue();
+                            if (!sc.equals(cur)) {
+                                sendMessage(cur, MessageUtils.message(nick,
+                                        sb.toString()), clients);
                             }
                         }
                     } else if (message[0] == 3) {
@@ -329,15 +299,7 @@ public class Server {
                         closeClient(clients, sc);
                     } else if (message[0] == 127) {
                         // пришла какая-то ошибка
-                        Iterator it = clients.entrySet().iterator();
-                        String nick = "";
-                        while (it.hasNext()) {
-                            Map.Entry pair = (Map.Entry)it.next();
-                            if (!(((SocketChannel)pair.getValue()).equals(sc))) {
-                                nick = (String)pair.getKey();
-                                break;
-                            }
-                        }
+                        String nick = findNick(clients, sc);
                         List<String> l = MessageUtils.dispatch(message);
                         StringBuilder sb = new StringBuilder();
                         for (int i = 0; i < l.size(); ++i) {
@@ -349,8 +311,17 @@ public class Server {
             }
             keys.clear();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            printErrorAndExit(e.getMessage());
+        }
+    }
+
+    public static void sendMessageAll(Map<String, SocketChannel> clients, String message,
+            String from) {
+        Iterator it = clients.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            SocketChannel cur = (SocketChannel)pair.getValue();
+            sendMessage(cur, MessageUtils.message(from, message), clients);
         }
     }
 
@@ -362,8 +333,7 @@ public class Server {
                 sc.write(bf);
             }
         } catch (Exception e) {
-            System.err.println("Bad sending message!" + e.getMessage());
-            System.exit(1);
+            printErrorAndExit("Bad sending message!" + e.getMessage());
         }
     }
 
@@ -376,12 +346,11 @@ public class Server {
                 closeClient(clients, sc);
             }
         } catch (Exception e) {
-            System.err.println("Bad geting message!" + e.getMessage());
-            System.exit(1);
+            printErrorAndExit("Bad geting message!" + e.getMessage());
         }
     }
 
-    public static void closeClient(Map<String, SocketChannel> clients, SocketChannel sc) {
+    public static String findNick(Map<String, SocketChannel> clients, SocketChannel sc) {
         Iterator it = clients.entrySet().iterator();
         String nick = "";
         while (it.hasNext()) {
@@ -392,22 +361,14 @@ public class Server {
                 break;
             }
         }
+        return nick;
+    }
+
+    public static void closeClient(Map<String, SocketChannel> clients, SocketChannel sc) {
+        String nick = findNick(clients, sc);
+        closeChannel(sc);
         clients.remove(nick);
-        it = clients.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            SocketChannel cur = (SocketChannel)pair.getValue();
-            String ms = nick + " is offline";
-            sendMessage(cur, MessageUtils.message("server", ms), clients);
-        }
+        sendMessageAll(clients, nick + " is offline", "server");
         System.out.println(nick + " is offline");
-        try {
-            if (sc != null) {
-                sc.close();
-            }
-        } catch (Exception e) {
-            System.err.println("Bad closing: " + e.getMessage());
-            System.exit(1);
-        }
     }
 }
