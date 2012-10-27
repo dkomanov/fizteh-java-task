@@ -23,7 +23,7 @@ public class ChatClient implements Operated {
 			System.err.println("Please provide your nickname");
 		} else {
 			ChatClient client = new ChatClient(args[0]);
-			//client.processCommand("/connect localhost:7777");
+			client.processCommand("/connect localhost:7777");
 		}
 	}
 
@@ -35,7 +35,6 @@ public class ChatClient implements Operated {
 
 	private void endSession(int id) {
 		servers.get(id).shutdown();
-		servers.remove(id);
 		if (current == id) {
 			current = -1;
 		} else if (current > id) {
@@ -122,20 +121,32 @@ public class ChatClient implements Operated {
 
 	@Override
 	public void processPacket(byte[] packet, SocketService from) {
-		if (Utils.typeOf(packet) == MessageType.MESSAGE.getId()) {
-			if (current != -1 && from == servers.get(current)) {
-				console.message(Utils.messageRepr(packet));
-			}
-		} else if(Utils.typeOf(packet) == MessageType.BYE.getId()) {
-			int id = servers.indexOf(from);
-			if (id == -1) {
-				console.error("Goodbye from strange server");
+		try {
+			if (Utils.typeOf(packet) == MessageType.MESSAGE.getId()) {
+				if (current != -1 && from == servers.get(current)) {
+					console.message(Utils.messageRepr(packet));
+				}
+			} else if (Utils.typeOf(packet) == MessageType.BYE.getId()) {
+				int id = servers.indexOf(from);
+				if (id == -1) {
+					console.error("Goodbye from strange server");
+				} else {
+					console.warn("Server " + from.getName() + " disconnected");
+					endSession(id);
+				}
+			} else if (Utils.typeOf(packet) == MessageType.ERROR.getId()) {
+				console.error("Error from server " + from.getName() + ": " + Utils.generalRepr(packet));
 			} else {
-				console.warn("Server " + from.getName() + " disconnected");
-				endSession(id);
+				throw new BadMessageException("Unexpected message header: " + Utils.typeOf(packet));
 			}
-		} else if(Utils.typeOf(packet) == MessageType.ERROR.getId()) {
-			console.error("Error from server: " + Utils.generalRepr(packet));
+		} catch (BadMessageException ex) {
+			console.error(ex.getMessage());
+			from.send(MessageUtils.error("Ill-formed message received. Be careful!"));
 		}
+	}
+
+	@Override
+	public void removeService(SocketService who) {
+		servers.remove(who);
 	}
 }

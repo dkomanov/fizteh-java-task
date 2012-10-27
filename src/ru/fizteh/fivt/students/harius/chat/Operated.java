@@ -9,4 +9,5 @@ package ru.fizteh.fivt.students.harius.chat;
 public interface Operated {
 	public void processCommand(String command);
 	public void processPacket(byte[] packet, SocketService from);
+	public void removeService(SocketService who);
 }

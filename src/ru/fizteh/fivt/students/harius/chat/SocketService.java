@@ -44,6 +44,7 @@ public class SocketService implements Runnable {
 			socket.getOutputStream().write(message);
 		} catch (IOException ioEx) {
 			console.error("i/o problems while connecting to remote end");
+			shutdown();
 		}
 	}
 
@@ -58,6 +59,7 @@ public class SocketService implements Runnable {
 
 	public void shutdown() {
 		running = false;
+		managed.removeService(this);
 	}
 
 	public String getName() {
