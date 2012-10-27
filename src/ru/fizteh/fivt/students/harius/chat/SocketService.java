@@ -31,8 +31,8 @@ public class SocketService implements Runnable {
 				byte[] message = new byte[1024];
 				int length = socket.getInputStream().read(message);
 				if (length == -1) {
-					console.error("fatal i/o error while receiving packet");
-					System.exit(0);
+					console.error("fatal i/o error while receiving packet, terminating connection");
+					terminate();
 				}
 				managed.processPacket(message, this);
 			} catch (IOException ioEx) {
