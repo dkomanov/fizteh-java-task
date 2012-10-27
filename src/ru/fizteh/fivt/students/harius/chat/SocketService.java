@@ -30,6 +30,10 @@ public class SocketService implements Runnable {
 			try {
 				byte[] message = new byte[1024];
 				int length = socket.getInputStream().read(message);
+				if (length == -1) {
+					console.error("fatal i/o error while receiving packet");
+					System.exit(0);
+				}
 				managed.processPacket(message, this);
 			} catch (IOException ioEx) {
 				if (running) {
