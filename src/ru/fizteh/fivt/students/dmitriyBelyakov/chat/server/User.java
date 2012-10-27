@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.server;
 
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
+import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageBuilder;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
 import ru.fizteh.fivt.students.dmitriyBelyakov.parallelSort.IoUtils;
 
@@ -16,15 +17,17 @@ class User implements Runnable {
     private boolean authorized;
     private Listener myListener;
 
-    public User(Socket socket) {
+    public User(Socket socket, Listener listener) {
         this.authorized = false;
         this.name = null;
         this.socket = socket;
         this.myThread = new Thread(this);
-        this.myThread.run();
+        this.myThread.start();
+        myListener = listener;
     }
 
     void close() {
+        myListener.deleteUser(this);
         IoUtils.close(socket);
     }
 
@@ -56,9 +59,8 @@ class User implements Runnable {
             }
             name = new String(bName);
             authorized = true;
-            // information
-            System.out.println("name: " + name);
         } catch (Exception e) {
+            close();
         }
     }
 
@@ -93,23 +95,35 @@ class User implements Runnable {
             buffer.position(0);
             length = buffer.getInt();
             byte[] bMess = new byte[length];
-            Message message = new Message(MessageType.HELLO, name, new String(bMess));
-            // TODO send all
+            if(iStream.read(bMess, 0, length) != length) {
+                close();
+            }
+            Message message = new Message(MessageType.MESSAGE, name, new String(bMess));
+            System.out.println("Send...");
+            myListener.sendAll(message);
         } catch (Exception e) {
             close();
         }
     }
 
     private void getByeMessage() {
-        System.out.println("Bye, " + name);
         close();
     }
 
     private void getErrorMessage() {
-        System.out.println("Error, " + name);
         close();
     }
 
+    public void sendMessage(Message message) {
+        System.out.println("Sent current message...");
+        try {
+            socket.getOutputStream().write(MessageBuilder.getMessageBytes(message));
+        } catch (Exception e) {
+            close();
+        }
+    }
+
+    @Override
     public void run() {
         try {
             InputStream iStream = socket.getInputStream();
@@ -130,5 +144,9 @@ class User implements Runnable {
             close();
         }
 
+    }
+
+    public String name() {
+        return name;
     }
 }

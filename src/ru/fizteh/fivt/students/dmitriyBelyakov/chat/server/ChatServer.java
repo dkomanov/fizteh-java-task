@@ -18,9 +18,13 @@ public class ChatServer {
                     System.exit(1);
                 }
             } else if(command.equals("/stop")) {
-                // TODO stop
+                if(listener != null) {
+                    listener.stop();
+                }
             } else if(command.equals("/list")) {
-                // TODO list
+                if(listener != null) {
+                    System.out.print(listener.list());
+                }
             } else if(command.equals("/send")) {
                 // TODO send
             } else if(command.equals("/sendall")) {
