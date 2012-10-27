@@ -43,12 +43,15 @@
 #### 1
 * java.util.Date (с помощью SimpleDateFormat)
 * java.lang.Integer
+
 #### 2
 * java.util.Calendar (с помощью SimpleDateFormat)
 * java.lang.Long
+
 #### 3
 * [b (массив байтов, с помощью Arrays.toString)
 * java.lang.Float
+
 #### 4
 * java.lang.Double
 * java.math.BigInteger
