@@ -146,6 +146,7 @@ public class Main {
             m.put(s, total);
         }
     }
+    
     static void printInfo(String [] args, boolean words, boolean lines,
             boolean uniqWithReg, boolean uniqWithoutReg, int startFile) {
         // печатаем запрашиваемую информацию для всех файлов
