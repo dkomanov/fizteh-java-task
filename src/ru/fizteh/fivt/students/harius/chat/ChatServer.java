@@ -21,7 +21,7 @@ public class ChatServer implements Operated, Registrating {
 
 	public static void main(String[] args) {
 		ChatServer server = new ChatServer();
-		server.processCommand("/listen 7777");
+		//server.processCommand("/listen 7777");
 	}
 
 	public ChatServer() {
@@ -70,7 +70,7 @@ public class ChatServer implements Operated, Registrating {
 
 	private String getClientString(SocketService client) {
 		String result = client.getNick();
-		if(result == null) {
+		if (result == null) {
 			result = "<unnamed>";
 		}
 		result += "@" + client.getName();
@@ -171,7 +171,9 @@ public class ChatServer implements Operated, Registrating {
 				console.warn("Disconnecting " + from.getNick());
 				from.shutdown();
 			} else if (Utils.typeOf(packet) == MessageType.MESSAGE.getId()) {
-				if (!Utils.dispatch(packet).get(0).equals(from.getNick())) {
+				if (from.getNick() == null) {
+					from.send(MessageUtils.error("Introduce yourself first!"));
+				} else if (!Utils.dispatch(packet).get(0).equals(from.getNick())) {
 					from.send(MessageUtils.error("Cheating cheater, it's not your nick!"));
 				} else {
 					for (SocketService client : clients) {

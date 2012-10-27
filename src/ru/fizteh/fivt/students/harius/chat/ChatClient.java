@@ -23,7 +23,7 @@ public class ChatClient implements Operated {
 			System.err.println("Please provide your nickname");
 		} else {
 			ChatClient client = new ChatClient(args[0]);
-			client.processCommand("/connect localhost:7777");
+			//client.processCommand("/connect localhost:7777");
 		}
 	}
 
