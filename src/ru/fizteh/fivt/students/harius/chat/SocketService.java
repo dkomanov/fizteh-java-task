@@ -55,15 +55,15 @@ public class SocketService implements Runnable {
 
 	public void goodbye() {
 		send(MessageUtils.bye());
+	}
+
+	public void shutdown() {
+		running = false;
 		try {
 			socket.close();
 		} catch (IOException ioEx) {
 			console.error("Problems while closing connection with server");
 		}
-	}
-
-	public void shutdown() {
-		running = false;
 		managed.removeService(this);
 	}
 
