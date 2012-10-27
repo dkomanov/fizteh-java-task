@@ -33,15 +33,6 @@ public class ChatClient implements Operated {
 		new Thread(console).start();
 	}
 
-	private void endSession(int id) {
-		servers.get(id).shutdown();
-		if (current == id) {
-			current = -1;
-		} else if (current > id) {
-			--current;
-		}
-	}
-
 	private String getServerString(int id) {
 		return String.format("%c[%d] %s", id == current ? '>' : ' ', id, servers.get(id).getName());
 	}
@@ -84,7 +75,7 @@ public class ChatClient implements Operated {
 		} else if (command.equals("/exit")) {
 			while (!servers.isEmpty()) {
 				servers.get(0).goodbye();
-				endSession(0);
+				servers.get(0).shutdown();
 			}
 			console.shutdown();
 		} else if (command.equals("/list")) {
@@ -106,7 +97,7 @@ public class ChatClient implements Operated {
 				console.error("Not connected to any server");
 			} else {
 				servers.get(current).goodbye();
-				endSession(current);
+				servers.get(current).shutdown();
 			}
 		} else if (!command.startsWith("/")) {
 			if (current == -1) {
@@ -132,7 +123,7 @@ public class ChatClient implements Operated {
 					console.error("Goodbye from strange server");
 				} else {
 					console.warn("Server " + from.getName() + " disconnected");
-					endSession(id);
+					servers.get(id).shutdown();
 				}
 			} else if (Utils.typeOf(packet) == MessageType.ERROR.getId()) {
 				console.error("Error from server " + from.getName() + ": " + Utils.generalRepr(packet));
@@ -147,6 +138,16 @@ public class ChatClient implements Operated {
 
 	@Override
 	public void removeService(SocketService who) {
+		int id = servers.indexOf(who);
+		if (id == -1) {
+			console.error("Trying to remove non-existing service");
+		} else {
+			if (current == id) {
+				current = -1;
+			} else if (current > id) {
+				--current;
+			}
+		}
 		servers.remove(who);
 	}
 }
