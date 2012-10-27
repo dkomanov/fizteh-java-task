@@ -50,6 +50,9 @@ public abstract class Utils {
 	public static String messageRepr(byte[] message) throws BadMessageException {
 		List<String> parts = dispatch(message);
 		StringBuilder result = new StringBuilder();
+		if (parts.isEmpty()) {
+			throw new BadMessageException("Empty message-packet");
+		}
 		result.append("[" + parts.get(0) + "]: ");
 		for (int i = 1; i < parts.size(); ++i) {
 			result.append(parts.get(i));

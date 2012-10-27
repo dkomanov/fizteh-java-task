@@ -127,12 +127,17 @@ public class ChatClient implements Operated {
 				}
 			} else if (Utils.typeOf(packet) == MessageType.ERROR.getId()) {
 				console.error("Error from server " + from.getName() + ": " + Utils.generalRepr(packet));
+				from.shutdown();
 			} else {
 				throw new BadMessageException("Unexpected message header: " + Utils.typeOf(packet));
 			}
 		} catch (BadMessageException ex) {
 			console.error(ex.getMessage());
-			from.send(MessageUtils.error("Ill-formed message received. Be careful!"));
+			from.send(MessageUtils.error("Ill-formed message received. Be careful next time!"));
+			from.shutdown();
+		} catch (Exception ex) {
+			console.error("Exception while processing message: " + ex.getMessage());
+			from.shutdown();
 		}
 	}
 

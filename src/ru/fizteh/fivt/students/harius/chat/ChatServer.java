@@ -155,13 +155,13 @@ public class ChatServer implements Operated, Registrating {
 	public void processPacket(byte[] packet, SocketService from) {
 		try {
 			if (Utils.typeOf(packet) == MessageType.HELLO.getId()) {
-				String nick = Utils.helloRepr(packet);
-				if (idByNick(nick) == -1 && from.getNick() == null && !nick.contains(" ")) {
+				String nick = Utils.helloRepr(packet); 
+				if (idByNick(nick) == -1 && from.getNick() == null && nick.matches("[\\w\\d]+") && nick.length() < 23 && nick.length() > 2) {
 					console.warn("New user entered: " + nick);
 					from.setNick(nick);
 				} else {
 					console.warn("Unsuccessfull registration");
-					from.send(MessageUtils.error("Nickname in use or contains spaces or you are logged in already"));
+					from.send(MessageUtils.error("Nickname in use or it's wrong or you are logged in already"));
 					if (from.getNick() == null) {
 						endSession(from);
 					}
@@ -184,14 +184,17 @@ public class ChatServer implements Operated, Registrating {
 				}
 			} else if (Utils.typeOf(packet) == MessageType.ERROR.getId()) {
 				console.error("Error from " + getClientString(from) + ": " + Utils.generalRepr(packet));
+				from.shutdown();
 			} else {
 				throw new BadMessageException("Unexpected message header: " + Utils.typeOf(packet));
 			}
 		} catch (BadMessageException ex) {
 			console.error(ex.getMessage());
 			from.send(MessageUtils.error("Ill-formed message received. Be careful!"));
+			from.shutdown();
 		} catch (Exception ex) {
 			console.error("Exception while processing message: " + ex.getMessage());
+			from.shutdown();
 		}
 	}
 
