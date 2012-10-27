@@ -31,7 +31,6 @@ class ChatClient {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
                 String str;
                 while((str = reader.readLine()) != null) {
-                    System.out.println("Send...");
                     oStream.write(MessageBuilder.getMessageBytes(new Message(MessageType.MESSAGE, "my_name", str)));
                 }
             }

@@ -45,7 +45,6 @@ class Listener implements Runnable {
     }
 
     synchronized void sendAll(Message message) {
-        System.out.println("Send all...");
         for(User u: users) {
             u.sendMessage(message);
         }
@@ -65,8 +64,8 @@ class Listener implements Runnable {
     public String list() {
         StringBuilder builder = new StringBuilder();
         for(User u: users) {
-            System.out.println("User");
             builder.append(u.name());
+            builder.append(System.lineSeparator());
         }
         return builder.toString();
     }
