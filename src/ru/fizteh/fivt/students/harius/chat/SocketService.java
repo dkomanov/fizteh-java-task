@@ -32,7 +32,7 @@ public class SocketService implements Runnable {
 				int length = socket.getInputStream().read(message);
 				if (length == -1) {
 					console.error("fatal i/o error while receiving packet, terminating connection");
-					terminate();
+					shutdown();
 				}
 				managed.processPacket(message, this);
 			} catch (IOException ioEx) {
