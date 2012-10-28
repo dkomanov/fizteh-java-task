@@ -1,4 +1,5 @@
 package ru.fizteh.fivt.students.myhinMihail;
+
 import java.io.*;
 import java.util.Vector;
 
@@ -143,7 +144,10 @@ public class Shell {
     
     public static boolean checkCommandsCount(Vector<String> params, int size) {
         if (params.size() < size) {
-            errorAndExit("Bad command");
+            if (!console) {
+                System.err.println("Bad command");
+                System.exit(1);
+            }
             return false;
         }
         return true;
@@ -292,6 +296,7 @@ public class Shell {
                     for (String s : commands) {
                         if (!executeCommand(s)) {
                             System.err.println("Bad command \'"+ s + "\'");
+                            break;
                         }
                     }
                 }
