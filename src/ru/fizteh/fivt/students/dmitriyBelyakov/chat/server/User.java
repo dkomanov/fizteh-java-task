@@ -3,61 +3,65 @@ package ru.fizteh.fivt.students.dmitriyBelyakov.chat.server;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageBuilder;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
-import ru.fizteh.fivt.students.dmitriyBelyakov.parallelSort.IoUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
 class User implements Runnable {
     private Socket socket;
-    private Thread myThread;
+    public Thread myThread;
     private String name;
     private boolean authorized;
-    private Listener myListener;
+    volatile private Listener myListener;
 
     public User(Socket socket, Listener listener) {
         this.authorized = false;
         this.name = null;
         this.socket = socket;
-        this.myThread = new Thread(this);
-        this.myThread.start();
         myListener = listener;
+        this.myThread = new Thread(this);
+        myThread.start();
     }
 
     void close() {
-        myListener.deleteUser(this);
-        IoUtils.close(socket);
-    }
-
-    void sendMessage(byte[] bytes) {
-        try {
-            OutputStream oStream = socket.getOutputStream();
-            oStream.write(bytes);
-        } catch(Exception e) {
-            close();
+        myThread.interrupt();
+        if (!socket.isClosed()) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+            }
         }
+        myListener.deleteUser(this);
     }
 
     private void getHelloMessage() {
         try {
             InputStream iStream = socket.getInputStream();
-            if((byte)iStream.read() != 1) {
+            if ((byte) iStream.read() != 1) {
                 close();
+                return;
             }
             byte[] bLength = new byte[4];
-            if(iStream.read(bLength, 0, 4) != 4) {
+            if (iStream.read(bLength, 0, 4) != 4) {
                 close();
+                return;
             }
-            ByteBuffer buffer =  ByteBuffer.allocate(4).put(bLength);
+            ByteBuffer buffer = ByteBuffer.allocate(4).put(bLength);
             buffer.position(0);
             int length = buffer.getInt();
             byte[] bName = new byte[length];
-            if(iStream.read(bName, 0, length) != length) {
+            if (iStream.read(bName, 0, length) != length) {
                 close();
+                return;
             }
             name = new String(bName);
+            if(myListener.names.contains(name)) {
+                close();
+                return;
+            }
+            myListener.names.add(name);
             authorized = true;
         } catch (Exception e) {
             close();
@@ -65,42 +69,62 @@ class User implements Runnable {
     }
 
     private void getMessage() {
-        if(!authorized) {
+        if (!authorized) {
             close();
+            return;
         }
         try {
             InputStream iStream = socket.getInputStream();
-            if((byte)iStream.read() != 2) {
+            if ((byte) iStream.read() != 2) {
                 close();
+                return;
             }
-            byte[] bLength = new byte[4];
-            if(iStream.read(bLength, 0, 4) != 4) {
-                close();
+            ByteBuffer buffer = ByteBuffer.allocate(4);
+            for (int i = 0; i < 4; ++i) {
+                int tmp;
+                if((tmp = iStream.read()) < 0) {
+                    close();
+                    return;
+                }
+                buffer.put((byte)tmp);
             }
-            ByteBuffer buffer =  ByteBuffer.allocate(4).put(bLength);
             buffer.position(0);
             int length = buffer.getInt();
             byte[] bName = new byte[length];
-            if(iStream.read(bName, 0, length) != length) {
-                close();
+            for(int i = 0; i < length; ++i) {
+                int tmp;
+                if((tmp = iStream.read()) < 0) {
+                    close();
+                    return;
+                }
+                bName[i] = (byte)tmp;
             }
-            if(!(new String(bName).equals(name))) {
+            if (!(new String(bName).equals(name))) {
                 close();
+                return;
             }
-            bLength = new byte[4];
-            if(iStream.read(bLength, 0, 4) != 4) {
-                close();
+            buffer = ByteBuffer.allocate(4);
+            for (int i = 0; i < 4; ++i) {
+                int tmp;
+                if((tmp = iStream.read()) < 0) {
+                    close();
+                    return;
+                }
+                buffer.put((byte)tmp);
             }
-            buffer =  ByteBuffer.allocate(4).put(bLength);
             buffer.position(0);
             length = buffer.getInt();
             byte[] bMess = new byte[length];
-            if(iStream.read(bMess, 0, length) != length) {
-                close();
+            for(int i = 0; i < length; ++i) {
+                int tmp;
+                if((tmp = iStream.read()) < 0) {
+                    close();
+                    return;
+                }
+                bMess[i] = (byte)tmp;
             }
             Message message = new Message(MessageType.MESSAGE, name, new String(bMess));
-            System.out.println("Send...");
-            myListener.sendAll(message);
+            myListener.sendAll(message, this);
         } catch (Exception e) {
             close();
         }
@@ -115,7 +139,6 @@ class User implements Runnable {
     }
 
     public void sendMessage(Message message) {
-        System.out.println("Sent current message...");
         try {
             socket.getOutputStream().write(MessageBuilder.getMessageBytes(message));
         } catch (Exception e) {
@@ -128,19 +151,19 @@ class User implements Runnable {
         try {
             InputStream iStream = socket.getInputStream();
             int iType;
-            while((iType = iStream.read()) >= 0) {
-                byte type = (byte)iType;
-                if(type == MessageType.valueOf("HELLO").getId()) {
+            while (!myThread.isInterrupted() && (iType = iStream.read()) > 0) {
+                byte type = (byte) iType;
+                if (type == MessageType.HELLO.getId()) {
                     getHelloMessage();
-                } else if(type == MessageType.valueOf("BYE").getId()) {
+                } else if (type == MessageType.BYE.getId()) {
                     getByeMessage();
-                } else if(type == MessageType.valueOf("MESSAGE").getId()) {
+                } else if (type == MessageType.MESSAGE.getId()) {
                     getMessage();
                 } else {
                     getErrorMessage();
                 }
             }
-        } catch(Throwable t) {
+        } catch (Throwable t) {
             close();
         }
 
