@@ -3,6 +3,8 @@ package ru.fizteh.fivt.students.yuliaNikonova.calculator;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Calculator {
     protected static ArrayList<String> myOperators = new ArrayList<String>();
@@ -14,47 +16,52 @@ public class Calculator {
         myOperators.add("*");
         myOperators.add("/");
 
-        StringBuilder myExpressionBuilder = new StringBuilder("");
+        StringBuilder myExpressionBuilder = new StringBuilder();
 
         for (String argument : args) {
             myExpressionBuilder.append(argument);
+            myExpressionBuilder.append(" ");
         }
         String myExpression = myExpressionBuilder.toString();
-        // System.out.println(myExpression);
-        myExpression = myExpression.replace("\\s", "");
+        System.out.println(myExpression);
+        Pattern p = Pattern.compile("(.*\\d+\\s+\\d+.*)");
+        Matcher m = p.matcher(myExpression);
+        if (m.matches()) {
+            System.err.println("Invalid input");
+            System.exit(1);
+        }
+
+        myExpression = myExpression.replaceAll("\\s+", "");
         System.out.println("Expression: " + myExpression);
 
-        ArrayList<String> myExpressionOPN;
+        ArrayList<String> myExpressionOpn;
         try {
-            myExpressionOPN = Calculator.toOPN(myExpression);
-            StringBuilder myExpressionOPNStringBuilder = new StringBuilder("");
-            for (String el : myExpressionOPN) {
-                myExpressionOPNStringBuilder.append(el + " ");
+            myExpressionOpn = Calculator.toOpn(myExpression);
+            StringBuilder myExpressionOpnStringBuilder = new StringBuilder("");
+            for (String el : myExpressionOpn) {
+                myExpressionOpnStringBuilder.append(el + " ");
             }
-            String myExpressionOPNString = myExpressionOPNStringBuilder
-                    .toString();
+            String myExpressionOpnString = myExpressionOpnStringBuilder.toString();
 
-            if (myExpressionOPNString.equals("")) {
-                System.out
-                        .println("Error: empty expression, you should enter expression as argument");
+            if (myExpressionOpnString.isEmpty()) {
+                System.err.println("Error: empty expression, you should enter expression as argument");
             } else {
-                System.out.println("OPN: " + myExpressionOPNString);
+                System.out.println("OPN: " + myExpressionOpnString);
                 try {
-                    BigInteger result = calculateOPN(myExpressionOPN);
+                    BigInteger result = calculateOpn(myExpressionOpn);
                     System.out.println("Result: " + result.toString());
                 } catch (Exception e) {
-                    System.out.println("Error: invalid expression");
+                    System.err.println("Error: invalid expression");
                 }
             }
         } catch (Exception e1) {
-            // TODO Auto-generated catch block
-            System.out.println(e1.getMessage());
-            System.exit(0);
+            System.err.println(e1.getMessage());
+            System.exit(1);
         }
     }
 
-    public static ArrayList<String> toOPN(String myExpression) throws Exception {
-        ArrayList<String> myExpressionOPN = new ArrayList<String>();
+    public static ArrayList<String> toOpn(String myExpression) throws Exception {
+        ArrayList<String> myExpressionOpn = new ArrayList<String>();
         String number = "";
         boolean ifLastOperator = false;
         HashMap<String, Integer> operatorsPriority = new HashMap<String, Integer>();
@@ -66,40 +73,30 @@ public class Calculator {
         ArrayList<String> opnStack = new ArrayList<String>();
         for (int i = 0; i < myExpression.length(); i++) {
             char c = myExpression.charAt(i);
-
             if (Character.isDigit(c)) {
                 number += c;
                 ifLastOperator = false;
             } else {
-                myExpressionOPN.add(number);
-                // System.out.println(number);
+                myExpressionOpn.add(number);
                 number = "";
-                if (c == '+' || c == '-' || c == '*' || c == '/') {
-                    if ((c == '+' || c == '-')
-                            && Character.isDigit(myExpression.charAt(i + 1))
-                            && ((i == 0 || myExpression.charAt(i - 1) == '(') || (i > 1
-                                    && myOperators
-                                            .contains(String
-                                                    .valueOf(myExpression
-                                                            .charAt(i - 1))) && (Character
-                                    .isDigit(myExpression.charAt(i - 2)) || myExpression
-                                    .charAt(i - 2) == ')')))) {
+                if (operatorsPriority.containsKey(String.valueOf(c))) {
+                    char c1 = myExpression.charAt(i + 1);
+                    char c2 = myExpression.charAt(i - 1);
+                    char c3 = '.';
+                    if (i > 2) {
+                        c3 = myExpression.charAt(i - 2);
+                    }
+                    if ((c == '+' || c == '-') && Character.isDigit(c1) && ((i == 0 || c2 == '(') || (i > 1 && myOperators.contains(String.valueOf(c2)) && (Character.isDigit(c3) || c3 == ')')))) {
                         number += c;
-                        // System.out.println("jhvhjg");
                         ifLastOperator = true;
                     } else {
                         if (ifLastOperator) {
                             throw new Exception("Error: too much operators");
                         }
                         ifLastOperator = true;
-                        while (!opnStack.isEmpty()
-                                && myOperators.contains(opnStack.get(opnStack
-                                        .size() - 1))
-                                && (int) operatorsPriority.get(String
-                                        .valueOf(c)) <= (int) operatorsPriority
-                                        .get(opnStack.get(opnStack.size() - 1))) {
-                            myExpressionOPN
-                                    .add(opnStack.get(opnStack.size() - 1));
+                        while (!opnStack.isEmpty() && myOperators.contains(opnStack.get(opnStack.size() - 1))
+                                && (int) operatorsPriority.get(String.valueOf(c)) <= (int) operatorsPriority.get(opnStack.get(opnStack.size() - 1))) {
+                            myExpressionOpn.add(opnStack.get(opnStack.size() - 1));
                             opnStack.remove(opnStack.size() - 1);
                         }
                         opnStack.add(String.valueOf(c));
@@ -113,13 +110,12 @@ public class Calculator {
                     }
                     int j = opnStack.size() - 1;
                     while (!opnStack.get(j).equals("(")) {
-                        myExpressionOPN.add(opnStack.get(j));
+                        myExpressionOpn.add(opnStack.get(j));
                         opnStack.remove(j);
                         j--;
                     }
                     if (opnStack.isEmpty()) {
-                        throw new Exception(
-                                "Error: someting wrong with ( and )");
+                        throw new Exception("Error: someting wrong with ( and )");
                     } else {
                         opnStack.remove(j);
                     }
@@ -130,37 +126,32 @@ public class Calculator {
         }
 
         if (number.length() > 0) {
-            myExpressionOPN.add(number);
+            myExpressionOpn.add(number);
         }
         while (!opnStack.isEmpty()) {
             String op = opnStack.get(opnStack.size() - 1);
-            if (!(op.equals("+") || op.equals("-") || op.equals("*") || op
-                    .equals("/"))) {
+            if (!(op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/"))) {
                 throw new Exception("Error: someting wrong with ( and )");
             }
-            myExpressionOPN.add(op);
+            myExpressionOpn.add(op);
             opnStack.remove(opnStack.size() - 1);
         }
         if (ifLastOperator) {
             throw new Exception("Error: too much operators");
         }
-        return myExpressionOPN;
+        return myExpressionOpn;
     }
 
-    public static BigInteger calculateOPN(ArrayList<String> myExpressionOPN) {
+    public static BigInteger calculateOpn(ArrayList<String> myExpressionOPN) {
         ArrayList<BigInteger> integerStack = new ArrayList<BigInteger>();
         for (String op : myExpressionOPN) {
             if (op.length() > 0) {
-                if (Character.isDigit(op.charAt(0))
-                        || ((op.length() > 1) && Character
-                                .isDigit(op.charAt(1)))) {
+                if (Character.isDigit(op.charAt(0)) || ((op.length() > 1) && Character.isDigit(op.charAt(1)))) {
                     integerStack.add(new BigInteger(op));
                 } else {
                     if (integerStack.size() > 1) {
-                        BigInteger op1 = integerStack
-                                .get(integerStack.size() - 1);
-                        BigInteger op2 = integerStack
-                                .get(integerStack.size() - 2);
+                        BigInteger op1 = integerStack.get(integerStack.size() - 1);
+                        BigInteger op2 = integerStack.get(integerStack.size() - 2);
                         if (myOperators.contains(op)) {
                             integerStack.remove(integerStack.size() - 1);
                             integerStack.remove(integerStack.size() - 1);
