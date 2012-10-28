@@ -1,5 +1,4 @@
 package ru.fizteh.fivt.students.myhinMihail;
-
 import java.io.*;
 import java.util.Vector;
 
@@ -299,17 +298,19 @@ public class Shell {
             } else {
                 console = false;
                 StringBuilder sb = new StringBuilder();
-                for (String str : args) {
-                    sb.append(str).append(" ");
+                for (int i = 0; i < args.length - 1; ++i) {
+                    sb.append(args[i]).append(" ");
                 }
+                sb.append(args[args.length - 1]);
                 
-                String commands[] = sb.toString().split(";\\s*");
+                String commands[] = sb.toString().split("[\\s]*[;][\\s]*");
                 for (String s : commands) {
                     executeCommand(s);
                 }
             }
         } catch (Exception expt) {
             System.err.println("Error: " + expt);
+            System.exit(1);
         }
 
     }
