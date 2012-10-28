@@ -4,6 +4,12 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
+class notCaseSensitiveComparator implements Comparator<String> {
+    public int compare(String one, String two) {
+        return one.toLowerCase().compareTo(two.toLowerCase());
+    }
+}
+
 class SortPiece {
     public int from = 0;
     public int to = 0;
@@ -19,14 +25,14 @@ public class ParallelSort {
     final static int MIN_LENGTH = 1000;
     
     public static boolean onlyUnique = false;
-    public static boolean caseSensitive = false;
+    public static boolean notCaseSensitive = false;
     public static int threadsCount = 0;
     public static String output = "";
     
     public static class Sorter extends Thread {
         private List<String> list;
         private Object synchronizer;
-        private  LinkedBlockingQueue<SortPiece> queue;
+        private LinkedBlockingQueue<SortPiece> queue;
 
         public Sorter(List<String> inList, LinkedBlockingQueue<SortPiece> q, Object sync) {
             list = inList;
@@ -35,6 +41,7 @@ public class ParallelSort {
         }
         
         public void run() {
+            notCaseSensitiveComparator comparator = new notCaseSensitiveComparator();
             while (true) {
                 SortPiece sync = null;
                 try {
@@ -47,10 +54,14 @@ public class ParallelSort {
                         }
                         break;
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    System.err.println(e.getMessage());
                 }
-                Collections.sort(list.subList(sync.from, sync.to));
+                if (notCaseSensitive) {
+                    Collections.sort(list.subList(sync.from, sync.to), comparator);
+                } else {
+                    Collections.sort(list.subList(sync.from, sync.to));
+                }
             }
         }
         
@@ -110,7 +121,7 @@ public class ParallelSort {
                             break;
                         
                         case 'i':
-                            caseSensitive = true;
+                            notCaseSensitive = true;
                             break;
                         
                         case 't':
@@ -164,15 +175,20 @@ public class ParallelSort {
         File file = new File(path);
         FileReader fr = null;
         BufferedReader reader = null;
-            
+        
+        if (!file.exists()) {
+            System.err.println("Error: can not open " + file);
+            System.exit(1);
+        }
+        
         try {
             fr = new FileReader(file);
             reader = new BufferedReader(fr);
             String line;
             
             while ((line = reader.readLine()) != null) {
-               if (!line.isEmpty()) {
-                        list.add(caseSensitive ? line : line.toLowerCase());
+                if (!line.isEmpty()) {
+                    list.add(line);
                 }
             } 
                 
@@ -314,8 +330,14 @@ public class ParallelSort {
             out.write(list.get(0) + separator);
             for (int i = 1; i < list.size(); ++i) {
                 if (onlyUnique) {
-                    if (!list.get(i).equals(list.get(i-1))) {
-                        out.write(list.get(i) + separator);
+                    if (notCaseSensitive) {
+                        if (!list.get(i).toLowerCase().equals(list.get(i-1).toLowerCase())) {
+                            out.write(list.get(i) + separator);
+                        }
+                    } else {
+                        if (!list.get(i).equals(list.get(i-1))) {
+                            out.write(list.get(i) + separator);
+                        }
                     }
                 } else { 
                     out.write(list.get(i) + separator);
@@ -328,8 +350,14 @@ public class ParallelSort {
             if (!output.isEmpty()) {
                 try {
                     out.close();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     System.err.println("Error: can not close" + output);
+                }
+            } else {
+                try {
+                    out.flush();
+                } catch (Exception e) {
+                    System.err.println("Error: " + e.getMessage());
                 }
             }
             
