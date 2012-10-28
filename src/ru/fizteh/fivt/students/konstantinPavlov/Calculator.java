@@ -1,9 +1,9 @@
 package ru.fizteh.fivt.students.konstantinPavlov;
 
 import java.util.ArrayList;
-import java.util.Stack;
 
 public class Calculator {
+
     public static void main(String[] args) {
 
         // compiling input expression
@@ -12,18 +12,19 @@ public class Calculator {
         for (int i = 0; i < args.length; ++i) {
             builder.append(args[i]).append(" ");
         }
-        
-        str=builder.toString();
-        
+
+        str = builder.toString();
+
         try {
             str = str.trim();
-    
+
             // checking if input expression is empty
             if (str.isEmpty()) {
-                System.err.println("Error: the expression is empty. No arguments.");
+                System.err
+                        .println("Error: the expression is empty. No arguments.");
                 return;
             }
-    
+
             // checking brackets
             int closedBrakets = 0, openedBrakets = 0;
             for (int i = 0; i < str.length(); ++i) {
@@ -41,14 +42,14 @@ public class Calculator {
                         .println("Error: wrong input. Something wrong with brakets.");
                 return;
             }
-    
+
             ArrayList<String> parsedInput = parse(toRpn(str));
-    
+
             if (!checkRpn(parsedInput)) {
                 System.err.println("Error: wrong input");
                 return;
             }
-    
+
             System.out.println("Input: " + str);
             System.out.println("Answer: " + calculate(parsedInput));
         } catch (Exception expt) {
@@ -56,18 +57,18 @@ public class Calculator {
         }
     }
 
-    private static boolean checkRpn(ArrayList<String> array) {
-        int countOfDigs = 0;
+    private static boolean checkRpn(ArrayList<String> parsedInput) {
+        int countOfDigits = 0;
         int countOfOperands = 0;
-        for (int i = 0; i < array.size(); ++i) {
-            if (array.get(i).equals("+") || array.get(i).equals("-")
-                    || array.get(i).equals("/") || array.get(i).equals("*")) {
+        for (String s : parsedInput) {
+            if (s.equals("+") || s.equals("-") || s.equals("/")
+                    || s.equals("*")) {
                 ++countOfOperands;
             } else {
-                ++countOfDigs;
+                ++countOfDigits;
             }
         }
-        if ((countOfDigs - countOfOperands) == 1) {
+        if ((countOfDigits - countOfOperands) == 1) {
             return true;
         } else {
             return false;
@@ -75,44 +76,45 @@ public class Calculator {
     }
 
     private static String toRpn(String str) {
-        Stack<Character> s = new Stack<Character>();
-        String resStr = new String();
-        char strArray[] = str.toCharArray();
+        MyStack<Character> s = new MyStack<Character>();
+        String resStr = "";
+        StringBuilder builder = new StringBuilder();
         for (int i = 0; i < str.length(); ++i) {
             char cur;
-            if (Character.isDigit(strArray[i])) {
-                resStr += strArray[i];
+            if (Character.isDigit(str.charAt(i))) {
+                builder.append(str.charAt(i));
                 if (i != str.length() - 1
-                        && !Character.isDigit(strArray[i + 1]))
-                    resStr += ",";
-                else if (i == str.length() - 1)
-                    resStr += ",";
+                        && !Character.isDigit(str.charAt(i + 1))) {
+                    builder.append(",");
+                } else if (i == str.length() - 1)
+                    builder.append(",");
             } else {
-                if (strArray[i] == '(') {
-                    s.push(strArray[i]);
+                if (str.charAt(i) == '(') {
+                    s.push(str.charAt(i));
                 } else {
-                    if (strArray[i] == '+' || strArray[i] == '-'
-                            || strArray[i] == '/' || strArray[i] == '*') {
+                    if (str.charAt(i) == '+' || str.charAt(i) == '-'
+                            || str.charAt(i) == '/' || str.charAt(i) == '*') {
                         while (!s.isEmpty()) {
                             if (s.peek() == '/'
                                     || s.peek() == '*'
-                                    || ((s.peek() == '-' || s.peek() == '+') && (strArray[i] == '-' || strArray[i] == '+'))) {
-                                resStr += s.pop().charValue() + ",";
+                                    || ((s.peek() == '-' || s.peek() == '+') && (str
+                                            .charAt(i) == '-' || str.charAt(i) == '+'))) {
+                                builder.append(s.pop().charValue()).append(",");
                             } else
                                 break;
                             if (s.isEmpty() || s.peek() == '(') {
                                 break;
                             }
                         }
-                        s.push(strArray[i]);
+                        s.push(str.charAt(i));
                     } else {
-                        if (strArray[i] == ')') {
-                            while (!s.empty() && s.peek() != '(') {
-                                resStr += s.pop().charValue() + ",";
+                        if (str.charAt(i) == ')') {
+                            while (!s.isEmpty() && s.peek() != '(') {
+                                builder.append(s.pop().charValue()).append(",");
                             }
                         } else {
-                            if (strArray[i] != ' ' && strArray[i] != '\n'
-                                    && strArray[i] != '\t') {
+                            if (str.charAt(i) != ' ' && str.charAt(i) != '\n'
+                                    && str.charAt(i) != '\t') {
                                 return "";
                             }
                         }
@@ -120,39 +122,37 @@ public class Calculator {
                 }
             }
             if (i == str.length() - 1) {
-                if (!s.isEmpty()) {
-                    do {
-                        if (!s.isEmpty()) {
-                            cur = s.pop().charValue();
-                            if (cur != '(')
-                                resStr += cur + ",";
-                        }
-                    } while (!s.isEmpty());
+                while (!s.isEmpty()) {
+                    if (!s.isEmpty()) {
+                        cur = s.pop().charValue();
+                        if (cur != '(')
+                            builder.append(cur).append(",");
+                    }
                 }
             }
         }
+        resStr = builder.toString();
         return resStr;
     }
 
     private static ArrayList<String> parse(String str) {
-        ArrayList<String> res_array = new ArrayList<String>();
-        char str_array[] = str.toCharArray();
-        String cur = new String();
+        ArrayList<String> resArray = new ArrayList<String>();
+        StringBuilder builder = new StringBuilder();
         for (int i = 0; i < str.length(); ++i) {
-            if (str_array[i] == ',') {
-                res_array.add(cur);
-                cur = "";
+            if (str.charAt(i) == ',') {
+                resArray.add(builder.toString());
+                builder = new StringBuilder();
             } else {
-                cur += str_array[i];
+                builder.append(str.charAt(i));
             }
         }
-        return res_array;
+        return resArray;
     }
 
     private static int calculate(ArrayList<String> array)
             throws RuntimeException {
         int res;
-        Stack<String> s = new Stack<String>();
+        MyStack<String> s = new MyStack<String>();
         s.push(array.get(0));
         for (int i = 1; i < array.size(); ++i) {
             if (array.get(i).equals("+") || array.get(i).equals("-")
@@ -163,8 +163,7 @@ public class Calculator {
                     int cur = 0;
                     if (array.get(i).equals("+")) {
                         cur = a + b;
-                        if ((a > 0 && b > 0 && cur < 0)
-                                || (a < 0 && b < 0 && cur > 0)) {
+                        if (cur - a == b) {
                             System.err.println("Error: Integer overflow");
                             System.exit(1);
                         }
@@ -172,8 +171,7 @@ public class Calculator {
                     }
                     if (array.get(i).equals("-")) {
                         cur = a - b;
-                        if ((a > 0 && b < 0 && cur < 0)
-                                || (a < 0 && b > 0 && cur > 0)) {
+                        if (cur + b == a) {
                             System.err.println("Error: Integer overflow");
                             System.exit(1);
                         }
