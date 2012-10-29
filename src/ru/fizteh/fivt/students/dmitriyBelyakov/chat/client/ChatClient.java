@@ -7,9 +7,6 @@ import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.ArrayList;
 
 class ChatClient {
     public static void main(String[] args) {

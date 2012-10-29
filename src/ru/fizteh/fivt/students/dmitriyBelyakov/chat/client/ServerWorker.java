@@ -14,11 +14,11 @@ public class ServerWorker implements Runnable {
     private InputStream iStream;
     private Manager myManager;
 
-    ServerWorker(String name, Socket socket, Manager manager) {
+    ServerWorker(String host, int port, Manager manager) {
         myManager = manager;
-        this.name = name;
-        this.socket = socket;
+        this.name = host + port;
         try {
+            socket = new Socket(host, port);
             iStream = socket.getInputStream();
             new Thread(this).start();
         } catch (Throwable t) {
@@ -66,9 +66,9 @@ public class ServerWorker implements Runnable {
             int iType;
             while (!Thread.currentThread().isInterrupted() && (iType = iStream.read()) > 0) {
                 byte type = (byte) iType;
-                if (type == MessageType.valueOf("BYE").getId()) {
+                if (type == MessageType.BYE.getId()) {
                     close(false, false);
-                } else if (type == MessageType.valueOf("MESSAGE").getId()) {
+                } else if (type == MessageType.MESSAGE.getId()) {
                     getMessage();
                 } else if (type == MessageType.ERROR.getId()) {
                     close(false, false);
