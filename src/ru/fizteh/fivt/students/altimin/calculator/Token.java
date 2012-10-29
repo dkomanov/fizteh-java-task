@@ -10,19 +10,19 @@ public class Token {
     }
 
     boolean isSign() {
-        return tokenType.equals(TokenType.SIGN_DIVIDE) ||
-                tokenType.equals(TokenType.SIGN_MULTIPLY) ||
-                tokenType.equals(TokenType.SIGN_PLUS) ||
-                tokenType.equals(TokenType.SIGN_MINUS);
+        return tokenType.equals(TokenType.SIGN_DIVIDE)
+                || tokenType.equals(TokenType.SIGN_MULTIPLY)
+                || tokenType.equals(TokenType.SIGN_PLUS)
+                || tokenType.equals(TokenType.SIGN_MINUS);
     }
 
     boolean isAdditionSign() {
-        return tokenType.equals(TokenType.SIGN_PLUS) ||
-                tokenType.equals(TokenType.SIGN_MINUS);
+        return tokenType.equals(TokenType.SIGN_PLUS)
+                || tokenType.equals(TokenType.SIGN_MINUS);
     }
 
     boolean isMultiplicationSign() {
-        return tokenType.equals(TokenType.SIGN_MULTIPLY) ||
-                tokenType.equals(TokenType.SIGN_DIVIDE);
+        return tokenType.equals(TokenType.SIGN_MULTIPLY)
+                || tokenType.equals(TokenType.SIGN_DIVIDE);
     }
 }
