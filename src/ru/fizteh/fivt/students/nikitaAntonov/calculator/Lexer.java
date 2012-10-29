@@ -6,16 +6,11 @@ package ru.fizteh.fivt.students.nikitaAntonov.calculator;
  */
 class Lexer {
 	public Lexem lex;
-	
-	private char expr[];
-	private String source;
+	public String source;
 	public int pos;
-	public int endpos;
 	
 	public Lexer(String src) {
 		source = src;
-		expr = src.toCharArray();
-		endpos = expr.length;
 		pos = 0;
 		lex = new Lexem(Lexem.Type.BEGIN);
 	}
@@ -23,12 +18,12 @@ class Lexer {
 	public void nextLexem() throws Exception {
 		skipWhitespaces();
 		
-		if (pos >= endpos) {
+		if (pos >= source.length()) {
 			lex = new Lexem(Lexem.Type.END);
 			return;
 		}
 			
-		switch (expr[pos]) {
+		switch (source.charAt(pos)) {
 		case '(':
 			lex = new Lexem(Lexem.Type.BRACKET_OPEN);
 			break;
@@ -43,16 +38,16 @@ class Lexer {
 					|| lex.type == Lexem.Type.OP_LEVEL1) {
 				lex = getNum();
 			} else {
-				lex = new Lexem(expr[pos]);
+				lex = new Lexem(source.charAt(pos));
 			}
 			break;
 		case '*':
 		case '/':
 		case '%':
-			lex = new Lexem(expr[pos]);
+			lex = new Lexem(source.charAt(pos));
 			break;
 		default:
-			if (Character.isDigit(expr[pos])) {
+			if (Character.isDigit(source.charAt(pos))) {
 				lex = getNum();
 			} else {
 				throw new Exception("Incorrect symbol at position " + pos);
@@ -66,7 +61,7 @@ class Lexer {
 	}
 	
 	private void skipWhitespaces() {
-		while ((pos < endpos) && Character.isWhitespace(expr[pos])) {
+		while ((pos < source.length()) && Character.isWhitespace(source.charAt(pos))) {
 			++pos;
 		}
 	}
@@ -76,16 +71,16 @@ class Lexer {
 		int number = 0;
 		int count = 0;
 		
-		if (expr[pos] == '-') {
+		if (source.charAt(pos) == '-') {
 			negative = true;
 			++pos;
-		} else if (expr[pos] == '+') {
+		} else if (source.charAt(pos) == '+') {
 			++pos;
 		}
 		
 		skipWhitespaces();
 		
-		while (pos < endpos && Character.isDigit(expr[pos])) {
+		while (pos < source.length() && Character.isDigit(source.charAt(pos))) {
 			++count;
 			++pos;
 		}

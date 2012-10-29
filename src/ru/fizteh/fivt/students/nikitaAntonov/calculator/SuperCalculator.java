@@ -192,7 +192,7 @@ public class SuperCalculator {
 			res = parseExpression(true);
 			break;
 		default:
-			if (lexer.pos < lexer.endpos) {
+			if (lexer.pos < lexer.source.length()) {
 				throw new Exception("Syntax error at " + lexer.pos);
 			} else {
 				throw new Exception("Syntax error at the end of file");
