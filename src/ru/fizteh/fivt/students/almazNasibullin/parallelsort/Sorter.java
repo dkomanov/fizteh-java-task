@@ -14,12 +14,15 @@ public class Sorter implements Runnable {
     int start; // индекс начала сортировки
     int end; // индекс конца сортировки
     List<String> result; // отсортированный массив строк
+    boolean withoutReg;
 
-    public Sorter(List<String> lines, int start, int end, List<String> result) {
+    public Sorter(List<String> lines, int start, int end, List<String> result,
+            boolean withoutReg) {
         this.lines = lines;
         this.start = start;
         this.end = end;
         this.result = result;
+        this.withoutReg = withoutReg;
     }
 
     @Override
@@ -27,7 +30,12 @@ public class Sorter implements Runnable {
         for (int i = start; i <= end; ++i) {
             result.add(lines.get(i));
         }
-        Collections.sort(result);
+        if (withoutReg) {
+            MyComparator myComparator = new MyComparator();
+            Collections.sort(result, myComparator);
+        } else {
+            Collections.sort(result);
+        }
     }
 
 }
