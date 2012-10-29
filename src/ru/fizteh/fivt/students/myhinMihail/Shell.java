@@ -292,7 +292,10 @@ public class Shell {
                 BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
                 while (true) {
                     System.out.print("$ ");
-                    String commands[] = input.readLine().split("[\\s]*[;][\\s]*");
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(input.readLine()).append(" ; ");
+                    
+                    String commands[] = sb.toString().split("[\\s]*[;][\\s]*");
                     for (String s : commands) {
                         if (!executeCommand(s)) {
                             System.err.println("Bad command \'"+ s + "\'");
@@ -307,6 +310,7 @@ public class Shell {
                     sb.append(args[i]).append(" ");
                 }
                 sb.append(args[args.length - 1]);
+                sb.append(" ; ");
                 
                 String commands[] = sb.toString().split("[\\s]*[;][\\s]*");
                 for (String s : commands) {
