@@ -138,6 +138,9 @@ public class CalendarMain {
                 System.out.print(' ');
             }
         }
+        if (dayNameLength < 2) {
+            dayNameLength = 2;
+        }
         System.out.println();
         int currDay = 1;
         int currWeek = calendar.get(Calendar.WEEK_OF_YEAR);
