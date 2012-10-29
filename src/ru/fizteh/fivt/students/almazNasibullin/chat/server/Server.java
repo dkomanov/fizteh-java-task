@@ -29,15 +29,18 @@ public class Server {
             WrapperPrimitive<Integer> port = new WrapperPrimitive<Integer>(-1);
             Selector selector = Selector.open();
             BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
-            Map<String, SocketChannel> clients = new TreeMap<String, SocketChannel>();
+            
             // хранит ник и SocketChannel клиента
-            List<SocketChannel> withoutName = new ArrayList<SocketChannel>();
+            Map<String, SocketChannel> clients = new TreeMap<String, SocketChannel>();
+            
             /* хранит SocketChannel клиентов, у которых не утвержден ник,
              * т.е. возможно, что ник клиента совпадает с уже имеющимся
              */
+            List<SocketChannel> withoutName = new ArrayList<SocketChannel>();
+            
+            // для того, чтобы принимать новых клиетов
             AtomicReference ar = new AtomicReference(ServerSocketChannel.open().
                     configureBlocking(false));
-            // для того, чтобы принимать новых клиетов
 
             for (;;) {
                 if (buf.ready()) {
@@ -240,7 +243,7 @@ public class Server {
                     // в какой-то SocketChannel пришло сообщение
                     SocketChannel sc = (SocketChannel)key.channel();
                     ByteBuffer mes = ByteBuffer.allocate(512);
-                    Boolean crash = getMessage(sc, mes, clients);
+                    boolean crash = getMessage(sc, mes, clients);
                     if (!crash) {
                         byte[] message = mes.array();
                         if (message[0] == 1) {
@@ -344,7 +347,7 @@ public class Server {
         }
     }
 
-    public static Boolean getMessage(SocketChannel sc, ByteBuffer message,
+    public static boolean getMessage(SocketChannel sc, ByteBuffer message,
             Map<String, SocketChannel> clients) {
         try {
             int count = sc.read(message);
