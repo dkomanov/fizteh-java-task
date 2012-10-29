@@ -11,26 +11,30 @@ import java.net.Socket;
 
 class ChatClient {
     public static void main(String[] args) {
-        Socket socket = null;
-        try {
-            socket = new Socket("localhost", 6666);
-        } catch (Exception e) {
+        if(args.length != 1) {
+            System.err.println("Use: ChatClient <nickname>");
             System.exit(1);
         }
         try {
-            OutputStream oStream = socket.getOutputStream();
-            oStream.write(MessageBuilder.getMessageBytes(new Message(MessageType.HELLO, "my_name", "")));
-            Listener listener = new Listener(socket.getInputStream());
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            while (true) {
-                String str = reader.readLine();
-                if (str == null || listener.closed()) {
-                    break;
+            String str;
+            Socket socket = null;
+            Listener listener = null;
+            while((str = reader.readLine()) != null) {
+                if(str.matches("/connect[ ]+.+:[0-9]+")) {
+                    String host = str.replaceAll("(/connect[ ]+)|(:.+)", "");
+                    String port = str.replaceAll("/connect[ ]+.+:", "");
+                    int portNum = Integer.parseInt(port);
+                    socket = new Socket(host, portNum);
+                    listener = new Listener(socket.getInputStream());
                 }
-                oStream.write(MessageBuilder.getMessageBytes(new Message(MessageType.MESSAGE, "my_name", str)));
             }
-        } catch (Exception e) {
-            System.exit(1);
+        } catch (Throwable t) {
+            if(t.getMessage() != null) {
+                System.out.println("Error: " + t.getMessage() + ".");
+            } else {
+                System.err.println("Error: unknown.");
+            }
         }
     }
 }
