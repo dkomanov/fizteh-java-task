@@ -1,5 +1,5 @@
-package ru.fizteh.fivt.students.alexanderKuzmin.calculator
-
+//package ru.fizteh.fivt.students.alexanderKuzmin.calculator
+package Calculator;
 /**
  * @author Kuzmin A.
  *      group 196
@@ -8,20 +8,21 @@ package ru.fizteh.fivt.students.alexanderKuzmin.calculator
  */
 
 import java.math.BigInteger;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Iterator;
 
 public class Calculator {
 
     // The method converts the string in RPN
-    public String toPolishNotation(final String formula) {
-        if (formula.length() <= 2) {
+    public String toPolishNotation(String formula) {
+        if (formula.isEmpty()) {
             System.out.println("Nothing input.");
             System.exit(1);
         }
+        formula = "(" + formula + ")";
 
-        String rezultNotation = "";
-        final Stack<Character> stack = new Stack<Character>();
-        final Stack<Character> outString = new Stack<Character>();
+        final ArrayDeque<Character> stack = new ArrayDeque<Character>();
+        final ArrayDeque<Character> outString = new ArrayDeque<Character>();
         int sum = 0;
         boolean number = false;
         for (int i = 0; i < formula.length(); ++i) {
@@ -92,14 +93,16 @@ public class Calculator {
                 System.exit(1);
             }
         }
-        for (int i1 = 0; i1 < outString.size(); i1++) {
-            rezultNotation = rezultNotation + String.valueOf(outString.get(i1));
+        StringBuilder resultNotation = new StringBuilder();
+        Iterator<Character> it = outString.iterator();
+        while(it.hasNext()) {
+        	resultNotation.append(String.valueOf(it.next()));
         }
         if (sum != 0) {
             System.out.println("Error with parentheses");
             System.exit(1);
         }
-        return rezultNotation;
+        return resultNotation.reverse().toString();
     }
 
     // Method for priority operations
@@ -121,17 +124,17 @@ public class Calculator {
 
     // The method that calculate the expression by using Reverse Polish Notation
     private BigInteger solve(final String formula) {
-        Stack<BigInteger> stack = new Stack<BigInteger>();
+        ArrayDeque<BigInteger> stack = new ArrayDeque<BigInteger>();
         for (int i = 0; i < formula.length(); ++i) {
             if ((formula.charAt(i) <= '9') && (formula.charAt(i) >= '0')) {
-                BigInteger tmp = new BigInteger(new Integer(
+                BigInteger tmp = new BigInteger(Integer.valueOf(
                         formula.charAt(i) - '0').toString());
                 for (int j = i + 1; j < formula.length(); ++j)
                     if ((formula.charAt(j) <= '9')
                             && (formula.charAt(j) >= '0')) {
                         tmp = tmp.multiply(
-                                new BigInteger(new Integer(10).toString()))
-                                .add(new BigInteger(new Integer(formula
+                                new BigInteger(Integer.valueOf(10).toString()))
+                                .add(new BigInteger(Integer.valueOf(formula
                                         .charAt(j) - '0').toString()));
                         ++i;
                     } else
@@ -183,6 +186,6 @@ public class Calculator {
             for (int i = 0; i < args.length; ++i)
                 s += args[i];
         Calculator calc = new Calculator();
-        System.out.print(calc.solve(calc.toPolishNotation("(" + s + ")")));
+        System.out.print(calc.solve(calc.toPolishNotation(s)));
     }
 }
