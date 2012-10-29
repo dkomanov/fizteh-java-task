@@ -4,12 +4,6 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
-class notCaseSensitiveComparator implements Comparator<String> {
-    public int compare(String one, String two) {
-        return one.toLowerCase().compareTo(two.toLowerCase());
-    }
-}
-
 class SortPiece {
     public int from = 0;
     public int to = 0;
@@ -41,7 +35,6 @@ public class ParallelSort {
         }
         
         public void run() {
-            notCaseSensitiveComparator comparator = new notCaseSensitiveComparator();
             while (true) {
                 SortPiece sync = null;
                 try {
@@ -58,7 +51,7 @@ public class ParallelSort {
                     System.err.println(e.getMessage());
                 }
                 if (notCaseSensitive) {
-                    Collections.sort(list.subList(sync.from, sync.to), comparator);
+                    Collections.sort(list.subList(sync.from, sync.to), String.CASE_INSENSITIVE_ORDER);
                 } else {
                     Collections.sort(list.subList(sync.from, sync.to));
                 }
@@ -187,9 +180,7 @@ public class ParallelSort {
             String line;
             
             while ((line = reader.readLine()) != null) {
-                if (!line.isEmpty()) {
-                    list.add(line);
-                }
+                list.add(line);
             } 
                 
         } finally {
@@ -331,11 +322,11 @@ public class ParallelSort {
             for (int i = 1; i < list.size(); ++i) {
                 if (onlyUnique) {
                     if (notCaseSensitive) {
-                        if (!list.get(i).toLowerCase().equals(list.get(i-1).toLowerCase())) {
+                        if (String.CASE_INSENSITIVE_ORDER.compare(list.get(i), list.get(i - 1)) != 0) {
                             out.write(list.get(i) + separator);
                         }
                     } else {
-                        if (!list.get(i).equals(list.get(i-1))) {
+                        if (!list.get(i).equals(list.get(i - 1))) {
                             out.write(list.get(i) + separator);
                         }
                     }

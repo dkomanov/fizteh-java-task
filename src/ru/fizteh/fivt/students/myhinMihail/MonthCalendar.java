@@ -17,6 +17,12 @@ public class MonthCalendar {
         System.exit(1);
     }
     
+    public static void printWhiteSpaces(int length) {
+         for (int i = 0; i < length; i++) {
+             System.out.print(" ");
+         }
+    }
+    
     public static void readKeys(String[] args) {
         for (int i = 0; i < args.length; ++i) {
             if (args[i].charAt(0) == '-') {
@@ -100,13 +106,24 @@ public class MonthCalendar {
         }
         
         String[] days = new DateFormatSymbols().getShortWeekdays();
+        int length = days[1].length();
+        
         for (int i = 2; i < 8; i++) {
             System.out.print(days[i] + "  ");
         }
-        System.out.println(days[1] + "  ");
-        
+        System.out.println(days[1]);
+
         int currentDay = 1;
         int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+        boolean printCurrentWeek = false;
+        
+        if (printWeek) {
+            if (currentWeek < 10) {
+                System.out.print(" ");
+            } 
+            System.out.print(currentWeek + "  ");
+            currentWeek++;
+        }
         
         int k = 1;
         int emptyDays = calendar.get(Calendar.DAY_OF_WEEK);
@@ -117,23 +134,26 @@ public class MonthCalendar {
         
         k = emptyDays;
         while (emptyDays > 1) {
-            System.out.print("    ");
+            printWhiteSpaces(length + 2);
             emptyDays--;
         }
         
         while (month == calendar.get(Calendar.MONTH)) {
-            if (printWeek) {
+            if (printWeek && printCurrentWeek) {
                 if (currentWeek < 10) {
                     System.out.print(" ");
                 } 
                 System.out.print(currentWeek + "  ");
                 currentWeek++;
+            } else {
+                printCurrentWeek = true;
             }
             
             for (int j = k; j <= 7  &&  month == calendar.get(Calendar.MONTH); j++) {
                 if (currentDay < 10) {
                     System.out.print(" ");
                 }
+                printWhiteSpaces(length - 2);
                 System.out.print(currentDay + "  ");
                 currentDay++;
                 calendar.set(Calendar.DAY_OF_MONTH, currentDay);
@@ -155,6 +175,8 @@ public class MonthCalendar {
             }
         } catch (Exception expt) {
             System.err.println("Error: " + expt.getMessage());
+            System.exit(1);
         }
     }
+
 }
