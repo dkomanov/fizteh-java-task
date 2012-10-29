@@ -1,6 +1,6 @@
 package ru.fizteh.fivt.students.konstantinPavlov;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class Calculator {
 
@@ -43,7 +43,7 @@ public class Calculator {
                 return;
             }
 
-            ArrayList<String> parsedInput = parse(toRpn(str));
+            String[] parsedInput = parse(toRpn(str));
 
             if (!checkRpn(parsedInput)) {
                 System.err.println("Error: wrong input");
@@ -57,7 +57,7 @@ public class Calculator {
         }
     }
 
-    private static boolean checkRpn(ArrayList<String> parsedInput) {
+    private static boolean checkRpn(String[] parsedInput) {
         int countOfDigits = 0;
         int countOfOperands = 0;
         for (String s : parsedInput) {
@@ -113,7 +113,8 @@ public class Calculator {
                                 builder.append(s.pop().charValue()).append(",");
                             }
                         } else {
-                            if (str.charAt(i) != ' ' && str.charAt(i) != '\n'
+                            if (!Character.isWhitespace(str.charAt(i))
+                                    && str.charAt(i) != '\n'
                                     && str.charAt(i) != '\t') {
                                 return "";
                             }
@@ -135,49 +136,39 @@ public class Calculator {
         return resStr;
     }
 
-    private static ArrayList<String> parse(String str) {
-        ArrayList<String> resArray = new ArrayList<String>();
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < str.length(); ++i) {
-            if (str.charAt(i) == ',') {
-                resArray.add(builder.toString());
-                builder = new StringBuilder();
-            } else {
-                builder.append(str.charAt(i));
-            }
-        }
+    private static String[] parse(String str) {
+        String[] resArray = str.split(",");
         return resArray;
     }
 
-    private static int calculate(ArrayList<String> array)
-            throws RuntimeException {
+    private static int calculate(String[] parsedInput) throws RuntimeException {
         int res;
-        MyStack<String> s = new MyStack<String>();
-        s.push(array.get(0));
-        for (int i = 1; i < array.size(); ++i) {
-            if (array.get(i).equals("+") || array.get(i).equals("-")
-                    || array.get(i).equals("/") || array.get(i).equals("*")) {
+        LinkedList<String> s = new LinkedList<String>();
+        s.push(parsedInput[0]);
+        for (int i = 1; i < parsedInput.length; ++i) {
+            if (parsedInput[i].equals("+") || parsedInput[i].equals("-")
+                    || parsedInput[i].equals("/") || parsedInput[i].equals("*")) {
                 if (s.size() >= 2) {
                     int b = Integer.parseInt(s.pop());
                     int a = Integer.parseInt(s.pop());
                     int cur = 0;
-                    if (array.get(i).equals("+")) {
+                    if (parsedInput[i].equals("+")) {
                         cur = a + b;
-                        if (cur - a == b) {
+                        if (cur - a != b) {
                             System.err.println("Error: Integer overflow");
                             System.exit(1);
                         }
                         s.push(Integer.toString(cur));
                     }
-                    if (array.get(i).equals("-")) {
+                    if (parsedInput[i].equals("-")) {
                         cur = a - b;
-                        if (cur + b == a) {
+                        if (cur + b != a) {
                             System.err.println("Error: Integer overflow");
                             System.exit(1);
                         }
                         s.push(Integer.toString(cur));
                     }
-                    if (array.get(i).equals("/")) {
+                    if (parsedInput[i].equals("/")) {
                         if (b == 0) {
                             System.err.println("Error: Division by 0");
                             System.exit(1);
@@ -185,7 +176,7 @@ public class Calculator {
                         cur = a / b;
                         s.push(Integer.toString(cur));
                     }
-                    if (array.get(i).equals("*")) {
+                    if (parsedInput[i].equals("*")) {
                         cur = a * b;
                         if (cur / a != b) {
                             System.err.println("Error: Integer overflow");
@@ -195,7 +186,7 @@ public class Calculator {
                     }
                 }
             } else {
-                s.push(array.get(i));
+                s.push(parsedInput[i]);
             }
         }
         res = Integer.parseInt(s.pop());
