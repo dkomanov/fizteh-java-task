@@ -37,7 +37,7 @@ class Lexem {
 		type = t;
 	}
 	
-	public Lexem(char c) throws Exception {
+	public Lexem(char c) throws CalculatorException {
 		switch (c) {
 		case '+':
 			type = Type.OP_LEVEL1;
@@ -60,7 +60,7 @@ class Lexem {
 			type2 = Op2Type.MOD;
 			break;
 		default:
-			throw new Exception("Incorrect symbol of operation: " + c);
+			throw new CalculatorException("Incorrect symbol of operation: " + c);
 		}
 	}
 }

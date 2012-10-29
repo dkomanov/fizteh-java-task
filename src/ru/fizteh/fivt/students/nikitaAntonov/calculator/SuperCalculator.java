@@ -43,7 +43,11 @@ public class SuperCalculator {
 			return;
 		}
 		
-		runCalculating(str);	
+		try {
+			runCalculating(str);
+		} catch (CalculatorException e) {
+			System.exit(1);
+		}
 	}
 	
 	public static void runInteractive() throws IOException {
@@ -59,21 +63,26 @@ public class SuperCalculator {
 				continue;
 			}
 		
-			runCalculating(s);
+			try {
+				runCalculating(s);
+			} catch (CalculatorException e) {
+			}
 			
 			s = in.readLine();
 		}
 	}
 
-	private static void runCalculating(String expr) {
+	private static void runCalculating(String expr) throws CalculatorException {
 		SuperCalculator calc = new SuperCalculator(expr);
 		
 		try {
 			System.out.println(calc.getResult());
 		} catch (ArithmeticException e) {
 			System.out.println("Arithmetic error: " + e.getMessage());
-		} catch (Exception e) {
+			throw new CalculatorException(e.getMessage());
+		} catch (CalculatorException e) {
 			System.out.println(e.getMessage());
+			throw e;
 		}
 	}
 	
@@ -88,7 +97,7 @@ public class SuperCalculator {
 		return result.toString();
 	}	
 
-	public int getResult() throws Exception {
+	public int getResult() throws CalculatorException {
 		if (isCalculated) {
 			return result;
 		}
@@ -98,7 +107,7 @@ public class SuperCalculator {
 		return result;
 	}
 	
-	private int parseExpression(boolean inBrackets) throws Exception {
+	private int parseExpression(boolean inBrackets) throws CalculatorException {
 		int res;
 		
 		res = parseAddend();
@@ -122,7 +131,7 @@ public class SuperCalculator {
 				|| overflowCtrl.compareTo(
 					new BigInteger(Integer.toString(Integer.MIN_VALUE))) < 0) {
 				
-				throw new Exception("Overflow!");
+				throw new CalculatorException("Overflow!");
 			}
 			
 			res = overflowCtrl.intValue();
@@ -134,11 +143,11 @@ public class SuperCalculator {
 		            && inBrackets)) {
 			return res;	
 		} else {
-			throw new Exception("Syntax Error at position: " + lexer.pos);
+			throw new CalculatorException("Syntax Error at position: " + lexer.pos);
 		}
 	}
 	
-	private int parseAddend() throws Exception {
+	private int parseAddend() throws CalculatorException {
 		int res;
 		
 		res = parseMultiplier();
@@ -157,7 +166,7 @@ public class SuperCalculator {
 					|| overflowCtrl.compareTo(
 						new BigInteger(Integer.toString(Integer.MIN_VALUE))) < 0) {
 					
-					throw new Exception("Overflow!");
+					throw new CalculatorException("Overflow!");
 				}
 				
 				res = overflowCtrl.intValue();
@@ -174,7 +183,7 @@ public class SuperCalculator {
 		return res;
 	}
 	
-	private int parseMultiplier() throws Exception
+	private int parseMultiplier() throws CalculatorException
 	{
 		int res;
 		
@@ -189,9 +198,9 @@ public class SuperCalculator {
 			break;
 		default:
 			if (lexer.pos < lexer.source.length()) {
-				throw new Exception("Syntax error at " + lexer.pos);
+				throw new CalculatorException("Syntax error at " + lexer.pos);
 			} else {
-				throw new Exception("Syntax error at the end of file");
+				throw new CalculatorException("Syntax error at the end of file");
 			}
 		}
 		

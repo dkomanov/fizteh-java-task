@@ -17,7 +17,7 @@ class Lexer {
 		lex = new Lexem(Lexem.Type.BEGIN);
 	}
 	
-	public void nextLexem() throws Exception {
+	public void nextLexem() throws CalculatorException {
 		skipWhitespaces();
 		
 		if (pos >= source.length()) {
@@ -52,7 +52,7 @@ class Lexer {
 			if (Character.isDigit(source.charAt(pos))) {
 				lex = getNum();
 			} else {
-				throw new Exception("Incorrect symbol at position " + pos);
+				throw new CalculatorException("Incorrect symbol at position " + pos);
 			}
 			break;
 		}
@@ -68,7 +68,7 @@ class Lexer {
 		}
 	}
 	
-	private Lexem getNum() throws Exception {
+	private Lexem getNum() throws CalculatorException {
 		boolean negative = false;
 		int number = 0;
 		int count = 0;
@@ -88,13 +88,13 @@ class Lexer {
 		}
 		
 		if (count == 0) {
-			throw new Exception("Incorrect number at position " + pos);
+			throw new CalculatorException("Incorrect number at position " + pos);
 		} else {
 			try
 			{
 				number = Integer.parseInt(source.substring(pos - count, pos));
 			} catch (NumberFormatException e) {
-				throw new Exception("Number at position " + (pos - count) + " is too large");
+				throw new CalculatorException("Number at position " + (pos - count) + " is too large");
 			}
 			return new Lexem(negative ? -number : number);
 		}
