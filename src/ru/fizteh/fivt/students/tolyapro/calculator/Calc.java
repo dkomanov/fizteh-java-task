@@ -3,10 +3,6 @@ package ru.fizteh.fivt.students.tolyapro.calculator;
 import java.util.*;
 import java.math.*;
 
-import javax.management.RuntimeErrorException;
-
-import sun.io.Converters;
-
 public class Calc {
 
     public static boolean isNumber(String s) {
