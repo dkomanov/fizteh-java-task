@@ -182,9 +182,11 @@ public class Calculator {
      */
     public static void main(String[] args) throws Exception {
         String s = "";
-        if (args.length > 0)
-            for (int i = 0; i < args.length; ++i)
+        if (args.length > 0) {
+            for (int i = 0; i < args.length; ++i) {
                 s += args[i];
+            }
+        }
         Calculator calc = new Calculator();
         System.out.print(calc.solve(calc.toPolishNotation(s)));
     }
