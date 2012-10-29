@@ -174,11 +174,12 @@ public class CalendarMain {
 
     private static void printCurrentTime() {
         if (tz != null) {
-            /*calendar.setTimeZone(tz);
-            calendar.setTimeInMillis(new Date().getTime()); */
+            calendar.setTimeInMillis(new Date().getTime());
             df.setTimeZone(tz);
             System.out.println();
-            System.out.println("Now: " + df.format(calendar.getTime()) + " " + tz.getID() + " time");
+            int slashIndex = tz.getID().lastIndexOf('/');
+            System.out.println("Now: " + df.format(calendar.getTime()) + " "
+                    + tz.getID().substring(slashIndex + 1) + " time");
         }
     }
 
