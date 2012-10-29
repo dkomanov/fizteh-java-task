@@ -109,8 +109,10 @@ public class MonthCalendar {
         int length = days[1].length();
         
         for (int i = 2; i < 8; i++) {
+            printWhiteSpaces(2 - length);
             System.out.print(days[i] + "  ");
         }
+        printWhiteSpaces(2 - length);
         System.out.println(days[1]);
 
         int currentDay = 1;
@@ -134,7 +136,7 @@ public class MonthCalendar {
         
         k = emptyDays;
         while (emptyDays > 1) {
-            printWhiteSpaces(length + 2);
+            printWhiteSpaces((length > 2 ? length : 2) + 2);
             emptyDays--;
         }
         
