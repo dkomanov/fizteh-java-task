@@ -98,7 +98,7 @@ public class Shell {
             if (newPath.exists()) {
                 try {
                     delete(newPath);
-                } catch ( Exception e) {
+                } catch (Exception e) {
                     throw new Exception("rm:" + e.getMessage());
                 }
             } else {
@@ -192,8 +192,8 @@ public class Shell {
     }
 
     static void delete(File newFile) throws Exception {
-        if(newFile.isFile()) {
-            if(!newFile.delete()) {
+        if (newFile.isFile()) {
+            if (!newFile.delete()) {
                 throw new Exception("cannot remove file or directory");
             }
         } else {
@@ -201,7 +201,7 @@ public class Shell {
             for (String s : children) {
                 delete(getFile(newFile.getAbsolutePath() + "/" + s));
             }
-            if(!newFile.delete()) {
+            if (!newFile.delete()) {
                 throw new Exception("cannot remove file or directory");
             }
         }
