@@ -1,6 +1,6 @@
 /*
- * Антонов Никита kogemrka@gmail.com
- * ФИВТ, 197 группа 
+ * РђРЅС‚РѕРЅРѕРІ РќРёРєРёС‚Р° kogemrka@gmail.com
+ * Р¤РР’Рў, 197 РіСЂСѓРїРїР° 
  */
 package ru.fizteh.fivt.kogemrka;
 
@@ -10,9 +10,9 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 
 /**
- * Класс для подсчёта значения арифметического выражения
+ * РљР»Р°СЃСЃ РґР»СЏ РїРѕРґСЃС‡С‘С‚Р° Р·РЅР°С‡РµРЅРёСЏ Р°СЂРёС„РјРµС‚РёС‡РµСЃРєРѕРіРѕ РІС‹СЂР°Р¶РµРЅРёСЏ
  * 
- * @author Антонов Никита
+ * @author РђРЅС‚РѕРЅРѕРІ РќРёРєРёС‚Р°
  */
 public class SuperCalculator {
 	
