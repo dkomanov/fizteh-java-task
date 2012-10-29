@@ -92,23 +92,15 @@ public class Shell {
                 throw new Exception("mkdir: cannot create directory \'" + parseCommand[1] +
                                    "\': No such file or directory");
             }
-        } else if (nameCommand.equals("rm")){
-            if (parseCommand[1].equals("-r")) {
-                File newPath = getFile(parseCommand[2]);
-                if(newPath.exists()) {
-                    newPath.delete();
-                } else {
-                    throw new Exception("rm: cannot remove \'" + parseCommand[1] + "\': No such file or directory");
-                }
+        } else if (nameCommand.equals("rm")) {
+            if (parseCommand.length != 2) {
+                throw new Exception("strange numbers of argv");
+            }
+            File newPath = getFile(parseCommand[1]);
+            if(newPath.exists()) {
+                newPath.delete();
             } else {
-                File newPath = getFile(parseCommand[1]);
-                if(newPath.isFile()) {
-                    newPath.delete();
-                } else if (newPath.exists()){
-                    throw new Exception("rm: cannot remove \'" + parseCommand[1] + "\': Is a directory");
-                } else {
-                    throw new Exception("rm: cannot remove \'" + parseCommand[1] + "\': No such file or directory");
-                }
+                throw new Exception("rm: cannot remove \'" + parseCommand[1] + "\': No such file or directory");
             }
         } else if(nameCommand.equals("mv")){
             if (parseCommand.length != 3) {
