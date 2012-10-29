@@ -7,6 +7,7 @@ public class TokenParser {
     private int currentPosition;
 
     TokenParser(String expression) throws ParseException {
+        expression.replace(" ", "");
         if (expression.contains(".")) {
             throw new ParseException("Found illegal symbol '.'");
         }
@@ -14,9 +15,6 @@ public class TokenParser {
     }
 
     private Token getNextToken() throws ParseException {
-        while (Character.isWhitespace(expression.charAt(currentPosition))) {
-            currentPosition++;
-        }
         int oldPosition = currentPosition;
         switch (expression.charAt(currentPosition)) {
             case '+':
