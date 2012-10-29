@@ -10,55 +10,91 @@ public class ChatServer {
         Scanner scanner = new Scanner(System.in);
         Listener listener = null;
         while ((command = scanner.nextLine()) != null) {
-            if (command.matches("/listen[ ]*[0-9]*")) {
-                command = command.replaceFirst("/listen[ ]*", "");
-                int port = -1;
-                try {
-                    port = Integer.parseInt(command);
-                    listener = new Listener(port);
-                    listener.start();
-                } catch (Exception e) {
-                    System.exit(1);
-                }
-                System.out.println("Listen port " + port);
-            } else if (command.equals("/stop")) {
-                if (listener != null) {
-                    listener.stop();
+            try {
+                if (command.matches("/listen[ ]+[0-9]+")) {
+                    command = command.replaceFirst("/listen[ ]+", "");
                     try {
-                        listener.join();
+                        int port = Integer.parseInt(command);
+                        listener = new Listener(port);
+                        listener.start();
+                        System.out.println("Listen port " + port);
                     } catch (Throwable t) {
-                    }
-                    System.out.println("Server stopped.");
-                }
-            } else if (command.equals("/list")) {
-                if (listener != null) {
-                    System.out.print(listener.list());
-                }
-            } else if (command.matches("/send[ ]+.*")) {
-                String user = command.replaceFirst("/send[ ]*", "");
-                command = scanner.nextLine();
-                if(command == null) {
-                    System.exit(1);
-                }
-                listener.sendFromServer(command, user);
-            } else if (command.equals("/sendall")) {
-                command = scanner.nextLine();
-                listener.sendFromServer(command);
-            } else if (command.matches("/kill[ ]+.*")) {
-                command = command.replaceFirst("/kill[ ]*", "");
-                listener.kill(command);
-            } else if (command.equals("/exit")) {
-                if (listener != null) {
-                    listener.stop();
-                    try {
-                        listener.join();
-                    } catch (Exception e) {
+                        if (t.getMessage() != null) {
+                            System.err.println("Error: " + t.getMessage() + ".");
+                        } else {
+                            System.err.println("Error: unknown.");
+                        }
                         System.exit(1);
                     }
+                } else if (command.equals("/stop")) {
+                    if (listener != null) {
+                        listener.stop();
+                        try {
+                            listener.join();
+                        } catch (Throwable t) {
+                        }
+                        listener = null;
+                        System.out.println("Server stopped.");
+                    }
+                } else if (command.equals("/list")) {
+                    if (listener != null) {
+                        System.out.print(listener.list());
+                    }
+                } else if (command.matches("/send[ ]+.+")) {
+                    if (listener == null) {
+                        continue;
+                    }
+                    String user = command.replaceFirst("/send[ ]+", "");
+                    if (user.equals("")) {
+                        System.out.println("Error: unknown user.");
+                        continue;
+                    }
+                    command = scanner.nextLine();
+                    if (command == null) {
+                        System.err.println("Error: cannot read message.");
+                        if (listener != null) {
+                            listener.stop();
+                        }
+                        listener.join();
+                        System.exit(1);
+                    }
+                    listener.sendFromServer(command, user);
+                } else if (command.equals("/sendall")) {
+                    if (listener == null) {
+                        continue;
+                    }
+                    command = scanner.nextLine();
+                    listener.sendFromServer(command);
+                } else if (command.matches("/kill[ ]+.+")) {
+                    if (listener == null) {
+                        continue;
+                    }
+                    command = command.replaceFirst("/kill[ ]+", "");
+                    if (command.equals("")) {
+                        System.err.println("Error: user not found.");
+                        continue;
+                    }
+                    listener.kill(command);
+                } else if (command.equals("/exit")) {
+                    if (listener != null) {
+                        listener.stop();
+                        try {
+                            listener.join();
+                        } catch (Exception e) {
+                            System.exit(1);
+                        }
+                    }
+                    System.exit(0);
+                } else {
+                    System.err.println("Unknown command.");
                 }
-                System.exit(0);
-            } else {
-                System.err.println("Unknown command.");
+            } catch (Throwable t) {
+                if (t.getMessage() != null) {
+                    System.err.println("Error: " + t.getMessage() + ".");
+                } else {
+                    System.err.println("Error: unknown.");
+                    System.err.println(t.getClass().getName());
+                }
             }
         }
     }

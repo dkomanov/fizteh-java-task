@@ -14,27 +14,22 @@ class ChatClient {
         Socket socket = null;
         try {
             socket = new Socket("localhost", 6666);
-        } catch(Exception e) {
-            System.exit(1);
-        }
-        OutputStream oStream = null;
-        Listener listener = null;
-        try {
-            oStream = socket.getOutputStream();
-            oStream.write(MessageBuilder.getMessageBytes(new Message(MessageType.HELLO, "my_name", "")));
-            listener = new Listener(socket.getInputStream());
         } catch (Exception e) {
             System.exit(1);
         }
         try {
-            while(true) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-                String str;
-                while((str = reader.readLine()) != null) {
-                    oStream.write(MessageBuilder.getMessageBytes(new Message(MessageType.MESSAGE, "my_name", str)));
+            OutputStream oStream = socket.getOutputStream();
+            oStream.write(MessageBuilder.getMessageBytes(new Message(MessageType.HELLO, "my_name", "")));
+            Listener listener = new Listener(socket.getInputStream());
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            while (true) {
+                String str = reader.readLine();
+                if (str == null || listener.closed()) {
+                    break;
                 }
+                oStream.write(MessageBuilder.getMessageBytes(new Message(MessageType.MESSAGE, "my_name", str)));
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.exit(1);
         }
     }

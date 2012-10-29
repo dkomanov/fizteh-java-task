@@ -1,6 +1,5 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.client;
 
-import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
 
 import java.io.InputStream;
@@ -8,19 +7,13 @@ import java.nio.ByteBuffer;
 
 class Listener implements Runnable {
     private InputStream iStream;
+    private boolean     isClosed;
 
     Listener(InputStream stream) {
         iStream = stream;
+        isClosed = false;
         Thread thread = new Thread(this);
         thread.start();
-    }
-
-    void getByeMessage() {
-        stop();
-    }
-
-    void getErrorMessage() {
-        stop();
     }
 
     void getMessage() {
@@ -39,7 +32,7 @@ class Listener implements Runnable {
             if (iStream.read(bName, 0, length) != length) {
                 stop();
             }
-            System.out.print(new String(bName) + ": ");
+            System.out.print("<" + new String(bName) + "> ");
             bLength = new byte[4];
             if (iStream.read(bLength, 0, 4) != 4) {
                 stop();
@@ -64,11 +57,11 @@ class Listener implements Runnable {
             while (!Thread.currentThread().isInterrupted() && (iType = iStream.read()) >= 0) {
                 byte type = (byte) iType;
                 if (type == MessageType.valueOf("BYE").getId()) {
-                    getByeMessage();
+                    stop();
                 } else if (type == MessageType.valueOf("MESSAGE").getId()) {
                     getMessage();
                 } else {
-                    getErrorMessage();
+                    stopError();
                 }
             }
         } catch (Exception e) {
@@ -77,6 +70,14 @@ class Listener implements Runnable {
     }
 
     void stop() {
-        Thread.currentThread().interrupt();
+        System.exit(0);
+    }
+
+    void stopError() {
+        System.exit(1);
+    }
+
+    boolean closed() {
+        return isClosed;
     }
 }

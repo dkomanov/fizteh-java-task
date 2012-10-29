@@ -10,23 +10,30 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 class User implements Runnable {
-    private Socket socket;
-    public Thread myThread;
-    private String name;
-    private boolean authorized;
-    volatile private Listener myListener;
+    private Socket              socket;
+    public Thread               myThread;
+    private String              name;
+    private boolean             authorized;
+    volatile private Listener   myListener;
+    boolean                     isClosed;
 
     public User(Socket socket, Listener listener) {
-        this.authorized = false;
-        this.name = null;
+        authorized = false;
+        name = null;
         this.socket = socket;
         myListener = listener;
-        this.myThread = new Thread(this);
+        isClosed = false;
+        myThread = new Thread(this);
         myThread.start();
     }
 
-    void close() {
-        myThread.interrupt();
+    public void close(boolean isError) {
+        isClosed = true;
+        if(isError) {
+            sendMessage(new Message(MessageType.ERROR, "", ""));
+        } else {
+            sendMessage(new Message(MessageType.BYE, "", ""));
+        }
         if (!socket.isClosed()) {
             try {
                 socket.close();
@@ -34,115 +41,126 @@ class User implements Runnable {
             }
         }
         myListener.deleteUser(this);
+        myThread.interrupt();
     }
 
     private void getHelloMessage() {
         try {
             InputStream iStream = socket.getInputStream();
             if ((byte) iStream.read() != 1) {
-                close();
-                return;
+                throw new RuntimeException();
             }
             byte[] bLength = new byte[4];
             if (iStream.read(bLength, 0, 4) != 4) {
-                close();
-                return;
+                throw new RuntimeException();
             }
             ByteBuffer buffer = ByteBuffer.allocate(4).put(bLength);
             buffer.position(0);
             int length = buffer.getInt();
             byte[] bName = new byte[length];
             if (iStream.read(bName, 0, length) != length) {
-                close();
-                return;
+                throw new RuntimeException();
             }
             name = new String(bName);
             if(myListener.names.contains(name)) {
-                close();
-                return;
+                throw new RuntimeException();
             }
             myListener.names.add(name);
             authorized = true;
-        } catch (Exception e) {
-            close();
+        } catch (Throwable e) {
+            if (!isClosed) {
+                close(true);
+            }
         }
     }
 
     private void getMessage() {
         if (!authorized) {
-            close();
+            if (!isClosed) {
+                close(true);
+            }
             return;
         }
         try {
             InputStream iStream = socket.getInputStream();
             if ((byte) iStream.read() != 2) {
-                close();
-                return;
+                throw new RuntimeException();
             }
             ByteBuffer buffer = ByteBuffer.allocate(4);
             for (int i = 0; i < 4; ++i) {
                 int tmp;
-                if((tmp = iStream.read()) < 0) {
-                    close();
-                    return;
+                if ((tmp = iStream.read()) < 0) {
+                    throw new RuntimeException();
                 }
-                buffer.put((byte)tmp);
+                buffer.put((byte) tmp);
             }
             buffer.position(0);
             int length = buffer.getInt();
             byte[] bName = new byte[length];
-            for(int i = 0; i < length; ++i) {
+            for (int i = 0; i < length; ++i) {
                 int tmp;
-                if((tmp = iStream.read()) < 0) {
-                    close();
-                    return;
+                if ((tmp = iStream.read()) < 0) {
+                    throw new RuntimeException();
                 }
-                bName[i] = (byte)tmp;
+                bName[i] = (byte) tmp;
             }
             if (!(new String(bName).equals(name))) {
-                close();
-                return;
+                throw new RuntimeException();
             }
             buffer = ByteBuffer.allocate(4);
             for (int i = 0; i < 4; ++i) {
                 int tmp;
-                if((tmp = iStream.read()) < 0) {
-                    close();
-                    return;
+                if ((tmp = iStream.read()) < 0) {
+                    throw new RuntimeException();
                 }
-                buffer.put((byte)tmp);
+                buffer.put((byte) tmp);
             }
             buffer.position(0);
             length = buffer.getInt();
             byte[] bMess = new byte[length];
-            for(int i = 0; i < length; ++i) {
+            for (int i = 0; i < length; ++i) {
                 int tmp;
-                if((tmp = iStream.read()) < 0) {
-                    close();
-                    return;
+                if ((tmp = iStream.read()) < 0) {
+                    throw new RuntimeException();
                 }
-                bMess[i] = (byte)tmp;
+                bMess[i] = (byte) tmp;
             }
             Message message = new Message(MessageType.MESSAGE, name, new String(bMess));
+            try {
             myListener.sendAll(message, this);
-        } catch (Exception e) {
-            close();
+            } catch(Exception e) {
+                System.out.println(e.getClass().getName());
+            }
+        } catch (Throwable e) {
+            if (!isClosed) {
+                close(true);
+            }
         }
     }
 
+    public boolean isAuthorized() {
+        return authorized;
+    }
+
     private void getByeMessage() {
-        close();
+        if (!isClosed) {
+            close(false);
+        }
     }
 
     private void getErrorMessage() {
-        close();
+        if (!isClosed) {
+            close(true);
+        }
     }
 
     public void sendMessage(Message message) {
         try {
             socket.getOutputStream().write(MessageBuilder.getMessageBytes(message));
-        } catch (Exception e) {
-            close();
+        } catch (Throwable e) {
+            if (!isClosed) {
+                close(true);
+            }
         }
     }
 
@@ -164,9 +182,15 @@ class User implements Runnable {
                 }
             }
         } catch (Throwable t) {
-            close();
+            if (!isClosed) {
+                close(true);
+            }
         }
 
+    }
+
+    public void join() throws InterruptedException{
+        myThread.join();
     }
 
     public String name() {

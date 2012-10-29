@@ -7,28 +7,32 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Collections;
+import java.util.ArrayList;
 
 class Listener implements Runnable {
     private final int port;
     private ServerSocket socket;
     private static final int timeOut = 5000;
     private Thread myThread;
-    volatile private List<User> users;
-    private final Lock mutex = new ReentrantLock(true);
-    private final String serverName = "<server>";
+    private List<User> users;
+    private final String serverName = "server";
     HashSet<String> names;
+    private boolean notDelete;
+    private List<User> forDelete;
 
     public Listener(int port) {
         this.port = port;
+        names = new HashSet<>();
+        notDelete = false;
+        users = Collections.synchronizedList(new ArrayList<User>());
+        forDelete = Collections.synchronizedList(new ArrayList<User>());
     }
 
     public void start() throws IOException {
         socket = new ServerSocket(port);
-        names = new HashSet<>();
-        users = Collections.synchronizedList(new ArrayList<User>());
         socket.setSoTimeout(timeOut);
         myThread = new Thread(this);
         myThread.start();
@@ -39,14 +43,9 @@ class Listener implements Runnable {
         while (!myThread.isInterrupted()) {
             try {
                 Socket sock = socket.accept();
-                try {
-                    mutex.lock();
-                    users.add(new User(sock, this));
-                } finally {
-                    mutex.unlock();
-                }
+                users.add(new User(sock, this));
             } catch (SocketTimeoutException e) {
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 stop();
             }
         }
@@ -54,86 +53,99 @@ class Listener implements Runnable {
 
     synchronized void sendAll(Message message, User from) {
         try {
-            mutex.lock();
+            notDelete = true;
             for (User u : users) {
                 if (u != from) {
                     u.sendMessage(message);
                 }
             }
         } catch (Throwable t) {
+            System.out.println(t.getClass().getName());
         } finally {
-            mutex.unlock();
+            notDelete = false;
         }
+        deleteFromList();
     }
 
     synchronized void deleteUser(User us) {
-        try {
-            mutex.lock();
+        if (notDelete) {
+            forDelete.add(us);
+        } else {
             users.remove(us);
-            names.remove(us.name());
-        } catch (Throwable t) {
-            stop();
-        } finally {
-            mutex.unlock();
+            if (us.isAuthorized()) {
+                names.remove(us.name());
+            }
         }
     }
 
-    public void stop() {
+    synchronized void stop() {
         try {
-            mutex.lock();
+            notDelete = true;
             for (User user : users) {
-                user.close();
+                user.close(false);
             }
         } finally {
-            mutex.unlock();
+            notDelete = false;
         }
+        deleteFromList();
         myThread.interrupt();
     }
 
-    void sendFromServer(String text) {
-        System.out.println(text);
+    synchronized void sendFromServer(String text) {
         sendAll(new Message(MessageType.MESSAGE, serverName, text), null);
     }
 
-    void sendFromServer(String text, String user) {
-        System.out.println("Ooops");
+    synchronized void sendFromServer(String text, String user) {
         try {
-            mutex.lock();
-            for(User u: users) {
-                if(u.name().equals(user)) {
+            notDelete = true;
+            for (User u : users) {
+                if (u.name().equals(user)) {
                     u.sendMessage(new Message(MessageType.MESSAGE, serverName, text));
                     break;
                 }
             }
         } finally {
-            mutex.unlock();
+            notDelete = false;
         }
+        deleteFromList();
     }
 
     public String list() {
         StringBuilder builder = new StringBuilder();
-        for (String name: names) {
+        for (String name : names) {
             builder.append(name);
             builder.append(System.lineSeparator());
         }
         return builder.toString();
     }
 
-    void kill(String user) {
+    synchronized void kill(String user) {
         try {
-            mutex.lock();
-            for(User u: users) {
-                if(u.name().equals(user)) {
-                    u.close();
+            notDelete = true;
+            for (User u : users) {
+                if (u.name().equals(user)) {
+                    u.close(false);
                     break;
                 }
             }
         } finally {
-            mutex.unlock();
+            notDelete = false;
         }
+        deleteFromList();
+    }
+
+    synchronized void deleteFromList() {
+        for (User u : forDelete) {
+            deleteUser(u);
+        }
+        forDelete.clear();
     }
 
     void join() throws InterruptedException {
+        ArrayList<User> tmp = new ArrayList<>(users);
+        for (User u : tmp) {
+            u.join();
+        }
         myThread.join();
     }
 }
