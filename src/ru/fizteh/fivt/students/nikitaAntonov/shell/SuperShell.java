@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
- * Класс имитации shell`а выражения
+ * РљР»Р°СЃСЃ РёРјРёС‚Р°С†РёРё shell`Р° РІС‹СЂР°Р¶РµРЅРёСЏ
  * 
- * @author Антонов Никита
+ * @author РђРЅС‚РѕРЅРѕРІ РќРёРєРёС‚Р°
  */
 public class SuperShell {
 	
