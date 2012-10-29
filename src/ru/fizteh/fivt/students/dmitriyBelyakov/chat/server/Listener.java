@@ -13,15 +13,15 @@ import java.util.Collections;
 import java.util.ArrayList;
 
 class Listener implements Runnable {
-    private final int port;
-    private ServerSocket socket;
-    private static final int timeOut = 5000;
-    private Thread myThread;
-    private List<User> users;
-    private final String serverName = "server";
-    HashSet<String> names;
-    private boolean notDelete;
-    private List<User> forDelete;
+    private final int           port;
+    private ServerSocket        socket;
+    private static final int    timeOut = 5000;
+    private Thread              myThread;
+    private List<User>          users;
+    private final String        serverName = "server";
+    HashSet<String>             names;
+    private boolean             notDelete;
+    private List<User>          forDelete;
 
     public Listener(int port) {
         this.port = port;

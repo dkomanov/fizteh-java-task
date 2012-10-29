@@ -10,12 +10,12 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 class User implements Runnable {
-    private Socket              socket;
-    public Thread               myThread;
-    private String              name;
-    private boolean             authorized;
-    volatile private Listener   myListener;
-    boolean                     isClosed;
+    private Socket socket;
+    public Thread myThread;
+    private String name;
+    private boolean authorized;
+    volatile private Listener myListener;
+    boolean isClosed;
 
     public User(Socket socket, Listener listener) {
         authorized = false;
@@ -29,9 +29,9 @@ class User implements Runnable {
 
     public void close(boolean isError, boolean sendMessage) {
         isClosed = true;
-        if(sendMessage && isError) {
+        if (sendMessage && isError) {
             sendMessage(new Message(MessageType.ERROR, "", ""));
-        } else if(sendMessage) {
+        } else if (sendMessage) {
             sendMessage(new Message(MessageType.BYE, "", ""));
         }
         if (!socket.isClosed()) {
@@ -62,7 +62,7 @@ class User implements Runnable {
                 throw new RuntimeException();
             }
             name = new String(bName);
-            if(myListener.names.contains(name) || name.matches(".*[ ].*")) {
+            if (myListener.names.contains(name) || name.matches(".*[ ].*")) {
                 throw new RuntimeException();
             }
             myListener.names.add(name);
@@ -127,8 +127,8 @@ class User implements Runnable {
             }
             Message message = new Message(MessageType.MESSAGE, name, new String(bMess));
             try {
-            myListener.sendAll(message, this);
-            } catch(Exception e) {
+                myListener.sendAll(message, this);
+            } catch (Exception e) {
                 System.out.println(e.getClass().getName());
             }
         } catch (Throwable e) {
@@ -189,7 +189,7 @@ class User implements Runnable {
 
     }
 
-    public void join() throws InterruptedException{
+    public void join() throws InterruptedException {
         myThread.join();
     }
 

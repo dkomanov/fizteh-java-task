@@ -1,87 +1,131 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.client;
 
+import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
+import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageBuilder;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
 
-import java.io.InputStream;
-import java.nio.ByteBuffer;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-class Listener implements Runnable {
-    volatile private InputStream    iStream;
-    private boolean                 closed;
+class Manager {
+    private List<ServerWorker> servers;
+    private List<ServerWorker> forDelete;
+    private ServerWorker currentWorker;
+    private boolean notDelete;
+    private String name;
 
-    Listener(InputStream stream) {
-        iStream = stream;
-        closed = false;
-        Thread thread = new Thread(this);
-        thread.start();
+    Manager(String name) {
+        this.name = name;
+        currentWorker = null;
+        notDelete = false;
+        servers = Collections.synchronizedList(new ArrayList<ServerWorker>());
+        forDelete = Collections.synchronizedList(new ArrayList<ServerWorker>());
     }
 
-    void getMessage() {
+    synchronized void newConnection(String host, int port) {
         try {
-            if ((byte) iStream.read() != 2) {
-                stop(true);
-            }
-            byte[] bLength = new byte[4];
-            if (iStream.read(bLength, 0, 4) != 4) {
-                stop(true);
-            }
-            ByteBuffer buffer = ByteBuffer.allocate(4).put(bLength);
-            buffer.position(0);
-            int length = buffer.getInt();
-            byte[] bName = new byte[length];
-            if (iStream.read(bName, 0, length) != length) {
-                stop(true);
-            }
-            System.out.print("<" + new String(bName) + "> ");
-            bLength = new byte[4];
-            if (iStream.read(bLength, 0, 4) != 4) {
-                stop(true);
-            }
-            buffer = ByteBuffer.allocate(4).put(bLength);
-            buffer.position(0);
-            length = buffer.getInt();
-            byte[] bMess = new byte[length];
-            if(iStream.read(bMess, 0, length) != length) {
-                stop(true);
-            }
-            System.out.println(new String(bMess));
-        } catch (Exception e) {
-            stop(true);
+            Socket socket = new Socket(host, port);
+            currentWorker = new ServerWorker(host + ":" + port, socket, this);
+            sendMessage(new Message(MessageType.HELLO, name, ""));
+            servers.add(currentWorker);
+        } catch (Throwable t) {
+            System.err.println("Cannot connect to " + host + ":" + port + ".");
         }
     }
 
-    @Override
-    public void run() {
+    public void sendMessage(Message message) {
         try {
-            int iType;
-            while (!Thread.currentThread().isInterrupted() && (iType = iStream.read()) >= 0) {
-                byte type = (byte) iType;
-                if (type == MessageType.valueOf("BYE").getId()) {
-                    stop(true);
-                } else if (type == MessageType.valueOf("MESSAGE").getId()) {
-                    getMessage();
-                } else {
-                    stop(true);
+            if (currentWorker != null) {
+                currentWorker.socket.getOutputStream().write(MessageBuilder.getMessageBytes(message));
+            }
+        } catch (Throwable e) {
+            if(currentWorker != null) {
+                currentWorker.close(true, false);
+            }
+        }
+    }
+
+    synchronized public void deleteServer(ServerWorker server) {
+        if (notDelete) {
+            forDelete.add(server);
+        } else {
+            if(servers.contains(server)) {
+                System.out.println("Close connection with " + server.name());
+            }
+            servers.remove(server);
+        }
+    }
+
+    public String list() {
+        StringBuilder builder = new StringBuilder();
+        notDelete = true;
+        try {
+            for (ServerWorker w : servers) {
+                builder.append(w.name());
+                builder.append(System.lineSeparator());
+            }
+        } finally {
+            notDelete = false;
+        }
+        return builder.toString();
+    }
+
+    void clear() {
+        try {
+            notDelete = true;
+            for (ServerWorker w : servers) {
+                w.close(false, true);
+            }
+        } finally {
+            notDelete = false;
+        }
+        deleteFromList();
+        ArrayList<ServerWorker> tmp = new ArrayList<>(servers);
+        for (ServerWorker w : tmp) {
+            try {
+                w.join();
+            } catch (Throwable t) {
+            }
+        }
+    }
+
+    public void whereAmI() {
+        if (currentWorker != null) {
+            System.out.println(currentWorker.name());
+        }
+    }
+
+    public void disconnect() {
+        if (currentWorker != null) {
+            currentWorker.close(false, true);
+            if (servers.size() > 0) {
+                currentWorker = servers.get(0);
+            } else {
+                currentWorker = null;
+            }
+        }
+    }
+
+    void deleteFromList() {
+        for (ServerWorker w : forDelete) {
+            deleteServer(w);
+        }
+        forDelete.clear();
+    }
+
+    void use(String name) {
+        notDelete = true;
+        try {
+            for (ServerWorker w : servers) {
+                if (w.name().equals(name)) {
+                    currentWorker = w;
+                    break;
                 }
             }
-        } catch (Exception e) {
-            System.out.println("Ooops...");
-            if(!Thread.currentThread().isInterrupted()) {
-                System.out.println("?");
-                stop(true);
-            }
+        } finally {
+            notDelete = false;
         }
-    }
-
-    synchronized public void stop(boolean exit) {
-        Thread.currentThread().interrupt();
-        try {
-            iStream.close();
-        } catch (Exception e) {
-        }
-    }
-
-    boolean isClosed() {
-        return closed;
     }
 }
