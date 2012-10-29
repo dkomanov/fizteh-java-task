@@ -1,5 +1,5 @@
-//package ru.fizteh.fivt.students.alexanderKuzmin.calculator
-package Calculator;
+package ru.fizteh.fivt.students.alexanderKuzmin.calculator
+
 /**
  * @author Kuzmin A.
  *      group 196
