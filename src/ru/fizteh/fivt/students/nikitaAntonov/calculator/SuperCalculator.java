@@ -1,7 +1,3 @@
-/*
- * Антонов Никита kogemrka@gmail.com
- * ФИВТ, 197 группа 
- */
 package ru.fizteh.fivt.students.nikitaAntonov.calculator;
 
 import java.io.BufferedReader;
