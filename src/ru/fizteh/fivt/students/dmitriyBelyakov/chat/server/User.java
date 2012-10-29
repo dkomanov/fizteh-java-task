@@ -27,11 +27,11 @@ class User implements Runnable {
         myThread.start();
     }
 
-    public void close(boolean isError) {
+    public void close(boolean isError, boolean sendMessage) {
         isClosed = true;
-        if(isError) {
+        if(sendMessage && isError) {
             sendMessage(new Message(MessageType.ERROR, "", ""));
-        } else {
+        } else if(sendMessage) {
             sendMessage(new Message(MessageType.BYE, "", ""));
         }
         if (!socket.isClosed()) {
@@ -62,14 +62,14 @@ class User implements Runnable {
                 throw new RuntimeException();
             }
             name = new String(bName);
-            if(myListener.names.contains(name)) {
+            if(myListener.names.contains(name) || name.matches(".*[ ].*")) {
                 throw new RuntimeException();
             }
             myListener.names.add(name);
             authorized = true;
         } catch (Throwable e) {
             if (!isClosed) {
-                close(true);
+                close(true, true);
             }
         }
     }
@@ -77,7 +77,7 @@ class User implements Runnable {
     private void getMessage() {
         if (!authorized) {
             if (!isClosed) {
-                close(true);
+                close(true, true);
             }
             return;
         }
@@ -133,7 +133,7 @@ class User implements Runnable {
             }
         } catch (Throwable e) {
             if (!isClosed) {
-                close(true);
+                close(true, true);
             }
         }
     }
@@ -144,13 +144,13 @@ class User implements Runnable {
 
     private void getByeMessage() {
         if (!isClosed) {
-            close(false);
+            close(false, false);
         }
     }
 
     private void getErrorMessage() {
         if (!isClosed) {
-            close(true);
+            close(true, false);
         }
     }
 
@@ -159,7 +159,7 @@ class User implements Runnable {
             socket.getOutputStream().write(MessageBuilder.getMessageBytes(message));
         } catch (Throwable e) {
             if (!isClosed) {
-                close(true);
+                close(true, true);
             }
         }
     }
@@ -183,7 +183,7 @@ class User implements Runnable {
             }
         } catch (Throwable t) {
             if (!isClosed) {
-                close(true);
+                close(true, true);
             }
         }
 

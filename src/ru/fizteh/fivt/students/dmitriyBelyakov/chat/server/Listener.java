@@ -82,7 +82,7 @@ class Listener implements Runnable {
         try {
             notDelete = true;
             for (User user : users) {
-                user.close(false);
+                user.close(false, true);
             }
         } finally {
             notDelete = false;
@@ -124,7 +124,7 @@ class Listener implements Runnable {
             notDelete = true;
             for (User u : users) {
                 if (u.name().equals(user)) {
-                    u.close(false);
+                    u.close(false, true);
                     break;
                 }
             }
