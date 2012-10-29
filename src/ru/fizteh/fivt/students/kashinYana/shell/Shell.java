@@ -129,7 +129,6 @@ public class Shell {
                 throw new Exception("cp: cannot create regular file \'" + parseCommand[2] +
                                    "\': No such file or directory");
             }
-            firstPath.delete();
         } else {
             throw new Exception("command-not-found");
         }
