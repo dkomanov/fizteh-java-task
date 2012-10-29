@@ -90,8 +90,7 @@ class Lexer {
 		if (count == 0) {
 			throw new CalculatorException("Incorrect number at position " + pos);
 		} else {
-			try
-			{
+			try {
 				number = Integer.parseInt(source.substring(pos - count, pos));
 			} catch (NumberFormatException e) {
 				throw new CalculatorException("Number at position " + (pos - count) + " is too large");

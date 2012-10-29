@@ -183,8 +183,7 @@ public class SuperCalculator {
 		return res;
 	}
 	
-	private int parseMultiplier() throws CalculatorException
-	{
+	private int parseMultiplier() throws CalculatorException {
 		int res;
 		
 		lexer.nextLexem();
