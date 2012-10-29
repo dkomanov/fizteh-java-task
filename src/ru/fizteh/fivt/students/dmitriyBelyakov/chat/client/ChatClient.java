@@ -22,9 +22,9 @@ class ChatClient {
             String str;
             Manager manager = new Manager(args[0]);
             while ((str = reader.readLine()) != null) {
-                if (str.matches("/connect[ ]+.+:[0-9]+")) {
-                    String host = str.replaceAll("(/connect[ ]+)|(:.+)", "");
-                    String port = str.replaceAll("/connect[ ]+.+:", "");
+                if (str.matches("/connect\\s+.+:\\d+")) {
+                    String host = str.replaceAll("(/connect\\s+)|(:.+)", "");
+                    String port = str.replaceAll("/connect\\s+.+:", "");
                     int portNum = Integer.parseInt(port);
                     manager.newConnection(host, portNum);
                 } else if (str.equals("/whereami")) {
@@ -36,8 +36,8 @@ class ChatClient {
                 } else if (str.equals("/exit")) {
                     manager.clear();
                     System.exit(0);
-                } else if (str.matches("/use[ ]+.+:[0-9]+")) {
-                    str = str.replaceFirst("/use[ ]+", "");
+                } else if (str.matches("/use\\s+.+:\\d+")) {
+                    str = str.replaceFirst("/use\\s+", "");
                     manager.use(str);
                 } else if (!str.equals("") && str.charAt(0) == '/') {
                     System.err.println("Unknown command.");

@@ -11,8 +11,8 @@ public class ChatServer {
         Manager manager = null;
         while ((command = scanner.nextLine()) != null) {
             try {
-                if (command.matches("/listen[ ]+[0-9]+")) {
-                    command = command.replaceFirst("/listen[ ]+", "");
+                if (command.matches("/listen\\s+\\d+")) {
+                    command = command.replaceFirst("/listen\\s+", "");
                     try {
                         int port = Integer.parseInt(command);
                         manager = new Manager(port);
@@ -40,11 +40,11 @@ public class ChatServer {
                     if (manager != null) {
                         System.out.print(manager.list());
                     }
-                } else if (command.matches("/send[ ]+.+")) {
+                } else if (command.matches("/send\\s+.+")) {
                     if (manager == null) {
                         continue;
                     }
-                    String user = command.replaceFirst("/send[ ]+", "");
+                    String user = command.replaceFirst("/send\\s+", "");
                     if (user.equals("")) {
                         System.out.println("Error: unknown user.");
                         continue;
@@ -65,11 +65,11 @@ public class ChatServer {
                     }
                     command = scanner.nextLine();
                     manager.sendFromServer(command);
-                } else if (command.matches("/kill[ ]+.+")) {
+                } else if (command.matches("/kill\\s+.+")) {
                     if (manager == null) {
                         continue;
                     }
-                    command = command.replaceFirst("/kill[ ]+", "");
+                    command = command.replaceFirst("/kill\\s+", "");
                     if (command.equals("")) {
                         System.err.println("Error: user not found.");
                         continue;

@@ -41,7 +41,7 @@ class Manager {
                 currentWorker.socket.getOutputStream().write(MessageBuilder.getMessageBytes(message));
             }
         } catch (Throwable e) {
-            if(currentWorker != null) {
+            if (currentWorker != null) {
                 currentWorker.close(true, false);
             }
         }
@@ -51,7 +51,7 @@ class Manager {
         if (notDelete) {
             forDelete.add(server);
         } else {
-            if(servers.contains(server)) {
+            if (servers.contains(server)) {
                 System.out.println("Close connection with " + server.name());
             }
             servers.remove(server);

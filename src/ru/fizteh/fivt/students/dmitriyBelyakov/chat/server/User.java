@@ -62,7 +62,7 @@ class User implements Runnable {
                 throw new RuntimeException();
             }
             name = new String(bName);
-            if (myManager.names.contains(name) || name.matches(".*[ ].*")) {
+            if (myManager.names.contains(name) || name.matches(".*\\s.*")) {
                 throw new RuntimeException();
             }
             myManager.names.add(name);
