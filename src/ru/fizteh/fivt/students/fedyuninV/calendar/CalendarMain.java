@@ -13,17 +13,19 @@ import java.util.Calendar;
  * MIPT FIVT 195
  */
 public class CalendarMain {
-    private static Date date;
     private static DateFormat df;
     private static TimeZone tz;
     private static Integer month;
     private static Integer year;
     private static boolean weeksNeeded;
     private static Calendar calendar;
+    private static String[] dayNames = new DateFormatSymbols().getShortWeekdays();
+    private static int[] dayIndexes = new int[] {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
+            Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY};
+    private static int dayNameLength;
 
     private static void init() {
         calendar = Calendar.getInstance();
-        date = new Date();
         df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         tz = null;
         month = null;
@@ -61,8 +63,18 @@ public class CalendarMain {
                             usageError();
                         } else {
                             i++;
-                            tz = TimeZone.getTimeZone(args[i]);
-                            calendar.setTimeZone(tz);
+                            String[] timeZoneNames = TimeZone.getAvailableIDs();
+                            String potentialTZName = args[i];
+                            for (int j = 0; j < timeZoneNames.length; j++) {
+                                if (potentialTZName.equals(timeZoneNames[j])) {
+                                    tz = TimeZone.getTimeZone(potentialTZName);
+                                    calendar.setTimeZone(tz);
+                                }
+                            }
+                            if (tz == null) {
+                                System.err.println("Incorrect TimeZone name.");
+                                System.exit(1);
+                            }
                         }
                         break;
                     case 'm':
@@ -103,6 +115,11 @@ public class CalendarMain {
 
     private static void printCalendar() {
         calendar.set(year, month, 1);
+        for (int i = 0; i < 7; i++) {
+            if (dayNameLength < dayNames[i].length()) {
+                dayNameLength = dayNames[i].length();
+            }
+        }
         if (weeksNeeded) {
             System.out.print("   ");
         }
@@ -110,9 +127,11 @@ public class CalendarMain {
         if (weeksNeeded) {
             System.out.print("   ");
         }
-        String[] dayNames = new DateFormatSymbols().getShortWeekdays();
-        for (int i = 1; i <= 7; i++) {
-            System.out.print(dayNames[i % 7 + 1] + " ");
+        for (int dayIndex: dayIndexes) {
+            System.out.print(dayNames[dayIndex]);
+            for (int j = 0; j < dayNameLength - dayNames[dayIndex].length() + 1; j++) {
+                System.out.print(' ');
+            }
         }
         System.out.println();
         int currDay = 1;
@@ -120,28 +139,27 @@ public class CalendarMain {
         while(month == calendar.get(Calendar.MONTH)) {
             if (weeksNeeded) {
                 if (currWeek < 10) {
-                    System.out.print(" " + currWeek + "  ");
+                    System.out.print(" " + currWeek + " ");
                 } else {
-                    System.out.print(currWeek + "  ");
+                    System.out.print(currWeek + " ");
                 }
                 currWeek++;
             }
-            for (int j = 2; j <= 8  &&  month == calendar.get(Calendar.MONTH); j++) {
-                if (j == 8) {
-                    j = 1;
-                }
-                if (j < calendar.get(Calendar.DAY_OF_WEEK)) {
-                    System.out.print("    ");
+            for (int j: dayIndexes) {
+                if (j != calendar.get(Calendar.DAY_OF_WEEK)  ||  month != calendar.get(Calendar.MONTH)) {
+                    for (int i = 0; i < dayNameLength + 1; i++) {
+                        System.out.print(" ");
+                    }
                 } else {
+                    for (int i = 0; i < dayNameLength - 2; i++) {
+                        System.out.print(' ');
+                    }
                     if (currDay < 10) {
                         System.out.print(" ");
                     }
-                    System.out.print(currDay + "  ");
+                    System.out.print(currDay + " ");
                     currDay++;
                     calendar.set(Calendar.DAY_OF_MONTH, currDay);
-                }
-                if (j == 1) {
-                    j = 8;
                 }
             }
             System.out.println();
@@ -151,8 +169,18 @@ public class CalendarMain {
 
     private static void printCurrentTime() {
         if (tz != null) {
+            calendar.setTimeZone(tz);
+            calendar.setTimeInMillis(new Date().getTime());
+            Calendar temp = Calendar.getInstance();
+            temp.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
+            temp.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
+            temp.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
+            temp.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
+            temp.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
+            temp.set(Calendar.SECOND, calendar.get(Calendar.SECOND));
+            temp.set(Calendar.MILLISECOND, calendar.get(Calendar.MILLISECOND));
             System.out.println();
-            System.out.println("Now: " + df.format(date) + " " + tz.getID() + " time");
+            System.out.println("Now: " + df.format(temp.getTime()) + " " + tz.getID() + " time");
         }
     }
 

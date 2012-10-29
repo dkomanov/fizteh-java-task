@@ -1,17 +1,21 @@
 package ru.fizteh.fivt.students.kashinYana.calendar;
 
+/**
+ * Created with IntelliJ IDEA.
+ * User: yana
+ * Date: 29.10.12
+ * Time: 20:06
+ * To change this template use File | Settings | File Templates.
+ */
+
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-/**
- * User: Yana Kashinskaya, 195 group.
- */
-
-public class Calendar {
-
+public class CalendarMy {
     static boolean isw = false;
     static boolean ist = false;
     static boolean isy = false;
@@ -111,7 +115,13 @@ public class Calendar {
             System.out.printf("   ");
         }
         for (int i = 1; i <= 7; i++) {
-            System.out.print(dayNames[i % 7 + 1].substring(0, 2));
+            for (int j = 0; j < 2; j++) {
+                if (j < dayNames[i % 7 + 1].length()) {
+                    System.out.print(dayNames[i % 7 + 1].charAt(j));
+                } else {
+                    System.out.print(" ");
+                }
+            }
             System.out.print(" ");
         }
         System.out.println();
@@ -143,7 +153,7 @@ public class Calendar {
         System.out.println();
         //печать текущей даты, если нужно
         if (ist) {
-            printCurrentTime(calendar);
+            printCurrentTime();
         }
     }
 
@@ -158,20 +168,15 @@ public class Calendar {
         throw new Exception("Unknown month");
     }
 
-    private static void printCurrentTime(GregorianCalendar calendar) {
+    private static void printCurrentTime() {
         System.out.println();
-        int hours = calendar.get(GregorianCalendar.HOUR);
-        boolean am = calendar.get(GregorianCalendar.AM_PM) == GregorianCalendar.AM;
-        if (!am) {
-            hours += 12;
-        }
-        int year = calendar.get(GregorianCalendar.YEAR);
-        int month = calendar.get(GregorianCalendar.MONTH) + 1;
-        int day = calendar.get(GregorianCalendar.DAY_OF_MONTH);
-        int minutes = calendar.get(GregorianCalendar.MINUTE);
-        int seconds = calendar.get(GregorianCalendar.SECOND);
-        System.out.printf("Now: %s.%02d.%02d %2d:%02d:%02d ", year, month, day, hours, minutes, seconds);
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("Y.M.d HH:mm:ss ");
+        TimeZone tz = TimeZone.getTimeZone(timeZone);
+        simpleDateFormat.setTimeZone(tz);
+        System.out.print("Now: " + simpleDateFormat.format(calendar.getTime()));
         int idSlesh = timeZone.lastIndexOf("/");
         System.out.println(timeZone.substring(idSlesh + 1) + " Time");
     }
+
 }
