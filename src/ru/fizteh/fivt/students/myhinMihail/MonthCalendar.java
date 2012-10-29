@@ -157,17 +157,4 @@ public class MonthCalendar {
             System.err.println("Error: " + expt.getMessage());
         }
     }
-
-}
-
-    public static void main(String[] args) {
-        readKeys(args);
-        print();
-        if (timeZone != null) {
-            DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-            dateFormat.setTimeZone(timeZone);
-            System.out.println("\nNow: " +  dateFormat.format(date) + " " + timeZone.getID() + " time");
-        }
-    }
-
 }
