@@ -2,7 +2,7 @@
  * Антонов Никита kogemrka@gmail.com
  * ФИВТ, 197 группа 
  */
-package ru.fizteh.fivt.kogemrka;
+package ru.fizteh.fivt.students.nikitaAntonov.calculator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -73,7 +73,7 @@ public class SuperCalculator {
 		SuperCalculator calc = new SuperCalculator(expr);
 		
 		try {
-			System-.out.println(calc.getResult());
+			System.out.println(calc.getResult());
 		} catch (ArithmeticException e) {
 			System.out.println("Arithmetic error: " + e.getMessage());
 		} catch (Exception e) {

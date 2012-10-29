@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.kogemrka;
+package ru.fizteh.fivt.students.nikitaAntonov.calculator;
 
 /*
  * Вспомогательный класс, занимающийся разбиением строки
