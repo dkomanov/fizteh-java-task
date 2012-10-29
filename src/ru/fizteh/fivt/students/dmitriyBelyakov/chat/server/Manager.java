@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Collections;
 import java.util.ArrayList;
 
-class Listener implements Runnable {
+class Manager implements Runnable {
     private final int           port;
     private ServerSocket        socket;
     private static final int    timeOut = 5000;
@@ -23,7 +23,7 @@ class Listener implements Runnable {
     private boolean             notDelete;
     private List<User>          forDelete;
 
-    public Listener(int port) {
+    public Manager(int port) {
         this.port = port;
         names = new HashSet<>();
         notDelete = false;

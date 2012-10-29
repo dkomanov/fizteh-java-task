@@ -14,14 +14,14 @@ class User implements Runnable {
     public Thread myThread;
     private String name;
     private boolean authorized;
-    volatile private Listener myListener;
+    volatile private Manager myManager;
     boolean isClosed;
 
-    public User(Socket socket, Listener listener) {
+    public User(Socket socket, Manager listener) {
         authorized = false;
         name = null;
         this.socket = socket;
-        myListener = listener;
+        myManager = listener;
         isClosed = false;
         myThread = new Thread(this);
         myThread.start();
@@ -40,7 +40,7 @@ class User implements Runnable {
             } catch (IOException e) {
             }
         }
-        myListener.deleteUser(this);
+        myManager.deleteUser(this);
         myThread.interrupt();
     }
 
@@ -62,10 +62,10 @@ class User implements Runnable {
                 throw new RuntimeException();
             }
             name = new String(bName);
-            if (myListener.names.contains(name) || name.matches(".*[ ].*")) {
+            if (myManager.names.contains(name) || name.matches(".*[ ].*")) {
                 throw new RuntimeException();
             }
-            myListener.names.add(name);
+            myManager.names.add(name);
             authorized = true;
         } catch (Throwable e) {
             if (!isClosed) {
@@ -127,7 +127,7 @@ class User implements Runnable {
             }
             Message message = new Message(MessageType.MESSAGE, name, new String(bMess));
             try {
-                myListener.sendAll(message, this);
+                myManager.sendAll(message, this);
             } catch (Exception e) {
                 System.out.println(e.getClass().getName());
             }

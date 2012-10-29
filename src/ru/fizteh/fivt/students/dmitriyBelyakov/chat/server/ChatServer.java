@@ -8,15 +8,15 @@ public class ChatServer {
     public static void main(String[] args) {
         String command;
         Scanner scanner = new Scanner(System.in);
-        Listener listener = null;
+        Manager manager = null;
         while ((command = scanner.nextLine()) != null) {
             try {
                 if (command.matches("/listen[ ]+[0-9]+")) {
                     command = command.replaceFirst("/listen[ ]+", "");
                     try {
                         int port = Integer.parseInt(command);
-                        listener = new Listener(port);
-                        listener.start();
+                        manager = new Manager(port);
+                        manager.start();
                         System.out.println("Listen port " + port);
                     } catch (Throwable t) {
                         if (t.getMessage() != null) {
@@ -27,21 +27,21 @@ public class ChatServer {
                         System.exit(1);
                     }
                 } else if (command.equals("/stop")) {
-                    if (listener != null) {
-                        listener.stop();
+                    if (manager != null) {
+                        manager.stop();
                         try {
-                            listener.join();
+                            manager.join();
                         } catch (Throwable t) {
                         }
-                        listener = null;
+                        manager = null;
                         System.out.println("Server stopped.");
                     }
                 } else if (command.equals("/list")) {
-                    if (listener != null) {
-                        System.out.print(listener.list());
+                    if (manager != null) {
+                        System.out.print(manager.list());
                     }
                 } else if (command.matches("/send[ ]+.+")) {
-                    if (listener == null) {
+                    if (manager == null) {
                         continue;
                     }
                     String user = command.replaceFirst("/send[ ]+", "");
@@ -52,21 +52,21 @@ public class ChatServer {
                     command = scanner.nextLine();
                     if (command == null) {
                         System.err.println("Error: cannot read message.");
-                        if (listener != null) {
-                            listener.stop();
+                        if (manager != null) {
+                            manager.stop();
                         }
-                        listener.join();
+                        manager.join();
                         System.exit(1);
                     }
-                    listener.sendFromServer(command, user);
+                    manager.sendFromServer(command, user);
                 } else if (command.equals("/sendall")) {
-                    if (listener == null) {
+                    if (manager == null) {
                         continue;
                     }
                     command = scanner.nextLine();
-                    listener.sendFromServer(command);
+                    manager.sendFromServer(command);
                 } else if (command.matches("/kill[ ]+.+")) {
-                    if (listener == null) {
+                    if (manager == null) {
                         continue;
                     }
                     command = command.replaceFirst("/kill[ ]+", "");
@@ -74,12 +74,12 @@ public class ChatServer {
                         System.err.println("Error: user not found.");
                         continue;
                     }
-                    listener.kill(command);
+                    manager.kill(command);
                 } else if (command.equals("/exit")) {
-                    if (listener != null) {
-                        listener.stop();
+                    if (manager != null) {
+                        manager.stop();
                         try {
-                            listener.join();
+                            manager.join();
                         } catch (Exception e) {
                             System.exit(1);
                         }
