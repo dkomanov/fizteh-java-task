@@ -96,7 +96,11 @@ public class Shell {
             }
             File newPath = getFile(parseCommand[1]);
             if (newPath.exists()) {
-                newPath.delete();
+                try {
+                    delete(newPath);
+                } catch ( Exception e) {
+                    throw new Exception("rm:" + e.getMessage());
+                }
             } else {
                 throw new Exception("rm: cannot remove \'" + parseCommand[1] + "\': No such file or directory");
             }
@@ -109,11 +113,16 @@ public class Shell {
             if (!firstPath.exists()) {
                 throw new Exception("mv: cannot stat \'" + parseCommand[1] + "\': No such file or directory");
             }
-            if (!firstPath.renameTo(secondPath)) {
-                throw new Exception("mv: cannot move \'" + parseCommand[1] + "\' to \'" + parseCommand[2]
-                        + "\': No such file or directory");
+            try {
+                if (firstPath.isFile()) {
+                    fileCopy(firstPath, secondPath);
+                } else {
+                    dirCopy(firstPath, secondPath);
+                }
+                delete(firstPath);
+            } catch (Exception e) {
+                throw new Exception("mv: " + e.getMessage());
             }
-            firstPath.delete();
         } else if (nameCommand.equals("cp")) {
             if (parseCommand.length != 3) {
                 throw new Exception("strange numbers of argv");
@@ -123,10 +132,14 @@ public class Shell {
             if (!firstPath.exists()) {
                 throw new Exception("cp: cannot stat \'" + parseCommand[1] + "\': No such file or directory");
             }
-            if (firstPath.isFile()) {
-                fileCopy(firstPath, secondPath);
-            } else {
-                dirCopy(firstPath, secondPath);
+            try {
+                if (firstPath.isFile()) {
+                    fileCopy(firstPath, secondPath);
+                } else {
+                    dirCopy(firstPath, secondPath);
+                }
+            } catch (Exception e) {
+                throw new Exception("cp:" + e.getMessage());
             }
         } else {
             throw new Exception("command-not-found");
@@ -163,7 +176,7 @@ public class Shell {
 
     static void dirCopy(File firstPath, File secondPath) throws Exception {
         if (!secondPath.mkdir()) {
-            throw new Exception("mkdir: cannot create directory \'" + secondPath +
+            throw new Exception("cannot create directory \'" + secondPath +
                     "\': No such file or directory");
         }
         String[] children = firstPath.list();
@@ -174,6 +187,22 @@ public class Shell {
             } else {
                 dirCopy(getFile(firstPath.getAbsoluteFile() + "/" + s),
                         getFile(secondPath.getAbsoluteFile() + "/" + s));
+            }
+        }
+    }
+
+    static void delete(File newFile) throws Exception {
+        if(newFile.isFile()) {
+            if(!newFile.delete()) {
+                throw new Exception("cannot remove file or directory");
+            }
+        } else {
+            String[] children = newFile.list();
+            for (String s : children) {
+                delete(getFile(newFile.getAbsolutePath() + "/" + s));
+            }
+            if(!newFile.delete()) {
+                throw new Exception("cannot remove file or directory");
             }
         }
     }
