@@ -6,11 +6,6 @@ package ru.fizteh.fivt.students.nikitaAntonov.calculator;
  * @author Антонов Никита
  */
 class Lexem {
-    /* XXX Очень не хватает union`ов из C/C++
-     * для реализации классов такого рода, приходится делать некрасиво,
-     * дабы не городить иерархию классов и приведение типов на каждом шагу.
-     */
-
     public enum Type {
         BRACKET_OPEN, BRACKET_CLOSE, OP_LEVEL1, OP_LEVEL2, NUM, END, BEGIN
     }
