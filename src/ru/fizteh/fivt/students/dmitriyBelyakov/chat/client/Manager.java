@@ -6,10 +6,12 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 class Listener implements Runnable {
-    volatile private InputStream iStream;
+    volatile private InputStream    iStream;
+    private boolean                 closed;
 
     Listener(InputStream stream) {
         iStream = stream;
+        closed = false;
         Thread thread = new Thread(this);
         thread.start();
     }
@@ -76,7 +78,10 @@ class Listener implements Runnable {
         try {
             iStream.close();
         } catch (Exception e) {
-
         }
+    }
+
+    boolean isClosed() {
+        return closed;
     }
 }
