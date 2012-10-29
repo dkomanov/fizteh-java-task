@@ -115,7 +115,13 @@ public class CalendarMy {
             System.out.printf("   ");
         }
         for (int i = 1; i <= 7; i++) {
-            System.out.print(dayNames[i % 7 + 1].substring(0, 2));
+            for (int j = 0; j < 2; j++) {
+                if (j < dayNames[i % 7 + 1].length()) {
+                    System.out.print(dayNames[i % 7 + 1].charAt(j));
+                } else {
+                    System.out.print(" ");
+                }
+            }
             System.out.print(" ");
         }
         System.out.println();
