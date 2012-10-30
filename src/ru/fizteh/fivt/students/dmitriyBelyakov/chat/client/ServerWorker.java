@@ -17,7 +17,7 @@ public class ServerWorker implements Runnable {
 
     ServerWorker(String host, int port, Manager manager) {
         myManager = manager;
-        this.name = host + port;
+        this.name = host + ":" + port;
         try {
             socket = new Socket(host, port);
             iStream = socket.getInputStream();

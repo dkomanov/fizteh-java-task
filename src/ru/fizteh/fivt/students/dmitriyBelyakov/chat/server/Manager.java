@@ -20,7 +20,7 @@ class Manager implements Runnable {
     private List<User> users;
     private final String serverName = "server";
     HashSet<String> names;
-    private boolean notDelete;
+    volatile private boolean notDelete;
     private List<User> forDelete;
 
     public Manager(int port) {
@@ -62,7 +62,6 @@ class Manager implements Runnable {
                 }
             }
         } catch (Throwable t) {
-            System.out.println(t.getClass().getName());
         } finally {
             notDelete = false;
         }
@@ -81,11 +80,15 @@ class Manager implements Runnable {
     }
 
     synchronized void stop() {
+        notDelete = true;
         try {
-            notDelete = true;
             for (User user : users) {
                 user.close(false, true);
             }
+            if(!socket.isClosed()) {
+                socket.close();
+            }
+        } catch (Throwable t) {
         } finally {
             notDelete = false;
         }
@@ -137,8 +140,8 @@ class Manager implements Runnable {
     }
 
     synchronized void deleteFromList() {
-        for (User u : forDelete) {
-            deleteUser(u);
+        for (int i = 0; i < forDelete.size(); ++i) {
+            deleteUser(forDelete.get(i));
         }
         forDelete.clear();
     }
@@ -148,6 +151,7 @@ class Manager implements Runnable {
         for (User u : tmp) {
             u.join();
         }
+        tmp.clear();
         myThread.join();
     }
 }

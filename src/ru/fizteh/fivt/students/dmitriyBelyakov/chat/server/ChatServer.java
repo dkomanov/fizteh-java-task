@@ -13,6 +13,10 @@ public class ChatServer {
             try {
                 if (command.matches("/listen\\s+\\d+")) {
                     command = command.replaceFirst("/listen\\s+", "");
+                    if(manager != null) {
+                        manager.stop();
+                        manager.join();
+                    }
                     try {
                         int port = Integer.parseInt(command);
                         manager = new Manager(port);
