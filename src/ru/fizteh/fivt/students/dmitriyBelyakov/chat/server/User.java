@@ -23,12 +23,11 @@ class User implements Runnable {
         this.socket = socket;
         myManager = listener;
         isClosed = false;
-        myThread = new Thread(this);
-        myThread.start();
     }
 
     public void close(boolean isError, boolean sendMessage) {
         isClosed = true;
+        myManager.sendFromServer("User " + name() + " left the chat.");
         if (sendMessage && isError) {
             sendMessage(new Message(MessageType.ERROR, "", ""));
         } else if (sendMessage) {
@@ -42,6 +41,11 @@ class User implements Runnable {
         }
         myManager.deleteUser(this);
         myThread.interrupt();
+    }
+
+    public void start() {
+        myThread = new Thread(this);
+        myThread.start();
     }
 
     private void getHelloMessage() {

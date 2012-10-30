@@ -13,6 +13,7 @@ public class ServerWorker implements Runnable {
     public Socket socket;
     private InputStream iStream;
     private Manager myManager;
+    private Thread myThread;
 
     ServerWorker(String host, int port, Manager manager) {
         myManager = manager;
@@ -20,10 +21,14 @@ public class ServerWorker implements Runnable {
         try {
             socket = new Socket(host, port);
             iStream = socket.getInputStream();
-            new Thread(this).start();
         } catch (Throwable t) {
             close(true, true);
         }
+    }
+
+    public void start() {
+        myThread = new Thread(this);
+        myThread.start();
     }
 
     void getMessage() {
@@ -64,7 +69,7 @@ public class ServerWorker implements Runnable {
     public void run() {
         try {
             int iType;
-            while (!Thread.currentThread().isInterrupted() && (iType = iStream.read()) > 0) {
+            while (!myThread.isInterrupted() && (iType = iStream.read()) > 0) {
                 byte type = (byte) iType;
                 if (type == MessageType.BYE.getId()) {
                     close(false, false);
@@ -77,7 +82,7 @@ public class ServerWorker implements Runnable {
                 }
             }
         } catch (Exception e) {
-            if (!Thread.currentThread().isInterrupted()) {
+            if (!myThread.isInterrupted()) {
                 close(true, true);
             }
         }
@@ -96,11 +101,11 @@ public class ServerWorker implements Runnable {
             }
         }
         myManager.deleteServer(this);
-        Thread.currentThread().interrupt();
+        myThread.interrupt();
     }
 
     public void join() throws InterruptedException {
-        Thread.currentThread().join();
+        myThread.join();
     }
 
     public String name() {

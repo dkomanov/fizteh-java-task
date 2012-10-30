@@ -27,6 +27,7 @@ class Manager {
     synchronized void newConnection(String host, int port) {
         try {
             currentWorker = new ServerWorker(host, port, this);
+            currentWorker.start();
             sendMessage(new Message(MessageType.HELLO, name, ""));
             servers.add(currentWorker);
         } catch (Throwable t) {

@@ -43,7 +43,9 @@ class Manager implements Runnable {
         while (!myThread.isInterrupted()) {
             try {
                 Socket sock = socket.accept();
-                users.add(new User(sock, this));
+                User newUser = new User(sock, this);
+                users.add(newUser);
+                newUser.start();
             } catch (SocketTimeoutException e) {
             } catch (Throwable e) {
                 stop();
