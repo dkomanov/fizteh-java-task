@@ -95,8 +95,7 @@ public class Main {
             // работа без запуска дополнительных потоков по причине малого
             // количества входных строчек
             if (withoutReg.t) {
-                MyComparator myComparator = new MyComparator();
-                Collections.sort(lines, myComparator);
+                Collections.sort(lines, String.CASE_INSENSITIVE_ORDER);
             } else {
                 Collections.sort(lines);
             }
@@ -196,7 +195,6 @@ public class Main {
             } catch (Exception e) {
                 LoUtils.printErrorAndExit("Bad opening BufferedReader: " + e.getMessage());
             } finally {
-                LoUtils.closeOrExit(System.in);
                 LoUtils.closeOrExit(br);
             }
         } else { // считывание из файлов
@@ -226,11 +224,11 @@ public class Main {
             result.add(new ArrayList<String>());
         }
         try{
-            List<Thread> threads = new ArrayList<Thread>();
+            List<Thread> threads = new ArrayList<Thread>(countThreads.t);
             int size = lines.size();
             int start = 0;
             int end = size / (countThreads.t - 1) - 1;
-
+            
             for (int i = 0; i < countThreads.t - 1; ++i) {
                 Sorter s = new Sorter(lines, start, end, result.get(i), withoutReg.t);
                 threads.add(new Thread(s));
@@ -255,8 +253,6 @@ public class Main {
                 }
             }
             lines.clear();
-
-            threads.clear();
         } catch (Exception e) {
             LoUtils.printErrorAndExit("Smth bad happened while threads were working: " +
                     e.getMessage());
