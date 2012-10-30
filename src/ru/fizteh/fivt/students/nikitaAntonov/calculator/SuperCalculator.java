@@ -56,7 +56,7 @@ public class SuperCalculator {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String s = in.readLine();
 
-        while (!s.equals("quit")) {
+        while (!(s == null || s.equals("quit"))) {
 
             if (s.trim().isEmpty()) {
                 s = in.readLine();
