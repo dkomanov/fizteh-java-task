@@ -128,10 +128,6 @@ public class CalendarMain {
         if (weeksNeeded) {
             System.out.print("   ");
         }
-        String langName = Locale.getDefault().getLanguage();
-        if (langName == "ja"  ||  langName == "ko") {
-            System.out.print(' ');
-        }
         for (int dayIndex: dayIndexes) {
             System.out.print(dayNames[dayIndex]);
             for (int j = 0; j < dayNameLength - dayNames[dayIndex].length() + 1; j++) {
@@ -180,9 +176,9 @@ public class CalendarMain {
             calendar.setTimeInMillis(new Date().getTime());
             df.setTimeZone(tz);
             System.out.println();
-            int slashIndex = tz.getID().lastIndexOf('/');
+            int slashIndex = tz.getDisplayName().lastIndexOf('/');
             System.out.println("Now: " + df.format(calendar.getTime()) + " "
-                    + tz.getID().substring(slashIndex + 1) + " time");
+                    + tz.getDisplayName().substring(slashIndex + 1) + " time");
         }
     }
 
