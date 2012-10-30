@@ -27,6 +27,7 @@ class User implements Runnable {
 
     public void close(boolean isError, boolean sendMessage) {
         isClosed = true;
+        //myManager.sendFromServer("User " + name() + " left the chat."); // TODO change if name == newName
         if (sendMessage && isError) {
             sendMessage(new Message(MessageType.ERROR, "", ""));
         } else if (sendMessage) {
