@@ -8,6 +8,15 @@ public class Shell {
     public static String currentPath;
     public static boolean console = true;
     
+    public static <T extends Closeable> void tryClose(T object) {
+        if (object != null) {
+            try {
+                  object.close();
+            } catch (Exception ex) {
+            }
+        }
+    }
+    
     public static void errorAndExit(String error) {
         System.err.println(error);
         if (!console) {
@@ -42,7 +51,7 @@ public class Shell {
             is = new FileInputStream(source);
             os = new FileOutputStream(dest);
             int nLength;
-            byte[] buf = new byte[8000];
+            byte[] buf = new byte[8192];
             while (true) {
                 nLength = is.read(buf);
                 if (nLength < 0) {
@@ -54,18 +63,8 @@ public class Shell {
         } catch (Exception excpt) {
             errorAndExit(command +": " + excpt.getMessage());
         } finally {
-            if (is != null) {
-               try {
-                   is.close();
-               } catch (Exception ex) {
-               }
-            }
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (Exception ex) {
-                }
-            }
+              tryClose(is);
+              tryClose(os);
         }
         return false;
     }
