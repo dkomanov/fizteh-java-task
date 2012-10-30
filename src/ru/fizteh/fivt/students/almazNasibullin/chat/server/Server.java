@@ -29,18 +29,16 @@ public class Server {
             WrapperPrimitive<Integer> port = new WrapperPrimitive<Integer>(-1);
             Selector selector = Selector.open();
             BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
-            
-            // хранит ник и SocketChannel клиента
             Map<String, SocketChannel> clients = new TreeMap<String, SocketChannel>();
-            
+            // хранит ник и SocketChannel клиента
+            List<SocketChannel> withoutName = new ArrayList<SocketChannel>();
             /* хранит SocketChannel клиентов, у которых не утвержден ник,
              * т.е. возможно, что ник клиента совпадает с уже имеющимся
              */
-            List<SocketChannel> withoutName = new ArrayList<SocketChannel>();
-            
+            AtomicReference<ServerSocketChannel> ar = new AtomicReference<ServerSocketChannel>
+                    (ServerSocketChannel.open());
+            ar.get().configureBlocking(false);
             // для того, чтобы принимать новых клиетов
-            AtomicReference ar = new AtomicReference(ServerSocketChannel.open().
-                    configureBlocking(false));
 
             for (;;) {
                 if (buf.ready()) {
@@ -73,7 +71,8 @@ public class Server {
     }
 
     public static void listen(WrapperPrimitive<Integer> port, Selector selector,
-            Map<String, SocketChannel> clients, StringTokenizer st, AtomicReference ar) {
+            Map<String, SocketChannel> clients, StringTokenizer st,
+            AtomicReference<ServerSocketChannel> ar) {
         try {
             if (port.t == -1) { // сервер может слушать в любой момент
                 // времени только один порт
@@ -82,11 +81,12 @@ public class Server {
                     port.t = Integer.parseInt(portNumber);
                     InetSocketAddress isa = new InetSocketAddress(
                             port.t);
-                    if (!((ServerSocketChannel)ar.get()).isOpen()) {
-                        ar.set(ServerSocketChannel.open().configureBlocking(false));
+                    if (!ar.get().isOpen()) {
+                        ar.set(ServerSocketChannel.open());
+                        ar.get().configureBlocking(false);
                     }
-                    ((ServerSocketChannel)ar.get()).socket().bind(isa);
-                    ((ServerSocketChannel)ar.get()).register(selector,
+                    ar.get().socket().bind(isa);
+                    ar.get().register(selector,
                             SelectionKey.OP_ACCEPT);
                     System.out.println("Listening on port: " + port.t);
                 } else {
@@ -101,13 +101,13 @@ public class Server {
     }
 
     public static void stop(Map<String, SocketChannel> clients,
-            WrapperPrimitive<Integer> port, AtomicReference ar) {
+            WrapperPrimitive<Integer> port, AtomicReference<ServerSocketChannel> ar) {
         try {
             if (port.t != -1) {
                 port.t = -1;
                 try {
                     if (ar.get() != null) {
-                        ((ServerSocketChannel)ar.get()).close();
+                        ar.get().close();
                     }
                 } catch (Exception e) {
                     printErrorAndExit("Could not close the current channel: " + e.getMessage());
@@ -154,7 +154,8 @@ public class Server {
     }
 
     public static void handlerConsole(BufferedReader buf, WrapperPrimitive<Integer> port,
-            Selector selector, Map<String, SocketChannel> clients, AtomicReference ar) {
+            Selector selector, Map<String, SocketChannel> clients,
+            AtomicReference<ServerSocketChannel> ar) {
         try {
             String str = buf.readLine();
             StringTokenizer st = new StringTokenizer(str, " \t");
@@ -221,7 +222,7 @@ public class Server {
 
     public static void handlerClients(Selector selector, 
             Map<String, SocketChannel> clients, List<SocketChannel> withoutName,
-            AtomicReference ar) {
+            AtomicReference<ServerSocketChannel> ar) {
         try {
             Set<SelectionKey> keys = selector.selectedKeys();
             Iterator iter = keys.iterator();
@@ -231,7 +232,7 @@ public class Server {
                         SelectionKey.OP_ACCEPT) {
                     // получили новое соединение
                     //SocketChannel sc = ssc.get(0).accept();
-                    SocketChannel sc = ((ServerSocketChannel)ar.get()).accept();
+                    SocketChannel sc = ar.get().accept();
                     if (sc == null) {
                         printErrorAndExit("Bad accepting");
                     }
