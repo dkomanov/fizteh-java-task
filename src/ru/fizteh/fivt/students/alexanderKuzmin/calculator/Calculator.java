@@ -50,15 +50,14 @@ public class Calculator {
                 number = false;
                 stack.push('(');
             }
-            if ((formula.charAt(i) >= '0') && (formula.charAt(i) <= '9')) {
+            if (Character.isDigit(formula.charAt(i))) {
                 if (number) {
                     System.out.println("Error with order of numbers.");
                     System.exit(1);
                 }
                 outString.push(formula.charAt(i));
                 try {
-                    if (!((formula.charAt(i + 1) >= '0') && (formula
-                            .charAt(i + 1) <= '9'))) {
+                    if (!Character.isDigit(formula.charAt(i + 1))) {
                         outString.push(' ');
                         number = true;
                     }
@@ -87,7 +86,7 @@ public class Calculator {
             if ((formula.charAt(i) != '+') && (formula.charAt(i) != '-')
                     && (formula.charAt(i) != '*') && (formula.charAt(i) != '/')
                     && (formula.charAt(i) != '(') && (formula.charAt(i) != ')')
-                    && ((formula.charAt(i) < 0) || (formula.charAt(i) > '9'))
+                    && (!Character.isDigit(formula.charAt(i)))
                     && (formula.charAt(i) != ' ')) {
                 System.out.println("Error with order of symbols.");
                 System.exit(1);
@@ -125,50 +124,47 @@ public class Calculator {
     // The method that calculate the expression by using Reverse Polish Notation
     private BigInteger solve(final String formula) {
         ArrayDeque<BigInteger> stack = new ArrayDeque<BigInteger>();
+        int begin = 0;
+        boolean first = true;
         for (int i = 0; i < formula.length(); ++i) {
-            if ((formula.charAt(i) <= '9') && (formula.charAt(i) >= '0')) {
-                BigInteger tmp = new BigInteger(Integer.valueOf(
-                        formula.charAt(i) - '0').toString());
-                for (int j = i + 1; j < formula.length(); ++j)
-                    if ((formula.charAt(j) <= '9')
-                            && (formula.charAt(j) >= '0')) {
-                        tmp = tmp.multiply(
-                                new BigInteger(Integer.valueOf(10).toString()))
-                                .add(new BigInteger(Integer.valueOf(formula
-                                        .charAt(j) - '0').toString()));
-                        ++i;
-                    } else
-                        break;
-                stack.push(tmp);
-                continue;
-            } else if (formula.charAt(i) == ' ')
-                continue;
-            try {
-                switch (formula.charAt(i)) {
-                case '/':
-                    BigInteger a = stack.pop();
-                    try {
-                        stack.push(stack.pop().divide(a));
-                    } catch (Exception e3) {
-                        System.out
-                                .print("Division by zero or another error with division!\n");
-                        System.exit(1);
-                    }
-                    break;
-                case '*':
-                    stack.push(stack.pop().multiply(stack.pop()));
-                    break;
-                case '-':
-                    BigInteger b = stack.pop();
-                    stack.push(stack.pop().subtract(b));
-                    break;
-                case '+':
-                    stack.push(stack.pop().add(stack.pop()));
-                    break;
+            if (Character.isDigit(formula.charAt(i))) {
+                if (first) {
+                    begin = i;
+                    first = false;
+                } else if (!Character.isDigit(formula.charAt(i + 1))){
+                    stack.push(new BigInteger(formula.substring(begin, i + 1)));
+                    first = true;
                 }
-            } catch (Exception e3) {
-                System.out.print("Error with operations.");
-                System.exit(1);
+            } else if (formula.charAt(i) == ' ') {
+                continue;
+            } else {
+                try {
+                    switch (formula.charAt(i)) {
+                    case '/':
+                        BigInteger a = stack.pop();
+                        try {
+                            stack.push(stack.pop().divide(a));
+                        } catch (Exception e3) {
+                            System.out
+                                    .print("Division by zero or another error with division!\n");
+                            System.exit(1);
+                        }
+                        break;
+                    case '*':
+                        stack.push(stack.pop().multiply(stack.pop()));
+                        break;
+                    case '-':
+                        BigInteger b = stack.pop();
+                        stack.push(stack.pop().subtract(b));
+                        break;
+                    case '+':
+                        stack.push(stack.pop().add(stack.pop()));
+                        break;
+                    }
+                } catch (Exception e3) {
+                    System.out.print("Error with operations.");
+                    System.exit(1);
+                }
             }
         }
         return stack.pop();
@@ -181,13 +177,13 @@ public class Calculator {
      *            Addition - "+").
      */
     public static void main(String[] args) throws Exception {
-        String s = "";
+        StringBuilder str = new StringBuilder();
         if (args.length > 0) {
             for (int i = 0; i < args.length; ++i) {
-                s += args[i];
+                str.append(args[i]).append(" ");
             }
         }
         Calculator calc = new Calculator();
-        System.out.print(calc.solve(calc.toPolishNotation(s)));
+        System.out.print(calc.solve(calc.toPolishNotation(str.toString())));
     }
 }
