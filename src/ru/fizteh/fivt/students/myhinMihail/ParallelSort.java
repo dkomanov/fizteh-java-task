@@ -3,6 +3,7 @@ package ru.fizteh.fivt.students.myhinMihail;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.lang.Math;
 
 class SortPiece {
     public int from = 0;
@@ -60,12 +61,23 @@ public class ParallelSort {
         
     }
     
+    public static <T extends Closeable> void tryClose(T object) {
+        if (object != null) {
+            try {
+                  object.close();
+            } catch (Exception ex) {
+                System.err.println("Error: " + ex.getMessage());
+            }
+        }
+    }
+    
     public static void merge(List<String> inList, int low, int mid, int high) {
         List<String> mergeList = new ArrayList<String>();
         int h = low, j = mid, k;
             
-        while (h < mid && j < high) {        
-            if (inList.get(h).compareTo(inList.get(j)) <= 0) {                    
+        while (h < mid && j < high) {
+            if ((notCaseSensitive && inList.get(h).compareTo(inList.get(j)) <= 0) || 
+                    (!notCaseSensitive && String.CASE_INSENSITIVE_ORDER.compare(inList.get(h), inList.get(j)) <= 0)) {                    
                 mergeList.add(inList.get(h));
                 h++;
             } else {
@@ -184,12 +196,8 @@ public class ParallelSort {
             } 
                 
         } finally {
-            if (fr != null) {
-                fr.close();
-            }
-            if (reader != null) {
-                reader.close();
-            }
+            tryClose(fr);
+            tryClose(reader);
         }    
     }
         
@@ -214,9 +222,7 @@ public class ParallelSort {
                     osw = new OutputStreamWriter(fos);
                     out = new BufferedWriter(osw);
                 } catch (Exception e) {
-                    if (out != null) {
-                        out.close();
-                    }
+                    tryClose(out);
                     System.err.println("Can not write to " + output + "\n" + e.getMessage());
                     System.exit(1);
                 }
@@ -227,13 +233,15 @@ public class ParallelSort {
             int linesCount = list.size();
             int portion = 0;
             
-            if (linesCount >= MIN_LENGTH * threadsCount && linesCount <= MAX_LENGTH * threadsCount) {
+            int maxLength = Math.max(linesCount / threadsCount, MAX_LENGTH);
+            
+            if (linesCount >= MIN_LENGTH * threadsCount && linesCount <= maxLength * threadsCount) {
                 portion = linesCount / threadsCount;
             } else { 
-                if (linesCount <= MAX_LENGTH * threadsCount) {
+                if (linesCount <= maxLength * threadsCount) {
                     portion = MIN_LENGTH; 
                 } else {
-                    portion = MAX_LENGTH;
+                    portion = maxLength;
                 }
             }
             
@@ -339,11 +347,7 @@ public class ParallelSort {
             System.err.println("Error: " + expt.getMessage());
         } finally {
             if (!output.isEmpty()) {
-                try {
-                    out.close();
-                } catch (Exception e) {
-                    System.err.println("Error: can not close" + output);
-                }
+                tryClose(out);
             } else {
                 try {
                     out.flush();
@@ -352,21 +356,8 @@ public class ParallelSort {
                 }
             }
             
-            if (osw != null) {
-                try {
-                    osw.close();
-                } catch (IOException e) {
-                    System.err.println("Error: can not close" + osw);
-                }
-            }
-            
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    System.err.println("Error: can not close" + fos);
-                }
-            }
+            tryClose(osw);
+            tryClose(fos);
         }
         
     }
