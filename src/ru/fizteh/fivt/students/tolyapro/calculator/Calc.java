@@ -48,20 +48,20 @@ public class Calc {
             if ((isPrevNum) && (isPrevSpace) && (Character.isDigit(c))) {
                 return false;
             } else {
-                if ((isPrevNum) && ((Character.isWhitespace(c)) || (c == '\t'))) {
+                if ((isPrevNum) && (Character.isWhitespace(c))) {
                     isPrevSpace = true;
                 } else {
                     if ((!isPrevNum) && (Character.isDigit(c))) {
                         isPrevNum = true;
                         isPrevSpace = false;
                     } else {
-                        if ((!Character.isWhitespace(c)) && (c != '\t')) {
+                        if (!Character.isWhitespace(c)) {
                             isPrevSpace = false;
                         }
                     }
                 }
             }
-            if ((!Character.isDigit(c)) && (!Character.isWhitespace(c)) && (c != '\t')) {
+            if ((!Character.isDigit(c)) && (!Character.isWhitespace(c))) {
                 isPrevNum = false;
             }
 
