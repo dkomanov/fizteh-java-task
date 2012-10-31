@@ -119,11 +119,9 @@ public class Calculator {
             }
             if (i == str.length() - 1) {
                 while (!s.isEmpty()) {
-                    if (!s.isEmpty()) {
-                        cur = s.pop().charValue();
-                        if (cur != '(')
-                            builder.append(cur).append(",");
-                    }
+                    cur = s.pop().charValue();
+                    if (cur != '(')
+                        builder.append(cur).append(",");
                 }
             }
         }
