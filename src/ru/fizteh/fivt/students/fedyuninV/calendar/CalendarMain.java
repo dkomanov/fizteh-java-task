@@ -5,6 +5,7 @@ import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Calendar;
 
@@ -26,7 +27,7 @@ public class CalendarMain {
 
     private static void init() {
         calendar = Calendar.getInstance();
-        df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        df = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
         tz = null;
         month = null;
         year = null;
@@ -133,6 +134,9 @@ public class CalendarMain {
                 System.out.print(' ');
             }
         }
+        if (dayNameLength < 2) {
+            dayNameLength = 2;
+        }
         System.out.println();
         int currDay = 1;
         int currWeek = calendar.get(Calendar.WEEK_OF_YEAR);
@@ -169,18 +173,12 @@ public class CalendarMain {
 
     private static void printCurrentTime() {
         if (tz != null) {
-            calendar.setTimeZone(tz);
             calendar.setTimeInMillis(new Date().getTime());
-            Calendar temp = Calendar.getInstance();
-            temp.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
-            temp.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
-            temp.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-            temp.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
-            temp.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
-            temp.set(Calendar.SECOND, calendar.get(Calendar.SECOND));
-            temp.set(Calendar.MILLISECOND, calendar.get(Calendar.MILLISECOND));
+            df.setTimeZone(tz);
             System.out.println();
-            System.out.println("Now: " + df.format(temp.getTime()) + " " + tz.getID() + " time");
+            int slashIndex = tz.getDisplayName().lastIndexOf('/');
+            System.out.println("Now: " + df.format(calendar.getTime()) + " "
+                    + tz.getDisplayName().substring(slashIndex + 1) + " time");
         }
     }
 
