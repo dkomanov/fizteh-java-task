@@ -8,12 +8,11 @@ public class Calculator {
 
         // compiling input expression
         StringBuilder builder = new StringBuilder();
-        String str;
         for (int i = 0; i < args.length; ++i) {
             builder.append(args[i]).append(" ");
         }
 
-        str = builder.toString();
+        String str = builder.toString();
 
         try {
             str = str.trim();
@@ -29,10 +28,11 @@ public class Calculator {
             // checking brackets
             int closedBrakets = 0, openedBrakets = 0;
             for (int i = 0; i < str.length(); ++i) {
-                if (str.charAt(i) == '(')
+                if (str.charAt(i) == '(') {
                     ++openedBrakets;
-                else if (str.charAt(i) == ')')
+                } else if (str.charAt(i) == ')') {
                     --openedBrakets;
+                }
                 if (openedBrakets < 0) {
                     closedBrakets = 0;
                     break;
@@ -75,7 +75,6 @@ public class Calculator {
 
     private static String toRpn(String str) {
         LinkedList<Character> s = new LinkedList<Character>();
-        String resStr = "";
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < str.length(); ++i) {
             char cur;
@@ -146,8 +145,14 @@ public class Calculator {
             if (parsedInput[i].equals("+") || parsedInput[i].equals("-")
                     || parsedInput[i].equals("/") || parsedInput[i].equals("*")) {
                 if (s.size() >= 2) {
-                    int b = Integer.parseInt(s.pop());
-                    int a = Integer.parseInt(s.pop());
+                    int a, b;
+                    try {
+                        b = Integer.parseInt(s.pop());
+                        a = Integer.parseInt(s.pop());
+                    } catch (Exception e) {
+                        throw new RuntimeException("too long integer");
+                    }
+
                     int cur = 0;
                     if (parsedInput[i].equals("+")) {
                         cur = a + b;
