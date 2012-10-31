@@ -176,9 +176,7 @@ public class CalendarMain {
             calendar.setTimeInMillis(new Date().getTime());
             df.setTimeZone(tz);
             System.out.println();
-            int slashIndex = tz.getDisplayName().lastIndexOf('/');
-            System.out.println("Now: " + df.format(calendar.getTime()) + " "
-                    + tz.getDisplayName().substring(slashIndex + 1) + " time");
+            System.out.println("Now: " + df.format(calendar.getTime()) + " " + tz.getDisplayName());
         }
     }
 
