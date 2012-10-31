@@ -110,9 +110,7 @@ public class Calculator {
                                 builder.append(s.pop().charValue()).append(",");
                             }
                         } else {
-                            if (!Character.isWhitespace(str.charAt(i))
-                                    && str.charAt(i) != '\n'
-                                    && str.charAt(i) != '\t') {
+                            if (!Character.isWhitespace(str.charAt(i))) {
                                 return "";
                             }
                         }
