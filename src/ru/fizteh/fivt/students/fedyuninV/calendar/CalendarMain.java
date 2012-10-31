@@ -173,10 +173,9 @@ public class CalendarMain {
 
     private static void printCurrentTime() {
         if (tz != null) {
-            calendar.setTimeInMillis(new Date().getTime());
             df.setTimeZone(tz);
             System.out.println();
-            System.out.println("Now: " + df.format(calendar.getTime()) + " " + tz.getDisplayName());
+            System.out.println("Now: " + df.format(new Date().getTime()) + " " + tz.getDisplayName());
         }
     }
 
