@@ -20,9 +20,10 @@ public class Expression {
         for (int i = 0; i < s.length(); ++i) {
             char c = s.charAt(i);
             boolean digC = Character.isDigit(c);
+            boolean spC = Character.isWhitespace(c);
             boolean opC = (c == '+') || (c == '-') || (c == '*') || (c == '/');
             boolean brC = (c == '(') || (c == ')');
-            if (!digC && !opC && !brC) {
+            if (!digC && !opC && !brC && !spC) {
                 return c;
             }
         }
@@ -95,7 +96,7 @@ public class Expression {
                     String newSummand = s.substring(prevOperatorPos + 1, j);
                     Expression exp = new Expression(newSummand);
                     res += exp.result();
-                    if (res > Integer.MAX_VALUE && res < Integer.MIN_VALUE) {
+                    if (res > Integer.MAX_VALUE || res < Integer.MIN_VALUE) {
                         throw new CalculatorException("Overflow");
                     }
                 }
@@ -106,7 +107,7 @@ public class Expression {
                     Expression exp = new Expression(newSummand);
                     prevOperatorPos = j;
                     res += exp.result();
-                    if (res > Integer.MAX_VALUE && res < Integer.MIN_VALUE) {
+                    if (res > Integer.MAX_VALUE || res < Integer.MIN_VALUE) {
                         throw new CalculatorException("Overflow");
                     }
                     --i;
@@ -116,7 +117,7 @@ public class Expression {
                 String newSummand = s.substring(prevOperatorPos + 1, i);
                 Expression newExp = new Expression(newSummand);
                 res += newExp.result();
-                if (res > Integer.MAX_VALUE && res < Integer.MIN_VALUE) {
+                if (res > Integer.MAX_VALUE || res < Integer.MIN_VALUE) {
                     throw new CalculatorException("Overflow");
                 }
                 --i;
@@ -163,7 +164,7 @@ public class Expression {
                         endPosition);
                 Expression newExp = new Expression(newSummand);
                 res -= newExp.result();
-                if (res > Integer.MAX_VALUE && res < Integer.MIN_VALUE) {
+                if (res > Integer.MAX_VALUE || res < Integer.MIN_VALUE) {
                     throw new CalculatorException("Overflow");
                 }
                 --i;
@@ -189,7 +190,7 @@ public class Expression {
                 Expression leftExpression = new Expression(left);
                 Expression rightExpression = new Expression(right);
                 res = leftExpression.result() * rightExpression.result();
-                if (res > Integer.MAX_VALUE && res < Integer.MIN_VALUE) {
+                if (res > Integer.MAX_VALUE || res < Integer.MIN_VALUE) {
                     throw new CalculatorException("Overflow");
                 }
                 return (int) res;
@@ -201,7 +202,7 @@ public class Expression {
                 Expression leftExpression = new Expression(left);
                 Expression rightExpression = new Expression(right);
                 res = leftExpression.result() / rightExpression.result();
-                if (res > Integer.MAX_VALUE && res < Integer.MIN_VALUE) {
+                if (res > Integer.MAX_VALUE || res < Integer.MIN_VALUE) {
                     throw new CalculatorException("Overflow");
                 }
                 return (int) res;
@@ -239,7 +240,7 @@ public class Expression {
             } catch (IllegalArgumentException e) {
                 throw new CalculatorException("Overflow");
             }
-            if (res < Integer.MIN_VALUE && res > Integer.MAX_VALUE) {
+            if (res < Integer.MIN_VALUE || res > Integer.MAX_VALUE) {
                 throw new CalculatorException("Overflow");
             }
             return (int) res;

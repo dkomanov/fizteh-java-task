@@ -12,14 +12,16 @@ import java.io.IOException;
 public class Calculator {
     public static void main(String[] args) throws IOException {
         if (args.length == 0) {
-            System.out.println("No parametrs");
-            return;
+            System.out
+                    .println("Эта программа вычисляет значение выражения, заданного в параметрах запуска");
+            System.exit(1);
         }
-        StringBuilder tempExpression = new StringBuilder("");
+        StringBuilder tempExpression = new StringBuilder();
         for (int j = 0; j < args.length; ++j) {
             tempExpression.append(args[j]);
+            tempExpression.append(" ");
         }
-        Expression answer = new Expression(new String(tempExpression));
+        Expression answer = new Expression(tempExpression.toString());
         char c = answer.correctSymbols();
         if (c != ' ') {
             System.out.println("Incorrect input symbol: " + c);
