@@ -8,7 +8,7 @@ public class Calculator {
 
         // compiling input expression
         StringBuilder builder = new StringBuilder();
-        String str = new String();
+        String str;
         for (int i = 0; i < args.length; ++i) {
             builder.append(args[i]).append(" ");
         }
@@ -22,7 +22,8 @@ public class Calculator {
             if (str.isEmpty()) {
                 System.err
                         .println("Error: the expression is empty. No arguments.");
-                return;
+                System.err.println("Usage: mathematical expression");
+                System.exit(1);
             }
 
             // checking brackets
@@ -40,20 +41,21 @@ public class Calculator {
             if (closedBrakets != 0 || openedBrakets != 0) {
                 System.err
                         .println("Error: wrong input. Something wrong with brakets.");
-                return;
+                System.exit(1);
             }
 
             String[] parsedInput = parse(toRpn(str));
 
             if (!checkRpn(parsedInput)) {
                 System.err.println("Error: wrong input");
-                return;
+                System.exit(1);
             }
 
             System.out.println("Input: " + str);
             System.out.println("Answer: " + calculate(parsedInput));
         } catch (Exception expt) {
             System.err.println("Error: " + expt.getMessage());
+            System.exit(1);
         }
     }
 
@@ -68,15 +70,11 @@ public class Calculator {
                 ++countOfDigits;
             }
         }
-        if ((countOfDigits - countOfOperands) == 1) {
-            return true;
-        } else {
-            return false;
-        }
+        return ((countOfDigits - countOfOperands) == 1);
     }
 
     private static String toRpn(String str) {
-        MyStack<Character> s = new MyStack<Character>();
+        LinkedList<Character> s = new LinkedList<Character>();
         String resStr = "";
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < str.length(); ++i) {
@@ -132,8 +130,7 @@ public class Calculator {
                 }
             }
         }
-        resStr = builder.toString();
-        return resStr;
+        return builder.toString();
     }
 
     private static String[] parse(String str) {
