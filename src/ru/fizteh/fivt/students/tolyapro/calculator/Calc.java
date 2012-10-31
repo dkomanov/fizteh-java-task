@@ -48,20 +48,20 @@ public class Calc {
             if ((isPrevNum) && (isPrevSpace) && (Character.isDigit(c))) {
                 return false;
             } else {
-                if ((isPrevNum) && ((c == ' ') || (c == '    '))) {
+                if ((isPrevNum) && ((Character.isWhitespace(c)) || (c == '\t'))) {
                     isPrevSpace = true;
                 } else {
                     if ((!isPrevNum) && (Character.isDigit(c))) {
                         isPrevNum = true;
                         isPrevSpace = false;
                     } else {
-                        if ((c != ' ') && (c != '    ')) {
+                        if ((!Character.isWhitespace(c)) && (c != '\t')) {
                             isPrevSpace = false;
                         }
                     }
                 }
             }
-            if ((!Character.isDigit(c)) && (c != ' ') && (c != '    ')) {
+            if ((!Character.isDigit(c)) && (!Character.isWhitespace(c)) && (c != '\t')) {
                 isPrevNum = false;
             }
 
@@ -129,7 +129,7 @@ public class Calc {
             System.err.println("Incorrect input: Space between digits");
             System.exit(1);
         }
-        expr = expr.replaceAll("\\s|    ", "");
+        expr = expr.replaceAll("\\s+", "");
         if (!(checkBrackets(expr))) {
             System.err.println("Incorrect input: Brackets error");
             System.exit(1);
