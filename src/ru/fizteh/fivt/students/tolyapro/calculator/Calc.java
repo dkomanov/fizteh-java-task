@@ -3,8 +3,6 @@ package ru.fizteh.fivt.students.tolyapro.calculator;
 import java.util.*;
 import java.math.*;
 
-import sun.io.Converters;
-
 public class Calc {
 
     public static boolean isNumber(String s) {
@@ -71,21 +69,22 @@ public class Calc {
         return true;
     }
 
-    public static String operationToString(int a, int b, char operand) {
-        String res = new String();
+    public static String operationToString(int a, int b, char operand)
+            throws RuntimeException {
         if (operand == '+') {
-            res = Integer.toString(a + b);
+            return Integer.toString(a + b);
         } else if (operand == '-') {
-            res = Integer.toString(b - a);
+            return Integer.toString(b - a);
         } else if (operand == '*') {
-            res = Integer.toString(a * b);
+            return Integer.toString(a * b);
         } else if (operand == '/') {
-            res = Integer.toString(b / a);
+            return Integer.toString(b / a);
         }
-        return res;
+        throw new RuntimeException("Uknown operand");
     }
 
-    public static boolean checkOverflow(int a, int b, char operand) {
+    public static boolean checkOverflow(int a, int b, char operand)
+            throws RuntimeException {
         if (operand == '/') {
             return false;
         }
@@ -149,18 +148,29 @@ public class Calc {
         String output = converter.toPolish(expr);
         String[] tokens = output.split(" ");
         Stack<String> polishStack = new Stack<String>();
+        if (tokens.length == 1) {
+            try {
+                int result = Integer.parseInt(tokens[0]);
+                System.out.println(result);
+            } catch (Exception e) {
+                System.err.println("Error: " + e.getMessage());
+                System.exit(1);
+            }
+        }
         for (int i = 0; i < tokens.length; ++i) {
             if (isNumber(tokens[i])) {
                 polishStack.push(tokens[i]);
             } else {
                 try {
                     if (polishStack.empty()) {
-                        throw new Exception("Incorrect Input: incorrect mathematical expression");
+                        throw new Exception(
+                                "Incorrect Input: incorrect mathematical expression");
                     }
                     int a = new Integer(polishStack.peek());
                     polishStack.pop();
                     if (polishStack.empty()) {
-                        throw new Exception("Incorrect Input: incorrect mathematical expression");
+                        throw new Exception(
+                                "Incorrect Input: incorrect mathematical expression");
                     }
                     int b = new Integer(polishStack.peek());
                     polishStack.pop();
@@ -180,7 +190,8 @@ public class Calc {
         if (!polishStack.empty()) {
             System.out.println(polishStack.peek());
         } else {
-            System.err.println("Incorrect Input: incorrect mathematical expression");
+            System.err
+                    .println("Incorrect Input: incorrect mathematical expression");
             System.exit(1);
         }
     }
