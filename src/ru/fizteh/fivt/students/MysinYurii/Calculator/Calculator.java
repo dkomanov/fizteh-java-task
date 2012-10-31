@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.MysinYurii.Calculator;
+package ru.fizteh.fivt.students.mysinYurii.calculator;
 
 /*
  * Author: Mysin Yurii

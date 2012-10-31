@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.MysinYurii.Calculator;
+package ru.fizteh.fivt.students.mysinYurii.calculator;
 
 /*
  * Author: Mysin Yurii
@@ -7,20 +7,16 @@ package ru.fizteh.fivt.students.MysinYurii.Calculator;
  */
 
 public class CalculatorException extends Throwable {
-    String exceptionMessage;
 
-    @Override
-    public String toString() {
-        return exceptionMessage;
+    public CalculatorException(String string) {
+        super(string);
     }
 
-    @Override
     public String getMessage() {
-        return exceptionMessage;
+        return super.getMessage();
     }
 
-    public CalculatorException(String message) {
-        exceptionMessage = message;
+    public String toString() {
+        return super.toString();
     }
-
 }

@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.MysinYurii.Calculator;
+package ru.fizteh.fivt.students.mysinYurii.calculator;
 
 /*
  * Author: Mysin Yurii
@@ -14,8 +14,8 @@ public class Expression {
         s = expression;
     }
 
-    // если есть некорректные символы то возвращает первый из них
-    // иначе возвращает пробел
+    // РµСЃР»Рё РµСЃС‚СЊ РЅРµРєРѕСЂСЂРµРєС‚РЅС‹Рµ СЃРёРјРІРѕР»С‹ С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РїРµСЂРІС‹Р№ РёР· РЅРёС…
+    // РёРЅР°С‡Рµ РІРѕР·РІСЂР°С‰Р°РµС‚ РїСЂРѕР±РµР»
     public char correctSymbols() {
         for (int i = 0; i < s.length(); ++i) {
             char c = s.charAt(i);
