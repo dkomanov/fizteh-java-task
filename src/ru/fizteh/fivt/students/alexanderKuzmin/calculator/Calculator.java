@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.alexanderKuzmin.calculator
+package ru.fizteh.fivt.students.alexanderKuzmin.calculator;
 
 /**
  * @author Kuzmin A.
