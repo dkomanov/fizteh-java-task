@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.frolovNikolay.calculator;
 
+import java.util.LinkedList;
+
 /*
  * Данный класс отвечает
  * за перевод инфиксной записи
@@ -9,15 +11,15 @@ package ru.fizteh.fivt.students.frolovNikolay.calculator;
  * введенного выражения.
  */
 public class RpnConvertor {
-    public static String handle(String expression) throws Exception {
+    public static String convert(String expression) throws Exception {
         StringBuilder result = new StringBuilder();
         boolean haveOp = true;
         boolean haveNumb = false;
-        CharStack stack = new CharStack();
+        LinkedList<Character> stack = new LinkedList<Character>();
         for (int i = 0; i < expression.length(); ++i) {
             if (Character.isDigit(expression.charAt(i))) {
                 if (!haveNumb && !haveOp) {
-                    throw (new Exception("Error! Incorrect arithmetic exception."));
+                    throw new Exception("Error! Incorrect arithmetic exception.");
                 }
                 haveNumb = true;
                 haveOp = false;
@@ -33,8 +35,8 @@ public class RpnConvertor {
             }
             if (!haveOp && (expression.charAt(i) == '+' || expression.charAt(i) == '-')) {
                 haveOp = true;
-                while (!stack.isEmpty() && stack.top() != '(') {
-                    result.append(stack.top());
+                while (!stack.isEmpty() && stack.getFirst() != '(') {
+                    result.append(stack.getFirst());
                     result.append(' ');
                     stack.pop();
                 }
@@ -43,9 +45,9 @@ public class RpnConvertor {
             }
             if (!haveOp && (expression.charAt(i) == '*' || expression.charAt(i) == '/')) {
                 haveOp = true;
-                while (!stack.isEmpty() && (stack.top() == '*'
-                                           || stack.top() == '/')) {
-                    result.append(stack.top());
+                while (!stack.isEmpty() && (stack.getFirst() == '*'
+                                           || stack.getFirst() == '/')) {
+                    result.append(stack.getFirst());
                     result.append(' ');
                     stack.pop();
                 }
@@ -61,10 +63,10 @@ public class RpnConvertor {
                         result.append('-');
                         continue;
                     } else {
-                        throw (new Exception("Error! Incorrect arithmetic expression."));
+                        throw new Exception("Error! Incorrect arithmetic expression.");
                     }
                 } else {
-                    throw (new Exception("Error! Incorrect arithmetic expression."));
+                    throw new Exception("Error! Incorrect arithmetic expression.");
                 }       
             }
             if (expression.charAt(i) == '(') {
@@ -73,26 +75,26 @@ public class RpnConvertor {
             }
             if (expression.charAt(i) == ')') {
                 if (stack.isEmpty()) {
-                    throw (new Exception("Error! Brackets placed incorrectly."));
+                    throw new Exception("Error! Brackets placed incorrectly.");
                 }
-                while (stack.top() != '(') {
-                    result.append(stack.top());
+                while (stack.getFirst() != '(') {
+                    result.append(stack.getFirst());
                     result.append(' ');
                     stack.pop();
                     if (stack.isEmpty()) {
-                        throw (new Exception("Error! Brackets placed incorrectly."));
+                        throw new Exception("Error! Brackets placed incorrectly.");
                     }
                 }
                 stack.pop();
                 continue;
             }
-            throw (new Exception("Error! Incorrect arithmetic expression."));
+            throw new Exception("Error! Incorrect arithmetic expression.");
         }
         while (!stack.isEmpty()) {
-            if (stack.top() == '(') {
+            if (stack.getFirst() == '(') {
                 throw new Exception("Error! Brackets placed incorrectly.");
             }
-            result.append(stack.top());
+            result.append(stack.getFirst());
             result.append(' ');
             stack.pop();
         }

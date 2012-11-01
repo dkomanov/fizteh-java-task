@@ -12,15 +12,15 @@ public class Handler {
             System.exit(1);
         } else {
             StringBuilder unioner = new StringBuilder();
-            for (String Iter : argv) {
-                unioner.append(Iter);
+            for (String iter : argv) {
+                unioner.append(iter);
                 unioner.append(' ');
             }
             String expression = unioner.toString();
             try {
-                if (CorrectChecker.handle(expression)) {
-                    String rpnExpression = RpnConvertor.handle(expression);
-                    int result = Calculator.handle(rpnExpression);
+                if (CorrectChecker.check(expression)) {
+                    String rpnExpression = RpnConvertor.convert(expression);
+                    int result = Calculator.calculate(rpnExpression);
                     System.out.println("Value: " + result );
                 } else {
                     System.err.println("Error. Expression has incorrect symbols");
