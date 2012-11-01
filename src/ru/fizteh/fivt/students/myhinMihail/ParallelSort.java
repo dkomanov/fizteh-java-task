@@ -316,7 +316,7 @@ public class ParallelSort {
                 if (notCaseSensitive) {
                     Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
                 } else {
-                	Collections.sort(list);
+                    Collections.sort(list);
                 }
             }
             
