@@ -1,9 +1,9 @@
 package ru.fizteh.fivt.students.frolovNikolay.calculator;
 
 /*
- * Данный класс отвечает за
- * получение значения выражения
- * из обратной польской записи.
+ * Р”Р°РЅРЅС‹Р№ РєР»Р°СЃСЃ РѕС‚РІРµС‡Р°РµС‚ Р·Р°
+ * РїРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РІС‹СЂР°Р¶РµРЅРёСЏ
+ * РёР· РѕР±СЂР°С‚РЅРѕР№ РїРѕР»СЊСЃРєРѕР№ Р·Р°РїРёСЃРё.
  */
 public class Calculator {
     public static int handle(String rpnExpression) throws Exception {

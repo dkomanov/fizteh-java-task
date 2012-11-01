@@ -1,9 +1,9 @@
 package ru.fizteh.fivt.students.frolovNikolay.calculator;
 
 /*
- * Фролов Николай 196 группа
- * Задание 1. Калькулятор.
- * Исполнительный класс (main).
+ * Р¤СЂРѕР»РѕРІ РќРёРєРѕР»Р°Р№ 196 РіСЂСѓРїРїР°
+ * Р—Р°РґР°РЅРёРµ 1. РљР°Р»СЊРєСѓР»СЏС‚РѕСЂ.
+ * РСЃРїРѕР»РЅРёС‚РµР»СЊРЅС‹Р№ РєР»Р°СЃСЃ (main).
  */
 public class Handler {
     public static void main(String[] argv) {

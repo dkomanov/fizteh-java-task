@@ -3,7 +3,7 @@ package ru.fizteh.fivt.students.frolovNikolay.calculator;
 import java.util.ArrayList;
 
 /*
- * Стек чисел.
+ * РЎС‚РµРє С‡РёСЃРµР».
  */
 public class IntStack {
     private ArrayList<Integer> resourses;

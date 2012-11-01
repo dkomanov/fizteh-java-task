@@ -3,7 +3,7 @@ package ru.fizteh.fivt.students.frolovNikolay.calculator;
 import java.util.ArrayList;
 
 /*
- * Символьный стек.
+ * РЎРёРјРІРѕР»СЊРЅС‹Р№ СЃС‚РµРє.
  */
 public class CharStack {
     private ArrayList<Character> resourses;

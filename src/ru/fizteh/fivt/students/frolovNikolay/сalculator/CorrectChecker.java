@@ -1,9 +1,9 @@
 package ru.fizteh.fivt.students.frolovNikolay.calculator;
 /*
- * Данный класс проверяет
- * наличие посторонних
- * арифметическому выражению
- * символов.
+ * Р”Р°РЅРЅС‹Р№ РєР»Р°СЃСЃ РїСЂРѕРІРµСЂСЏРµС‚
+ * РЅР°Р»РёС‡РёРµ РїРѕСЃС‚РѕСЂРѕРЅРЅРёС…
+ * Р°СЂРёС„РјРµС‚РёС‡РµСЃРєРѕРјСѓ РІС‹СЂР°Р¶РµРЅРёСЋ
+ * СЃРёРјРІРѕР»РѕРІ.
  */
 public class CorrectChecker {
     public static boolean handle(String expression) {
