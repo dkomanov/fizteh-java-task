@@ -313,7 +313,11 @@ public class ParallelSort {
                 }
                 
             } else {
-                Collections.sort(list);
+                if (notCaseSensitive) {
+                    Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
+                } else {
+                	Collections.sort(list);
+                }
             }
             
             out.write(list.get(0) + separator);
