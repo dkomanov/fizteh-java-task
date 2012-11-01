@@ -28,9 +28,13 @@ public class Calculator {
         for (int i = 0; i < formula.length(); ++i) {
             if (formula.charAt(i) == ')') {
                 --sum;
+                if (sum < 0) {
+                    System.out.println("Error with parentheses");
+                    System.exit(1);
+                }
                 number = false;
                 try {
-                    while (String.valueOf(stack.peek()).charAt(0) != '(') {
+                    while (stack.peek().charValue() != '(') {
                         outString.push(stack.pop());
                     }
                     stack.pop(); // delete '('
@@ -39,34 +43,21 @@ public class Calculator {
                             .println("Error with stack(error with parentheses).");
                     System.exit(1);
                 }
-            }
-            if (sum < 0) {
-                System.out.println("Error with parentheses");
-                System.exit(1);
-            }
-
-            if (formula.charAt(i) == '(') {
+            } else if (formula.charAt(i) == '(') {
                 ++sum;
                 number = false;
                 stack.push('(');
-            }
-            if (Character.isDigit(formula.charAt(i))) {
+            } else if (Character.isDigit(formula.charAt(i))) {
                 if (number) {
                     System.out.println("Error with order of numbers.");
                     System.exit(1);
                 }
                 outString.push(formula.charAt(i));
-                try {
-                    if (!Character.isDigit(formula.charAt(i + 1))) {
-                        outString.push(' ');
-                        number = true;
-                    }
-                } catch (Exception e2) {
-                    System.out.println("Error with next number.");
-                    System.exit(1);
+                if (!Character.isDigit(formula.charAt(i + 1))) {
+                    outString.push(' ');
+                    number = true;
                 }
-            }
-            if ((formula.charAt(i) == '+') || (formula.charAt(i) == '-')
+            } else if ((formula.charAt(i) == '+') || (formula.charAt(i) == '-')
                     || (formula.charAt(i) == '*') || (formula.charAt(i) == '/')) {
                 number = false;
                 if (stack.size() == 0) {
@@ -82,26 +73,23 @@ public class Calculator {
                     }
                     stack.push(formula.charAt(i));
                 }
-            }
-            if ((formula.charAt(i) != '+') && (formula.charAt(i) != '-')
-                    && (formula.charAt(i) != '*') && (formula.charAt(i) != '/')
-                    && (formula.charAt(i) != '(') && (formula.charAt(i) != ')')
-                    && (!Character.isDigit(formula.charAt(i)))
-                    && (formula.charAt(i) != ' ')) {
-                System.out.println("Error with order of symbols.");
+            } else if (!Character.isWhitespace(formula.charAt(i))) {
+                System.out
+                        .println("Error with order of symbols. Unrecognized character: "
+                                + formula.charAt(i));
                 System.exit(1);
             }
         }
         StringBuilder resultNotation = new StringBuilder();
-        Iterator<Character> it = outString.iterator();
-        while(it.hasNext()) {
-        	resultNotation.append(String.valueOf(it.next()));
+        Iterator<Character> it = outString.descendingIterator();
+        while (it.hasNext()) {
+            resultNotation.append(it.next());
         }
         if (sum != 0) {
             System.out.println("Error with parentheses");
             System.exit(1);
         }
-        return resultNotation.reverse().toString();
+        return resultNotation.toString();
     }
 
     // Method for priority operations
@@ -131,7 +119,7 @@ public class Calculator {
                 if (first) {
                     begin = i;
                     first = false;
-                } else if (!Character.isDigit(formula.charAt(i + 1))){
+                } else if (!Character.isDigit(formula.charAt(i + 1))) {
                     stack.push(new BigInteger(formula.substring(begin, i + 1)));
                     first = true;
                 }
@@ -172,16 +160,14 @@ public class Calculator {
 
     /**
      * @param args
-     *            input expression, which the program should calculate (supported
-     *            Operations: multiplication - "*", division - "/", subtraction - "-"
-     *            Addition - "+").
+     *            input expression, which the program should calculate
+     *            (supported Operations: multiplication - "*", division - "/",
+     *            subtraction - "-" Addition - "+").
      */
     public static void main(String[] args) throws Exception {
         StringBuilder str = new StringBuilder();
-        if (args.length > 0) {
-            for (int i = 0; i < args.length; ++i) {
-                str.append(args[i]).append(" ");
-            }
+        for (int i = 0; i < args.length; ++i) {
+            str.append(args[i]).append(" ");
         }
         Calculator calc = new Calculator();
         System.out.print(calc.solve(calc.toPolishNotation(str.toString())));
