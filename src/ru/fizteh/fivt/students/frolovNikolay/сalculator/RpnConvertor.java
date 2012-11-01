@@ -15,7 +15,7 @@ public class RpnConvertor {
         boolean haveNumb = false;
         CharStack stack = new CharStack();
         for (int i = 0; i < expression.length(); ++i) {
-            if ('0' <= expression.charAt(i) && expression.charAt(i) <= '9') {
+            if (Character.isDigit(expression.charAt(i))) {
                 if (!haveNumb && !haveOp) {
                     throw (new Exception("Error! Incorrect arithmetic exception."));
                 }
@@ -28,7 +28,7 @@ public class RpnConvertor {
                 haveNumb = false;
                 result.append(' ');
             }
-            if (expression.charAt(i) == ' ') {
+            if (Character.isWhitespace(expression.charAt(i))) {
                 continue;
             }
             if (!haveOp && (expression.charAt(i) == '+' || expression.charAt(i) == '-')) {

@@ -14,7 +14,7 @@ public class Calculator {
         long result = 0;
         for (int i = 0; i < rpnExpression.length(); ++i) {
             leftSide = i;
-            while (rpnExpression.charAt(++i) != ' ');
+            while (!Character.isWhitespace(rpnExpression.charAt(++i)));
             String current = rpnExpression.substring(leftSide, i);
             switch (current) {
             case "+":
