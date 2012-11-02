@@ -8,7 +8,7 @@ package ru.fizteh.fivt.students.frolovNikolay.calculator;
 public class Handler {
     public static void main(String[] argv) {
         if (argv.length == 0) {
-            System.err.println("Error. Empty expression");
+            System.out.println("Использование: java Handler <арифметическое выражение>");
             System.exit(1);
         } else {
             StringBuilder unioner = new StringBuilder();
