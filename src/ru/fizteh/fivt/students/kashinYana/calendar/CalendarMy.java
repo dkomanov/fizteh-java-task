@@ -1,16 +1,21 @@
 package ru.fizteh.fivt.students.kashinYana.calendar;
 
+/**
+ * Created with IntelliJ IDEA.
+ * User: yana
+ * Date: 29.10.12
+ * Time: 20:06
+ * To change this template use File | Settings | File Templates.
+ */
+
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-/**
- * User: Yana Kashinskaya, 195 group.
- */
-
-public class Calendar {
-
+public class CalendarMy {
     static boolean isw = false;
     static boolean ist = false;
     static boolean isy = false;
@@ -18,6 +23,7 @@ public class Calendar {
     static int numberMonth = -1;
     static String timeZone = "";
     static int numberYear = -1;
+    static String[] dayNames;
 
     public static void main(String[] args) throws Exception {
 
@@ -71,7 +77,18 @@ public class Calendar {
     }
 
     private static void setFlags(GregorianCalendar calendar) throws Exception {
-        calendar.setTimeZone(TimeZone.getTimeZone(timeZone));
+        String[] setTimeZones = TimeZone.getAvailableIDs();
+        boolean variableTimeZone = false;
+        for (int i = 0; i < setTimeZones.length; i++) {
+            if (setTimeZones[i].equals(timeZone)) {
+                variableTimeZone = true;
+            }
+        }
+        if (variableTimeZone) {
+            calendar.setTimeZone(TimeZone.getTimeZone(timeZone));
+        } else {
+            throw new Exception("unknown timezone");
+        }
         Date curData = new Date();
         if (!ism) {
             SimpleDateFormat ft = new SimpleDateFormat("M");
@@ -85,6 +102,7 @@ public class Calendar {
             throw new Exception("Incorrect value key.");
         }
         calendar.set(numberYear, numberMonth - 1, 1);
+        dayNames = new DateFormatSymbols().getShortWeekdays();
     }
 
     private static void printCalendar(GregorianCalendar calendar) throws Exception {
@@ -96,7 +114,17 @@ public class Calendar {
         if (isw) {
             System.out.printf("   ");
         }
-        System.out.println("Mo Tu We Th Fr Sa Su");
+        for (int i = 1; i <= 7; i++) {
+            for (int j = 0; j < 2; j++) {
+                if (j < dayNames[i % 7 + 1].length()) {
+                    System.out.print(dayNames[i % 7 + 1].charAt(j));
+                } else if (i % 2 == 0){
+                    System.out.print(" ");
+                }
+            }
+            System.out.print(" ");
+        }
+        System.out.println();
 
         //печать начала первой недели
         int idWeek = calendar.get(GregorianCalendar.WEEK_OF_YEAR);
@@ -123,35 +151,32 @@ public class Calendar {
             }
         }
         System.out.println();
-
         //печать текущей даты, если нужно
-        if (isw) {
-            System.out.println();
-            System.out.printf("Now: %tY.%<tm.%<td %<tT ", calendar.getTime());
-            int idSlesh = timeZone.lastIndexOf("/");
-            System.out.println(timeZone.substring(idSlesh + 1) + " Time");
+        if (ist) {
+            printCurrentTime();
         }
     }
 
     private static int firstDay(GregorianCalendar calendar) throws Exception {
         SimpleDateFormat ft = new SimpleDateFormat("E");
         String weekday = ft.format(calendar.getTime());
-        if (weekday.equals("Mon")) {
-            return 0;
-        } else if (weekday.equals("Tue")) {
-            return 1;
-        } else if (weekday.equals("Wed")) {
-            return 2;
-        } else if (weekday.equals("Thu")) {
-            return 3;
-        } else if (weekday.equals("Fri")) {
-            return 4;
-        } else if (weekday.equals("Sat")) {
-            return 5;
-        } else if (weekday.equals("Sun")) {
-            return 6;
-        } else {
-            throw new Exception("Unknown month");
+        for (int i = 1; i <= 7; i++) {
+            if (dayNames[i % 7 + 1].equals(weekday)) {
+                return i - 1;
+            }
         }
+        throw new Exception("Unknown month");
     }
+
+    private static void printCurrentTime() {
+        System.out.println();
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("Y.M.d HH:mm:ss ");
+        TimeZone tz = TimeZone.getTimeZone(timeZone);
+        simpleDateFormat.setTimeZone(tz);
+        System.out.print("Now: " + simpleDateFormat.format(calendar.getTime()));
+        int idSlesh = timeZone.lastIndexOf("/");
+        System.out.println(timeZone.substring(idSlesh + 1) + " Time");
+    }
+
 }
