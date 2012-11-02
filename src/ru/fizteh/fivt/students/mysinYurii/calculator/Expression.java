@@ -149,6 +149,9 @@ public class Expression {
                     Expression exp = new Expression(newSummand);
                     prevOperatorPos = j;
                     res += exp.result();
+                    if (res > Integer.MAX_VALUE || res < Integer.MIN_VALUE) {
+                        throw new CalculatorException("Overflow");
+                    }
                 }
                 if (prevOperatorPos == -1 && j == 0) {
                     String newSummand = s.substring(prevOperatorPos + 2,
@@ -156,6 +159,9 @@ public class Expression {
                     Expression exp = new Expression(newSummand);
                     prevOperatorPos = j;
                     res -= exp.result();
+                    if (res > Integer.MAX_VALUE || res < Integer.MIN_VALUE) {
+                        throw new CalculatorException("Overflow");
+                    }
                     --i;
                     continue;
                 }
@@ -189,7 +195,8 @@ public class Expression {
                 String right = s.substring(i + 1);
                 Expression leftExpression = new Expression(left);
                 Expression rightExpression = new Expression(right);
-                res = leftExpression.result() * rightExpression.result();
+                res = (long) leftExpression.result()
+                        * (long) rightExpression.result();
                 if (res > Integer.MAX_VALUE || res < Integer.MIN_VALUE) {
                     throw new CalculatorException("Overflow");
                 }
@@ -201,7 +208,8 @@ public class Expression {
                 String right = s.substring(i + 1);
                 Expression leftExpression = new Expression(left);
                 Expression rightExpression = new Expression(right);
-                res = leftExpression.result() / rightExpression.result();
+                res = (long) leftExpression.result()
+                        / (long) rightExpression.result();
                 if (res > Integer.MAX_VALUE || res < Integer.MIN_VALUE) {
                     throw new CalculatorException("Overflow");
                 }
@@ -213,12 +221,18 @@ public class Expression {
         if (s.charAt(0) == '+') {
             String newArg = s.substring(1);
             Expression number = new Expression(newArg);
-            return number.result();
+            long tempRes = number.result();
+            if (tempRes > Integer.MAX_VALUE || tempRes < Integer.MIN_VALUE) {
+                throw new CalculatorException("Overflow");
+            }
         }
         if (s.charAt(0) == '-') {
             String newArg = s.substring(1);
             Expression number = new Expression(newArg);
-            return -number.result();
+            long tempRes = -number.result();
+            if (tempRes > Integer.MAX_VALUE || tempRes < Integer.MIN_VALUE) {
+                throw new CalculatorException("Overflow");
+            }
         }
         if ((bracketPosRight == -1) && (bracketPosLeft == -1)) {
             int i = 0;
