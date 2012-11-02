@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.alexanderKuzmin.calculator
+package ru.fizteh.fivt.students.alexanderKuzmin.calculator;
 
 /**
  * @author Kuzmin A.
@@ -80,14 +80,14 @@ public class Calculator {
                 System.exit(1);
             }
         }
+        if (sum != 0) {
+            System.out.println("Error with parentheses.");
+            System.exit(1);
+        }
         StringBuilder resultNotation = new StringBuilder();
         Iterator<Character> it = outString.descendingIterator();
         while (it.hasNext()) {
             resultNotation.append(it.next());
-        }
-        if (sum != 0) {
-            System.out.println("Error with parentheses");
-            System.exit(1);
         }
         return resultNotation.toString();
     }
@@ -119,7 +119,8 @@ public class Calculator {
                 if (first) {
                     begin = i;
                     first = false;
-                } else if (!Character.isDigit(formula.charAt(i + 1))) {
+                }
+                if (!Character.isDigit(formula.charAt(i + 1))) {
                     stack.push(new BigInteger(formula.substring(begin, i + 1)));
                     first = true;
                 }
