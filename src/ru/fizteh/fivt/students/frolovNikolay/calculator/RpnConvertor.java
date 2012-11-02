@@ -90,6 +90,12 @@ public class RpnConvertor {
             }
             throw new Exception("Error! Incorrect arithmetic expression.");
         }
+        if (haveOp) {
+            throw new Exception("Error! Incorrect arithmetic expression");
+        }
+        if (haveNumb) {
+            result.append(' ');
+        }
         while (!stack.isEmpty()) {
             if (stack.getFirst() == '(') {
                 throw new Exception("Error! Brackets placed incorrectly.");
