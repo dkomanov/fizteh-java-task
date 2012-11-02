@@ -16,7 +16,7 @@ public class Calculator {
     // The method converts the string in RPN
     public String toPolishNotation(String formula) {
         if (formula.isEmpty()) {
-            System.out.println("Nothing input.");
+            System.err.println("Nothing input.");
             System.exit(1);
         }
         formula = "(" + formula + ")";
@@ -29,7 +29,7 @@ public class Calculator {
             if (formula.charAt(i) == ')') {
                 --sum;
                 if (sum < 0) {
-                    System.out.println("Error with parentheses");
+                    System.err.println("Error with parentheses");
                     System.exit(1);
                 }
                 number = false;
@@ -39,7 +39,7 @@ public class Calculator {
                     }
                     stack.pop(); // delete '('
                 } catch (Exception e1) {
-                    System.out
+                    System.err
                             .println("Error with stack(error with parentheses).");
                     System.exit(1);
                 }
@@ -49,7 +49,7 @@ public class Calculator {
                 stack.push('(');
             } else if (Character.isDigit(formula.charAt(i))) {
                 if (number) {
-                    System.out.println("Error with order of numbers.");
+                    System.err.println("Error with order of numbers.");
                     System.exit(1);
                 }
                 outString.push(formula.charAt(i));
@@ -74,14 +74,14 @@ public class Calculator {
                     stack.push(formula.charAt(i));
                 }
             } else if (!Character.isWhitespace(formula.charAt(i))) {
-                System.out
+                System.err
                         .println("Error with order of symbols. Unrecognized character: "
                                 + formula.charAt(i));
                 System.exit(1);
             }
         }
         if (sum != 0) {
-            System.out.println("Error with parentheses.");
+            System.err.println("Error with parentheses");
             System.exit(1);
         }
         StringBuilder resultNotation = new StringBuilder();
@@ -111,6 +111,10 @@ public class Calculator {
 
     // The method that calculate the expression by using Reverse Polish Notation
     private BigInteger solve(final String formula) {
+        if (formula.isEmpty()) {
+            System.err.println("Empty input.");
+            System.exit(1);
+        }
         ArrayDeque<BigInteger> stack = new ArrayDeque<BigInteger>();
         int begin = 0;
         boolean first = true;
@@ -134,8 +138,8 @@ public class Calculator {
                         try {
                             stack.push(stack.pop().divide(a));
                         } catch (Exception e3) {
-                            System.out
-                                    .print("Division by zero or another error with division!\n");
+                            System.err
+                                    .println("Division by zero or another error with division!\n");
                             System.exit(1);
                         }
                         break;
@@ -151,7 +155,7 @@ public class Calculator {
                         break;
                     }
                 } catch (Exception e3) {
-                    System.out.print("Error with operations.");
+                    System.err.println("Error with operations.");
                     System.exit(1);
                 }
             }
