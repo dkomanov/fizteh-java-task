@@ -194,11 +194,15 @@ public class Calculator {
                 s.push(parsedInput[i]);
             }
         }
+        if (s.size() == 1) {
+            if (Character.isDigit(s.peek().charAt(0))) {
+                wasCounted = true;
+            }
+        }
         if (!wasCounted) {
             throw new RuntimeException(
                     "there is nothing to count in this input string");
         }
-        int res = Integer.parseInt(s.pop());
-        return res;
+        return Integer.parseInt(s.pop());
     }
 }
