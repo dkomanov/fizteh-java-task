@@ -25,17 +25,17 @@ public class Calculator {
         char c = answer.correctSymbols();
         if (c != ' ') {
             System.out.println("Incorrect input symbol: " + c);
-            return;
+            System.exit(1);
         }
         int res = 0;
         try {
             res = answer.result();
         } catch (CalculatorException e) {
             System.out.println(e.getMessage());
-            return;
+            System.exit(1);
         } catch (ArithmeticException e) {
             System.out.println("Divide by zero");
-            return;
+            System.exit(1);
         }
         System.out.println(res);
     }
