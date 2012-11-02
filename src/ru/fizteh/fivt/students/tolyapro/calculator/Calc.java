@@ -125,6 +125,7 @@ public class Calc {
         }
         expr = builder.toString();
         expr = expr.replaceAll("\'|\"", "");
+        System.out.println(expr);
         if (!checkSpaces(expr)) {
             System.err.println("Incorrect input: Space between digits");
             System.exit(1);
@@ -153,8 +154,12 @@ public class Calc {
                 int result = Integer.parseInt(tokens[0]);
                 System.out.println(result);
                 System.exit(0);
+            } catch (NumberFormatException e) {
+                System.err
+                        .println("Error: incorrect mathematical expression(expression should not contain nonmath symbols or large integers)");
+                System.exit(1);
             } catch (Exception e) {
-                System.err.println("Error: " + e.getMessage());
+                System.err.println(e.getMessage());
                 System.exit(1);
             }
         }
