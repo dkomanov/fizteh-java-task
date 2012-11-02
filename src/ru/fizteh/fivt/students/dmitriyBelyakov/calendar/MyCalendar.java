@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.dmitriyBelyakov.calendar;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -13,45 +14,48 @@ public class MyCalendar {
         int month = -1;
         int year = -1;
         try {
-        for(int i = 0; i < args.length; ++i) {
-            String arg = args[i];
-            if(arg.equals("-w")) {
-                nOfWeek = true;
-            } else if(arg.equals("-t")) {
-                time = true;
-                timeZone = TimeZone.getTimeZone(args[++i]);
-            } else if(arg.equals("-m")) {
-                try {
-                    month = Integer.parseInt(args[++i]);
-                    if(month < 1 || month > 12) {
-                        throw new RuntimeException();
+            for (int i = 0; i < args.length; ++i) {
+                String arg = args[i];
+                if (arg.equals("-w")) {
+                    nOfWeek = true;
+                } else if (arg.equals("-t")) {
+                    time = true;
+                    timeZone = TimeZone.getTimeZone(args[++i]);
+                    if (!args[i].equals(timeZone.getID())) {
+                        throw new RuntimeException("incorrect time zone.");
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException("not a month number");
+                } else if (arg.equals("-m")) {
+                    try {
+                        month = Integer.parseInt(args[++i]);
+                        if (month < 1 || month > 12) {
+                            throw new RuntimeException();
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException("not a month number");
+                    }
+                } else if (arg.equals("-y")) {
+                    if (args[i + 1].length() != 4) {
+                        throw new RuntimeException("not a year number");
+                    }
+                    try {
+                        year = Integer.parseInt(args[++i]);
+                    } catch (Exception e) {
+                        throw new RuntimeException("not a year number");
+                    }
+                } else {
+                    System.err.println("Use: java Calendar [-m MONTH] [-y YEAR] [-w] [-t TIMEZONE]");
+                    System.exit(1);
                 }
-            } else if(arg.equals("-y")) {
-                if(args[i + 1].length() != 4) {
-                    throw new RuntimeException("not a year number");
-                }
-                try {
-                    year = Integer.parseInt(args[++i]);
-                } catch (Exception e) {
-                    throw new RuntimeException("not a year number");
-                }
-            } else {
-                System.err.println("Use: java Calendar [-m MONTH] [-y YEAR] [-w] [-t TIMEZONE]");
-                System.exit(1);
             }
-        }
-        if(month == -1) {
-            month = Calendar.getInstance().get(Calendar.MONTH);
-            year = Calendar.getInstance().get(Calendar.YEAR);
-        } else {
-            --month;
-        }
-        printCalendar(month, year, timeZone, nOfWeek, time);
+            if (month == -1) {
+                month = Calendar.getInstance().get(Calendar.MONTH);
+                year = Calendar.getInstance().get(Calendar.YEAR);
+            } else {
+                --month;
+            }
+            printCalendar(month, year, timeZone, nOfWeek, time);
         } catch (Throwable t) {
-            if(t.getLocalizedMessage() != null) {
+            if (t.getLocalizedMessage() != null) {
                 System.err.println(t.getLocalizedMessage());
             } else {
                 System.err.println("Error: unknown.");
@@ -74,7 +78,8 @@ public class MyCalendar {
             System.out.print(getDayOfWeekName(i) + '\t');
         }
         System.out.println();
-        int firstNOfWeek = calendar.get(Calendar.WEEK_OF_YEAR) - calendar.get(Calendar.WEEK_OF_MONTH);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        int firstNOfWeek = calendar.get(Calendar.WEEK_OF_YEAR);
         if (nOfWeek) {
             System.out.print(firstNOfWeek + "\t");
             ++firstNOfWeek;
@@ -99,8 +104,8 @@ public class MyCalendar {
             System.out.println();
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             simpleDateFormat.setTimeZone(timeZone);
-            System.out.println("Now: " + simpleDateFormat.format(Calendar.getInstance().getTime())
-                    + " " + timeZone.getDisplayName(Locale.getDefault()));
+            System.out.println("Now: " + simpleDateFormat.format(new Date().getTime())
+                    + " " + timeZone.getDisplayName());
         }
     }
 
@@ -108,7 +113,7 @@ public class MyCalendar {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DAY_OF_WEEK, dayNum);
         String res = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());
-        if(res.length() > 2) {
+        if (res.length() > 2) {
             return res.substring(0, 2);
         } else {
             return res;
