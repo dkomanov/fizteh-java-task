@@ -83,8 +83,9 @@ public class Calculator {
                 if (i != str.length() - 1
                         && !Character.isDigit(str.charAt(i + 1))) {
                     builder.append(",");
-                } else if (i == str.length() - 1)
+                } else if (i == str.length() - 1) {
                     builder.append(",");
+                }
             } else {
                 if (str.charAt(i) == '(') {
                     s.push(str.charAt(i));
@@ -97,8 +98,9 @@ public class Calculator {
                                     || ((s.peek() == '-' || s.peek() == '+') && (str
                                             .charAt(i) == '-' || str.charAt(i) == '+'))) {
                                 builder.append(s.pop().charValue()).append(",");
-                            } else
+                            } else {
                                 break;
+                            }
                             if (s.isEmpty() || s.peek() == '(') {
                                 break;
                             }
@@ -120,8 +122,9 @@ public class Calculator {
             if (i == str.length() - 1) {
                 while (!s.isEmpty()) {
                     cur = s.pop().charValue();
-                    if (cur != '(')
+                    if (cur != '(') {
                         builder.append(cur).append(",");
+                    }
                 }
             }
         }
