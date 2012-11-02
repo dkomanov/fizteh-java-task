@@ -37,7 +37,10 @@ public class Calc {
             }
         }
         return true;
+    }
 
+    public static boolean checkBadSymbols(String s) {
+        return !(s.matches(".*[^+-\\\\*/0-9()\\s\"].*"));
     }
 
     public static boolean checkSpaces(String s) {
@@ -125,6 +128,10 @@ public class Calc {
         }
         expr = builder.toString();
         expr = expr.replaceAll("\'|\"", "");
+        if (!checkBadSymbols(expr)) {
+            System.err.println("Incorrect input: Expression contains letters or nonmath symbols");
+            System.exit(1);
+        }
         if (!checkSpaces(expr)) {
             System.err.println("Incorrect input: Space between digits");
             System.exit(1);
@@ -134,7 +141,7 @@ public class Calc {
             System.err.println("Incorrect input: Brackets error");
             System.exit(1);
         }
-        if (expr.isEmpty()) {
+        if (expr.isEmpty()) {//
             System.err
                     .println("Usage: calc (expression with numbers, (), +, - , *, /)");
             System.exit(1);
