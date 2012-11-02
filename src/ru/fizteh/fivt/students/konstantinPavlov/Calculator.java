@@ -113,7 +113,10 @@ public class Calculator {
                             }
                         } else {
                             if (!Character.isWhitespace(str.charAt(i))) {
-                                return "";
+                                throw new RuntimeException(
+                                        "incorrect character \""
+                                                + str.charAt(i)
+                                                + "\" in input expression");
                             }
                         }
                     }
@@ -137,7 +140,7 @@ public class Calculator {
     }
 
     private static int calculate(String[] parsedInput) throws RuntimeException {
-        int res;
+        boolean wasCounted = false;
         LinkedList<String> s = new LinkedList<String>();
         s.push(parsedInput[0]);
         for (int i = 1; i < parsedInput.length; ++i) {
@@ -185,12 +188,17 @@ public class Calculator {
                         }
                         s.push(Integer.toString(cur));
                     }
+                    wasCounted = true;
                 }
             } else {
                 s.push(parsedInput[i]);
             }
         }
-        res = Integer.parseInt(s.pop());
+        if (!wasCounted) {
+            throw new RuntimeException(
+                    "there is nothing to count in this input string");
+        }
+        int res = Integer.parseInt(s.pop());
         return res;
     }
 }
