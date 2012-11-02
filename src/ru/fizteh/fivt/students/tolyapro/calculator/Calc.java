@@ -125,7 +125,6 @@ public class Calc {
         }
         expr = builder.toString();
         expr = expr.replaceAll("\'|\"", "");
-        System.out.println(expr);
         if (!checkSpaces(expr)) {
             System.err.println("Incorrect input: Space between digits");
             System.exit(1);
