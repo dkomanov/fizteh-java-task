@@ -47,30 +47,27 @@ public class MyCalendar {
                     System.exit(1);
                 }
             }
-            if (month == -1) {
-                month = Calendar.getInstance().get(Calendar.MONTH);
-                year = Calendar.getInstance().get(Calendar.YEAR);
-            } else {
-                --month;
+            Calendar calendar = Calendar.getInstance();
+            if (month != -1) {
+                calendar.set(Calendar.MONTH, --month);
             }
-            printCalendar(month, year, timeZone, nOfWeek, time);
+            if (year != -1) {
+                calendar.set(Calendar.YEAR, year);
+            }
+            calendar.setTimeZone(timeZone);
+            printCalendar(calendar, timeZone, nOfWeek, time);
         } catch (Throwable t) {
             if (t.getLocalizedMessage() != null) {
-                System.err.println(t.getLocalizedMessage());
+                System.err.println("Error: " + t.getLocalizedMessage());
             } else {
                 System.err.println("Error: unknown.");
             }
         }
     }
 
-    private static void printCalendar(int month, int year, TimeZone timeZone, boolean nOfWeek, boolean time) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeZone(timeZone);
-        calendar.set(Calendar.MONTH, month);
-        calendar.set(Calendar.YEAR, year);
+    private static void printCalendar(Calendar calendar, TimeZone timeZone, boolean nOfWeek, boolean time) {
         System.out.println("\t\t" + calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()) + " "
                 + calendar.get(Calendar.YEAR));
-        calendar.setFirstDayOfWeek(Calendar.MONDAY);
         if (nOfWeek) {
             System.out.print("\t");
         }
@@ -80,24 +77,32 @@ public class MyCalendar {
         System.out.println();
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         int firstNOfWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+        int maxWeekNum = calendar.getActualMaximum(Calendar.WEEK_OF_YEAR);
         if (nOfWeek) {
             System.out.print(firstNOfWeek + "\t");
             ++firstNOfWeek;
         }
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
         int firstDay = calendar.get(Calendar.DAY_OF_WEEK);
+        if (firstDay - calendar.getFirstDayOfWeek() < 0) {
+            firstDay += 7;
+        }
         for (int i = 0; i < firstDay - calendar.getFirstDayOfWeek(); ++i) {
             System.out.print("\t");
         }
-        for (int i = 1; i <= 31; ++i) {
-            System.out.print(i + "\t");
-            if ((i + firstDay - calendar.getFirstDayOfWeek()) % 7 == 0) {
+        for (int currDayInMonth = calendar.getActualMinimum(Calendar.DAY_OF_MONTH),
+                    lastDayInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH); currDayInMonth <= lastDayInMonth;
+                            ++currDayInMonth) {
+            if ((currDayInMonth + firstDay - calendar.getFirstDayOfWeek() - 1) % 7 == 0) {
                 System.out.println();
-                if (nOfWeek && i != 31) {
+                if (nOfWeek) {
+                    if (firstNOfWeek > maxWeekNum) {
+                        firstNOfWeek = 1;
+                    }
                     System.out.print(firstNOfWeek + "\t");
                     ++firstNOfWeek;
                 }
             }
+            System.out.print(currDayInMonth + "\t");
         }
         System.out.println();
         if (time) {
