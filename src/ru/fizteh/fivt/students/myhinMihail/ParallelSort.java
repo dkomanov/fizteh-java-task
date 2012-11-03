@@ -61,23 +61,13 @@ public class ParallelSort {
         
     }
     
-    public static <T extends Closeable> void tryClose(T object) {
-        if (object != null) {
-            try {
-                  object.close();
-            } catch (Exception ex) {
-                System.err.println("Error: " + ex.getMessage());
-            }
-        }
-    }
-    
     public static void merge(List<String> inList, int low, int mid, int high) {
         List<String> mergeList = new ArrayList<String>();
         int h = low, j = mid, k;
             
         while (h < mid && j < high) {
-            if ((notCaseSensitive && inList.get(h).compareTo(inList.get(j)) <= 0) || 
-                    (!notCaseSensitive && String.CASE_INSENSITIVE_ORDER.compare(inList.get(h), inList.get(j)) <= 0)) {                    
+            if ((!notCaseSensitive && inList.get(h).compareTo(inList.get(j)) <= 0) || 
+                    (notCaseSensitive && String.CASE_INSENSITIVE_ORDER.compare(inList.get(h), inList.get(j)) <= 0)) {                    
                 mergeList.add(inList.get(h));
                 h++;
             } else {
@@ -91,12 +81,12 @@ public class ParallelSort {
                 mergeList.add(inList.get(k)); 
             }
        } else {
-            for  (k = h; k < mid; k++) {
-                 mergeList.add(inList.get(k)); 
+            for (k = h; k < mid; k++) {
+                mergeList.add(inList.get(k)); 
             }
        }
 
-       for(k = low; k < high; k++) {
+       for (k = low; k < high; k++) {
             inList.set(k, mergeList.get(k-low));
        }
 
@@ -185,7 +175,7 @@ public class ParallelSort {
             System.err.println("Error: can not open " + file);
             System.exit(1);
         }
-        
+
         try {
             fr = new FileReader(file);
             reader = new BufferedReader(fr);
@@ -196,8 +186,8 @@ public class ParallelSort {
             } 
                 
         } finally {
-            tryClose(fr);
-            tryClose(reader);
+            Utils.tryClose(fr);
+            Utils.tryClose(reader);
         }    
     }
         
@@ -222,7 +212,7 @@ public class ParallelSort {
                     osw = new OutputStreamWriter(fos);
                     out = new BufferedWriter(osw);
                 } catch (Exception e) {
-                    tryClose(out);
+                    Utils.tryClose(out);
                     System.err.println("Can not write to " + output + "\n" + e.getMessage());
                     System.exit(1);
                 }
@@ -323,7 +313,11 @@ public class ParallelSort {
                 }
                 
             } else {
-                Collections.sort(list);
+                if (notCaseSensitive) {
+                    Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
+                } else {
+                    Collections.sort(list);
+                }
             }
             
             out.write(list.get(0) + separator);
@@ -347,7 +341,7 @@ public class ParallelSort {
             System.err.println("Error: " + expt.getMessage());
         } finally {
             if (!output.isEmpty()) {
-                tryClose(out);
+                Utils.tryClose(out);
             } else {
                 try {
                     out.flush();
@@ -356,8 +350,8 @@ public class ParallelSort {
                 }
             }
             
-            tryClose(osw);
-            tryClose(fos);
+            Utils.tryClose(osw);
+            Utils.tryClose(fos);
         }
         
     }
