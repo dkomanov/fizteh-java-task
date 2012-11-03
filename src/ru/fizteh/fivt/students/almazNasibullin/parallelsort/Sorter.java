@@ -31,8 +31,7 @@ public class Sorter implements Runnable {
             result.add(lines.get(i));
         }
         if (withoutReg) {
-            MyComparator myComparator = new MyComparator();
-            Collections.sort(result, myComparator);
+            Collections.sort(result, String.CASE_INSENSITIVE_ORDER);
         } else {
             Collections.sort(result);
         }

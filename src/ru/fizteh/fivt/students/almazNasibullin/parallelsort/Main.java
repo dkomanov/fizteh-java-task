@@ -9,9 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
@@ -176,9 +174,7 @@ public class Main {
         } catch (Exception e) {
             LoUtils.printErrorAndExit("Bad reading from BufferedReader: " + e.getMessage());
         } finally {
-            if (fromConsole) {
-                LoUtils.closeOrExit(System.in);
-            } else {
+            if (!fromConsole) {
                 LoUtils.closeOrExit(fr);
             }
             LoUtils.closeOrExit(br);
