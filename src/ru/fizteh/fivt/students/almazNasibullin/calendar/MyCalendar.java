@@ -151,7 +151,7 @@ public class MyCalendar {
         String[] days = new DateFormatSymbols().getShortWeekdays();
         
         // длина наибольшего слова среди сокращенных дней недель
-        int maxLengthOfday = 2;
+        int maxLengthOfday = 0;
 
         for (int i = 0; i < days.length; ++i) {
             if (days[i].length() > maxLengthOfday) {
@@ -178,6 +178,10 @@ public class MyCalendar {
         // печатаем дни недели
         printDaysOfWeek(days, maxLengthOfday);
 
+        if (maxLengthOfday < 2) {
+            maxLengthOfday = 2;
+        }
+        
         int weekOfYear = getWeekOfYear(calendar);
         int dayOfMonth = calendar.getActualMinimum(Calendar.DAY_OF_MONTH);
         int dayOfWeek = getDayOfWeek(calendar);
