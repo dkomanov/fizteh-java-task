@@ -1,7 +1,11 @@
 package ru.fizteh.fivt.students.almazNasibullin.calendar;
 
+import java.text.DateFormat;
+import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.StringTokenizer;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
 
 /**
@@ -48,7 +52,7 @@ public class MyCalendar {
             calendar.setTimeZone(tz);
         }
 
-        printCalendar(calendar, weak,timeZone);
+        printCalendar(calendar, weak,timeZone, tz);
     }
 
     public static void readArguments(String[] args, WrapperPrimitive<Integer> month,
@@ -123,25 +127,56 @@ public class MyCalendar {
         }
     }
 
-    public static void printCalendar(Calendar calendar, WrapperPrimitive<Boolean> weak,
-            WrapperPrimitive<String> timeZone) {
-        String[] months = {"January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"};
-
-        String[] days = {"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
-
-        if (weak.t) {
-            System.out.print("   ");
+    public static void printSpace(int count) {
+        for (int i = 0; i < count; ++i) {
+            System.out.print(" ");
         }
-        System.out.println("   " + months[calendar.get(Calendar.MONTH)] + " "
-                + calendar.get(Calendar.YEAR)); // печатаем месяц и год
-        if (weak.t) {
-            System.out.print("   ");
-        }
-        for (int i = 0; i < days.length; ++i) {
-            System.out.print(days[i] + " "); // печатаем дни недели
+    }
+
+    public static void printDaysOfWeek(String[] days, int maxLengthOfday) {
+        int[] indexOfDays = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
+        Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY};
+
+        for (int i = 0; i < indexOfDays.length; ++i) {
+            printSpace(maxLengthOfday - days[indexOfDays[i]].length());
+            System.out.print(days[indexOfDays[i]] + " ");
         }
         System.out.println();
+    }
+
+    public static void printCalendar(Calendar calendar, WrapperPrimitive<Boolean> weak,
+            WrapperPrimitive<String> timeZone, TimeZone tz) {
+        String[] months = new DateFormatSymbols().getMonths();
+
+        String[] days = new DateFormatSymbols().getShortWeekdays();
+        
+        // длина наибольшего слова среди сокращенных дней недель
+        int maxLengthOfday = 2;
+
+        for (int i = 0; i < days.length; ++i) {
+            if (days[i].length() > maxLengthOfday) {
+                maxLengthOfday = days[i].length();
+            }
+        }
+
+        if (weak.t) {
+            printSpace(3);
+        }
+
+        int countOfSpaceBeforeMonth = (maxLengthOfday + 1) * 7 -
+                months[calendar.get(Calendar.MONTH)].length() -
+                Integer.toString(calendar.get(Calendar.YEAR)).length() - 1;
+        printSpace(countOfSpaceBeforeMonth / 2);
+
+        System.out.println(months[calendar.get(Calendar.MONTH)] + " "
+                + calendar.get(Calendar.YEAR)); // печатаем месяц и год
+
+        if (weak.t) {
+            printSpace(3);
+        }
+
+        // печатаем дни недели
+        printDaysOfWeek(days, maxLengthOfday);
 
         int weekOfYear = getWeekOfYear(calendar);
         int dayOfMonth = calendar.getActualMinimum(Calendar.DAY_OF_MONTH);
@@ -149,52 +184,48 @@ public class MyCalendar {
 
         if (weak.t) {
             if (weekOfYear <= 9) {
-                System.out.print(" ");
+                printSpace(1);
             }
             System.out.print(weekOfYear + " ");
             if (calendar.get(Calendar.MONTH) == Calendar.JANUARY) {
                 // если текущий месяц январь, то номер недели в году, начиная со второй,
                 //  возможно придется поменять
-                if (dayOfWeek > 1) {
+                if (weekOfYear > 1) {
                     weekOfYear = 0;
-                } else {
-                    weekOfYear = 1;
                 }
             }
         }
+
         for (int i = 1; i < dayOfWeek; ++i) {
-            System.out.print("   ");
+            printSpace(maxLengthOfday + 1);
         }
+
         while (dayOfMonth <= calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
             // печатаем все дни месяца
             if (dayOfWeek == 8) { // новая неделя
                 dayOfWeek = 1;
                 System.out.println();
-                 ++weekOfYear;
+                ++weekOfYear;
                 if (weak.t) {
                     if (weekOfYear <= 9) {
-                        System.out.print(" ");
+                        printSpace(1);
                     }
                     System.out.print(weekOfYear + " ");
                 }
             }
-            if (dayOfMonth <= 9) {
-                System.out.print(" ");
-            }
+            printSpace(maxLengthOfday - Integer.toString(dayOfMonth).length());
             System.out.print(dayOfMonth + " ");
             ++dayOfMonth;
             ++dayOfWeek;
         }
         System.out.println();
 
-        if (!timeZone.t.equals("")) { // печатаем дату и время в указанной временной зоне
+        if (tz != null) { // печатаем дату и время в указанной временной зоне
             System.out.println();
-            System.out.print("Now: " + calendar.get(Calendar.YEAR) + "." +
-                    (calendar.get(Calendar.MONTH) + 1) + "." +
-                    calendar.get(Calendar.DAY_OF_MONTH) + " ");
-            System.out.print(calendar.get(Calendar.HOUR_OF_DAY) + ":" +
-                    calendar.get(Calendar.MINUTE) + ":" + calendar.get(Calendar.SECOND));
-            System.out.println(" " + calendar.getTimeZone().getDisplayName());
+            DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+            dateFormat.setTimeZone(tz);
+            System.out.print("Now: " + dateFormat.format(new Date()) + " ");
+            System.out.println(calendar.getTimeZone().getDisplayName());
         }
     }
 
