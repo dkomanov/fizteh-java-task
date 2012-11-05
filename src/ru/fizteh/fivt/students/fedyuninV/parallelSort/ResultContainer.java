@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.fedyuninV.parallelSort;
 
 import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.FileWriter;
 import java.io.OutputStreamWriter;
 import java.util.*;
@@ -13,6 +14,16 @@ public class ResultContainer {
 
     private SortedMap<String, Integer> container = null;
 
+    private static <T extends Closeable> void tryClose(T stream) {
+        if (stream != null) {
+            try {
+                stream.close();
+            } catch (Exception ex) {
+                System.err.println(ex.getMessage());
+                System.exit(1);
+            }
+        }
+    }
 
     public ResultContainer(boolean ignoreCase) {
         if (ignoreCase) {
@@ -27,7 +38,6 @@ public class ResultContainer {
             return;
         }
         for (SortedMap.Entry<String, Integer> entry: given.container.entrySet()) {
-            //System.out.println(entry.getKey());
             Integer currCount = container.get(entry.getKey());
             if (currCount != null) {
                 container.put(entry.getKey(), currCount + entry.getValue());
@@ -76,20 +86,9 @@ public class ResultContainer {
             System.err.println(ex.getMessage());
             System.exit(1);
         } finally {
-            try {
-                if (fWriter != null) {
-                    fWriter.close();
-                }
-                if (writer != null) {
-                    writer.close();
-                }
-                if (oStreamWriter != null) {
-                    oStreamWriter.close();
-                }
-            } catch (Exception exc) {
-                System.err.println(exc.getMessage());
-                System.exit(1);
-            }
+            tryClose(fWriter);
+            tryClose(writer);
+            tryClose(oStreamWriter);
         }
     }
 

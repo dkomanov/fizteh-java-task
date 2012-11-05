@@ -1,6 +1,9 @@
 package ru.fizteh.fivt.students.fedyuninV.parallelSort;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Fedyunin Valeriy
@@ -58,36 +61,31 @@ public class ParallelSort {
     }
 
     public static void main(String[] args) throws Exception{
-        //args = new String[1];
-        //args[0] = "../input.txt";
         maxSorters = Runtime.getRuntime().availableProcessors();
-        BlockingQueue<ArrayList<String>> queue = new BlockingQueue<ArrayList<String>>();
-        ThreadPool sorters = null;
-        ThreadPool readers = null;
+        ExecutorService sorters = null;
+        ExecutorService readers = null;
         int firstFileIndex;
         if (args.length == 0  ||  (firstFileIndex = parseOptions(args)) == args.length) {
             maxReaders = 1;
-            sorters = new ThreadPool(maxSorters);
-            readers = new ThreadPool(maxReaders);
+            sorters = Executors.newFixedThreadPool(maxSorters);
+            readers = Executors.newFixedThreadPool(maxReaders);
             finish = new ResultContainer(ignoreCase);
-            readers.add(new Reader(null, sorters, ignoreCase, finish));
+            readers.execute(new Reader(null, sorters, ignoreCase, finish));
         } else {
             if (args.length - firstFileIndex < maxReaders) {
-                maxReaders = args.length - firstFileIndex;
+                maxReaders = 2; //it seems to be the best variant
             }
-            sorters = new ThreadPool(maxSorters);
-            readers = new ThreadPool(maxReaders);
+            sorters = Executors.newFixedThreadPool(maxSorters);
+            readers = Executors.newFixedThreadPool(maxReaders);
             finish = new ResultContainer(ignoreCase);
             for (int i = firstFileIndex; i < args.length; i++) {
-                readers.add(new Reader(args[i], sorters, ignoreCase, finish));
+                readers.execute(new Reader(args[i], sorters, ignoreCase, finish));
             }
         }
-        //System.out.println("OK");
-        readers.start();
-        readers.join();
-        //System.out.println("OK");
-        sorters.start();
-        sorters.join();
+        readers.shutdown();
+        while(!readers.isTerminated());
+        sorters.shutdown();
+        while(!sorters.isTerminated());
         finish.print(unique, fileName);
         return;
     }

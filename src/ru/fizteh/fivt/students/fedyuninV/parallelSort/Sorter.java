@@ -21,14 +21,9 @@ public class Sorter implements Runnable{
 
     public void run() {
         ResultContainer result = new ResultContainer(ignoreCase);
-        //System.out.println(container.size());
-        /*for (int i = 0; i < container.size(); i++) {
-            System.out.println(container.get(i));
-        }*/
         while (!container.isEmpty()) {
             result.add(container.remove(container.size() - 1));
         }
-        //result.print(true, null);
         synchronized (finish) {
             finish.add(result);
         }
