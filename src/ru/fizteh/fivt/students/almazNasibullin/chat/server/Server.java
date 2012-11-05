@@ -265,8 +265,7 @@ public class Server {
                                 Iterator it = clients.entrySet().iterator();
                                 while (it.hasNext()) {
                                     Map.Entry pair = (Map.Entry)it.next();
-                                    sb.append("\n");
-                                    sb.append((String)pair.getKey());
+                                    sb.append("\n").append((String)pair.getKey());
                                 }
                                 sendMessageAll(clients, nick + " is online", "server");
                                 String msg = "";
