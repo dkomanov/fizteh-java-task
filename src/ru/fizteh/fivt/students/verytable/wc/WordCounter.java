@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.verytable.wc;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class WordCounter {
         } catch (Exception ex1) {
             System.err.println(fileName + " failed to open.");
             try {
-                fr.close();
+                closeFile(fileName, fr);
             } catch (Exception ex2) {
                 System.out.println(fileName + " failed to close.");
                 throw ex2;
@@ -42,10 +43,10 @@ public class WordCounter {
     }
 
     static void closeFile(String fileName,
-                          BufferedReader br) throws IOException {
+                          Closeable closeable) throws IOException {
         try {
-            if(br != null) {
-                br.close();
+            if(closeable != null) {
+                closeable.close();
             }
         } catch (IOException ex) {
             System.err.println(fileName + " failed to close.");
