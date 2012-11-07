@@ -1,8 +1,12 @@
-package ru.fizteh.fivt.students.yushkevichAnton;
-
 import java.io.*;
 import java.util.*;
  
+/**
+ * Created with IntelliJ IDEA.
+ * Author: Abrackadabra
+ * Date: 05/11/12
+ * Time: 23:43
+ */
 public class WordCounter {
     public static void main(String[] args) {
         Mode mode = Mode.WORD_COUNTER;
@@ -12,6 +16,10 @@ public class WordCounter {
         int start = 0;
         for (; start < args.length && args[start].startsWith("-"); start++) {
             String s = args[start];
+            if (s.length() == 0) {
+                System.err.println("Empty key.");
+                System.exit(1);
+            }
             for (int j = 1; j < s.length(); j++) {
                 char c = s.charAt(j);
                 switch (c) {
@@ -32,13 +40,14 @@ public class WordCounter {
                         break;
                     default:
                         System.err.println("Unknown key " + c + ".");
+                        System.exit(1);
                 }
             }
         }
  
         if (start == args.length) {
             System.err.println("At least one file argument required.");
-            return;
+            System.exit(1);
         }
  
         if (appendResult) {
@@ -83,6 +92,7 @@ public class WordCounter {
                 }
                 counter.add(s);
             }
+            superScanner.close();
         }
         System.out.println(counter);
     }
@@ -110,7 +120,7 @@ class SuperScanner {
         }
     }
  
-    boolean hasMoreTokens() {
+    public boolean hasMoreTokens() {
         while (stringTokenizer == null || !stringTokenizer.hasMoreTokens()) {
             String s = nextLine();
             if (s == null) {
@@ -119,6 +129,14 @@ class SuperScanner {
             stringTokenizer = new StringTokenizer(s, delimiters);
         }
         return true;
+    }
+ 
+    public void close() {
+        try {
+            bufferedReader.close();
+        } catch (Exception e) {
+ 
+        }
     }
 }
  
@@ -138,10 +156,15 @@ class Counter {
  
     public Counter(Persnicketiness persnicketiness) {
         this.persnicketiness = persnicketiness;
+        if (persnicketiness == Persnicketiness.UNIQUE_ANYCASE) {
+            map = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
+        } else {
+            map = new TreeMap<String, Integer>();
+        }
     }
  
-    private final HashMap<String, Integer> map = new HashMap<String, Integer>();
-    private int count;
+    private final TreeMap<String, Integer> map;
+    private       int                      count;
  
     @Override
     public String toString() {
@@ -162,9 +185,6 @@ class Counter {
         if (persnicketiness == Persnicketiness.ALL) {
             count++;
             return;
-        }
-        if (persnicketiness == Persnicketiness.UNIQUE_ANYCASE) {
-            string = string.toLowerCase();
         }
         Integer res = map.get(string);
         if (res == null) {
