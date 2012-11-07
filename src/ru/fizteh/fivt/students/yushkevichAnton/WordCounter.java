@@ -1,12 +1,8 @@
+package ru.fizteh.fivt.students.yushkevichAnton;
+
 import java.io.*;
 import java.util.*;
  
-/**
- * Created with IntelliJ IDEA.
- * Author: Abrackadabra
- * Date: 05/11/12
- * Time: 23:43
- */
 public class WordCounter {
     public static void main(String[] args) {
         Mode mode = Mode.WORD_COUNTER;
