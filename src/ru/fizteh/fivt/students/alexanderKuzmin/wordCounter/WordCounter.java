@@ -32,7 +32,7 @@ public class WordCounter {
             try {
                 stream.close();
             } catch (IOException e) {
-                printErrAndExit(e.getClass().getName().toString());
+                printErrAndExit(e.getMessage());
             }
         }
     }
@@ -86,7 +86,7 @@ public class WordCounter {
                         }
                     }
                 } catch (Exception e) {
-                    printErrAndExit(e.getClass().getName().toString());
+                    printErrAndExit(e.getMessage());
                 } finally {
                     closeStream(fReader);
                     closeStream(bReader);
