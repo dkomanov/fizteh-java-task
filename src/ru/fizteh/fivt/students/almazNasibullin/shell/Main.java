@@ -65,7 +65,10 @@ public class Main {
                 if (st.hasMoreTokens()) {
                     // проверка на наличие аргуметов для данной команды
                     String path = st.nextToken();
-                    cdExecute(path);
+                    StringTokenizer stSecond = new StringTokenizer(path, "/");
+                    while (stSecond.hasMoreTokens()) {
+                        cdExecute(stSecond.nextToken());
+                    }
                 } else {
                     System.err.println("Usage: cd <absolute path|relative path>");
                     System.exit(1);
@@ -187,6 +190,14 @@ public class Main {
     }
 
     public static void rmExecute(String fileName) { // выполнение команды 'rm'
+        if (fileName.equals("..")) {
+            System.out.println("rm: cannot remove directory: `..'");
+            System.exit(1);
+        }
+        if (fileName.equals(".")) {
+            System.out.println("rm: cannot remove directory: `.'");
+            System.exit(1);
+        }
         File f = new File(fileName).getAbsoluteFile();
         if (f.exists()) {
             if (f.isDirectory()) {
