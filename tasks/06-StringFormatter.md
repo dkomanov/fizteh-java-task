@@ -40,6 +40,9 @@
 
 ### Варианты
 Разные варианты реализуют StringFormatterExtension для разных типов
+Типы Integer, Long, Float, Double и BigInteger необходимо форматировать
+с помощью java.util.Formatter (формат без %).
+
 #### 1
 * java.util.Date (с помощью SimpleDateFormat)
 * java.lang.Integer

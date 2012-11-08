@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.verytable.wc;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -18,30 +19,35 @@ import java.util.StringTokenizer;
 
 public class WordCounter {
 
-    static BufferedReader openFile(String fileName) throws IOException {
+    static BufferedReader openFile(String fileName) throws Exception {
         BufferedReader br = null;
         FileReader fr = null;
         try {
             fr = new FileReader(fileName);
-            br = new BufferedReader(fr);
-        } catch (IOException ex) {
+        } catch (Exception frEx) {
+            System.err.println(fileName + " failed to open");
+            throw frEx;
+        }
+        try {
+             br = new BufferedReader(fr);
+        } catch (Exception ex1) {
             System.err.println(fileName + " failed to open.");
             try {
-                fr.close();
-                br.close();
-            } catch (NullPointerException ex1) {
-                System.out.println(" failed to close");
-                throw ex1;
+                closeFile(fileName, fr);
+            } catch (Exception ex2) {
+                System.out.println(fileName + " failed to close.");
+                throw ex2;
             }
-            throw ex;
         }
         return br;
     }
 
     static void closeFile(String fileName,
-                          BufferedReader br) throws IOException {
+                          Closeable closeable) throws IOException {
         try {
-            br.close();
+            if(closeable != null) {
+                closeable.close();
+            }
         } catch (IOException ex) {
             System.err.println(fileName + " failed to close.");
             throw ex;
@@ -148,7 +154,7 @@ public class WordCounter {
                 while (it.hasNext()) {
                     me = (Map.Entry) it.next();
                     System.out.println(me.getKey() + " "
-                                       + me.getValue() + "\n");
+                                       + me.getValue());
                 }
             } else {
                 for (int i = lastKeyPosition + 1; i < data.length; ++i) {
@@ -195,7 +201,7 @@ public class WordCounter {
                         while (it.hasNext()) {
                             me = (Map.Entry) it.next();
                             System.out.println(me.getKey() + " "
-                                               + me.getValue() + "\n");
+                                               + me.getValue());
                         }
                     }
                 }
