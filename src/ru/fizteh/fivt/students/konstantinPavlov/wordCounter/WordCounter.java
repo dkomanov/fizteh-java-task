@@ -1,12 +1,13 @@
 package ru.fizteh.fivt.students.konstantinPavlov;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class WordCounter {
 
@@ -19,8 +20,7 @@ public class WordCounter {
     static int globalLinesAmount = 0;
     static int globalWordsAmount = 0;
 
-    static Map<String, Integer> globalMap = new HashMap<String, Integer>();
-    static Map<String, String> globalLowerCaseMap = new HashMap<String, String>();
+    static Map<String, Integer> globalMap;
 
     private static BufferedReader bufferedReader;
 
@@ -42,11 +42,15 @@ public class WordCounter {
             String str;
             int localLinesAmount = 0;
             int localWordsAmount = 0;
-            Map<String, Integer> localMap = new HashMap<String, Integer>();
-            Map<String, String> localLowerCaseMap = new HashMap<String, String>();
+            Map<String, Integer> localMap;
+            if (settingNoRegister) {
+                localMap = new TreeMap<String, Integer>(
+                        String.CASE_INSENSITIVE_ORDER);
+            } else {
+                localMap = new TreeMap<String, Integer>();
+            }
 
             // start analyzing
-            String searchString;
             while ((str = bufferedReader.readLine()) != null) {
 
                 if (settingW) {
@@ -58,53 +62,29 @@ public class WordCounter {
 
                     for (int i = 0; i < arrayOfWords.length; ++i) {
                         // add word to our map
-                        if (settingNoRegister) {
-                            searchString = arrayOfWords[i].toLowerCase();
-                        } else {
-                            searchString = arrayOfWords[i];
-                        }
 
                         if (!settingA) {
-                            if (localMap.containsKey(searchString)
-                                    && !searchString.equals(" ")
-                                    && !searchString.equals("\t")) {
+                            if (localMap.containsKey(arrayOfWords[i])) {
                                 ++localWordsAmount;
-                                localMap.put(searchString,
-                                        localMap.get(searchString) + 1);
+                                localMap.put(arrayOfWords[i],
+                                        localMap.get(arrayOfWords[i]) + 1);
                             } else {
-                                if (!searchString.equals(" ")
-                                        && !searchString.equals("\t")) {
-                                    ++localWordsAmount;
-                                    localMap.put(searchString, 1);
-                                    localLowerCaseMap.put(searchString,
-                                            arrayOfWords[i]);
-                                }
+                                ++localWordsAmount;
+                                localMap.put(arrayOfWords[i], 1);
                             }
                         } else {
-                            if (globalMap.containsKey(searchString)
-                                    && !searchString.equals(" ")
-                                    && !searchString.equals("\t")) {
+                            if (globalMap.containsKey(arrayOfWords[i])) {
                                 ++globalWordsAmount;
-                                globalMap.put(searchString,
-                                        globalMap.get(searchString) + 1);
+                                globalMap.put(arrayOfWords[i],
+                                        globalMap.get(arrayOfWords[i]) + 1);
                             } else {
-                                if (!searchString.equals(" ")
-                                        && !searchString.equals("\t")) {
-                                    ++globalWordsAmount;
-                                    globalMap.put(searchString, 1);
-                                    globalLowerCaseMap.put(searchString,
-                                            arrayOfWords[i]);
-                                }
+                                ++globalWordsAmount;
+                                globalMap.put(arrayOfWords[i], 1);
                             }
                         }
                     }
                 } else {
                     // count lines
-                    if (settingNoRegister) {
-                        searchString = str.toLowerCase();
-                    } else {
-                        searchString = str;
-                    }
 
                     if (!settingNoRegister && !settingRegister) {
                         if (!settingA) {
@@ -115,25 +95,19 @@ public class WordCounter {
                     } else {
                         // count lines without register
                         if (!settingA) {
-                            if (localMap.containsKey(searchString)
-                                    && !searchString.isEmpty()) {
-                                localMap.put(searchString,
-                                        localMap.get(searchString) + 1);
+                            if (localMap.containsKey(str) && !str.isEmpty()) {
+                                localMap.put(str, localMap.get(str) + 1);
                             } else {
-                                if (!searchString.isEmpty()) {
-                                    localMap.put(searchString, 1);
-                                    localLowerCaseMap.put(searchString, str);
+                                if (!str.isEmpty()) {
+                                    localMap.put(str, 1);
                                 }
                             }
                         } else {
-                            if (globalMap.containsKey(searchString)
-                                    && !searchString.isEmpty()) {
-                                globalMap.put(searchString,
-                                        globalMap.get(searchString) + 1);
+                            if (globalMap.containsKey(str) && !str.isEmpty()) {
+                                globalMap.put(str, globalMap.get(str) + 1);
                             } else {
-                                if (!searchString.isEmpty()) {
-                                    globalMap.put(searchString, 1);
-                                    localLowerCaseMap.put(searchString, str);
+                                if (!str.isEmpty()) {
+                                    globalMap.put(str, 1);
                                 }
                             }
                         }
@@ -150,9 +124,8 @@ public class WordCounter {
                 if ((settingW || settingL)
                         && (settingRegister || settingNoRegister)) {
                     for (Map.Entry<String, Integer> entry : localMap.entrySet()) {
-                        System.out
-                                .println(localLowerCaseMap.get(entry.getKey())
-                                        + " " + entry.getValue());
+                        System.out.println(entry.getKey() + " "
+                                + entry.getValue());
                     }
                 } else {
                     if (settingW) {
@@ -163,30 +136,27 @@ public class WordCounter {
                 }
             }
         } catch (Exception expt) {
+            System.err.println("Error: " + expt.getMessage());
         } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (Exception expt) {
-                }
-            }
+            closer(fis);
+            closer(streamReader);
+        }
+    }
 
-            if (streamReader != null) {
-                try {
-                    streamReader.close();
-                } catch (Exception expt) {
-                }
+    static void closer(Closeable object) {
+        if (object != null) {
+            try {
+                object.close();
+            } catch (Exception expt) {
             }
         }
-
     }
 
     static void showAnalysisA() {
         if (settingA) {
             if (settingW || settingL) {
                 for (Map.Entry<String, Integer> entry : globalMap.entrySet()) {
-                    System.out.println(globalLowerCaseMap.get(entry.getKey())
-                            + " " + entry.getValue());
+                    System.out.println(entry.getKey() + " " + entry.getValue());
                 }
             }
         }
@@ -250,6 +220,13 @@ public class WordCounter {
 
     public static void main(String[] args) throws IOException {
         setSettings(args);
+
+        if (settingNoRegister) {
+            globalMap = new TreeMap<String, Integer>(
+                    String.CASE_INSENSITIVE_ORDER);
+        } else {
+            globalMap = new TreeMap<String, Integer>();
+        }
 
         for (int i = 0; i < args.length; ++i) {
             String path = args[i];
