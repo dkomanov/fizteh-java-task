@@ -27,11 +27,12 @@ class ProgramOptions {
     
     public ProgramOptions(String args[]) throws EmptyArgsException, IncorrectArgsException {
         
-        if (args.length == 0)
+        if (args.length == 0) {
             throw new EmptyArgsException();
-        
+        }
+
         fileNames = new ArrayList<String>();
-        
+
         for (String opt : args) {
             if (opt.matches("-\\w+")) {
                 parseOption(opt.substring(1));
@@ -40,8 +41,9 @@ class ProgramOptions {
             }
         }
         
-        if (fileNames.size() == 0)
+        if (fileNames.size() == 0) {
             throw new EmptyArgsException();
+        }
     }
     
     void parseOption(String opt) throws IncorrectArgsException {
