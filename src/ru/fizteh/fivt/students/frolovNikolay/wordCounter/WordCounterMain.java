@@ -7,7 +7,7 @@ import java.util.TreeMap;
  * Фролов Николай
  * 196 группа
  */
-public class Handler {
+public class WordCounterMain {
     
     public static void main(String[] argv) {
         if (argv.length == 0) {
