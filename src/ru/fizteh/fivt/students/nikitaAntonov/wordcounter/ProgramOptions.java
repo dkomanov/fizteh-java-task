@@ -92,7 +92,7 @@ class ProgramOptions {
             break;
         case WORDS:
         default:
-            tmp.useDelimiter("\\s+");
+            tmp.useDelimiter("[\\s\\.:;,\\\"\\\'\\(\\)!]+");
         }
         
         return tmp;
