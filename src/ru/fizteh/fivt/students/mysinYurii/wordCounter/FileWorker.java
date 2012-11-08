@@ -41,9 +41,9 @@ public class FileWorker {
             String temp = reader.readLine();
             while (temp != null) {
                 for (int i = 0; i < temp.length(); ++i) {
-                    if (Character.isLetter(temp.charAt(i))) {
+                    if (isSuitable(temp.charAt(i))) {
                         while ((i < temp.length()) 
-                                && (Character.isLetter(temp.charAt(i)))) {
+                                && isSuitable(temp.charAt(i))) {
                             ++i;
                         }
                         ++resultCount;
@@ -55,18 +55,20 @@ public class FileWorker {
             reader.close();
             return resultCount;
         }  catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            try {
+                reader.close();
+            } catch (IOException e1) {
+                System.err.println(e1.getMessage());
+            }
             return -1;
-        } finally {
-            if (reader != null)
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    System.out.print(e.getMessage());
-                }
         }
     }
     
+    private boolean isSuitable(char charAt) {
+        return ((Character.isAlphabetic(charAt)) || (Character.isDigit(charAt)));
+    }
+
     public int toCountUniqueWords(String fileName, boolean caseSensivity) {
         BufferedReader reader = null;
         try {
@@ -75,15 +77,15 @@ public class FileWorker {
             tempData = reader.readLine();
             while (tempData != null) {
                 for (int i = 0; i < tempData.length(); ++i) {
-                    if (Character.isLetter(tempData.charAt(i))) {
+                    if (isSuitable(tempData.charAt(i))) {
                         int begin = i;
                         while ((i < tempData.length()) 
-                                && (Character.isLetter(tempData.charAt(i)))) {
+                                && isSuitable(tempData.charAt(i))) {
                             ++i;
                         }
                         String newWord = tempData.substring(begin,i);
                         if (wordsMap.containsKey(newWord)) {
-                            wordsMap.put(newWord, new Integer(wordsMap.get(newWord).intValue() + 1));
+                            wordsMap.put(newWord, wordsMap.get(newWord) + 1);
                         } else {
                             wordsMap.put(newWord, new Integer(1));
                         }
@@ -94,18 +96,25 @@ public class FileWorker {
             reader.close();
             return 0;
         } catch(FileNotFoundException e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e1) {
+                System.err.println(e1.getMessage());
+            }
             return -1;
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return -1;
-        } finally {
-            if (reader != null)
-                try {
+            System.err.println(e.getMessage());
+            try {
+                if (reader != null) {
                     reader.close();
-                } catch (IOException e) {
-                    System.out.print(e.getMessage());
                 }
+            } catch (IOException e1) {
+                System.err.println(e1.getMessage());
+            }
+            return -1;
         }
     }
     
@@ -124,18 +133,25 @@ public class FileWorker {
             reader.close();
             return resultCount;
         } catch (FileNotFoundException e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e1) {
+                System.err.println(e1.getMessage());
+            }
             return -1;
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return -1;
-        } finally {
-            if (reader != null)
-                try {
+            System.err.println(e.getMessage());
+            try {
+                if (reader != null) {
                     reader.close();
-                } catch (IOException e) {
-                    System.out.print(e.getMessage());
                 }
+            } catch (IOException e1) {
+                System.err.println(e1.getMessage());
+            }
+            return -1;
         }
     }
 }

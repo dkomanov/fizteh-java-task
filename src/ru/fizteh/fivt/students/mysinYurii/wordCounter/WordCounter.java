@@ -56,20 +56,24 @@ public class WordCounter {
                 for (int j = 1; j < args[i].length(); ++j) {
                     if (args[i].charAt(j) == 'w') {
                         toCountWords = true;
-                    }
-                    if (args[i].charAt(j) == 'l') {
-                        toCountLines = true;
-                    }
-                    if (args[i].charAt(j) == 'U') {
-                        toCountUnique = true;
-                        caseSensivity = true;
-                    }
-                    if (args[i].charAt(j) == 'u') {
-                        toCountUnique = true;
-                        caseSensivity = false;
-                    }
-                    if (args[i].charAt(j) == 'a') {
-                        toAbsorb = true;
+                    } else {
+                        if (args[i].charAt(j) == 'l') {
+                            toCountLines = true;
+                        } else {
+                            if (args[i].charAt(j) == 'U') {
+                                toCountUnique = true;
+                                caseSensivity = true;
+                            } else {
+                                if (args[i].charAt(j) == 'u') {
+                                    toCountUnique = true;
+                                    caseSensivity = false;
+                                } else {
+                                    if (args[i].charAt(j) == 'a') {
+                                        toAbsorb = true;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             } else {
