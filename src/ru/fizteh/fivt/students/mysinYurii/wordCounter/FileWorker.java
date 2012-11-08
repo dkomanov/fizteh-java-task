@@ -17,10 +17,14 @@ public class FileWorker {
     
     Map<String, Integer> wordsMap;
     
-    FileWorker() {
+    FileWorker(boolean caseSens) {
         wordCount = 0;
         lineCount = 0;
-        wordsMap = new TreeMap<String, Integer>();
+        if (caseSens) {
+            wordsMap = new TreeMap<String, Integer>();
+        } else {
+            wordsMap = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
+        }
     }
     
     public void printUniqueWords() {
@@ -30,107 +34,108 @@ public class FileWorker {
     }
     
     public int toCountWords(String fileName) {
-        int resultCount = 0;
-        FileInputStream fileStream;
+        BufferedReader reader = null;
         try {
-             fileStream = new FileInputStream(fileName);
-        } catch(FileNotFoundException e) {
-            System.out.println("File not found: " + fileName);
-            return -1;
-        }
-        byte[] tempData = null;
-        try {
-            tempData = new byte[fileStream.available()];
-        } catch (IOException e1) {
-            System.out.println(e1.getMessage());
-            try {
-                fileStream.close();
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-            return -1;
-        }
-        try {
-            fileStream.read(tempData);
-        } catch (IOException e1) {
-            System.out.println(e1.getMessage());
-        }
-        for (int i = 0; i < tempData.length; ++i) {
-            if (Character.isLetter(tempData[i])) {
-                while ((i < tempData.length) 
-                        && (Character.isLetter(tempData[i]))) {
-                    ++i;
+            int resultCount = 0;
+            reader = new BufferedReader(new FileReader(fileName));
+            String temp = reader.readLine();
+            while (temp != null) {
+                for (int i = 0; i < temp.length(); ++i) {
+                    if (Character.isLetter(temp.charAt(i))) {
+                        while ((i < temp.length()) 
+                                && (Character.isLetter(temp.charAt(i)))) {
+                            ++i;
+                        }
+                        ++resultCount;
+                    }
                 }
-                ++resultCount;
+                temp = reader.readLine();
             }
+            wordCount += resultCount;
+            reader.close();
+            return resultCount;
+        }  catch (IOException e) {
+            System.out.println(e.getMessage());
+            return -1;
+        } finally {
+            if (reader != null)
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    System.out.print(e.getMessage());
+                }
         }
-        
-        try {
-            fileStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        
-        wordCount += resultCount;
-        return resultCount;
     }
     
     public int toCountUniqueWords(String fileName, boolean caseSensivity) {
+        BufferedReader reader = null;
         try {
-            FileInputStream fileStream = new FileInputStream(fileName); 
-            byte[] tempData = new byte[fileStream.available()];
-            fileStream.read(tempData);
-            String inputData = new String(tempData);
-            for (int i = 0; i < tempData.length; ++i) {
-                if (Character.isLetter(tempData[i])) {
-                    int begin = i;
-                    while ((i < tempData.length) 
-                            && (Character.isLetter(tempData[i]))) {
-                        ++i;
-                    }
-                    String newWord = inputData.substring(begin,i);
-                    if (!caseSensivity) newWord = newWord.toLowerCase();
-                    if (wordsMap.containsKey(newWord)) {
-                        wordsMap.put(newWord, new Integer(wordsMap.get(newWord).intValue() + 1));
-                    } else {
-                        wordsMap.put(newWord, new Integer(1));
+            reader = new BufferedReader(new FileReader(fileName)); 
+            String tempData = null;
+            tempData = reader.readLine();
+            while (tempData != null) {
+                for (int i = 0; i < tempData.length(); ++i) {
+                    if (Character.isLetter(tempData.charAt(i))) {
+                        int begin = i;
+                        while ((i < tempData.length()) 
+                                && (Character.isLetter(tempData.charAt(i)))) {
+                            ++i;
+                        }
+                        String newWord = tempData.substring(begin,i);
+                        if (wordsMap.containsKey(newWord)) {
+                            wordsMap.put(newWord, new Integer(wordsMap.get(newWord).intValue() + 1));
+                        } else {
+                            wordsMap.put(newWord, new Integer(1));
+                        }
                     }
                 }
+                tempData = reader.readLine();
             }
-            fileStream.close();
+            reader.close();
             return 0;
         } catch(FileNotFoundException e) {
-            System.out.println("File not found: " + fileName);
+            System.out.println(e.getMessage());
             return -1;
         } catch (IOException e) {
             System.out.println(e.getMessage());
             return -1;
+        } finally {
+            if (reader != null)
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    System.out.print(e.getMessage());
+                }
         }
     }
     
     public int toCountLines(String fileName) {
-        try{
+        BufferedReader reader = null;
+        try {
             int resultCount = 0;
-            FileInputStream fileStream = new FileInputStream(fileName);
-            byte[] tempData = new byte[fileStream.available()];
-            fileStream.read(tempData);
-            for (int i = 0; i < tempData.length; ++i) {
-                if (tempData[i] == '\n')++resultCount;
+            reader = new BufferedReader(new FileReader(fileName));
+            String tempData = new String();
+            tempData = reader.readLine();
+            while (tempData != null) {
+                ++resultCount;
+                tempData = reader.readLine();
             }
-            fileStream.close();
-            if ((resultCount == 0) && (tempData.length > 0) ) {
-                ++lineCount;
-                return 1;
-            } else {
-                lineCount += resultCount;
-                return resultCount;
-            }
+            lineCount += resultCount;
+            reader.close();
+            return resultCount;
         } catch (FileNotFoundException e) {
-            System.out.println("File not found: " + fileName);
+            System.out.println(e.getMessage());
             return -1;
         } catch (IOException e) {
             System.out.println(e.getMessage());
             return -1;
+        } finally {
+            if (reader != null)
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    System.out.print(e.getMessage());
+                }
         }
     }
 }

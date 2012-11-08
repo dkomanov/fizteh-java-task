@@ -18,20 +18,19 @@ public class WordCounter {
     
     static boolean toCountWords;
     
-    WordCounter() {
-    
-        toAbsorb = false;
-        caseSensivity = true;
-        toCountLines = false;
-        toCountUnique = false;
+    static void initialize() {
         toCountWords = true;
+        toCountUnique = false;
+        toCountLines = false;
+        toAbsorb = false;
+        caseSensivity = false;
     }
     
-    
     public static void main(String[] args) {
+        initialize();
         if (args.length == 0) {
             System.out.println("Данная программа считает количесво слов, линий и различных слов");
-            System.out.println("Описание: [флаги] список файлов");
+            System.out.println("Описание: [флаги] файл1 файл2 ...");
             System.out.println("-w : посчитать количество слов");
             System.out.println("-l : посчитать количество линий");
             System.out.println("-u : вывести различные слова и их количество без учета регистра");
@@ -39,39 +38,45 @@ public class WordCounter {
             System.out.println("-a : абсорбировать информацию по файлам");
             System.exit(1);
         }
-        int lastKeyPos = 0;
-        
-        if ((args[0].charAt(0) == '-') && (args[0].lastIndexOf('.') == -1)) {
-            toCountWords = false;
-            for (int i = 0; i < args.length; ++i) {
-                if (args[i].charAt(0) == '-') {
-                    if (args[i].lastIndexOf('.') == -1) {
-                        lastKeyPos = i;
-                        for (int j = 1; j < args[i].length(); ++j) {
-                            if (args[i].charAt(j) == 'w') {
-                                toCountWords = true;
-                            }
-                            if (args[i].charAt(j) == 'l') {
-                                toCountLines = true;
-                            }
-                            if (args[i].charAt(j) == 'U') {
-                                toCountUnique = true;
-                                caseSensivity = true;
-                            }
-                            if (args[i].charAt(j) == 'u') {
-                                toCountUnique = true;
-                                caseSensivity = false;
-                            }
-                            if (args[i].charAt(j) == 'a') {
-                                toAbsorb = true;
-                            }
-                        }
-                    } else {
-                        continue;
-                    }
+        int lastKeyPos = -1;
+        for (String s : args) {
+            if (!s.isEmpty()) {
+                if ((s.charAt(0) == '-') && (s.lastIndexOf('.') == -1)) {
+                    toCountWords = false;
+                    break;
                 }
             }
         }
+        for (int i = 0; i < args.length; ++i) {
+            if (args[i].isEmpty()) {
+                continue;
+            }
+            if ((args[i].charAt(0) == '-') && (args[i].lastIndexOf('.') == -1)) {
+                lastKeyPos = i;
+                for (int j = 1; j < args[i].length(); ++j) {
+                    if (args[i].charAt(j) == 'w') {
+                        toCountWords = true;
+                    }
+                    if (args[i].charAt(j) == 'l') {
+                        toCountLines = true;
+                    }
+                    if (args[i].charAt(j) == 'U') {
+                        toCountUnique = true;
+                        caseSensivity = true;
+                    }
+                    if (args[i].charAt(j) == 'u') {
+                        toCountUnique = true;
+                        caseSensivity = false;
+                    }
+                    if (args[i].charAt(j) == 'a') {
+                        toAbsorb = true;
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        
         
         /*
          * порядок вывода:
@@ -80,8 +85,11 @@ public class WordCounter {
          * 3."словарь" с количеством слов
          */
         if (toAbsorb) {
-            FileWorker resultGetter = new FileWorker();
+            FileWorker resultGetter = new FileWorker(caseSensivity);
             for (int i = lastKeyPos + 1; i < args.length; ++i) {
+                if (args[i].isEmpty()) {
+                    continue;
+                }
                 if (toCountLines) {
                     resultGetter.toCountLines(args[i]);
                 }
@@ -102,29 +110,34 @@ public class WordCounter {
                 resultGetter.printUniqueWords();
             }
         } else {
+            boolean isFirst = true;
             for (int i = lastKeyPos + 1; i < args.length; ++i) {
-                if ((args.length - lastKeyPos - 1) > 1) {
-                    if (i != lastKeyPos + 1) {
-                        System.out.println();
-                    }
-                    System.out.println(args[i] + ':');
+                if (args[i].isEmpty()) {
+                    continue;
+                }
+                if (isFirst) {
+                    System.out.println(args[i] + ":");
+                    isFirst = false;
+                } else {
+                    System.out.println();
+                    System.out.println(args[i] + ":");
                 }
                 if (toCountLines) {
-                    FileWorker resultGetter = new FileWorker();
+                    FileWorker resultGetter = new FileWorker(caseSensivity);
                     int linesCount = resultGetter.toCountLines(args[i]);
                     if (linesCount != -1) {
                         System.out.println(linesCount);
                     }
                 }
                 if (toCountWords) {
-                    FileWorker resultGetter = new FileWorker();
+                    FileWorker resultGetter = new FileWorker(caseSensivity);
                     int wordsCount = resultGetter.toCountWords(args[i]);
                     if (wordsCount != -1) {
                         System.out.println(wordsCount);
                     }
                 }
                 if (toCountUnique) {
-                    FileWorker resultGetter = new FileWorker();
+                    FileWorker resultGetter = new FileWorker(caseSensivity);
                     if (resultGetter.toCountUniqueWords(args[i], caseSensivity) != -1) {
                         resultGetter.printUniqueWords();
                     }
