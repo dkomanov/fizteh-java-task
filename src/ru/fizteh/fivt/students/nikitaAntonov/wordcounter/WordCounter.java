@@ -63,7 +63,7 @@ public class WordCounter {
             }
         }
 
-        if(opts.aggregation()) {
+        if (opts.aggregation()) {
             counter.printResults();
         }
 

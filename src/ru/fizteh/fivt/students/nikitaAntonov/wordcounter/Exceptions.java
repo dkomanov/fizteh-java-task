@@ -19,7 +19,7 @@ class IncorrectArgsException extends Exception {
 
     private static final long serialVersionUID = 6101462613212173841L;
 
-    public  IncorrectArgsException(String message) {
+    public IncorrectArgsException(String message) {
         super(message);
     }
 }

@@ -17,7 +17,7 @@ import java.util.Scanner;
 class ProgramOptions {
     
     private enum EntityToCount {UNDEFINED, LINES, WORDS}
-    private enum Uniqueness {NOT_UNIQUE, CASESENSITIVE, CASEUNSENSITIVE}
+    private enum Uniqueness {NOT_UNIQUE, CASE_SENSITIVE, CASE_UNSENSITIVE}
     
     public List<String> fileNames;   
     private boolean needAggregating = false;
@@ -47,8 +47,9 @@ class ProgramOptions {
     }
     
     void parseOption(String opt) throws IncorrectArgsException {
-        char letters[] = opt.toCharArray();
-        for (char c : letters) {
+        
+        for (int i = 0, e = opt.length(); i < e; ++i) {
+            char c = opt.charAt(i);
             switch (c) {
             case 'a':
                 needAggregating = true;
@@ -66,16 +67,16 @@ class ProgramOptions {
                 whatCount = EntityToCount.LINES;
                 break;
             case 'u':
-                if (uniqueness == Uniqueness.CASEUNSENSITIVE) {
+                if (uniqueness == Uniqueness.CASE_UNSENSITIVE) {
                     throw new IncorrectArgsException("-u shouldn't be used together with -U");
                 }
-                uniqueness = Uniqueness.CASESENSITIVE;
+                uniqueness = Uniqueness.CASE_SENSITIVE;
                 break;
             case 'U':
-                if (uniqueness == Uniqueness.CASESENSITIVE) {
+                if (uniqueness == Uniqueness.CASE_SENSITIVE) {
                     throw new IncorrectArgsException("-U shouldn't be used together with -u");
                 }
-                uniqueness = Uniqueness.CASEUNSENSITIVE;
+                uniqueness = Uniqueness.CASE_UNSENSITIVE;
                 break;
             default:
                 throw new IncorrectArgsException(String.valueOf(c));
@@ -99,16 +100,13 @@ class ProgramOptions {
     
     public Counter createCounter() {
         switch (uniqueness) {
-        case CASESENSITIVE:
+        case CASE_SENSITIVE:
             return new UniqueCounter(null);
-            //break;
-        case CASEUNSENSITIVE:
+        case CASE_UNSENSITIVE:
             return new UniqueCounter(String.CASE_INSENSITIVE_ORDER);
-            //break;
         case NOT_UNIQUE:
         default:
             return new SimpleCounter();
-            //break;
         }
     }
     
