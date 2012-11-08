@@ -3,8 +3,6 @@
 Курс лекций и семинаров для студентов второго курса ФизТеха, факультет
 [ФИВТ](http://fivt.fizteh.ru).
 
-[Ведомость](https://docs.google.com/spreadsheet/ccc?key=0Au7TMMeSjQw6dHJnbVJCQ3IzZUtTOTlJRXBLdHJYYVE)
-
 ## Лекции
 Презентации прошедших лекций:
 
