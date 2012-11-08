@@ -12,6 +12,23 @@ import java.util.TreeMap;
  * Пустая строка = строка.
  */
 public class WordCounter {
+    static void closeFiles(BufferedReader reader, FileReader fReader) {
+        try {
+            if (reader != null) {
+                reader.close();
+            }
+        } catch (Exception closeError) {
+            System.err.println(closeError.getMessage());
+        }
+        try {
+            if (fReader != null) {
+                fReader.close();
+            }
+        } catch (Exception closeError) {
+            System.err.println(closeError.getMessage());
+        }
+    }
+    
     public static long countWords(String fileName) throws Exception {
         FileReader fReader = null;
         BufferedReader reader = null;
@@ -31,20 +48,7 @@ public class WordCounter {
         } catch (Exception crush) {
             smthWrong = crush;
         } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (Exception closeError) {
-                System.err.println(closeError.getMessage());
-            }
-            try {
-                if (fReader != null) {
-                    fReader.close();
-                }
-            } catch (Exception closeError) {
-                System.err.println(closeError.getMessage());
-            }
+            closeFiles(reader, fReader);
             if (smthWrong != null) {
                 throw smthWrong;
             }
@@ -66,20 +70,7 @@ public class WordCounter {
         } catch (Exception crush) {
             smthWrong = crush;
         } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (Exception closeError) {
-                System.err.println(closeError.getMessage());
-            }
-            try {
-                if (fReader != null) {
-                    fReader.close();
-                }
-            } catch (Exception closeError) {
-                System.err.println(closeError.getMessage());
-            }
+            closeFiles(reader, fReader);
             if (smthWrong != null) {
                 throw smthWrong;
             }
@@ -116,20 +107,7 @@ public class WordCounter {
         } catch (Exception crush) {
             smthWrong = crush;
         } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (Exception closeError) {
-                System.err.println(closeError.getMessage());
-            }
-            try {
-                if (fReader != null) {
-                    fReader.close();
-                }
-            } catch (Exception closeError) {
-                System.err.println(closeError.getMessage());
-            }
+            closeFiles(reader, fReader);
             if (smthWrong != null) {
                 throw smthWrong;
             }
@@ -161,20 +139,7 @@ public class WordCounter {
         } catch (Exception crush) {
             smthWrong = crush;
         } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (Exception closeError) {
-                System.err.println(closeError.getMessage());
-            }
-            try {
-                if (fReader != null) {
-                    fReader.close();
-                }
-            } catch (Exception closeError) {
-                System.err.println(closeError.getMessage());
-            }
+            closeFiles(reader, fReader);
             if (smthWrong != null) {
                 throw smthWrong;
             }
