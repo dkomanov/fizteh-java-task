@@ -115,7 +115,7 @@ class ProgramOptions {
     }
     
     public static void printUsage() {
-        System.out.print("Usage:\n" +
+        System.err.print("Usage:\n" +
                 "java WordCounter [keys] FILE1 FILE2 ...\n" +
                 "\n" +
                 "Ключи:\n" +

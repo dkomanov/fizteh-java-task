@@ -20,8 +20,8 @@ public class WordCounter {
             ProgramOptions.printUsage();
             System.exit(1);
         } catch (IncorrectArgsException e) {
-            System.out.print("Invalid option -- ");
-            System.out.println(e.getMessage());
+            System.err.print("Invalid option -- ");
+            System.err.println(e.getMessage());
             System.exit(1);
         }
 
@@ -45,7 +45,7 @@ public class WordCounter {
                     throw scanner.ioException();
                 }
             } catch (IOException e) {
-                System.out.println("An error occured: " + filename + ": " + e.getMessage());
+                System.err.println("An error occured: " + filename + ": " + e.getMessage());
                 if (opts.aggregation()) {
                     System.exit(1);
                 }
