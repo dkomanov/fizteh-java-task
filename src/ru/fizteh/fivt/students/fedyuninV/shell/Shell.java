@@ -1,7 +1,6 @@
 package ru.fizteh.fivt.students.fedyuninV.shell;
 
-import javax.security.auth.login.FailedLoginException;
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
+import ru.fizteh.fivt.students.fedyuninV.*;
 import java.io.*;
 
 /**
@@ -13,15 +12,6 @@ public class Shell {
     private static String currPath;
     private static boolean interactive;
 
-    private static <T extends Closeable> void tryClose(T stream, String comm) {
-        if (stream != null) {
-            try {
-                stream.close();
-            } catch (Exception ex) {
-                error(comm + ": " + ex.getMessage());
-            }
-        }
-    }
 
     private static void error(String msg) {
         System.err.println(msg);
@@ -31,8 +21,9 @@ public class Shell {
     }
 
     private static String setToAbsolute(String path) {
-        if(path.charAt(0) != '/') {
-            return (currPath + '/' + path);
+        File tmp = new File(path);
+        if (!tmp.isAbsolute()) {
+            path = currPath + '/' + path;
         }
         return path;
     }
@@ -98,8 +89,8 @@ public class Shell {
             } catch (Exception ex) {
                 error(comm + ": " + ex.getMessage());
             } finally {
-                tryClose(reader, comm);
-                tryClose(writer, comm);
+                IOUtils.tryClose(reader);
+                IOUtils.tryClose(writer);
             }
         }
     }
@@ -197,8 +188,8 @@ public class Shell {
                 error(ex.getMessage());
                 System.exit(1);
             } finally {
-                tryClose(reader, "");
-                tryClose(iReader, "");
+                IOUtils.tryClose(reader);
+                IOUtils.tryClose(iReader);
             }
         } else {
             interactive = false;
