@@ -1,15 +1,14 @@
 package ru.fizteh.fivt.students.nikitaAntonov.wordcounter;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.TreeMap;
-
-import sun.management.counter.StringCounter;
-import sun.management.counter.Units;
-import sun.org.mozilla.javascript.Undefined;
 
 /**
  * Класс для подсчёта числа строк/столбцов
@@ -20,7 +19,7 @@ public class WordCounter {
 	
 	public static void main(String args[]) {
 	    
-	    ProgramOptions opts;
+	    ProgramOptions opts = null;
 	    
 		try {
 		    opts = new ProgramOptions(args);   
@@ -32,11 +31,55 @@ public class WordCounter {
 		    System.out.println(e.getMessage());
 		    System.exit(1);
 		}
+		
+		Counter counter = null;
+		boolean errorOccured = false;
+		
+		for (String filename : opts.fileNames) {
+		    if (counter == null || !opts.aggregation()) {
+		        counter = opts.createCounter();
+		    }
+		    
+		    Scanner scanner = null;
+		    try {
+		        scanner = opts.createScanner(filename);  
+	
+		        while (scanner.hasNext()) {
+		            counter.count(scanner.next());
+		        }
+		        
+		        if (scanner.ioException() != null) {
+		            throw scanner.ioException();
+		        }
+		    } catch (IOException e) {
+		        System.out.println("An error occured: " + filename + ": " + e.getMessage());
+		        if (opts.aggregation()) {
+		            System.exit(1);
+		        }
+		        errorOccured = true;
+		        continue;
+		    } finally {
+		        if (scanner != null)
+		            scanner.close();
+		    }
+		    
+		    if (!opts.aggregation()) {
+		        System.out.println(filename + ":");
+		        counter.printResults();
+		    }
+		}
+		
+		if(opts.aggregation()) {
+		    counter.printResults();
+		}
+		
+		if (errorOccured)
+		    System.exit(1);
 	}
 }
 
 
-class OptionsException extends Exception {
+abstract class OptionsException extends Exception {
 
     private static final long serialVersionUID = 6683980083518203006L;
     
@@ -64,12 +107,12 @@ class IncorrectArgsException extends OptionsException {
     }
 }
 
-interface Counter {
-    public void count(String str);
-    public void printResults();
+abstract class Counter {
+    abstract public void count(String str);
+    abstract public void printResults();
 }
 
-class SimpleCounter implements Counter {
+class SimpleCounter extends Counter {
     
     private int c;
     
@@ -77,17 +120,19 @@ class SimpleCounter implements Counter {
         c = 0;
     }
     
+    @Override
     public void count(String str) {
         ++c;
     }
     
+    @Override
     public void printResults() {
         System.out.println(c);
     }
     
 }
 
-class UniqueCounter implements Counter {
+class UniqueCounter extends Counter {
     
     private Map<String, Integer> dictionary;
     
@@ -95,12 +140,21 @@ class UniqueCounter implements Counter {
         dictionary = new TreeMap<String, Integer>(comparator);
     }
     
+    @Override
     public void count(String str) {
-        
+        Integer value = dictionary.get(str);
+        if (value == null) {
+            dictionary.put(str, 1);
+        } else {
+            dictionary.put(str, value + 1);
+        }
     }
     
+    @Override
     public void printResults() {
-        // TODO: add here smth
+        for (Entry<String, Integer> e : dictionary.entrySet()) {
+            System.out.println(e.getKey() + "\t" + e.getValue());
+        }
     }
 }
 
@@ -116,7 +170,7 @@ class ProgramOptions {
     private EntityToCount whatCount = EntityToCount.UNDEFINED; 
     private Uniqueness uniqueness = Uniqueness.NOT_UNIQUE;
     
-    public ProgramOptions(String args[]) throws OptionsException {
+    public ProgramOptions(String args[]) throws EmptyArgsException, IncorrectArgsException {
         
         if (args.length == 0)
             throw new EmptyArgsException();
@@ -124,10 +178,9 @@ class ProgramOptions {
         fileNames = new ArrayList<String>();
         
         for (String opt : args) {
-            if (opt.matches("-\\w")) {
+            if (opt.matches("-\\w+")) {
                 parseOption(opt.substring(1));
-            }
-            else {
+            } else {
                 fileNames.add(opt);
             }
         }
@@ -173,12 +226,33 @@ class ProgramOptions {
         }
     }
     
-    public Scanner createScanner() {
+    public Scanner createScanner(String filename) throws IOException {
+        Scanner tmp = new Scanner(new File(filename));
+        switch (whatCount) {
+        case LINES:
+            tmp.useDelimiter("\\n");
+            break;
+        case WORDS:
+        default:
+            tmp.useDelimiter("\\s+");
+        }
         
+        return tmp;
     }
     
     public Counter createCounter() {
-        
+        switch (uniqueness) {
+        case CASESENSITIVE:
+            return new UniqueCounter(null);
+            //break;
+        case CASEUNSENSITIVE:
+            return new UniqueCounter(String.CASE_INSENSITIVE_ORDER);
+            //break;
+        case NOT_UNIQUE:
+        default:
+            return new SimpleCounter();
+            //break;
+        }
     }
     
     public boolean aggregation() {
