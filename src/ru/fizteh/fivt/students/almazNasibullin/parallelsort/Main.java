@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -44,7 +45,7 @@ public class Main {
         }
         
         // считывание строк
-        lines = readLines(files);
+        lines = readLines(files, uniqLines, outputFile);
         
         files.clear();
 
@@ -53,18 +54,7 @@ public class Main {
             System.exit(0);
         }
 
-        int countOfLinesForOneThread = 0;
-
-        // эти значения найдены примерно для каждого кол-ва входных строк
-        if (lines.size()  < 10000) {
-            countOfLinesForOneThread = 200;
-        } else if (lines.size()  < 50000) {
-            countOfLinesForOneThread = 290;
-        } else if (lines.size()  < 10000) {
-            countOfLinesForOneThread = 400;
-        } else {
-            countOfLinesForOneThread = 600;
-        }
+        int countOfLinesForOneThread = 2500;
 
         if (countThreads.t == 0) {
             if (size > countOfLinesForOneThread) {
@@ -83,15 +73,18 @@ public class Main {
             List<List<String> > result;
 
             // работа с потоками: запуск и ожидание завершения их работы
+
             result = startingThreads(lines, countThreads, withoutReg);
 
             // результат слияния полученных результатов всех потоков
-            List<String> res = MergeResult(result);
+            List<String> res = MergeResult(result, withoutReg);
+
             printResult(uniqLines, outputFile, res);
             res.clear();
         } else {
             // работа без запуска дополнительных потоков по причине малого
             // количества входных строчек
+
             if (withoutReg.t) {
                 Collections.sort(lines, String.CASE_INSENSITIVE_ORDER);
             } else {
@@ -165,11 +158,20 @@ public class Main {
     }
 
     public static void readFromBufferedReader(BufferedReader br, boolean fromConsole,
-            FileReader fr, List <String> lines) {
+            FileReader fr, List <String> lines, WrapperPrimitive<Boolean> uniqLines,
+            WrapperPrimitive<String> outputFile) {
         try {
             String str;
+            boolean allLinesEmpty = true;
             while ((str = br.readLine()) != null) {
                 lines.add(str);
+                if (allLinesEmpty && !str.isEmpty()) {
+                    allLinesEmpty = false;
+                }
+            }
+            if (allLinesEmpty) {
+                lines.add("");
+                printResult(uniqLines, outputFile, lines);
             }
         } catch (Exception e) {
             LoUtils.printErrorAndExit("Bad reading from BufferedReader: " + e.getMessage());
@@ -181,13 +183,15 @@ public class Main {
         }
     }
 
-    public static List<String> readLines(List<String> files) {
+    public static List<String> readLines(List<String> files,
+            WrapperPrimitive<Boolean> uniqLines,
+            WrapperPrimitive<String> outputFile) {
         BufferedReader br = null;
         List<String> lines = new ArrayList<String>();
         if (files.isEmpty()) { // считывание из stdin
             try {
                  br = new BufferedReader(new InputStreamReader(System.in));
-                 readFromBufferedReader(br, true, null, lines);
+                 readFromBufferedReader(br, true, null, lines, uniqLines, outputFile);
             } catch (Exception e) {
                 LoUtils.printErrorAndExit("Bad opening BufferedReader: " + e.getMessage());
             } finally {
@@ -199,12 +203,11 @@ public class Main {
                 try {
                     fr = new FileReader(new File(files.get(i)));
                     br = new BufferedReader(fr);
-                    readFromBufferedReader(br, false, fr, lines);
+                    readFromBufferedReader(br, false, fr, lines, uniqLines, outputFile);
                 } catch (Exception e) {
                     LoUtils.printErrorAndExit("Bad opening BufferedReader: " +
                             e.getMessage());
                 } finally {
-                    LoUtils.closeOrExit(fr);
                     LoUtils.closeOrExit(br);
                 }
             }
@@ -275,13 +278,32 @@ public class Main {
         }
     }
 
-    public static List<String> MergeResult(List<List<String> > result) {
+    public static List<String> MergeResult(List<List<String> > result,
+            WrapperPrimitive<Boolean> withoutReg) {
         // res - результат слияния result
         List<String> res = new ArrayList<String>();
         
         // хранит в качестве ключа входные слова, в качестве значения массив
         // пар координаты в двумерном массиве result
-        TreeMap<String, List<Pair> > tm = new TreeMap<String, List<Pair> >();
+        TreeMap<String, List<Pair> > tm;
+        if (withoutReg.t) {
+            tm = new TreeMap<String, List<Pair> >(new Comparator() {
+                @Override
+                public int compare(Object o1, Object o2) {
+                    String s1 = (String)o1;
+                    String s2 = (String)o2;
+                    if (s1.equals(s2)) {
+                        return 0;
+                    }
+                    if (s1.compareToIgnoreCase(s2) == 0) {
+                        return s1.compareTo(s2);
+                    }
+                    return s1.compareToIgnoreCase(s2);
+                }
+            });
+        } else {
+            tm = new TreeMap<String, List<Pair> >();
+        }
         
         for (int i = 0; i < result.size(); ++i) {
             String cur = result.get(i).get(0);
@@ -301,7 +323,8 @@ public class Main {
             List<String> lines, int i, boolean withLineBreak) {
         try {
             if (withLineBreak) {
-                bw.write("\n" + lines.get(i), 0, lines.get(i).length() + 1);
+                bw.newLine();
+                bw.write(lines.get(i), 0, lines.get(i).length());
             } else {
                 bw.write(lines.get(i), 0, lines.get(i).length());
             }
@@ -316,12 +339,12 @@ public class Main {
         int size = lines.size();
         if (outputFile.t.equals("")) { // вывод в stdout
             if (uniqLines.t) { // вывод уникальных строк
-                String prev = lines.get(0);
-                System.out.println(prev);
+                String prev = lines.get(0).toLowerCase();
+                System.out.println(lines.get(0));
                 for (int i = 1; i < size; ++i) {
-                    if (!lines.get(i).equals(prev)) {
+                    if (!lines.get(i).toLowerCase().equals(prev)) {
                         System.out.println(lines.get(i));
-                        prev = lines.get(i);
+                        prev = lines.get(i).toLowerCase();
                     }
                 }
              } else {
@@ -336,13 +359,13 @@ public class Main {
                 fw = new FileWriter(new File(outputFile.t));
                 bw = new BufferedWriter(fw);
                 if (uniqLines.t) { // вывод уникальных строк
-                    String prev = lines.get(0);
+                    String prev = lines.get(0).toLowerCase();
                     bw.write(lines.get(0), 0, lines.get(0).length());
                     bw.flush();
                     for (int i = 1; i < size; ++i) {
-                        if (!lines.get(i).equals(prev)) {
+                        if (!lines.get(i).toLowerCase().equals(prev)) {
                             writeLineToBufferedWriter(bw, lines, i, true);
-                            prev = lines.get(i);
+                            prev = lines.get(i).toLowerCase();
                         }
                     }
                 } else {
