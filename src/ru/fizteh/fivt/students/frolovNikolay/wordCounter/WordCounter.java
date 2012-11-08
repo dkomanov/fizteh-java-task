@@ -22,7 +22,7 @@ public class WordCounter {
             reader = new BufferedReader(fReader);
             String temp = null;
             while ((temp = reader.readLine()) != null) {
-                String[] words = temp.split("[\\s\\.\\?\\,\\-\\!]+");
+                String[] words = temp.split("[\\s\\.\\?\\,\\-\\!\\;\\:\\'\\(\\)\\[\\]]+");
                 result += words.length;
                 if (words[0].isEmpty()) {
                     --result;
@@ -102,7 +102,7 @@ public class WordCounter {
             reader = new BufferedReader(fReader);
             String temp;
             while ((temp = reader.readLine()) != null) {
-                String[] words = temp.split("[\\s\\.\\?\\,\\-\\!]+");
+                String[] words = temp.split("[\\s\\.\\?\\,\\-\\!\\;\\:\\'\\(\\)\\[\\]]+");
                 for (String iter : words) {
                     if (!iter.isEmpty()) {
                         if (result.containsKey(iter)) {
