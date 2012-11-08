@@ -4,59 +4,63 @@ import java.util.ArrayList;
 
 public class ParallelSort {
     public static void main(String[] args) {
-        boolean minusI = false;
-        boolean minusU = false;
+        boolean ignoreCase = false;
+        boolean uniqueOnly = false;
         int countOfThreads = 1;
         String outFileName = null;
         ArrayList<String> fileNames = new ArrayList<>();
-        for(int i = 0; i < args.length; ++i) {
-            if(args[i].equals("-u")) {
-                if(minusU) {
-                    System.err.println("Error: big count of arguments.");
-                    System.exit(1);
+        for (int i = 0; i < args.length; ++i) {
+            if (args[i].equals("-u")) {
+                if (uniqueOnly) {
+                    exitWithErrorMessage("Error: big count of arguments.");
                 }
-                minusU = true;
-            } else if(args[i].equals("-i")) {
-                if(minusI) {
-                    System.err.println("Error: big count of arguments.");
-                    System.exit(1);
+                uniqueOnly = true;
+            } else if (args[i].equals("-i")) {
+                if (ignoreCase) {
+                    exitWithErrorMessage("Error: big count of arguments.");
                 }
-                minusI = true;
-            } else if(args[i].equals("-ui") || args[i].equals("-iu")) {
-                if(minusU || minusI) {
-                    System.err.println("Error: big count of arguments.");
-                    System.exit(1);
+                ignoreCase = true;
+            } else if (args[i].equals("-ui") || args[i].equals("-iu")) {
+                if (uniqueOnly || ignoreCase) {
+                    exitWithErrorMessage("Error: big count of arguments.");
                 }
-                minusU = true;
-                minusI = true;
-            } else if(args[i].equals("-t")) {
+                uniqueOnly = true;
+                ignoreCase = true;
+            } else if (args[i].equals("-t")) {
                 try {
                     countOfThreads = Integer.parseInt(args[++i]);
-                } catch(Exception e) {
-                    System.err.println("Error: incorrect count of threads.");
-                    System.exit(1);
+                } catch (Exception e) {
+                    exitWithErrorMessage("Error: incorrect count of threads.");
                 }
-            } else if(args[i].equals("-o")) {
+            } else if (args[i].equals("-o")) {
                 outFileName = args[++i];
-            } else if(args[i].charAt(0) == '-') {
-                System.err.println("Error: unknown key.");
-                System.exit(1);
+            } else if (args[i].charAt(0) == '-') {
+                exitWithErrorMessage("Error: unknown key.");
             } else {
                 fileNames.add(args[i]);
             }
         }
-        if(countOfThreads <= 0) {
-            System.err.println("Error: cannot create <= 0 threads.");
-            System.exit(1);
+        if (countOfThreads <= 0) {
+            exitWithErrorMessage("Error: cannot create <= 0 threads.");
         }
         try {
-            StringSorter.sort(fileNames, minusI, minusU, countOfThreads, outFileName);
-        } catch(Exception e) {
-            if(e.getMessage() != null) {
-                System.err.println("Error: " + e.getMessage());
+            StringSorter sorter = new StringSorter();
+            if (outFileName == null) {
+                sorter.sortStrings(fileNames, ignoreCase, uniqueOnly, countOfThreads);
             } else {
-                System.out.println("Error: unknown.");
+                sorter.sortStrings(fileNames, ignoreCase, uniqueOnly, countOfThreads, outFileName);
+            }
+        } catch (Exception e) {
+            if (e.getMessage() != null) {
+                exitWithErrorMessage("Error: " + e.getMessage());
+            } else {
+                exitWithErrorMessage("Error: unknown.");
             }
         }
+    }
+
+    static private void exitWithErrorMessage(String message) {
+        System.err.println(message);
+        System.exit(1);
     }
 }
