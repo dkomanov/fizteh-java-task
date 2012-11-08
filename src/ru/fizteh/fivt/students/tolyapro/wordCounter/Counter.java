@@ -5,26 +5,26 @@ import java.io.*;
 import java.util.*;
 
 enum Mode {
-    ERR, NONE, LINESCASENONSENSITIVE, LINESCASESENSITIVE, WORDSCASENONSENSITIVE, WORDSCASESENSITIVE, LINES, WORDS
+    ERR, NONE, LINES_CASE_NONSENSITIVE, LINES_CASE_SENSITIVE, WORDS_CASE_NONSENSITIVE, WORDS_CASE_SENSITIVE, LINES, WORDS
 }
 
 public class Counter {
 
     public static boolean modeWords(Mode mode) {
-        return ((mode == Mode.WORDS) || (mode == Mode.WORDSCASESENSITIVE) || (mode == Mode.WORDSCASENONSENSITIVE));
+        return ((mode == Mode.WORDS) || (mode == Mode.WORDS_CASE_SENSITIVE) || (mode == Mode.WORDS_CASE_NONSENSITIVE));
     }
 
     public static boolean modeLines(Mode mode) {
-        return ((mode == Mode.LINESCASENONSENSITIVE)
-                || (mode == Mode.LINESCASESENSITIVE) || (mode == Mode.LINES));
+        return ((mode == Mode.LINES_CASE_NONSENSITIVE)
+                || (mode == Mode.LINES_CASE_SENSITIVE) || (mode == Mode.LINES));
     }
 
     public static boolean modeUniqueWithReg(Mode mode) {
-        return ((mode == Mode.WORDSCASESENSITIVE) || (mode == Mode.LINESCASESENSITIVE));
+        return ((mode == Mode.WORDS_CASE_SENSITIVE) || (mode == Mode.LINES_CASE_SENSITIVE));
     }
 
     public static boolean modeUnique(Mode mode) {
-        return ((mode == Mode.WORDSCASENONSENSITIVE) || (mode == Mode.LINESCASENONSENSITIVE));
+        return ((mode == Mode.WORDS_CASE_NONSENSITIVE) || (mode == Mode.LINES_CASE_NONSENSITIVE));
     }
 
     public static boolean checkEmpty(String[] args) {
@@ -73,17 +73,17 @@ public class Counter {
             }
         } else if (c == 'u') {
             if (mode == Mode.LINES) {
-                mode = Mode.LINESCASENONSENSITIVE;
+                mode = Mode.LINES_CASE_NONSENSITIVE;
             } else if (mode == Mode.WORDS) {
-                mode = Mode.WORDSCASENONSENSITIVE;
+                mode = Mode.WORDS_CASE_NONSENSITIVE;
             } else {
                 return Mode.ERR;
             }
         } else if (c == 'U') {
             if (mode == Mode.LINES) {
-                mode = Mode.LINESCASESENSITIVE;
+                mode = Mode.LINES_CASE_SENSITIVE;
             } else if (mode == Mode.WORDS) {
-                mode = Mode.WORDSCASESENSITIVE;
+                mode = Mode.WORDS_CASE_SENSITIVE;
             } else {
                 return Mode.ERR;
             }
