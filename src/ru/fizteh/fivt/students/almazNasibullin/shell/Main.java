@@ -65,6 +65,9 @@ public class Main {
                 if (st.hasMoreTokens()) {
                     // проверка на наличие аргуметов для данной команды
                     String path = st.nextToken();
+                    if (path.charAt(0) == '/') {
+                        System.setProperty("user.dir", "/");
+                    }
                     StringTokenizer stSecond = new StringTokenizer(path, "/");
                     while (stSecond.hasMoreTokens()) {
                         cdExecute(stSecond.nextToken());
