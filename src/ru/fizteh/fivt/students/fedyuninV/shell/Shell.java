@@ -28,7 +28,7 @@ public class Shell {
         return path;
     }
 
-    private static void cd(String newPath, String comm) {
+    private static void cd(String newPath) {
         File newFile = new File(newPath);
         if (!newFile.exists()) {
             error("cd: '" + newFile.getName() + "': No such file or directory");
@@ -124,7 +124,7 @@ public class Shell {
                 error("cd: Incorrect arguments");
             } else {
                 args[1] = setToAbsolute(args[1]);
-                cd(args[1], args[0]);
+                cd(args[1]);
             }
         } else if (args[0].equals("rm")) {
             if (args.length != 2) {
