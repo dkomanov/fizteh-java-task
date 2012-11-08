@@ -1,21 +1,16 @@
 package ru.fizteh.fivt.chat;
 
-import junit.framework.AssertionFailedError;
-import org.junit.Test;
-
 import java.util.Arrays;
 
 public final class MessageUtilsTest {
 
-    @Test
-    public void hello() {
+    public void testHello() {
         byte[] bytes = MessageUtils.hello("123");
         byte[] expected = new byte[]{1, 1, 0, 0, 0, 3, 49, 50, 51};
         check(expected, bytes);
     }
 
-    @Test
-    public void message() {
+    public void testMessage() {
         byte[] bytes = MessageUtils.message("123", "Привет");
         byte[] expected = new byte[]{
                 2,
@@ -28,15 +23,13 @@ public final class MessageUtilsTest {
         check(expected, bytes);
     }
 
-    @Test
-    public void bye() {
+    public void testBye() {
         byte[] bytes = MessageUtils.bye();
         byte[] expected = new byte[]{3, 0};
         check(expected, bytes);
     }
 
-    @Test
-    public void error() {
+    public void testError() {
         byte[] bytes = MessageUtils.error("Bad");
         byte[] expected = new byte[]{127, 1, 0, 0, 0, 3, 66, 97, 100};
         check(expected, bytes);
@@ -44,7 +37,7 @@ public final class MessageUtilsTest {
 
     private void check(byte[] expected, byte[] actual) {
         if (!Arrays.equals(expected, actual)) {
-            throw new AssertionFailedError("Expected: " + Arrays.toString(expected)
+            throw new RuntimeException("Expected: " + Arrays.toString(expected)
                     + ", actual: " + Arrays.toString(actual));
         }
     }
