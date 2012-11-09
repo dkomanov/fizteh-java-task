@@ -1,7 +1,6 @@
 package ru.fizteh.fivt.students.altimin.wordcounter;
 
 import java.io.FileNotFoundException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -21,7 +20,12 @@ public class WordCounter {
     private boolean countEmpty;
 
     private Map<String, Integer> countUniqueElements(InputParser parser) {
-        Map<String, Integer> result = new HashMap<String, Integer>();
+        Map<String, Integer> result;
+        if (!capitalLetterMatters) {
+            result = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
+        } else {
+            result = new TreeMap<String, Integer>();
+        }
         while (!parser.isEndOfInput()) {
             String currentString = parser.nextToken();
             if (countEmpty || currentString.length() > 0)
@@ -77,27 +81,10 @@ public class WordCounter {
         }
     }
 
-    private Map<String, Integer> mapToLower(Map<String, Integer> map) {
-        Map<String,Integer> result = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
-        for (String string: map.keySet()) {
-            Integer value = result.get(string);
-            if (value != null) {
-                result.put(string, value + map.get(string));
-            } else {
-                result.put(string, map.get(string));
-            }
-        }
-        return result;
-    }
-
-
     public void processFile(String fileName) throws FileNotFoundException {
         System.out.println(fileName + ":");
         if (uniqueCountMode) {
             Map<String, Integer> result = countUniqueElements(getParser(fileName));
-            if (!capitalLetterMatters) {
-                result = mapToLower(result);
-            }
             printResult(result);
         } else {
             System.out.println(countElements(getParser(fileName)));
@@ -107,7 +94,12 @@ public class WordCounter {
     public void count(String[] files) {
         if (aggregate) {
             if (uniqueCountMode) {
-                Map<String, Integer> result = new TreeMap<String, Integer>();
+                Map<String, Integer> result;
+                if (capitalLetterMatters) {
+                    result = new TreeMap<String, Integer>();
+                } else {
+                    result = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
+                }
                 for (String fileName: files) {
                     try {
                         addResult(result, countUniqueElements(getParser(fileName)));
@@ -116,9 +108,6 @@ public class WordCounter {
                         System.err.println("File " + fileName + " not found");
                         System.exit(1);
                     }
-                }
-                if (!capitalLetterMatters) {
-                    result = mapToLower(result);
                 }
                 printResult(result);
             } else {
