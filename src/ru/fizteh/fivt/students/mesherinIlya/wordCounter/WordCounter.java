@@ -14,12 +14,12 @@ public class WordCounter {
         
     static boolean delim(int c) {
         if (linesMode) {
-            if (c == '\n') {
+            if (c == '\n' || c == '\r') {
                 return true;
             }
             return false;
         }
-        if (Character.isWhitespace(c) || ".,;\"".indexOf(c) != -1) {
+        if (Character.isWhitespace(c) || ".,;\"()[]{}!?:/\\|<>".indexOf(c) != -1) {
             return true;
         }
         return false;
@@ -129,13 +129,15 @@ public class WordCounter {
                     }
                 
                 }
-
-                f.close();
-
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 System.err.println("Error: can't open the file \"" + args[param] + '\"');
                 System.exit(1);
             }
+            finally {
+                f.close();
+            }
+            
             if (!agregate) {
                 if (uniqueCaseSensitive || uniqueCaseNonSensitive) {
                     Set<Map.Entry<String, Integer>> set = map.entrySet();
