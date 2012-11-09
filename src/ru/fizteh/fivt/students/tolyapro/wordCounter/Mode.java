@@ -1,11 +1,11 @@
 package ru.fizteh.fivt.students.tolyapro.wordCounter;
 
 public class Mode {
-    ModeType Type;
-    ModeUniqueness Uniqueness;
+    ModeType type;
+    ModeUniqueness uniqueness;
 
     public Mode(ModeType modeType, ModeUniqueness modeUniqueness) {
-        Type = modeType;
-        Uniqueness = modeUniqueness;
+        type = modeType;
+        uniqueness = modeUniqueness;
     }
 }
