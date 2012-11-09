@@ -72,6 +72,7 @@ public class Calculator {
         StringBuilder builder = new StringBuilder();
         for (String s : args) {
             builder.append(s);
+            builder.append(' ');
         }
 
         String str = builder.toString();
@@ -197,8 +198,12 @@ public class Calculator {
             executeOperation(numbers, operations.pop());
         }
 
-        System.out.println(numbers.pop());
-
+        if (numbers.isEmpty()) {
+            System.out.println(0);
+        }
+        else {
+            System.out.println(numbers.pop());
+        }
 
     }
 
