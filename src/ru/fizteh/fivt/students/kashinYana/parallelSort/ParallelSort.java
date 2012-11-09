@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.kashinYana.parallelSort;
 
 import java.io.*;
+import java.util.Comparator;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,14 +14,12 @@ import java.util.Arrays;
 
 public class ParallelSort {
 
-    static final int size = 4;
+    static final int size = 2;
     static LinkedBlockingQueue queue;
     static ExecutorService service;
     static String STOP = "stop";
     static int numberThreads;
-    static Object[] ans;
-    static int maxSize = 2000;
-    static int idAns = 0;
+    static Vector ans;
     static String outputFile;
     static Vector<String> inputString;
     static boolean isI = false;
@@ -30,15 +29,15 @@ public class ParallelSort {
 
     public static void main(String[] args) throws Exception {
         inputString = new Vector<String>();
+        ans = new Vector();
         try {
             readKeys(args);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            System.err.println("Error in set keys :" + e.getMessage());
             System.exit(1);
         }
         queue = new LinkedBlockingQueue();
         service = Executors.newFixedThreadPool(numberThreads);
-        ans = new String[maxSize];
         Sorter sorter[] = new Sorter[numberThreads];
         for (int i = 0; i < numberThreads; i++) {
             sorter[i] = new Sorter(new Integer(i).toString());
@@ -48,13 +47,12 @@ public class ParallelSort {
         for (int i = 0; i < numberThreads; i++) {
             sorter[i].join();
         }
-        service.shutdown();
+        service.shutdown(); //??????????????????????
         printAnswer(outputFile);
     }
     static void readKeys(String[] args) throws Exception{
         boolean readFiles = false;
         for(int i = 0; i < args.length; i++) {
-            System.out.println(args[i]);
             if(args[i].equals("-i") && !readFiles) {
                 isI = true;
             } else if(args[i].equals("-u") && !readFiles) {
@@ -73,10 +71,10 @@ public class ParallelSort {
             }
         }
         if(!isT) {
-            numberThreads = 4;
+            numberThreads = 4;  ///??????????
         }
         if(!isO) {
-            outputFile = "answer.txt";
+            outputFile = "answer.txt"; ///??????????
         }
         if(!((isI && !isU) || (!isI && isU) )) {
             throw new Exception("bad isI and isU");
@@ -96,9 +94,6 @@ public class ParallelSort {
                         queue.put(words[i]);
                     }
                 }
-                for (int i = 0; i < numberThreads; i++) {
-                    queue.put(STOP);
-                }
             } finally {
                 if (in != null) {
                     in.close();
@@ -108,28 +103,28 @@ public class ParallelSort {
                 }
             }
         }
+        for (int i = 0; i < numberThreads; i++) {
+            queue.put(STOP);
+        }
     }
 
     static class Sorter extends Thread {
-        Object array[];
-        int last_id = 0;
+        Vector array;
         String name;
 
         Sorter(String name_) {
             name = name_;
+            array = new Vector();
         }
 
         public void run() {
             while (true) {
                 boolean isStop = false;
-                if (last_id == 0) {
-                    array = new Object[size];
-                }
-                if (last_id < size) {
+                if (array.size() < size) {
                     try {
-                        array[last_id++] = queue.take();
-                        if (array[last_id - 1] == STOP) {
-                            last_id--;
+                        array.add(queue.take());
+                        if (array.lastElement() == STOP) {
+                            array.removeElementAt(array.size() - 1);
                             isStop = true;
                         }
                     } catch (Exception e) {
@@ -137,49 +132,55 @@ public class ParallelSort {
                         System.exit(1);
                     }
                 }
-                if (last_id >= size || isStop) {
+                if (array.size() >= size || isStop) {
                     class Merge implements Runnable {
-                        Object[] array;
+                        Vector array = new Vector();
 
-                        public Merge(Object[] array_) {
-                            array = new Object[last_id];
-                            for (int i = 0; i < last_id; i++) {
-                                array[i] = array_[i];
+                        public Merge(Vector array_) {
+                            array = array_;
+                            if(isI) {
+                                Arrays.sort(array.toArray(), new ComparatorLower() );
+                            } else {            ///??????????????????????
+                                Arrays.sort(array.toArray(), new ComparatorNotLower());
                             }
-                            Arrays.sort(array);
                         }
 
                         public void run() {
-                            synchronized (ans) {
-                                Object tempArray[] = new Object[idAns + array.length];
-                                int idTempArray = 0;
+                            synchronized (ans) {                 //???????????????????
+                                Vector tempArray = new Vector();
                                 int idArray = 0;
                                 int indexAns = 0;
-                                while (idArray < array.length && indexAns < idAns) {
+                                while (idArray < array.size() && indexAns < ans.size()) {
                                     if(isI) {
-                                        if (array[idArray].toString().toLowerCase().compareTo(ans[indexAns].toString().toLowerCase()) < 0) {
-                                            tempArray[idTempArray++] = array[idArray++];
+                                        if (new ComparatorLower().compare(array.elementAt(idArray), ans.elementAt(indexAns)) < 0) {
+                                            tempArray.add(array.elementAt(idArray));
+                                            idArray++;
                                         } else {
-                                            tempArray[idTempArray++] = ans[indexAns++];
+                                            tempArray.add(ans.elementAt(indexAns));
+                                            indexAns++;
                                         }
                                     } else {
-                                        if (array[idArray].toString().compareTo(ans[indexAns].toString()) < 0) {
-                                            tempArray[idTempArray++] = array[idArray++];
+                                        if (new ComparatorNotLower().compare(array.elementAt(idArray), ans.elementAt(indexAns)) < 0) {
+                                            tempArray.add(array.elementAt(idArray));
+                                            idArray++;
                                         } else {
-                                            tempArray[idTempArray++] = ans[indexAns++];
+                                            tempArray.add(ans.elementAt(indexAns));
+                                            indexAns++;
                                         }
                                     }
                                 }
-                                while (idArray < array.length) {
-                                    tempArray[idTempArray++] = array[idArray++];
+                                while (idArray < array.size()) {
+                                    tempArray.add(array.elementAt(idArray));
+                                    idArray++;
                                 }
-                                while (indexAns < idAns) {
-                                    tempArray[idTempArray++] = ans[indexAns++];
+                                while (indexAns < ans.size()) {
+                                    tempArray.add(ans.elementAt(indexAns));
+                                    indexAns++;
                                 }
-                                for (int i = 0; i < idTempArray; i++) {
-                                    ans[i] = tempArray[i];
+                                ans.setSize(0);
+                                for (int i = 0; i < tempArray.size(); i++) {
+                                    ans.add(tempArray.elementAt(i));
                                 }
-                                idAns = idTempArray;
                             }
                         }
                     }
@@ -187,7 +188,7 @@ public class ParallelSort {
                     if (isStop) {
                         return;
                     }
-                    last_id = 0;
+                    array = new Vector();
                 }
             }
         }
@@ -199,13 +200,37 @@ public class ParallelSort {
         try {
             file = new File(nameFile);
             out = new FileWriter(file);
-            for (int i = 0; i < idAns; i++) {
-                out.write(ans[i].toString() + "\n");
+            for (int i = 0; i < ans.size(); i++) {
+                out.write("\'" + ans.elementAt(i).toString() + "\'" + "\n");
             }
         } finally {
             if (out != null) {
                 out.close();
             }
+        }
+    }
+
+    static class ComparatorLower implements Comparator {
+        public int compare(Object string1, Object string2){
+            int ans = string1.toString().toLowerCase().compareTo(string2.toString().toLowerCase());
+            if (ans < 0)
+                return -1;
+            else if (ans == 0)
+                return 0;
+            else
+                return 1;
+        }
+    }
+
+    static class ComparatorNotLower implements Comparator {
+        public int compare(Object string1, Object string2){
+            int ans = string1.toString().compareTo(string2.toString());
+            if (ans < 0)
+                return -1;
+            else if (ans == 0)
+                return 0;
+            else
+                return 1;
         }
     }
 }
