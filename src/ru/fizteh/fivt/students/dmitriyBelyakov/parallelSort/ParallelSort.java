@@ -27,12 +27,18 @@ public class ParallelSort {
                 uniqueOnly = true;
                 ignoreCase = true;
             } else if (args[i].equals("-t")) {
+                if (i == args.length - 1) {
+                    exitWithErrorMessage("Error: incorrect keys.");
+                }
                 try {
                     countOfThreads = Integer.parseInt(args[++i]);
                 } catch (Exception e) {
                     exitWithErrorMessage("Error: incorrect count of threads.");
                 }
             } else if (args[i].equals("-o")) {
+                if (i == args.length - 1) {
+                    exitWithErrorMessage("Error: incorrect keys.");
+                }
                 outFileName = args[++i];
             } else if (args[i].charAt(0) == '-') {
                 exitWithErrorMessage("Error: unknown key.");

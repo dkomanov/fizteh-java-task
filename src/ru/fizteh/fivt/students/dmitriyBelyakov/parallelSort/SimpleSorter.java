@@ -1,14 +1,7 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.parallelSort;
 
-import java.util.Comparator;
 import java.util.Collections;
 import java.util.List;
-
-class ComparatorIgnoreCase implements Comparator<String> {
-    public int compare(String s1, String s2) {
-        return s1.compareToIgnoreCase(s2);
-    }
-}
 
 public class SimpleSorter implements Runnable {
     private List<String> valuesForSorting;
@@ -25,7 +18,7 @@ public class SimpleSorter implements Runnable {
     @Override
     public void run() {
         if (ignoreCase) {
-            Collections.sort(valuesForSorting, new ComparatorIgnoreCase());
+            Collections.sort(valuesForSorting, String.CASE_INSENSITIVE_ORDER);
         } else {
             Collections.sort(valuesForSorting);
         }
