@@ -1,7 +1,6 @@
 package ru.fizteh.fivt.students.nikitaAntonov.wordcounter;
 
 import java.io.IOException;
-import java.util.Scanner;
 
 /**
  * Класс для подсчёта числа строк/столбцов
@@ -33,12 +32,13 @@ public class WordCounter {
                 counter = opts.createCounter();
             }
 
-            Scanner scanner = null;
+            FileTokenizer scanner = null;
             try {
-                scanner = opts.createScanner(filename);
-
+                scanner = opts.createTokenizer(filename);
+                
                 while (scanner.hasNext()) {
-                    counter.count(scanner.next());
+                    String tmp = scanner.next();
+                    counter.count(tmp);
                 }
 
                 if (scanner.ioException() != null) {

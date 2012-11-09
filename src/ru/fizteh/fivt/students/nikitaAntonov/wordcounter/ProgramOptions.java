@@ -1,10 +1,8 @@
 package ru.fizteh.fivt.students.nikitaAntonov.wordcounter;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 
 /**
@@ -84,18 +82,14 @@ class ProgramOptions {
         }
     }
     
-    public Scanner createScanner(String filename) throws IOException {
-        Scanner tmp = new Scanner(new File(filename));
+    public FileTokenizer createTokenizer(String filename) throws IOException {
         switch (whatCount) {
         case LINES:
-            tmp.useDelimiter("\\n");
-            break;
+            return new LineTokenizer(filename);
         case WORDS:
         default:
-            tmp.useDelimiter("[\\s\\.:;,\\\"\\\'\\(\\)!]+");
+            return new WordTokenizer(filename);
         }
-        
-        return tmp;
     }
     
     public Counter createCounter() {

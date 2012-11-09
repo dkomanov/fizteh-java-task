@@ -12,8 +12,8 @@ import java.util.Map.Entry;
  * @author Антонов Никита
  */
 interface Counter {
-    abstract public void count(String str);
-    abstract public void printResults();
+    void count(String str);
+    void printResults();
 }
 
 /**

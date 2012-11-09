@@ -18,8 +18,8 @@ import java.util.StringTokenizer;
  * @author Антонов Никита
  */
 interface FileTokenizer extends Iterator<String> {
-    public IOException ioException();
-    public void close();
+    IOException ioException();
+    void close();
 }
 
 /**
@@ -31,7 +31,7 @@ class LineTokenizer implements FileTokenizer {
     
     private BufferedReader reader = null;
     protected boolean isFinished = false;
-    private String nextLine = null;
+    protected String nextLine = null;
     private IOException exception = null;
     
     public LineTokenizer(String filename) throws FileNotFoundException {
@@ -51,7 +51,10 @@ class LineTokenizer implements FileTokenizer {
     protected void prepareNextLine() {
         
         if (isFinished)
+        {
             nextLine = null;
+            return;
+        }
         
         try {
             nextLine = reader.readLine();
@@ -111,10 +114,11 @@ class LineTokenizer implements FileTokenizer {
 class WordTokenizer extends LineTokenizer {
 
     private String nextWord = null;
-    private StringTokenizer tokenizer = null;
+    private StringTokenizer tokenizer;
     
     public WordTokenizer(String filename) throws FileNotFoundException {
         super(filename);
+        prepareNextWord();
     }
     
     @Override
@@ -125,10 +129,15 @@ class WordTokenizer extends LineTokenizer {
     }
     
     private void prepareNextWord() {
-        while (!isFinished && (tokenizer == null || !tokenizer.hasMoreTokens()))
+        while (!isFinished && !tokenizer.hasMoreTokens())
         {
             super.prepareNextLine();
-            tokenizer = new StringTokenizer(" \t!?';:,.)(@#<>\\/");
+            if (isFinished) {
+                break;
+            }
+            
+            tokenizer = new StringTokenizer(nextLine, " \t!?';:,.)(@#<>\\/");
+            assert(tokenizer != null);
         }
         
         if (isFinished)
@@ -138,5 +147,14 @@ class WordTokenizer extends LineTokenizer {
         }
         
         nextWord = tokenizer.nextToken();
+    }
+    
+    @Override
+    protected void prepareNextLine()
+    {
+        super.prepareNextLine();
+        if (nextLine != null) {
+            tokenizer = new StringTokenizer(nextLine, " \t!?';:,.)(@#<>\\/");
+        }
     }
 }
