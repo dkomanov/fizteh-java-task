@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Collections;
 import java.util.ArrayList;
 
-class Manager implements Runnable {
+public class Manager implements Runnable {
     private final int port;
     private ServerSocket socket;
     private static final int timeOut = 5000;
@@ -20,15 +20,13 @@ class Manager implements Runnable {
     private List<User> users;
     private final String serverName = "server";
     HashSet<String> names;
-    volatile private boolean notDelete;
-    private List<User> forDelete;
+    private final UserDeleteRegulator userDeleteRegulator;
 
     public Manager(int port) {
         this.port = port;
         names = new HashSet<>();
-        notDelete = false;
         users = Collections.synchronizedList(new ArrayList<User>());
-        forDelete = Collections.synchronizedList(new ArrayList<User>());
+        userDeleteRegulator = new UserDeleteRegulator(this);
     }
 
     public void start() throws IOException {
@@ -55,7 +53,7 @@ class Manager implements Runnable {
 
     synchronized void sendAll(Message message, User from) {
         try {
-            notDelete = true;
+            userDeleteRegulator.lock();
             for (User u : users) {
                 if (u != from) {
                     u.sendMessage(message);
@@ -63,25 +61,24 @@ class Manager implements Runnable {
             }
         } catch (Throwable t) {
         } finally {
-            notDelete = false;
+            userDeleteRegulator.unlock();
         }
-        deleteFromList();
     }
 
-    synchronized void deleteUser(User us) {
-        if (notDelete) {
-            forDelete.add(us);
-        } else {
-            users.remove(us);
-            if (us.isAuthorized()) {
-                names.remove(us.name());
-            }
+    synchronized public void deleteUser(User user) {
+        userDeleteRegulator.delete(user);
+    }
+
+    synchronized public void delete(User user) {
+        users.remove(user);
+        if (user.isAuthorized()) {
+            names.remove(user.name());
         }
     }
 
     synchronized void stop() {
-        notDelete = true;
         try {
+            userDeleteRegulator.lock();
             for (User user : users) {
                 user.close(false, true);
             }
@@ -90,9 +87,8 @@ class Manager implements Runnable {
             }
         } catch (Throwable t) {
         } finally {
-            notDelete = false;
+            userDeleteRegulator.unlock();
         }
-        deleteFromList();
         myThread.interrupt();
     }
 
@@ -102,7 +98,7 @@ class Manager implements Runnable {
 
     synchronized void sendFromServer(String text, String user) {
         try {
-            notDelete = true;
+            userDeleteRegulator.lock();
             for (User u : users) {
                 if (u.name().equals(user)) {
                     u.sendMessage(new Message(MessageType.MESSAGE, serverName, text));
@@ -110,9 +106,8 @@ class Manager implements Runnable {
                 }
             }
         } finally {
-            notDelete = false;
+            userDeleteRegulator.unlock();
         }
-        deleteFromList();
     }
 
     public String list() {
@@ -126,7 +121,7 @@ class Manager implements Runnable {
 
     synchronized void kill(String user) {
         try {
-            notDelete = true;
+            userDeleteRegulator.lock();
             for (User u : users) {
                 if (u.name().equals(user)) {
                     u.close(false, true);
@@ -134,16 +129,8 @@ class Manager implements Runnable {
                 }
             }
         } finally {
-            notDelete = false;
+            userDeleteRegulator.unlock();
         }
-        deleteFromList();
-    }
-
-    synchronized void deleteFromList() {
-        for (int i = 0; i < forDelete.size(); ++i) {
-            deleteUser(forDelete.get(i));
-        }
-        forDelete.clear();
     }
 
     void join() {

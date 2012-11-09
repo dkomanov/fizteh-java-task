@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.server;
 
+
 import java.util.Scanner;
 
 public class ChatServer {
@@ -18,6 +19,10 @@ public class ChatServer {
                         manager.join();
                     }
                     int port = Integer.parseInt(command);
+                    if (manager != null) {
+                        manager.stop();
+                        manager.join();
+                    }
                     manager = new Manager(port);
                     manager.start();
                     System.out.println("Listen port " + port);

@@ -9,24 +9,57 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-class User implements Runnable {
+class UserThread extends Thread {
+    private final InputStream iStream;
+    private final User user;
+
+    UserThread(User user, InputStream iStream) {
+        this.user = user;
+        this.iStream = iStream;
+    }
+
+    @Override
+    public void run() {
+        try {
+            int iType;
+            while (!isInterrupted() && (iType = iStream.read()) > 0) {
+                byte type = (byte) iType;
+                if (type == MessageType.HELLO.getId()) {
+                    user.getHelloMessage();
+                } else if (type == MessageType.BYE.getId()) {
+                    user.getByeMessage();
+                } else if (type == MessageType.MESSAGE.getId()) {
+                    user.getMessage();
+                } else {
+                    user.getErrorMessage();
+                }
+            }
+        } catch (Throwable t) {
+            if (!isInterrupted()) {
+                user.close(true, true);
+            }
+        }
+
+    }
+}
+
+public class User {
     private final Socket socket;
-    public Thread myThread;
+    public UserThread myThread;
     private String name;
     private boolean authorized;
     private final Manager myManager;
-    boolean isClosed;
+
 
     public User(Socket socket, Manager listener) {
         authorized = false;
         name = null;
         this.socket = socket;
         myManager = listener;
-        isClosed = false;
     }
 
     public void close(boolean isError, boolean sendMessage) {
-        isClosed = true;
+        myThread.interrupt();
         if (sendMessage && isError) {
             sendMessage(new Message(MessageType.ERROR, "", ""));
         } else if (sendMessage) {
@@ -39,15 +72,18 @@ class User implements Runnable {
             }
         }
         myManager.deleteUser(this);
-        myThread.interrupt();
     }
 
     public void start() {
-        myThread = new Thread(this);
-        myThread.start();
+        try {
+            myThread = new UserThread(this, socket.getInputStream());
+            myThread.start();
+        } catch (Throwable t) {
+            close(true, true);
+        }
     }
 
-    private void getHelloMessage() {
+    void getHelloMessage() {
         try {
             InputStream iStream = socket.getInputStream();
             if ((byte) iStream.read() != 1) {
@@ -71,17 +107,13 @@ class User implements Runnable {
             myManager.names.add(name);
             authorized = true;
         } catch (Throwable e) {
-            if (!isClosed) {
-                close(true, true);
-            }
+            close(true, true);
         }
     }
 
-    private void getMessage() {
+    void getMessage() {
         if (!authorized) {
-            if (!isClosed) {
-                close(true, true);
-            }
+            close(true, true);
             return;
         }
         try {
@@ -135,9 +167,7 @@ class User implements Runnable {
                 System.out.println(e.getClass().getName());
             }
         } catch (Throwable e) {
-            if (!isClosed) {
-                close(true, true);
-            }
+            close(true, true);
         }
     }
 
@@ -145,51 +175,20 @@ class User implements Runnable {
         return authorized;
     }
 
-    private void getByeMessage() {
-        if (!isClosed) {
-            close(false, false);
-        }
+    void getByeMessage() {
+        close(false, false);
     }
 
-    private void getErrorMessage() {
-        if (!isClosed) {
-            close(true, false);
-        }
+    void getErrorMessage() {
+        close(true, false);
     }
 
     public void sendMessage(Message message) {
         try {
             socket.getOutputStream().write(MessageBuilder.getMessageBytes(message));
         } catch (Throwable e) {
-            if (!isClosed) {
-                close(true, true);
-            }
+            close(true, true);
         }
-    }
-
-    @Override
-    public void run() {
-        try {
-            InputStream iStream = socket.getInputStream();
-            int iType;
-            while (!myThread.isInterrupted() && (iType = iStream.read()) > 0) {
-                byte type = (byte) iType;
-                if (type == MessageType.HELLO.getId()) {
-                    getHelloMessage();
-                } else if (type == MessageType.BYE.getId()) {
-                    getByeMessage();
-                } else if (type == MessageType.MESSAGE.getId()) {
-                    getMessage();
-                } else {
-                    getErrorMessage();
-                }
-            }
-        } catch (Throwable t) {
-            if (!isClosed) {
-                close(true, true);
-            }
-        }
-
     }
 
     public void join() throws InterruptedException {

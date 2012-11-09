@@ -47,6 +47,7 @@ class ServerWorker {
     InputStream iStream;
     private final Manager myManager;
     private Thread myThread;
+    private boolean isActive;
 
     ServerWorker(String host, int port, Manager manager) {
         myManager = manager;
@@ -57,6 +58,16 @@ class ServerWorker {
         } catch (Throwable t) {
             close(true, true);
         }
+        myThread = null;
+        isActive = true;
+    }
+
+    public void activate() {
+        isActive = true;
+    }
+
+    public void deactivate() {
+        isActive = false;
     }
 
     public void start() {
@@ -65,6 +76,9 @@ class ServerWorker {
     }
 
     void getMessage() {
+        if (!isActive) {
+            return;
+        }
         try {
             if ((byte) iStream.read() != 2) {
                 close(true, true);

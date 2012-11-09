@@ -4,33 +4,38 @@ import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageBuilder;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
 
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 class Manager {
     private List<ServerWorker> servers;
-    private List<ServerWorker> forDelete;
     private ServerWorker currentWorker;
-    private boolean notDelete;
     private final String name;
+    private ServerWorkerDeleteRegulator serverWorkerDeleteRegulator;
 
     Manager(String name) {
         this.name = name;
         currentWorker = null;
-        notDelete = false;
         servers = Collections.synchronizedList(new ArrayList<ServerWorker>());
-        forDelete = Collections.synchronizedList(new ArrayList<ServerWorker>());
+        serverWorkerDeleteRegulator = new ServerWorkerDeleteRegulator(this);
     }
 
     synchronized void newConnection(String host, int port) {
         try {
+            ServerWorker last = currentWorker;
             currentWorker = new ServerWorker(host, port, this);
             currentWorker.start();
-            sendMessage(new Message(MessageType.HELLO, name, ""));
             servers.add(currentWorker);
+            if (last != null) {
+                last.deactivate();
+            }
+            currentWorker.activate();
+            sendMessage(new Message(MessageType.HELLO, name, ""));
         } catch (Throwable t) {
+            if (currentWorker != null) {
+                currentWorker.close(true, false);
+            }
             System.err.println("Cannot connect to " + host + ":" + port + ".");
         }
     }
@@ -48,40 +53,41 @@ class Manager {
     }
 
     synchronized public void deleteServer(ServerWorker server) {
-        if (notDelete) {
-            forDelete.add(server);
-        } else {
-            if (servers.contains(server)) {
-                System.out.println("Close connection with " + server.name());
-            }
-            servers.remove(server);
+        serverWorkerDeleteRegulator.delete(server);
+    }
+
+    synchronized public void delete(ServerWorker server) {
+        if (server == currentWorker) {
+            currentWorker = servers.size() > 0 ? servers.get(0) : null;
+            currentWorker.activate();
         }
+        servers.remove(server);
+        System.out.println("Closed connection with server '" + server.name() + "'.");
     }
 
     public String list() {
         StringBuilder builder = new StringBuilder();
-        notDelete = true;
         try {
+            serverWorkerDeleteRegulator.lock();
             for (ServerWorker w : servers) {
                 builder.append(w.name());
                 builder.append(System.lineSeparator());
             }
         } finally {
-            notDelete = false;
+            serverWorkerDeleteRegulator.unlock();
         }
         return builder.toString();
     }
 
     void clear() {
         try {
-            notDelete = true;
+            serverWorkerDeleteRegulator.lock();
             for (ServerWorker w : servers) {
                 w.close(false, true);
             }
         } finally {
-            notDelete = false;
+            serverWorkerDeleteRegulator.unlock();
         }
-        deleteFromList();
         ArrayList<ServerWorker> tmp = new ArrayList<>(servers);
         for (ServerWorker w : tmp) {
             try {
@@ -108,24 +114,19 @@ class Manager {
         }
     }
 
-    void deleteFromList() {
-        for (ServerWorker w : forDelete) {
-            deleteServer(w);
-        }
-        forDelete.clear();
-    }
-
     void use(String name) {
-        notDelete = true;
+        serverWorkerDeleteRegulator.lock();
         try {
             for (ServerWorker w : servers) {
                 if (w.name().equals(name)) {
+                    currentWorker.deactivate();
                     currentWorker = w;
+                    currentWorker.activate();
                     break;
                 }
             }
         } finally {
-            notDelete = false;
+            serverWorkerDeleteRegulator.unlock();
         }
     }
 }
