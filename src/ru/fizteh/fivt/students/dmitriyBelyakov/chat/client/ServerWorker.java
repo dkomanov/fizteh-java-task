@@ -8,10 +8,43 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-public class ServerWorker implements Runnable {
+class ServerWorkerThread extends Thread {
+    private final InputStream iStream;
+    private final ServerWorker worker;
+
+    ServerWorkerThread(ServerWorker worker) {
+        this.worker = worker;
+        iStream = this.worker.iStream;
+    }
+
+    @Override
+    public void run() {
+        try {
+            int iType;
+            while (!isInterrupted() && (iType = iStream.read()) > 0) {
+                byte type = (byte) iType;
+                if (type == MessageType.BYE.getId()) {
+                    worker.close(false, false);
+                } else if (type == MessageType.MESSAGE.getId()) {
+                    worker.getMessage();
+                } else if (type == MessageType.ERROR.getId()) {
+                    worker.close(false, false);
+                } else {
+                    worker.close(true, true);
+                }
+            }
+        } catch (Exception e) {
+            if (!isInterrupted()) {
+                worker.close(true, true);
+            }
+        }
+    }
+}
+
+class ServerWorker {
     private final String name;
     public Socket socket;
-    private InputStream iStream;
+    InputStream iStream;
     private final Manager myManager;
     private Thread myThread;
 
@@ -27,7 +60,7 @@ public class ServerWorker implements Runnable {
     }
 
     public void start() {
-        myThread = new Thread(this);
+        myThread = new ServerWorkerThread(this);
         myThread.start();
     }
 
@@ -62,29 +95,6 @@ public class ServerWorker implements Runnable {
             System.out.println(new String(bMess));
         } catch (Exception e) {
             close(true, true);
-        }
-    }
-
-    @Override
-    public void run() {
-        try {
-            int iType;
-            while (!myThread.isInterrupted() && (iType = iStream.read()) > 0) {
-                byte type = (byte) iType;
-                if (type == MessageType.BYE.getId()) {
-                    close(false, false);
-                } else if (type == MessageType.MESSAGE.getId()) {
-                    getMessage();
-                } else if (type == MessageType.ERROR.getId()) {
-                    close(false, false);
-                } else {
-                    close(true, true);
-                }
-            }
-        } catch (Exception e) {
-            if (!myThread.isInterrupted()) {
-                close(true, true);
-            }
         }
     }
 
