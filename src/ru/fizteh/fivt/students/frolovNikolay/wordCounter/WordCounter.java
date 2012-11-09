@@ -26,7 +26,6 @@ public class WordCounter {
     public static long countWords(String fileName) throws Exception {
         FileReader fReader = null;
         BufferedReader reader = null;
-        Exception smthWrong = null;
         long result = 0;
         try {
             fReader = new FileReader(fileName);
@@ -39,14 +38,9 @@ public class WordCounter {
                     --result;
                 }
             }
-        } catch (Exception crush) {
-            smthWrong = crush;
         } finally {
             closeStream(reader);
             closeStream(fReader);
-            if (smthWrong != null) {
-                throw smthWrong;
-            }
         }
         return result;
     }
@@ -54,7 +48,6 @@ public class WordCounter {
     public static long countLines(String fileName) throws Exception {
         FileReader fReader = null;
         BufferedReader reader = null;
-        Exception smthWrong = null;
         long result = 0;
         try {
             fReader = new FileReader(fileName);
@@ -62,14 +55,9 @@ public class WordCounter {
             while (reader.readLine() != null) {
                 ++result;
             }
-        } catch (Exception crush) {
-            smthWrong = crush;
         } finally {
             closeStream(reader);
             closeStream(fReader);
-            if (smthWrong != null) {
-                throw smthWrong;
-            }
         }
         return result;
     }
@@ -77,7 +65,6 @@ public class WordCounter {
     public static TreeMap<String, Integer> countUniqWords(String fileName, boolean ignoreReg) throws Exception {
         FileReader fReader = null;
         BufferedReader reader = null;
-        Exception smthWrong = null;
         TreeMap<String, Integer> result = null;
         try {
             if (!ignoreReg) {
@@ -100,14 +87,9 @@ public class WordCounter {
                     }
                 }
             }
-        } catch (Exception crush) {
-            smthWrong = crush;
         } finally {
             closeStream(reader);
             closeStream(fReader);
-            if (smthWrong != null) {
-                throw smthWrong;
-            }
         }
         return result;
     }
@@ -115,7 +97,6 @@ public class WordCounter {
     public static TreeMap<String, Integer> countUniqLines(String fileName, boolean ignoreReg) throws Exception {
         FileReader fReader = null;
         BufferedReader reader = null;
-        Exception smthWrong = null;
         TreeMap<String, Integer> result = null;
         try {
             if (!ignoreReg) {
@@ -133,14 +114,9 @@ public class WordCounter {
                     result.put(temp, new Integer(1));
                 }
             }
-        } catch (Exception crush) {
-            smthWrong = crush;
         } finally {
             closeStream(reader);
             closeStream(fReader);
-            if (smthWrong != null) {
-                throw smthWrong;
-            }
         }
         return result;
     }
