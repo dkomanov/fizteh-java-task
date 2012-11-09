@@ -2,7 +2,6 @@ package ru.fizteh.fivt.students.dmitriyBelyakov.chat.client;
 
 
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
-import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageBuilder;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
 
 import java.io.BufferedReader;
