@@ -137,7 +137,6 @@ class WordTokenizer extends LineTokenizer {
             }
             
             tokenizer = new StringTokenizer(nextLine, " \t!?';:,.)(@#<>\\/");
-            assert(tokenizer != null);
         }
         
         if (isFinished)
