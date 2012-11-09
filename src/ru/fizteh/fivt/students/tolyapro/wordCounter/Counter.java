@@ -4,28 +4,15 @@ import java.io.*;
 
 import java.util.*;
 
-enum Mode {
-    ERR, NONE, LINES_CASE_NONSENSITIVE, LINES_CASE_SENSITIVE, WORDS_CASE_NONSENSITIVE, WORDS_CASE_SENSITIVE, LINES, WORDS
+enum ModeType {
+    ERR, NONE, WORDS, LINES;
+}
+
+enum ModeUniqueness {
+    NONSENSITIVE, SENSITIVE, NONE;
 }
 
 public class Counter {
-
-    public static boolean modeWords(Mode mode) {
-        return ((mode == Mode.WORDS) || (mode == Mode.WORDS_CASE_SENSITIVE) || (mode == Mode.WORDS_CASE_NONSENSITIVE));
-    }
-
-    public static boolean modeLines(Mode mode) {
-        return ((mode == Mode.LINES_CASE_NONSENSITIVE)
-                || (mode == Mode.LINES_CASE_SENSITIVE) || (mode == Mode.LINES));
-    }
-
-    public static boolean modeUniqueWithReg(Mode mode) {
-        return ((mode == Mode.WORDS_CASE_SENSITIVE) || (mode == Mode.LINES_CASE_SENSITIVE));
-    }
-
-    public static boolean modeUnique(Mode mode) {
-        return ((mode == Mode.WORDS_CASE_NONSENSITIVE) || (mode == Mode.LINES_CASE_NONSENSITIVE));
-    }
 
     public static boolean checkEmpty(String[] args) {
         return ((args.length == 1) && (args[0].isEmpty()));
@@ -34,134 +21,123 @@ public class Counter {
     public static boolean modeAgregate = false;
 
     public static void addWord(Map<String, Integer> dict, String word, Mode mode) {
-        if (modeUniqueWithReg(mode)) {
-            Integer amount;
-            amount = dict.get(word);
-            if (amount != null) {
-                dict.put(word, amount + 1);
-            } else {
-                dict.put(word, 1);
-            }
+        Integer amount;
+        amount = dict.get(word);
+        if (amount != null) {
+            dict.put(word, amount + 1);
         } else {
-            Integer amount;
-            amount = dict.get(word);
-            if (dict.get(word) != null) {
-                dict.put(word, amount + 1);
-            } else {
-                dict.put(word, 1);
-            }
+            dict.put(word, 1);
         }
 
     }
 
     public static Mode getParam(char c, Mode mode) {
         if (c == 'l') {
-            if (mode == Mode.NONE) {
-                mode = Mode.LINES;
+            if (mode.Type == ModeType.NONE) {
+                mode.Type = ModeType.LINES;
             } else {
-                return Mode.ERR;
+                mode.Type = ModeType.ERR;
+                return mode;
             }
-
         } else if (c == 'w') {
-            if (mode == Mode.NONE) {
-                mode = Mode.WORDS;
+            if (mode.Type == ModeType.NONE) {
+                mode.Type = ModeType.WORDS;
             } else {
-                return Mode.ERR;
+                mode.Type = ModeType.ERR;
+                return mode;
             }
         } else if (c == 'u') {
-            if (mode == Mode.LINES) {
-                mode = Mode.LINES_CASE_NONSENSITIVE;
-            } else if (mode == Mode.WORDS) {
-                mode = Mode.WORDS_CASE_NONSENSITIVE;
+            if (mode.Uniqueness == ModeUniqueness.NONE) {
+                mode.Uniqueness = ModeUniqueness.NONSENSITIVE;
             } else {
-                return Mode.ERR;
+                mode.Type = ModeType.ERR;
+                return mode;
             }
         } else if (c == 'U') {
-            if (mode == Mode.LINES) {
-                mode = Mode.LINES_CASE_SENSITIVE;
-            } else if (mode == Mode.WORDS) {
-                mode = Mode.WORDS_CASE_SENSITIVE;
+            if (mode.Uniqueness == ModeUniqueness.NONE) {
+                mode.Uniqueness = ModeUniqueness.SENSITIVE;
             } else {
-                return Mode.ERR;
+                mode.Type = ModeType.ERR;
+                return mode;
             }
         } else if (c == 'a') {
             modeAgregate = true;
         } else {
-            mode = Mode.ERR;
+            mode.Type = ModeType.ERR;
         }
         return mode;
     }
 
     public static void main(String[] args) throws Exception {
-        Mode mode = Mode.NONE;
+        Mode mode = new Mode(ModeType.NONE, ModeUniqueness.NONE);
         if (checkEmpty(args)) {
             System.out.println("Usage: java Counter [keys] FILE1 FILE2 ...");
             System.exit(1);
         }
         int paramNumb = 0;
         for (String s : args) {
-            char c = s.charAt(0);
-            if ((c == '-') && (s.length() > 1)) {
-                c = s.charAt(1);
-                mode = getParam(c, mode);
-                paramNumb++;
-                int i;
-                for (i = 2; i < s.length(); ++i) {
-                    c = s.charAt(i);
+            if (!s.isEmpty()) {
+                char c = s.charAt(0);
+                if ((c == '-') && (s.length() > 1)) {
+                    c = s.charAt(1);
                     mode = getParam(c, mode);
                     paramNumb++;
+                    int i;
+                    for (i = 2; i < s.length(); ++i) {
+                        c = s.charAt(i);
+                        mode = getParam(c, mode);
+                        paramNumb++;
+                    }
+                    if (i > 2) {
+                        paramNumb--;
+                    }
+                } else {
+                    break;
                 }
-                if (i > 2) {
-                    paramNumb--;
-                }
-            } else {
-                break;
             }
         }
-        if (mode == Mode.ERR) {
+        if (mode.Type == ModeType.ERR) {
             System.out.println("Wrong parametres combination");
             System.exit(1);
         }
-        if ((paramNumb == 0) || (mode == Mode.NONE)) {
-            mode = Mode.WORDS;
+        if ((paramNumb == 0) || (mode.Type == ModeType.NONE)) {
+            mode.Type = ModeType.WORDS;
         }
         Map<String, Integer> dict;
-        if (modeUnique(mode) && !modeUniqueWithReg(mode)) {
+        if (mode.Uniqueness == ModeUniqueness.NONSENSITIVE) {
             dict = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
         } else {
             dict = new TreeMap<String, Integer>();
         }
         for (int i = paramNumb; i < args.length; ++i) {
             String s = args[i];
-            DataInputStream in = null;
             BufferedReader br = null;
+            FileReader file = null;
             try {
-                in = new DataInputStream(new FileInputStream(s));
-                br = new BufferedReader(new InputStreamReader(in));
+                file = new FileReader(s);
+                br = new BufferedReader(file);
                 String strLine;
                 while ((strLine = br.readLine()) != null) {
-                    if (modeWords(mode)) {
+                    if (mode.Type == ModeType.WORDS) {
                         String[] words = strLine.split("[\\s|\t|:;,.()\\[\\]]");
                         for (String word : words) {
                             addWord(dict, word, mode);
                         }
                     } else {
-                        if (modeLines(mode)) {
+                        if (mode.Type == ModeType.LINES) {
                             addWord(dict, strLine, mode);
                         }
                     }
                 }
             } catch (Exception e) {
                 System.err.println(e.getMessage());
-                BufferCloser.close(in);
-                BufferCloser.close(br);
                 System.exit(1);
             } finally {
-                BufferCloser.close(in);
                 BufferCloser.close(br);
+                BufferCloser.close(file);
             }
             if (!modeAgregate) {
-                if (modeUnique(mode) || modeUniqueWithReg(mode)) {
+                if (mode.Uniqueness != ModeUniqueness.NONE) {
                     System.out.println("File " + args[i] + " :");
                     Iterator<String> iterator = dict.keySet().iterator();
                     while (iterator.hasNext()) {
@@ -183,19 +159,24 @@ public class Counter {
             }
         }
         if (modeAgregate) {
-            if (modeUnique(mode)) {
-                System.out.print(dict.size());
-                System.exit(0);
-            }
             try {
-                Iterator<String> iterator = dict.keySet().iterator();
-                int sum = 0;
-                while (iterator.hasNext()) {
-                    String key = iterator.next().toString();
-                    String value = dict.get(key).toString();
-                    sum += new Integer(value);
+                if (mode.Uniqueness != ModeUniqueness.NONE) {
+                    Iterator<String> iterator = dict.keySet().iterator();
+                    while (iterator.hasNext()) {
+                        String word = iterator.next().toString();
+                        String amount = dict.get(word).toString();
+                        System.out.println(word + " " + amount);
+                    }
+                } else {
+                    Iterator<String> iterator = dict.keySet().iterator();
+                    int sum = 0;
+                    while (iterator.hasNext()) {
+                        String word = iterator.next().toString();
+                        sum += dict.get(word);
+                    }
+                    System.out.println(sum);
                 }
-                System.out.println(sum);
+                dict.clear();
             } catch (Exception e) {
                 System.err.println(e.getMessage());
                 System.exit(1);
