@@ -26,7 +26,7 @@ public class StringSorter {
         readStringsFromStream(valuesForSorting, System.in);
     }
 
-    private void readStringsFromStream(ArrayList<String> valuesForSorting, InputStream stream) throws IOException{
+    private void readStringsFromStream(ArrayList<String> valuesForSorting, InputStream stream) throws IOException {
         BufferedReader bufReader = null;
         InputStreamReader iSReader = null;
         try {
