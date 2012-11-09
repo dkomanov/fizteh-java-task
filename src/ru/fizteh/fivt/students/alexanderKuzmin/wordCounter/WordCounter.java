@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.alexanderKuzmin.wordCounter;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -26,20 +27,14 @@ public class WordCounter {
         System.exit(1);
     }
 
-    private static void closeAllReaders(FileReader freader,
-            BufferedReader breader) {
-        if (freader != null)
+    private static <T extends Closeable> void closeStream(T stream) {
+        if (stream != null) {
             try {
-                freader.close();
+                stream.close();
             } catch (IOException e) {
-                printErrAndExit(e.getClass().getName());
+                printErrAndExit(e.getMessage());
             }
-        if (breader != null)
-            try {
-                breader.close();
-            } catch (IOException e) {
-                printErrAndExit(e.getClass().getName());
-            }
+        }
     }
 
     void worker(String[] name, int n, Mode mod) {
@@ -53,13 +48,13 @@ public class WordCounter {
             Integer count = 0;
             HashMap<String, Integer> hmap = new HashMap<String, Integer>();
             for (int i = n; i < name.length; ++i) {
-                FileReader freader = null;
-                BufferedReader breader = null;
+                FileReader fReader = null;
+                BufferedReader bReader = null;
                 try {
-                    freader = new FileReader(name[i]);
-                    breader = new BufferedReader(freader);
+                    fReader = new FileReader(name[i]);
+                    bReader = new BufferedReader(fReader);
                     String curline;
-                    while ((curline = breader.readLine()) != null) {
+                    while ((curline = bReader.readLine()) != null) {
                         if (mod.l) {
                             ++count;
                             if (mod.U || mod.u) {
@@ -91,9 +86,10 @@ public class WordCounter {
                         }
                     }
                 } catch (Exception e) {
-                    printErrAndExit(e.getClass().getName());
+                    printErrAndExit(e.getMessage());
                 } finally {
-                    closeAllReaders(freader, breader);
+                    closeStream(fReader);
+                    closeStream(bReader);
                 }
                 if (!mod.a) {
                     System.out.println(name[i] + ":");
@@ -113,12 +109,9 @@ public class WordCounter {
             }
             if (mod.a) {
                 if (mod.U || mod.u) {
-                    StringBuilder sb = new StringBuilder();
                     for (String str : hmap.keySet()) {
-                        sb.append(str).append(" ").append(hmap.get(str))
-                                .append("\n");
+                        System.out.println(str + " " + hmap.get(str));
                     }
-                    System.out.println(sb);
                     hmap.clear();
                 }
             }
