@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.myhinMihail.ñhat;
+package ru.fizteh.fivt.students.myhinMihail.chat;
 
 public enum MessageType {
     HELLO(1),

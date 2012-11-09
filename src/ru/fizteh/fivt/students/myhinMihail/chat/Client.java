@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.myhinMihail.ñhat;
+package ru.fizteh.fivt.students.myhinMihail.chat;
 
 import java.io.*;
 import java.net.InetSocketAddress;
