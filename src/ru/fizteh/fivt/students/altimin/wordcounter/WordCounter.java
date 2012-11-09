@@ -78,12 +78,13 @@ public class WordCounter {
     }
 
     private Map<String, Integer> mapToLower(Map<String, Integer> map) {
-        Map<String,Integer> result = new TreeMap<String, Integer>();
+        Map<String,Integer> result = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
         for (String string: map.keySet()) {
-            if (result.containsKey(string.toLowerCase())) {
-                result.put(string.toLowerCase(), result.get(string.toLowerCase()) + map.get(string));
+            Integer value = result.get(string);
+            if (value != null) {
+                result.put(string, value + map.get(string));
             } else {
-                result.put(string.toLowerCase(), map.get(string));
+                result.put(string, map.get(string));
             }
         }
         return result;

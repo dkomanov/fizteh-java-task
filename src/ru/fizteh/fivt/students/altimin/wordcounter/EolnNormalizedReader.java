@@ -9,8 +9,8 @@ import java.io.Reader;
  * Time: 4:04 PM
  */
 
-public class EOLNNormalizedReader extends Reader {
-    private Reader reader;
+public class EolnNormalizedReader extends Reader {
+    private final Reader reader;
 
     private boolean hasUngetValue;
     private int ungetValue;
@@ -21,13 +21,15 @@ public class EOLNNormalizedReader extends Reader {
     }
 
 
-    public EOLNNormalizedReader(Reader reader) {
+    public EolnNormalizedReader(Reader reader) {
         this.reader = reader;
     }
+
     @Override
     public void close() throws IOException {
         reader.close();
     }
+
     @Override
     public int read() throws IOException {
         int value;
@@ -48,6 +50,7 @@ public class EOLNNormalizedReader extends Reader {
         }
         return value;
     }
+
     @Override
     public int read(char[] cbuf, int off, int len) throws IOException {
         for (int i = 0; i < len; i ++) {

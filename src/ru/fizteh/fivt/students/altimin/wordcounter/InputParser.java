@@ -10,5 +10,6 @@ import java.io.IOException;
 
 public interface InputParser {
     public boolean isEndOfInput();
+
     public String nextToken();
 }

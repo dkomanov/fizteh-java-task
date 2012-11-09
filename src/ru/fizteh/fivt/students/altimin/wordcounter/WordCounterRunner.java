@@ -10,6 +10,12 @@ import java.security.KeyException;
  * Time: 3:15 PM
  */
 public class WordCounterRunner {
+
+    private static void exit(String errorMessage) {
+        System.err.println(errorMessage);
+        System.exit(1);
+    }
+
     public static void main(String[] args) {
         ArgumentsParser argumentsParser = new ArgumentsParser();
         argumentsParser.addKey("l");
@@ -22,8 +28,7 @@ public class WordCounterRunner {
             parsedArgs = argumentsParser.parse(args);
         }
         catch (KeyException e) {
-            System.err.println("Incorrect parameters");
-            System.exit(1);
+            exit("Incorrect parameters");
             return; // java doesn't believe that System.exit is enough. Why?
         }
         boolean aggregate = parsedArgs.hasProperty("a");
@@ -32,8 +37,7 @@ public class WordCounterRunner {
         boolean countEmpty;
         WordCounter.Mode mode;
         if (parsedArgs.hasProperty("w") && parsedArgs.hasProperty("l")) {
-            System.err.println("Keys -l and -w should not be used together");
-            System.exit(1);
+            exit("Keys -l and -w should not be used together");
         }
         if (parsedArgs.hasProperty("l")) {
             mode = WordCounter.Mode.LINES;
@@ -43,8 +47,7 @@ public class WordCounterRunner {
             countEmpty = false;
         }
         if (parsedArgs.other.length == 0) {
-            System.err.println("No files to explore");
-            System.exit(1);
+            exit("No files to explore");
         }
         WordCounter wordCounter = new WordCounter(mode, aggregate, capitalLetterMatters, uniqueCountMode, countEmpty);
         wordCounter.count(parsedArgs.other);

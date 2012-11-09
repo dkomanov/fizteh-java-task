@@ -8,6 +8,6 @@ package ru.fizteh.fivt.students.altimin.wordcounter;
 public class LetterCharAcceptor implements CharAcceptor {
     @Override
     public boolean isAccepted(char c) {
-        return Character.isAlphabetic(c) || Character.isDigit(c) || c == '_';
+        return Character.isAlphabetic(c) || Character.isDigit(c) || c == '_' || c == '-';
     }
 }

@@ -3,7 +3,6 @@ package ru.fizteh.fivt.students.altimin.wordcounter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 
 /**
  * User: altimin
@@ -12,17 +11,17 @@ import java.io.Reader;
  */
 
 public class CharInputParser implements InputParser {
-    private UngetReaderWrapper reader;
+    private final UngetReaderWrapper reader;
     private boolean endOfInputReached;
-    private CharAcceptor acceptor;
+    private final CharAcceptor acceptor;
 
     public CharInputParser(String fileName, CharAcceptor acceptor) throws FileNotFoundException {
         this.acceptor = acceptor;
-        reader = new UngetReaderWrapper(new EOLNNormalizedReader(new FileReader(fileName)));
+        reader = new UngetReaderWrapper(new EolnNormalizedReader(new FileReader(fileName)));
         endOfInputReached = false;
     }
 
-    private void close() {
+    public void close() {
         try {
             reader.close();
         }
