@@ -10,11 +10,11 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 class User implements Runnable {
-    private Socket socket;
+    private final Socket socket;
     public Thread myThread;
     private String name;
     private boolean authorized;
-    volatile private Manager myManager;
+    private final Manager myManager;
     boolean isClosed;
 
     public User(Socket socket, Manager listener) {

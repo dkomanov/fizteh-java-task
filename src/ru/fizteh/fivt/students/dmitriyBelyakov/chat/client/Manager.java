@@ -14,7 +14,7 @@ class Manager {
     private List<ServerWorker> forDelete;
     private ServerWorker currentWorker;
     private boolean notDelete;
-    private String name;
+    private final String name;
 
     Manager(String name) {
         this.name = name;

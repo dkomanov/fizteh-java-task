@@ -9,10 +9,10 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 public class ServerWorker implements Runnable {
-    private String name;
+    private final String name;
     public Socket socket;
     private InputStream iStream;
-    private Manager myManager;
+    private final Manager myManager;
     private Thread myThread;
 
     ServerWorker(String host, int port, Manager manager) {
