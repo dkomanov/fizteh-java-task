@@ -13,30 +13,18 @@ public class ChatServer {
             try {
                 if (command.matches("/listen\\s+\\d+")) {
                     command = command.replaceFirst("/listen\\s+", "");
-                    if(manager != null) {
+                    if (manager != null) {
                         manager.stop();
                         manager.join();
                     }
-                    try {
-                        int port = Integer.parseInt(command);
-                        manager = new Manager(port);
-                        manager.start();
-                        System.out.println("Listen port " + port);
-                    } catch (Throwable t) {
-                        if (t.getMessage() != null) {
-                            System.err.println("Error: " + t.getMessage() + ".");
-                        } else {
-                            System.err.println("Error: unknown.");
-                        }
-                        System.exit(1);
-                    }
+                    int port = Integer.parseInt(command);
+                    manager = new Manager(port);
+                    manager.start();
+                    System.out.println("Listen port " + port);
                 } else if (command.equals("/stop")) {
                     if (manager != null) {
                         manager.stop();
-                        try {
-                            manager.join();
-                        } catch (Throwable t) {
-                        }
+                        manager.join();
                         manager = null;
                         System.out.println("Server stopped.");
                     }
@@ -82,11 +70,7 @@ public class ChatServer {
                 } else if (command.equals("/exit")) {
                     if (manager != null) {
                         manager.stop();
-                        try {
-                            manager.join();
-                        } catch (Exception e) {
-                            System.exit(1);
-                        }
+                        manager.join();
                     }
                     System.exit(0);
                 } else {
@@ -97,9 +81,12 @@ public class ChatServer {
                     System.err.println("Error: " + t.getMessage() + ".");
                 } else {
                     System.err.println("Error: unknown.");
-                    System.err.println(t.getClass().getName());
                 }
+                System.exit(1);
             }
         }
+        manager.stop();
+        manager.join();
+        System.exit(0);
     }
 }

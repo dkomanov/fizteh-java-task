@@ -42,12 +42,13 @@ class ChatClient {
                     manager.sendMessage(new Message(MessageType.MESSAGE, args[0], str));
                 }
             }
+            manager.clear();
             System.exit(0);
         } catch (Throwable t) {
             if (t.getMessage() != null) {
                 System.out.println("Error: " + t.getMessage() + ".");
             } else {
-                System.err.println(t.getClass().getName());//"Error: unknown.");
+                System.err.println("Error: unknown.");
             }
             System.exit(1);
         }

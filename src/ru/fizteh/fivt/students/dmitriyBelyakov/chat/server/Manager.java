@@ -85,7 +85,7 @@ class Manager implements Runnable {
             for (User user : users) {
                 user.close(false, true);
             }
-            if(!socket.isClosed()) {
+            if (!socket.isClosed()) {
                 socket.close();
             }
         } catch (Throwable t) {
@@ -146,12 +146,18 @@ class Manager implements Runnable {
         forDelete.clear();
     }
 
-    void join() throws InterruptedException {
+    void join() {
         ArrayList<User> tmp = new ArrayList<>(users);
         for (User u : tmp) {
-            u.join();
+            try {
+                u.join();
+            } catch (Throwable t) {
+            }
         }
         tmp.clear();
-        myThread.join();
+        try {
+            myThread.join();
+        } catch (Throwable t) {
+        }
     }
 }
