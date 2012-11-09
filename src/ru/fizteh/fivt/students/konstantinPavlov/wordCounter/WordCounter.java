@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.konstantinPavlov;
+package ru.fizteh.fivt.students.konstantinPavlov.wordCounter;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -211,6 +211,11 @@ public class WordCounter {
                     }
                 }
             }
+        }
+        if (!(settingW || settingL || settingNoRegister || settingRegister || settingA)) {
+            System.err
+                    .println("Usage: java WordCounter [keys] FILE1 FILE2 ...");
+            System.exit(1);
         }
         if (!settingL && !settingW) {
             settingW = true;
