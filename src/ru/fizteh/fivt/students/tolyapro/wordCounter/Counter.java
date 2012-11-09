@@ -15,7 +15,7 @@ enum ModeUniqueness {
 public class Counter {
 
     public static boolean checkEmpty(String[] args) {
-        return ((args.length == 1) && (args[0].isEmpty()));
+        return ((args.length < 1) || (args[0].isEmpty()));
     }
 
     public static boolean modeAgregate = false;
@@ -33,37 +33,37 @@ public class Counter {
 
     public static Mode getParam(char c, Mode mode) {
         if (c == 'l') {
-            if (mode.Type == ModeType.NONE) {
-                mode.Type = ModeType.LINES;
+            if (mode.type == ModeType.NONE) {
+                mode.type = ModeType.LINES;
             } else {
-                mode.Type = ModeType.ERR;
+                mode.type = ModeType.ERR;
                 return mode;
             }
         } else if (c == 'w') {
-            if (mode.Type == ModeType.NONE) {
-                mode.Type = ModeType.WORDS;
+            if (mode.type == ModeType.NONE) {
+                mode.type = ModeType.WORDS;
             } else {
-                mode.Type = ModeType.ERR;
-                return mode;
-            }
-        } else if (c == 'u') {
-            if (mode.Uniqueness == ModeUniqueness.NONE) {
-                mode.Uniqueness = ModeUniqueness.NONSENSITIVE;
-            } else {
-                mode.Type = ModeType.ERR;
+                mode.type = ModeType.ERR;
                 return mode;
             }
         } else if (c == 'U') {
-            if (mode.Uniqueness == ModeUniqueness.NONE) {
-                mode.Uniqueness = ModeUniqueness.SENSITIVE;
+            if (mode.uniqueness == ModeUniqueness.NONE) {
+                mode.uniqueness = ModeUniqueness.NONSENSITIVE;
             } else {
-                mode.Type = ModeType.ERR;
+                mode.type = ModeType.ERR;
+                return mode;
+            }
+        } else if (c == 'u') {
+            if (mode.uniqueness == ModeUniqueness.NONE) {
+                mode.uniqueness = ModeUniqueness.SENSITIVE;
+            } else {
+                mode.type = ModeType.ERR;
                 return mode;
             }
         } else if (c == 'a') {
             modeAgregate = true;
         } else {
-            mode.Type = ModeType.ERR;
+            mode.type = ModeType.ERR;
         }
         return mode;
     }
@@ -96,15 +96,15 @@ public class Counter {
                 }
             }
         }
-        if (mode.Type == ModeType.ERR) {
+        if (mode.type == ModeType.ERR) {
             System.out.println("Wrong parametres combination");
             System.exit(1);
         }
-        if ((paramNumb == 0) || (mode.Type == ModeType.NONE)) {
-            mode.Type = ModeType.WORDS;
+        if ((paramNumb == 0) || (mode.type == ModeType.NONE)) {
+            mode.type = ModeType.WORDS;
         }
         Map<String, Integer> dict;
-        if (mode.Uniqueness == ModeUniqueness.NONSENSITIVE) {
+        if (mode.uniqueness == ModeUniqueness.NONSENSITIVE) {
             dict = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
         } else {
             dict = new TreeMap<String, Integer>();
@@ -118,13 +118,13 @@ public class Counter {
                 br = new BufferedReader(file);
                 String strLine;
                 while ((strLine = br.readLine()) != null) {
-                    if (mode.Type == ModeType.WORDS) {
+                    if (mode.type == ModeType.WORDS) {
                         String[] words = strLine.split("[\\s|\t|:;,.()\\[\\]]");
                         for (String word : words) {
                             addWord(dict, word, mode);
                         }
                     } else {
-                        if (mode.Type == ModeType.LINES) {
+                        if (mode.type == ModeType.LINES) {
                             addWord(dict, strLine, mode);
                         }
                     }
@@ -137,8 +137,8 @@ public class Counter {
                 BufferCloser.close(file);
             }
             if (!modeAgregate) {
-                if (mode.Uniqueness != ModeUniqueness.NONE) {
-                    System.out.println("File " + args[i] + " :");
+                if (mode.uniqueness != ModeUniqueness.NONE) {
+                    System.out.println(args[i] + ": ");
                     Iterator<String> iterator = dict.keySet().iterator();
                     while (iterator.hasNext()) {
                         String word = iterator.next().toString();
@@ -152,7 +152,7 @@ public class Counter {
                         String word = iterator.next().toString();
                         sum += dict.get(word);
                     }
-                    System.out.print("File " + args[i] + " ");
+                    System.out.print(args[i] + ": ");
                     System.out.println(sum);
                 }
                 dict.clear();
@@ -160,7 +160,7 @@ public class Counter {
         }
         if (modeAgregate) {
             try {
-                if (mode.Uniqueness != ModeUniqueness.NONE) {
+                if (mode.uniqueness != ModeUniqueness.NONE) {
                     Iterator<String> iterator = dict.keySet().iterator();
                     while (iterator.hasNext()) {
                         String word = iterator.next().toString();
