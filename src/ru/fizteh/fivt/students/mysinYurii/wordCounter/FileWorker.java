@@ -34,10 +34,12 @@ public class FileWorker {
     }
     
     public int toCountWords(String fileName) {
+        FileReader tempReader = null;
         BufferedReader reader = null;
         try {
             int resultCount = 0;
-            reader = new BufferedReader(new FileReader(fileName));
+            tempReader = new FileReader(fileName);
+            reader = new BufferedReader(tempReader);
             String temp = reader.readLine();
             while (temp != null) {
                 for (int i = 0; i < temp.length(); ++i) {
@@ -52,12 +54,18 @@ public class FileWorker {
                 temp = reader.readLine();
             }
             wordCount += resultCount;
+            tempReader.close();
             reader.close();
             return resultCount;
         }  catch (IOException e) {
             System.err.println(e.getMessage());
             try {
-                reader.close();
+                if (reader != null) {
+                    reader.close();
+                }
+                if (tempReader != null) {
+                    tempReader.close();
+                }
             } catch (IOException e1) {
                 System.err.println(e1.getMessage());
             }
@@ -70,9 +78,11 @@ public class FileWorker {
     }
 
     public int toCountUniqueWords(String fileName, boolean caseSensivity) {
+        FileReader tempReader = null;
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new FileReader(fileName)); 
+            tempReader = new FileReader(fileName);
+            reader = new BufferedReader(tempReader); 
             String tempData = null;
             tempData = reader.readLine();
             while (tempData != null) {
@@ -93,13 +103,17 @@ public class FileWorker {
                 }
                 tempData = reader.readLine();
             }
+            tempReader.close();
             reader.close();
             return 0;
-        } catch(FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.err.println(e.getMessage());
             try {
                 if (reader != null) {
                     reader.close();
+                }
+                if (tempReader != null) {
+                    tempReader.close();
                 }
             } catch (IOException e1) {
                 System.err.println(e1.getMessage());
@@ -110,6 +124,9 @@ public class FileWorker {
             try {
                 if (reader != null) {
                     reader.close();
+                }
+                if (tempReader != null) {
+                    tempReader.close();
                 }
             } catch (IOException e1) {
                 System.err.println(e1.getMessage());
@@ -119,10 +136,12 @@ public class FileWorker {
     }
     
     public int toCountLines(String fileName) {
+        FileReader tempReader = null;
         BufferedReader reader = null;
         try {
             int resultCount = 0;
-            reader = new BufferedReader(new FileReader(fileName));
+            tempReader = new FileReader(fileName);
+            reader = new BufferedReader(tempReader);
             String tempData = new String();
             tempData = reader.readLine();
             while (tempData != null) {
@@ -130,6 +149,7 @@ public class FileWorker {
                 tempData = reader.readLine();
             }
             lineCount += resultCount;
+            tempReader.close();
             reader.close();
             return resultCount;
         } catch (FileNotFoundException e) {
@@ -137,6 +157,9 @@ public class FileWorker {
             try {
                 if (reader != null) {
                     reader.close();
+                }
+                if (tempReader != null) {
+                    tempReader.close();
                 }
             } catch (IOException e1) {
                 System.err.println(e1.getMessage());
@@ -147,6 +170,9 @@ public class FileWorker {
             try {
                 if (reader != null) {
                     reader.close();
+                }
+                if (tempReader != null) {
+                    tempReader.close();
                 }
             } catch (IOException e1) {
                 System.err.println(e1.getMessage());
