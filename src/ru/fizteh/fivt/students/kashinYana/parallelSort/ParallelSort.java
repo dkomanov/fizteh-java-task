@@ -11,6 +11,7 @@ import java.util.Arrays;
  */
 
 public class ParallelSort {
+
     static final int size = 4;
     static LinkedBlockingQueue queue;
     static ExecutorService service;
@@ -19,29 +20,27 @@ public class ParallelSort {
     static Object[] ans;
     static int maxSize = 2000;
     static int idAns = 0;
+
     public static void main(String[] args) throws Exception {
         queue = new LinkedBlockingQueue();
         numberThreads = 4;
         service = Executors.newFixedThreadPool(numberThreads);
         ans = new String[maxSize];
-        System.out.println("ok1");
         Sorter sorter[] = new Sorter[numberThreads];
-        for (int i = 0; i < numberThreads; i++)
-        {
-            System.out.println("ok" + (i + 1));
-            sorter[i] = new Sorter("" + i);
+        for (int i = 0; i < numberThreads; i++) {
+            sorter[i] = new Sorter(new Integer(i).toString());
             sorter[i].start();
         }
         reader("input.txt");
-
-        for(int i = 0; i < numberThreads; i++) {
+        for (int i = 0; i < numberThreads; i++) {
             sorter[i].join();
         }
         service.shutdown();
-        System.out.println("all stops");
         printAnswer("answer.txt");
     }
-    static void reader(String nameFile) throws  Exception{
+
+    static void reader(String nameFile) throws Exception {
+
         BufferedReader in = null;
         FileReader file = null;
         try {
@@ -52,11 +51,9 @@ public class ParallelSort {
                 String[] words = currentLine.split("[ \\t\\n.!?,:;]+");
                 for (int i = 0; i < words.length; i++) {
                     queue.put(words[i]);
-                    System.out.println("put -> " + words[i] + ",");
                 }
             }
-            for (int i = 0; i < numberThreads; i++)
-            {
+            for (int i = 0; i < numberThreads; i++) {
                 queue.put(STOP);
             }
         } finally {
@@ -67,69 +64,67 @@ public class ParallelSort {
                 file.close();
             }
         }
-        System.out.println("end reader");
     }
+
     static class Sorter extends Thread {
         Object array[];
         int last_id = 0;
         String name;
-        Sorter (String name_) {
+
+        Sorter(String name_) {
             name = name_;
-            System.out.println("create" + name);
         }
+
         public void run() {
-            while(true) {
+            while (true) {
                 boolean isStop = false;
-                if(last_id == 0){
+                if (last_id == 0) {
                     array = new Object[size];
                 }
-                if(last_id < size)
-                {
+                if (last_id < size) {
                     try {
                         array[last_id++] = queue.take();
-                        if(array[last_id - 1] == STOP) {
+                        if (array[last_id - 1] == STOP) {
                             last_id--;
                             isStop = true;
-                        }
-                        if(last_id > 0 ) {
-                            System.out.println("take ->"   +  name + "-> "+ array[last_id - 1].toString());
                         }
                     } catch (Exception e) {
                         System.err.println(e.getMessage());
                         System.exit(1);
                     }
                 }
-                if (last_id >= size || isStop){
-                    System.out.println("sort");
+                if (last_id >= size || isStop) {
                     class Merge implements Runnable {
                         Object[] array;
+
                         public Merge(Object[] array_) {
                             array = new Object[last_id];
-                            for(int i = 0; i < last_id; i++) {
+                            for (int i = 0; i < last_id; i++) {
                                 array[i] = array_[i];
                             }
                             Arrays.sort(array);
                         }
+
                         public void run() {
                             synchronized (ans) {
                                 Object tempArray[] = new Object[idAns + array.length];
                                 int idTempArray = 0;
                                 int idArray = 0;
                                 int indexAns = 0;
-                                while(idArray < array.length && indexAns < idAns) {
-                                    if(array[idArray].toString().compareTo(ans[indexAns].toString()) < 0) {
+                                while (idArray < array.length && indexAns < idAns) {
+                                    if (array[idArray].toString().compareTo(ans[indexAns].toString()) < 0) {
                                         tempArray[idTempArray++] = array[idArray++];
                                     } else {
                                         tempArray[idTempArray++] = ans[indexAns++];
                                     }
                                 }
-                                while(idArray < array.length) {
+                                while (idArray < array.length) {
                                     tempArray[idTempArray++] = array[idArray++];
                                 }
-                                while(indexAns < idAns) {
+                                while (indexAns < idAns) {
                                     tempArray[idTempArray++] = ans[indexAns++];
                                 }
-                                for(int i = 0; i < idTempArray; i++) {
+                                for (int i = 0; i < idTempArray; i++) {
                                     ans[i] = tempArray[i];
                                 }
                                 idAns = idTempArray;
@@ -137,8 +132,7 @@ public class ParallelSort {
                         }
                     }
                     service.submit(new Merge(array));
-                    if(isStop) {
-                        System.out.println("stop " + name);
+                    if (isStop) {
                         return;
                     }
                     last_id = 0;
@@ -147,17 +141,16 @@ public class ParallelSort {
         }
     }
 
-    static void printAnswer(String nameFile) throws Exception{
+    static void printAnswer(String nameFile) throws Exception {
         FileWriter out = null;
         File file = null;
         try {
             file = new File(nameFile);
-            out =  new FileWriter(file);
-            for(int i = 0; i < idAns; i++)
-            {
+            out = new FileWriter(file);
+            for (int i = 0; i < idAns; i++) {
                 out.write(ans[i].toString() + "\n");
             }
-        }  finally {
+        } finally {
             if (out != null) {
                 out.close();
             }
