@@ -87,7 +87,7 @@ public class WordCounter {
         }
         for (; param < args.length; param++) {
             //откроем очередной файл
-            FileReader f;
+            FileReader f = null;
             try {
                 f = new FileReader(args[param]);
                 
