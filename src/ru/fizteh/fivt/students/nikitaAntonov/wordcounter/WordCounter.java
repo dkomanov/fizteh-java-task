@@ -53,11 +53,11 @@ public class WordCounter {
                 continue;
             } finally {
                 if (scanner != null) {
-                    IOException old_exception = scanner.ioException();
+                    IOException oldException = scanner.ioException();
                     scanner.close();
-                    IOException new_exception = scanner.ioException();
-                    if (old_exception != new_exception) {
-                        System.err.println("It is impossible to close it correctly: " + new_exception.getMessage());
+                    IOException newException = scanner.ioException();
+                    if (oldException != newException) {
+                        System.err.println("It is impossible to close it correctly: " + newException.getMessage());
                     }
                 }
             }
