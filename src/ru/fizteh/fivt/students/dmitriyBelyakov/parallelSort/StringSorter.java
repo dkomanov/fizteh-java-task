@@ -13,26 +13,24 @@ public class StringSorter {
     }
 
     private void readStrings(ArrayList<String> valuesForSorting, String fileName) throws IOException {
-        BufferedReader bufReader = null;
-        FileReader fReader = null;
+        InputStream stream = null;
         try {
-            fReader = new FileReader(new File(fileName));
-            bufReader = new BufferedReader(fReader);
-            String str;
-            while ((str = bufReader.readLine()) != null) {
-                valuesForSorting.add(str);
-            }
+            stream = new FileInputStream(fileName);
+            readStringsFromStream(valuesForSorting, stream);
         } finally {
-            IoUtils.close(bufReader);
-            IoUtils.close(fReader);
+            IoUtils.close(stream);
         }
     }
 
     private void readStrings(ArrayList<String> valuesForSorting) throws IOException {
+        readStringsFromStream(valuesForSorting, System.in);
+    }
+
+    private void readStringsFromStream(ArrayList<String> valuesForSorting, InputStream stream) throws IOException{
         BufferedReader bufReader = null;
         InputStreamReader iSReader = null;
         try {
-            iSReader = new InputStreamReader(System.in);
+            iSReader = new InputStreamReader(stream);
             bufReader = new BufferedReader(iSReader);
             String str;
             while ((str = bufReader.readLine()) != null) {
@@ -40,6 +38,7 @@ public class StringSorter {
             }
         } finally {
             IoUtils.close(bufReader);
+            IoUtils.close(iSReader);
         }
     }
 
@@ -89,35 +88,30 @@ public class StringSorter {
     }
 
     private void printSortedValues(boolean uniqueOnly, boolean ignoreCase) {
+        printSortedValuesToStream(uniqueOnly, ignoreCase, System.out);
+    }
+
+    private void printSortedValues(boolean uniqueOnly, boolean ignoreCase, String outFileName) {
+        PrintStream stream = null;
+        try {
+            stream = new PrintStream(outFileName);
+            printSortedValuesToStream(uniqueOnly, ignoreCase, stream);
+        } catch (Throwable t) {
+            throw new RuntimeException("cannot open file for write.");
+        } finally {
+            IoUtils.close(stream);
+        }
+    }
+
+    private void printSortedValuesToStream(boolean uniqueOnly, boolean ignoreCase, PrintStream stream) {
         int countOfValues = valuesForSorting.size();
         String last = new String();
         for (int i = 0; i < countOfValues; ++i) {
             String nextValue = nextValueForMerge(ignoreCase);
             if (!uniqueOnly || (ignoreCase && !last.equalsIgnoreCase(nextValue)) || (!ignoreCase && !last.equals(nextValue))) {
-                System.out.println(nextValue);
+                stream.println(nextValue);
             }
             last = nextValue;
-        }
-    }
-
-    private void printSortedValues(boolean uniqueOnly, boolean ignoreCase, String outFileName) {
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(outFileName);
-            int countOfValues = valuesForSorting.size();
-            String last = new String();
-            for (int i = 0; i < countOfValues; ++i) {
-                String nextValue = nextValueForMerge(ignoreCase);
-                if (!uniqueOnly || (ignoreCase && !last.equalsIgnoreCase(nextValue)) || (!ignoreCase && !last.equals(nextValue))) {
-                    writer.write(nextValue);
-                    writer.write(System.lineSeparator());
-                }
-                last = nextValue;
-            }
-        } catch (Throwable t) {
-            throw new RuntimeException("cannot open file for write.");
-        } finally {
-            IoUtils.close(writer);
         }
     }
 
