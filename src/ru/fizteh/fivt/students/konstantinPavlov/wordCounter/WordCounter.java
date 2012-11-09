@@ -3,9 +3,8 @@ package ru.fizteh.fivt.students.konstantinPavlov;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -22,11 +21,11 @@ public class WordCounter {
 
     static Map<String, Integer> globalMap;
 
-    private static BufferedReader bufferedReader;
+    // private static BufferedReader bufferedReader;
 
     static void analyzeFile(String path) throws IOException {
-        FileInputStream fis = null;
-        InputStreamReader streamReader = null;
+        FileReader fis = null;
+        BufferedReader bufferedReader = null;
 
         try {
             File file = new File(path);
@@ -35,9 +34,8 @@ public class WordCounter {
                         + "\" can't be opened or readed");
                 System.exit(1);
             }
-            fis = new FileInputStream(file);
-            streamReader = new InputStreamReader(fis);
-            bufferedReader = new BufferedReader(streamReader);
+            fis = new FileReader(file);
+            bufferedReader = new BufferedReader(fis);
 
             String str;
             int localLinesAmount = 0;
@@ -139,7 +137,7 @@ public class WordCounter {
             System.err.println("Error: " + expt.getMessage());
         } finally {
             closer(fis);
-            closer(streamReader);
+            closer(bufferedReader);
         }
     }
 
@@ -214,8 +212,9 @@ public class WordCounter {
                 }
             }
         }
-        if (!settingL && !settingW)
+        if (!settingL && !settingW) {
             settingW = true;
+        }
     }
 
     public static void main(String[] args) throws IOException {
