@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.frolovNikolay.wordCounter;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.FileReader;
 import java.util.TreeMap;
 
@@ -12,17 +13,10 @@ import java.util.TreeMap;
  * Пустая строка = строка.
  */
 public class WordCounter {
-    static void closeFiles(BufferedReader reader, FileReader fReader) {
+    static void closeStream(Closeable stream) {
         try {
-            if (reader != null) {
-                reader.close();
-            }
-        } catch (Exception closeError) {
-            System.err.println(closeError.getMessage());
-        }
-        try {
-            if (fReader != null) {
-                fReader.close();
+            if (stream != null) {
+                stream.close();
             }
         } catch (Exception closeError) {
             System.err.println(closeError.getMessage());
@@ -48,7 +42,8 @@ public class WordCounter {
         } catch (Exception crush) {
             smthWrong = crush;
         } finally {
-            closeFiles(reader, fReader);
+            closeStream(reader);
+            closeStream(fReader);
             if (smthWrong != null) {
                 throw smthWrong;
             }
@@ -70,7 +65,8 @@ public class WordCounter {
         } catch (Exception crush) {
             smthWrong = crush;
         } finally {
-            closeFiles(reader, fReader);
+            closeStream(reader);
+            closeStream(fReader);
             if (smthWrong != null) {
                 throw smthWrong;
             }
@@ -107,7 +103,8 @@ public class WordCounter {
         } catch (Exception crush) {
             smthWrong = crush;
         } finally {
-            closeFiles(reader, fReader);
+            closeStream(reader);
+            closeStream(fReader);
             if (smthWrong != null) {
                 throw smthWrong;
             }
@@ -139,7 +136,8 @@ public class WordCounter {
         } catch (Exception crush) {
             smthWrong = crush;
         } finally {
-            closeFiles(reader, fReader);
+            closeStream(reader);
+            closeStream(fReader);
             if (smthWrong != null) {
                 throw smthWrong;
             }
