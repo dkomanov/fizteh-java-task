@@ -44,9 +44,6 @@ public class Counter {
             }
         } else {
             Integer amount;
-            // String lowerCaseWord = word.toLowerCase();
-            // if (!lowerCaseWords.containsKey(lowerCaseWord))
-            // lowerCaseWords.put(lowerCaseWord, word);
             amount = dict.get(word);
             if (dict.get(word) != null) {
                 dict.put(word, amount + 1);
@@ -183,7 +180,6 @@ public class Counter {
                     System.out.println(sum);
                 }
                 dict.clear();
-
             }
         }
         if (modeAgregate) {
