@@ -95,13 +95,22 @@ public class WordCounter {
                     continue;
                 }
                 if (toCountLines) {
-                    resultGetter.toCountLines(args[i]);
+                    if (resultGetter.toCountLines(args[i]) == -1) {
+                        System.out.println("Error");
+                        System.exit(1);
+                    }
                 }
                 if (toCountUnique) {
-                    resultGetter.toCountUniqueWords(args[i], caseSensivity);
+                    if (resultGetter.toCountUniqueWords(args[i], caseSensivity) == -1) {
+                        System.out.println("Error");
+                        System.exit(1);
+                    }
                 }
                 if (toCountWords) {
-                    resultGetter.toCountWords(args[i]);
+                    if (resultGetter.toCountWords(args[i]) == -1) {
+                        System.out.println("Error");
+                        System.exit(1);
+                    }
                 }
             }
             if (toCountLines) {
@@ -131,6 +140,9 @@ public class WordCounter {
                     int linesCount = resultGetter.toCountLines(args[i]);
                     if (linesCount != -1) {
                         System.out.println(linesCount);
+                    } else {
+                        System.out.println("Error");
+                        System.exit(1);
                     }
                 }
                 if (toCountWords) {
@@ -138,12 +150,18 @@ public class WordCounter {
                     int wordsCount = resultGetter.toCountWords(args[i]);
                     if (wordsCount != -1) {
                         System.out.println(wordsCount);
+                    } else {
+                        System.out.println("Error");
+                        System.exit(1);
                     }
                 }
                 if (toCountUnique) {
                     FileWorker resultGetter = new FileWorker(caseSensivity);
                     if (resultGetter.toCountUniqueWords(args[i], caseSensivity) != -1) {
                         resultGetter.printUniqueWords();
+                    } else {
+                        System.out.println("Error");
+                        System.exit(1);
                     }
                 }
             }
