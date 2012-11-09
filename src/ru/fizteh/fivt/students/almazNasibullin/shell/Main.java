@@ -62,13 +62,13 @@ public class Main {
         while (st.hasMoreTokens()) {
             String cur = st.nextToken();
             if (cur.equals("cd") && !commandExecute) {
-                if (st.hasMoreTokens()) {
-                    // проверка на наличие аргуметов для данной команды
+                if (st.hasMoreTokens()) { // проверка на наличие аргуметов для данной команды
+                    char c = File.separatorChar;
                     String path = st.nextToken();
-                    if (path.charAt(0) == '/') {
-                        System.setProperty("user.dir", "/");
+                    if (path.charAt(0) == c) {
+                        System.setProperty("user.dir", File.separator);
                     }
-                    StringTokenizer stSecond = new StringTokenizer(path, "/");
+                    StringTokenizer stSecond = new StringTokenizer(path, File.separator);
                     while (stSecond.hasMoreTokens()) {
                         cdExecute(stSecond.nextToken());
                     }
@@ -266,7 +266,7 @@ public class Main {
 
     public static void copyFile(File from, File to) { // рекурсивное копирование
         if (from.isDirectory()) {
-            File f = new File(to.getAbsolutePath() + "/" + from.getName());
+            File f = new File(to.getAbsolutePath() + File.separator + from.getName());
             f.mkdir();
             File[] file = from.listFiles();
             for (int i = 0; i < file.length; i++) {
@@ -276,7 +276,7 @@ public class Main {
             FileChannel srcChannel = null;
             FileChannel dstChannel = null;
             try {
-                File f = new File(to.getAbsolutePath() + "/" + from.getName());
+                File f = new File(to.getAbsolutePath() + File.separator + from.getName());
                 try {
                     f.createNewFile();
                 } catch (IOException e) {
