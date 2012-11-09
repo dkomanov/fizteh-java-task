@@ -212,11 +212,6 @@ public class WordCounter {
                 }
             }
         }
-        if (!(settingW || settingL || settingNoRegister || settingRegister || settingA)) {
-            System.err
-                    .println("Usage: java WordCounter [keys] FILE1 FILE2 ...");
-            System.exit(1);
-        }
         if (!settingL && !settingW) {
             settingW = true;
         }
@@ -224,7 +219,13 @@ public class WordCounter {
 
     public static void main(String[] args) throws IOException {
         setSettings(args);
-
+        
+        if (args.length==0) {
+            System.err
+                    .println("Usage: java WordCounter [keys] FILE1 FILE2 ...");
+            System.exit(1);
+        }
+        
         if (settingNoRegister) {
             globalMap = new TreeMap<String, Integer>(
                     String.CASE_INSENSITIVE_ORDER);
