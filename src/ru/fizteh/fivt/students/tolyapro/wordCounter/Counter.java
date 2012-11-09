@@ -15,7 +15,7 @@ enum ModeUniqueness {
 public class Counter {
 
     public static boolean checkEmpty(String[] args) {
-        return ((args.length == 1) && (args[0].isEmpty()));
+        return ((args.length < 1) || (args[0].isEmpty()));
     }
 
     public static boolean modeAgregate = false;
@@ -46,14 +46,14 @@ public class Counter {
                 mode.type = ModeType.ERR;
                 return mode;
             }
-        } else if (c == 'u') {
+        } else if (c == 'U') {
             if (mode.uniqueness == ModeUniqueness.NONE) {
                 mode.uniqueness = ModeUniqueness.NONSENSITIVE;
             } else {
                 mode.type = ModeType.ERR;
                 return mode;
             }
-        } else if (c == 'U') {
+        } else if (c == 'u') {
             if (mode.uniqueness == ModeUniqueness.NONE) {
                 mode.uniqueness = ModeUniqueness.SENSITIVE;
             } else {
@@ -138,7 +138,7 @@ public class Counter {
             }
             if (!modeAgregate) {
                 if (mode.uniqueness != ModeUniqueness.NONE) {
-                    System.out.println("File " + args[i] + " :");
+                    System.out.println(args[i] + ": ");
                     Iterator<String> iterator = dict.keySet().iterator();
                     while (iterator.hasNext()) {
                         String word = iterator.next().toString();
@@ -152,7 +152,7 @@ public class Counter {
                         String word = iterator.next().toString();
                         sum += dict.get(word);
                     }
-                    System.out.print("File " + args[i] + " ");
+                    System.out.print(args[i] + ": ");
                     System.out.println(sum);
                 }
                 dict.clear();
