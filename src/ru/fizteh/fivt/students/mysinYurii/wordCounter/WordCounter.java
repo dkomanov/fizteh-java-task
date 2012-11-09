@@ -33,8 +33,8 @@ public class WordCounter {
             System.out.println("Описание: [флаги] файл1 файл2 ...");
             System.out.println("-w : посчитать количество слов");
             System.out.println("-l : посчитать количество линий");
-            System.out.println("-u : вывести различные слова и их количество без учета регистра");
-            System.out.println("-U : то же что и -u, только с учетом регистра");
+            System.out.println("-u : вывести различные слова и их количество");
+            System.out.println("-U : то же что и -u, только без учета регистра");
             System.out.println("-a : абсорбировать информацию по файлам");
             System.exit(1);
         }
@@ -62,11 +62,11 @@ public class WordCounter {
                         } else {
                             if (args[i].charAt(j) == 'U') {
                                 toCountUnique = true;
-                                caseSensivity = true;
+                                caseSensivity = false;
                             } else {
                                 if (args[i].charAt(j) == 'u') {
                                     toCountUnique = true;
-                                    caseSensivity = false;
+                                    caseSensivity = true;
                                 } else {
                                     if (args[i].charAt(j) == 'a') {
                                         toAbsorb = true;
