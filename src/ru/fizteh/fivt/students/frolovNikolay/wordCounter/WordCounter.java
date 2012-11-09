@@ -34,7 +34,7 @@ public class WordCounter {
             while ((temp = reader.readLine()) != null) {
                 String[] words = temp.split("[\\s\\.\\?\\,\\-\\!\\;\\:\\'\\(\\)\\[\\]]+");
                 result += words.length;
-                if (words[0].isEmpty()) {
+                if (words.length != 0 && words[0].isEmpty()) {
                     --result;
                 }
             }
