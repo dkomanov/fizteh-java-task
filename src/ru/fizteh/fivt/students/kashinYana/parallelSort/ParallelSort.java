@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.kashinYana.parallelSort;
 
 import java.io.*;
+import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -20,10 +21,22 @@ public class ParallelSort {
     static Object[] ans;
     static int maxSize = 2000;
     static int idAns = 0;
+    static String outputFile;
+    static Vector<String> inputString;
+    static boolean isI = false;
+    static boolean isU = false;
+    static boolean isT = false;
+    static boolean isO = false;
 
     public static void main(String[] args) throws Exception {
+        inputString = new Vector<String>();
+        try {
+            readKeys(args);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
         queue = new LinkedBlockingQueue();
-        numberThreads = 4;
         service = Executors.newFixedThreadPool(numberThreads);
         ans = new String[maxSize];
         Sorter sorter[] = new Sorter[numberThreads];
@@ -31,37 +44,68 @@ public class ParallelSort {
             sorter[i] = new Sorter(new Integer(i).toString());
             sorter[i].start();
         }
-        reader("input.txt");
+        reader(inputString);
         for (int i = 0; i < numberThreads; i++) {
             sorter[i].join();
         }
         service.shutdown();
-        printAnswer("answer.txt");
+        printAnswer(outputFile);
     }
-
-    static void reader(String nameFile) throws Exception {
-
-        BufferedReader in = null;
-        FileReader file = null;
-        try {
-            file = new FileReader(nameFile);
-            in = new BufferedReader(file);
-            while (in.ready()) {
-                String currentLine = in.readLine();
-                String[] words = currentLine.split("[ \\t\\n.!?,:;]+");
-                for (int i = 0; i < words.length; i++) {
-                    queue.put(words[i]);
+    static void readKeys(String[] args) throws Exception{
+        boolean readFiles = false;
+        for(int i = 0; i < args.length; i++) {
+            System.out.println(args[i]);
+            if(args[i].equals("-i") && !readFiles) {
+                isI = true;
+            } else if(args[i].equals("-u") && !readFiles) {
+                isU = true;
+            } else if(args[i].equals("-o") && !readFiles) {
+                outputFile = args[i + 1];
+                i++;
+                isO = true;
+            } else if(args[i].equals("-t") && !readFiles) {
+                numberThreads = Integer.parseInt(args[i + 1]);
+                i++;
+                isT = true;
+            } else {
+                readFiles = true;
+                inputString.add(args[i]);
+            }
+        }
+        if(!isT) {
+            numberThreads = 4;
+        }
+        if(!isO) {
+            outputFile = "answer.txt";
+        }
+        if(!((isI && !isU) || (!isI && isU) )) {
+            throw new Exception("bad isI and isU");
+        }
+    }
+    static void reader(Vector<String> nameFile) throws Exception {
+        for(int j = 0; j < nameFile.size(); j++) {
+            BufferedReader in = null;
+            FileReader file = null;
+            try {
+                file = new FileReader(nameFile.elementAt(j));
+                in = new BufferedReader(file);
+                while (in.ready()) {
+                    String currentLine = in.readLine();
+                    String[] words = currentLine.split("[ \\t\\n.!?,:;]+");
+                    for (int i = 0; i < words.length; i++) {
+                        queue.put(words[i]);
+                    }
                 }
-            }
-            for (int i = 0; i < numberThreads; i++) {
-                queue.put(STOP);
-            }
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-            if (file != null) {
-                file.close();
+                for (int i = 0; i < numberThreads; i++) {
+                    queue.put(STOP);
+                }
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+                if (file != null) {
+                    file.close();
+                }
             }
         }
     }
@@ -112,10 +156,18 @@ public class ParallelSort {
                                 int idArray = 0;
                                 int indexAns = 0;
                                 while (idArray < array.length && indexAns < idAns) {
-                                    if (array[idArray].toString().compareTo(ans[indexAns].toString()) < 0) {
-                                        tempArray[idTempArray++] = array[idArray++];
+                                    if(isI) {
+                                        if (array[idArray].toString().toLowerCase().compareTo(ans[indexAns].toString().toLowerCase()) < 0) {
+                                            tempArray[idTempArray++] = array[idArray++];
+                                        } else {
+                                            tempArray[idTempArray++] = ans[indexAns++];
+                                        }
                                     } else {
-                                        tempArray[idTempArray++] = ans[indexAns++];
+                                        if (array[idArray].toString().compareTo(ans[indexAns].toString()) < 0) {
+                                            tempArray[idTempArray++] = array[idArray++];
+                                        } else {
+                                            tempArray[idTempArray++] = ans[indexAns++];
+                                        }
                                     }
                                 }
                                 while (idArray < array.length) {
