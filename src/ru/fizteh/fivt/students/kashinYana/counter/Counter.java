@@ -30,7 +30,7 @@ public class Counter {
         files = new String[args.length];
         filesSize = 0;
         int maxFlags = 0;
-        for(int i = 0; i < args.length; i++) {
+        for (int i = 0; i < args.length; i++) {
             maxFlags += args[i].length();
         }
         flags = new Character[maxFlags];
@@ -41,7 +41,7 @@ public class Counter {
         try {
             setFlags();
         } catch (Exception e) {
-            System.out.print(e.getMessage());
+            System.out.println(e.getMessage());
             System.exit(1);
         }
         if (filesSize == 0) {
@@ -52,11 +52,11 @@ public class Counter {
         try {
             if (isw) {
                 countWords(files, filesSize);
-            }  else if (isl) {
+            } else if (isl) {
                 countLines(files, filesSize);
             }
         } catch (Exception e) {
-            System.out.print(e.getMessage());
+            System.out.println(e.getMessage());
             System.exit(1);
         }
     }
@@ -118,10 +118,10 @@ public class Counter {
                 isU = true;
             }
         }
-        if (!(isl || isw )) {
+        if (!(isl || isw)) {
             isw = true;     // w - активен по умолчанию
         }
-        if(!((isw || isl) && (isw != isl) && !(isu && isU))) {
+        if (!((isw || isl) && (isw != isl) && !(isu && isU))) {
             throw new Exception("Don't use this set keys.");
         }
     }
@@ -131,14 +131,18 @@ public class Counter {
     }
 
     private static void countWords(String[] files, int filesSize) throws Exception {
+        HashMap<String, Integer> map = new HashMap<String, Integer>();
+        int totalNumber = 0;
         for (int i = 0; i < filesSize; i++) {
-            HashMap<String, Integer> map = new HashMap<String, Integer>();
+            if (!isA) {
+                map.clear();
+                totalNumber = 0;
+            }
             BufferedReader in = null;
             FileReader file = null;
             try {
                 file = new FileReader(files[i]);
                 in = new BufferedReader(file);
-                int totalNumber = 0;
                 while (in.ready()) {
                     String currentLine = in.readLine();
                     String[] words = currentLine.split("[ \\t\\n.!?,:;]+");
@@ -157,13 +161,13 @@ public class Counter {
                 }
                 if (!isA) {
                     System.out.println(files[i] + ":");
-                }
-                if (isu || isU) {
-                    for (Object it : map.keySet()) {
-                        System.out.println(it + " " + map.get(it));
+                    if (isu || isU) {
+                        for (Object it : map.keySet()) {
+                            System.out.println(it + " " + map.get(it));
+                        }
+                    } else {
+                        System.out.println(totalNumber);
                     }
-                } else {
-                    System.out.println(totalNumber);
                 }
             } finally {
                 if (in != null) {
@@ -174,17 +178,30 @@ public class Counter {
                 }
             }
         }
+        if (isA) {
+            if (isu || isU) {
+                for (Object it : map.keySet()) {
+                    System.out.println(it + " " + map.get(it));
+                }
+            } else {
+                System.out.println(totalNumber);
+            }
+        }
     }
 
     private static void countLines(String[] files, int filesSize) throws Exception {
         HashMap<String, Integer> map = new HashMap<String, Integer>();
+        int totalNumber = 0;
         for (int i = 0; i < filesSize; i++) {
+            if (!isA) {
+                totalNumber = 0;
+                map.clear();
+            }
             BufferedReader in = null;
             FileReader file = null;
             try {
                 file = new FileReader(files[i]);
                 in = new BufferedReader(file);
-                int totalNumber = 0;
                 while (in.ready()) {
                     String currentWord = in.readLine();
                     if (isU) {
@@ -199,12 +216,12 @@ public class Counter {
                 }
                 if (!isA) {
                     System.out.println(files[i] + ":");
-                }
-                if(!isu && !isU) {
-                    System.out.println(totalNumber);
-                } else {
-                    for (Object it : map.keySet()) {
-                        System.out.println(it + " " + map.get(it));
+                    if (!isu && !isU) {
+                        System.out.println(totalNumber);
+                    } else {
+                        for (Object it : map.keySet()) {
+                            System.out.println(it + " " + map.get(it));
+                        }
                     }
                 }
             } finally {
@@ -213,6 +230,15 @@ public class Counter {
                 }
                 if (file != null) {
                     file.close();
+                }
+            }
+        }
+        if (isA) {
+            if (!isu && !isU) {
+                System.out.println(totalNumber);
+            } else {
+                for (Object it : map.keySet()) {
+                    System.out.println(it + " " + map.get(it));
                 }
             }
         }

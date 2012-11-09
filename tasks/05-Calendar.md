@@ -2,7 +2,7 @@
 Консольное приложение, выводящее календарь.
 
 ```
-java Calendar [-m MONTH] [-y YEAR] [-w] [t TIMEZONE]
+java Calendar [-m MONTH] [-y YEAR] [-w] [-t TIMEZONE]
 ```
 
 Ключи:
@@ -47,3 +47,6 @@ Mo Tu We Th Fr Sa Su
 
 Now: 2012.10.19 15:25:00 Omsk Time
 ```
+
+[Пример работы с классами Calendar, TimeZone и SimpleDateFormat]
+(https://github.com/dkomanov/fizteh-java-task/blob/master/src/ru/fizteh/fivt/examples/CalendarExample.java)
