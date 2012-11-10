@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.almazNasibullin.calendar;
+package ru.fizteh.fivt.students.almazNasibullin;
 
 /**
  * 21.10.12
