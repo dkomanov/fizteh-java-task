@@ -1,12 +1,10 @@
 package ru.fizteh.fivt.students.kashinYana.parallelSort;
 
 import java.io.*;
-import java.util.Comparator;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.Arrays;
 
 /**
  * Student: Yana Kashinskaya, 195 gr.
@@ -28,14 +26,21 @@ public class ParallelSort {
     static boolean isO = false;
 
     public static void main(String[] args) throws Exception {
+
         inputString = new Vector<String>();
         ans = new Vector();
+        if (args.length == 0) {
+            System.err.println("[-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
+            System.exit(1);
+        }
+
         try {
             readKeys(args);
         } catch (Exception e) {
             System.err.println("Error in set keys :" + e.getMessage());
             System.exit(1);
         }
+
         queue = new LinkedBlockingQueue();
         service = Executors.newFixedThreadPool(numberThreads);
         Sorter sorter[] = new Sorter[numberThreads];
@@ -50,18 +55,19 @@ public class ParallelSort {
         service.shutdown(); //??????????????????????
         printAnswer(outputFile);
     }
-    static void readKeys(String[] args) throws Exception{
+
+    static void readKeys(String[] args) throws Exception {
         boolean readFiles = false;
-        for(int i = 0; i < args.length; i++) {
-            if(args[i].equals("-i") && !readFiles) {
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("-i") && !readFiles) {
                 isI = true;
-            } else if(args[i].equals("-u") && !readFiles) {
+            } else if (args[i].equals("-u") && !readFiles) {
                 isU = true;
-            } else if(args[i].equals("-o") && !readFiles) {
+            } else if (args[i].equals("-o") && !readFiles) {
                 outputFile = args[i + 1];
                 i++;
                 isO = true;
-            } else if(args[i].equals("-t") && !readFiles) {
+            } else if (args[i].equals("-t") && !readFiles) {
                 numberThreads = Integer.parseInt(args[i + 1]);
                 i++;
                 isT = true;
@@ -70,18 +76,19 @@ public class ParallelSort {
                 inputString.add(args[i]);
             }
         }
-        if(!isT) {
+        if (!isT) {
             numberThreads = 4;  ///??????????
         }
-        if(!isO) {
+        if (!isO) {
             outputFile = "answer.txt"; ///??????????
         }
-        if(!((isI && !isU) || (!isI && isU) )) {
+        if (!((isI && !isU) || (!isI && isU))) {
             throw new Exception("bad isI and isU");
         }
     }
+
     static void reader(Vector<String> nameFile) throws Exception {
-        for(int j = 0; j < nameFile.size(); j++) {
+        for (int j = 0; j < nameFile.size(); j++) {
             BufferedReader in = null;
             FileReader file = null;
             try {
@@ -138,10 +145,10 @@ public class ParallelSort {
 
                         public Merge(Vector array_) {
                             array = array_;
-                            if(isI) {
-                                Arrays.sort(array.toArray(), new ComparatorLower() );
-                            } else {            ///??????????????????????
-                                Arrays.sort(array.toArray(), new ComparatorNotLower());
+                            if (isI) {
+                                Collections.sort(array, new ComparatorLower());
+                            } else {
+                                Collections.sort(array, new ComparatorNotLower());
                             }
                         }
 
@@ -151,7 +158,7 @@ public class ParallelSort {
                                 int idArray = 0;
                                 int indexAns = 0;
                                 while (idArray < array.size() && indexAns < ans.size()) {
-                                    if(isI) {
+                                    if (isI) {
                                         if (new ComparatorLower().compare(array.elementAt(idArray), ans.elementAt(indexAns)) < 0) {
                                             tempArray.add(array.elementAt(idArray));
                                             idArray++;
@@ -185,10 +192,10 @@ public class ParallelSort {
                         }
                     }
                     service.submit(new Merge(array));
+                    array = new Vector();
                     if (isStop) {
                         return;
                     }
-                    array = new Vector();
                 }
             }
         }
@@ -211,7 +218,7 @@ public class ParallelSort {
     }
 
     static class ComparatorLower implements Comparator {
-        public int compare(Object string1, Object string2){
+        public int compare(Object string1, Object string2) {
             int ans = string1.toString().toLowerCase().compareTo(string2.toString().toLowerCase());
             if (ans < 0)
                 return -1;
@@ -223,7 +230,7 @@ public class ParallelSort {
     }
 
     static class ComparatorNotLower implements Comparator {
-        public int compare(Object string1, Object string2){
+        public int compare(Object string1, Object string2) {
             int ans = string1.toString().compareTo(string2.toString());
             if (ans < 0)
                 return -1;
