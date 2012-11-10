@@ -2,9 +2,7 @@ package ru.fizteh.fivt.students.altimin.shell;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Stack;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * User: altimin
@@ -83,7 +81,7 @@ public class Shell {
         try {
             return new File(path).getCanonicalPath();
         } catch (IOException e) {
-            return new File(path).getAbsolutePath();
+            return new File(path).getAbsolutePath() ;
         }
     }
 
@@ -226,7 +224,7 @@ public class Shell {
     public void processCommand(String cmd) throws IllegalArgumentException, InterruptedException {
         String[] parsedCommand = cmd.split(" ");
         String commandName = null;
-        Vector<String> arguments = new Vector<String>();
+        List<String> arguments = new ArrayList<String>();
         for (String string: parsedCommand) {
             if (string.length() > 0) {
                 if (commandName == null) {
