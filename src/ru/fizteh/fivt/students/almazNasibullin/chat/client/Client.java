@@ -14,6 +14,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
+import ru.fizteh.fivt.students.almazNasibullin.MessageType;
+import ru.fizteh.fivt.students.almazNasibullin.MessageUtils;
+import ru.fizteh.fivt.students.almazNasibullin.WrapperPrimitive;
 
 /**
  * 21.10.12
@@ -41,7 +45,7 @@ public class Client {
             String nick = ""; // ник клиента
 
             if (args.length == 0) {
-                printErrorAndExit("Put your nick");
+                IOUtils.printErrorAndExit("Put your nick");
             } else {
                 nick = args[0];
             }
@@ -61,13 +65,8 @@ public class Client {
                 }
             }
         } catch (Exception e) {
-            printErrorAndExit(e.getMessage());
+            IOUtils.printErrorAndExit(e.getMessage());
         }
-    }
-
-    public static void printErrorAndExit(String error) {
-        System.err.println(error);
-        System.exit(1);
     }
 
     public static void closeChannel(SocketChannel sc) {
@@ -76,7 +75,7 @@ public class Client {
                 sc.close();
             }
         } catch (Exception e) {
-            printErrorAndExit("Bad closing: " + e.getMessage());
+            IOUtils.printErrorAndExit("Bad closing: " + e.getMessage());
         }
     }
 
@@ -86,7 +85,7 @@ public class Client {
                 selector.close();
             }
         } catch (Exception e) {
-            printErrorAndExit("Bad closing: " + e.getMessage());
+            IOUtils.printErrorAndExit("Bad closing: " + e.getMessage());
         }
     }
 
@@ -125,17 +124,17 @@ public class Client {
                             sendMessage(channels.get(curServerNumber.t),
                                     MessageUtils.hello(nick));
                         } catch (Exception e) {
-                            printErrorAndExit(e.getMessage());
+                            IOUtils.printErrorAndExit(e.getMessage());
                         }
                     }
                 } else {
-                    printErrorAndExit("Usage: /connect host:port");
+                    IOUtils.printErrorAndExit("Usage: /connect host:port");
                 }
             } else {
-                printErrorAndExit("Usage: /connect host port");
+                IOUtils.printErrorAndExit("Usage: /connect host port");
             }
         } catch (Exception e) {
-            printErrorAndExit("Bad connecting: " + e.getMessage());
+            IOUtils.printErrorAndExit("Bad connecting: " + e.getMessage());
         }
     }
 
@@ -190,10 +189,10 @@ public class Client {
                             curServer.t = host;
                             curServerNumber.t = servers.get(curServer.t);
                         } else {
-                            printErrorAndExit(host + ": there is no such server");
+                            IOUtils.printErrorAndExit(host + ": there is no such server");
                         }
                     } else {
-                        printErrorAndExit("Usage: /use hostName");
+                        IOUtils.printErrorAndExit("Usage: /use hostName");
                     }
                 } else if (cmd.equals("/exit")) {
                     Iterator it = servers.entrySet().iterator();
@@ -220,7 +219,7 @@ public class Client {
                 }
             }
         } catch (Exception e) {
-            printErrorAndExit(e.getMessage());
+            IOUtils.printErrorAndExit(e.getMessage());
         }
     }
 
@@ -266,8 +265,7 @@ public class Client {
             }
             keys.clear();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            IOUtils.printErrorAndExit(e.getMessage());
         }
     }
 
@@ -277,10 +275,10 @@ public class Client {
                 ByteBuffer bf = ByteBuffer.wrap(message);
                 sc.write(bf);
             } else {
-                printErrorAndExit("Bad SocketChannel");
+                IOUtils.printErrorAndExit("Bad SocketChannel");
             }
         } catch (Exception e) {
-            printErrorAndExit("Bad sending message!" + e.getMessage());
+            IOUtils.printErrorAndExit("Bad sending message!" + e.getMessage());
         }
     }
 
@@ -296,7 +294,7 @@ public class Client {
                         channels, selectors);
             }
         } catch (Exception e) {
-            printErrorAndExit("Bad geting message!" + e.getMessage());
+            IOUtils.printErrorAndExit("Bad geting message!" + e.getMessage());
         }
     }
 }

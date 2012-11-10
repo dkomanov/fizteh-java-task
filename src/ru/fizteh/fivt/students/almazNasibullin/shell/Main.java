@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.util.StringTokenizer;
+import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
 
 /**
  * 15.10.12
@@ -31,8 +32,7 @@ public class Main {
                 try {
                     str = buf.readLine();
                 } catch (IOException e) {
-                    System.err.println(e.getMessage());
-                    System.exit(1);
+                    IOUtils.printErrorAndExit(e.getMessage());
                 }
                 StringTokenizer st = new StringTokenizer(str, ";"); // разделяем аргументы
                 while (st.hasMoreTokens()) {
@@ -73,8 +73,7 @@ public class Main {
                         cdExecute(stSecond.nextToken());
                     }
                 } else {
-                    System.err.println("Usage: cd <absolute path|relative path>");
-                    System.exit(1);
+                    IOUtils.printErrorAndExit("Usage: cd <absolute path|relative path>");
                 }
                 commandExecute = true;
             } else if (cur.equals("mkdir") && !commandExecute) {
@@ -83,8 +82,7 @@ public class Main {
                     String fileName = st.nextToken();
                     mkdirExecute(fileName);
                 } else {
-                    System.err.println("Usage: mkdir <dirname>");
-                    System.exit(1);
+                    IOUtils.printErrorAndExit("Usage: mkdir <dirname>");
                 }
                 commandExecute = true;
             } else if (cur.equals("pwd") && !commandExecute) {
@@ -96,8 +94,7 @@ public class Main {
                     String fileName = st.nextToken();
                     rmExecute(fileName);
                 } else {
-                    System.err.println("Usage: rm <file|dir>");
-                    System.exit(1);
+                    IOUtils.printErrorAndExit("Usage: rm <file|dir>");
                 }
                 commandExecute = true;
             } else if (cur.equals("cp") && !commandExecute) {
@@ -108,12 +105,10 @@ public class Main {
                             String dist = st.nextToken();
                             cpExecute(source, dist, true);
                     } else {
-                        System.err.println("Usage: cp <source> <destination>");
-                        System.exit(1);
+                        IOUtils.printErrorAndExit("Usage: cp <source> <destination>");
                     }
                 } else {
-                    System.err.println("Usage: cp <source> <destination>");
-                    System.exit(1);
+                    IOUtils.printErrorAndExit("Usage: cp <source> <destination>");
                 }
                 commandExecute = true;
             } else if (cur.equals("mv") && !commandExecute) {
@@ -124,18 +119,15 @@ public class Main {
                             String dist = st.nextToken();
                             mvExecute(source, dist);
                     } else {
-                        System.err.println("Usage: cp <source> <destination>");
-                        System.exit(1);
+                        IOUtils.printErrorAndExit("Usage: cp <source> <destination>");
                     }
                 } else {
-                    System.err.println("Usage: cp <source> <destination>");
-                    System.exit(1);
+                    IOUtils.printErrorAndExit("Usage: cp <source> <destination>");
                 }
                 commandExecute = true;
             } else if (cur.equals("dir") && !commandExecute) {
                 if (st.hasMoreTokens()) {
-                    System.err.println("'dir' does not support the arguments");
-                    System.exit(1);
+                    IOUtils.printErrorAndExit("'dir' does not support the arguments");
                 } else {
                     File f = new File(System.getProperty("user.dir"));
                     String[] files = f.list();
@@ -149,8 +141,7 @@ public class Main {
                 System.exit(0);
             } else {
                 if (!commandExecute) { // условие некорректного ввода
-                    System.err.println(cur + ": command not found");
-                    System.exit(1);
+                    IOUtils.printErrorAndExit((cur + ": command not found"));
                 }
             }
         }
@@ -169,13 +160,11 @@ public class Main {
             File f = new File(path).getAbsoluteFile();
             if (f.exists()) {
                 if (!f.isDirectory()) {
-                    System.err.println("cd: " + path +" Not a directory");
-                    System.exit(1);
+                    IOUtils.printErrorAndExit("cd: " + path +" Not a directory");
                 }
                 System.setProperty("user.dir", f.getAbsolutePath());
             } else {
-                System.err.println("cd: " + path + ": No such file or directory");
-                System.exit(1);
+                IOUtils.printErrorAndExit("cd: " + path + ": No such file or directory");
             }
         }
     }
@@ -183,9 +172,8 @@ public class Main {
     public static File mkdirExecute(String fileName) { // выполнение команды 'mkdir'
         File f = new File(fileName).getAbsoluteFile();
         if (f.exists()) {
-            System.err.println("mkdir: cannot create directory `" +
+            IOUtils.printErrorAndExit("mkdir: cannot create directory `" +
                     fileName + "': File exists");
-            System.exit(1);
         } else {
             f.mkdir();
         }
@@ -194,12 +182,10 @@ public class Main {
 
     public static void rmExecute(String fileName) { // выполнение команды 'rm'
         if (fileName.equals("..")) {
-            System.out.println("rm: cannot remove directory: `..'");
-            System.exit(1);
+            IOUtils.printErrorAndExit("rm: cannot remove directory: `..'");
         }
         if (fileName.equals(".")) {
-            System.out.println("rm: cannot remove directory: `.'");
-            System.exit(1);
+            IOUtils.printErrorAndExit("rm: cannot remove directory: `.'");
         }
         File f = new File(fileName).getAbsoluteFile();
         if (f.exists()) {
@@ -207,14 +193,12 @@ public class Main {
                 deleteDirectory(f);
             } else {
                 if (!f.delete()) {
-                    System.out.println("Can not delete " + fileName);
-                    System.exit(1);
+                    IOUtils.printErrorAndExit("Can not delete " + fileName);
                 }
             }
         } else {
-            System.out.println("rm: failed to remove `" +
+            IOUtils.printErrorAndExit("rm: failed to remove `" +
                     fileName + "': No such file or directory");
-            System.exit(1);
         }
     }
 
@@ -231,8 +215,7 @@ public class Main {
             }
         }
         if (!f.delete()) {
-            System.out.println("Can not delete " + f.getName());
-            System.exit(1);
+            IOUtils.printErrorAndExit("Can not delete " + f.getName());
         }
     }
 
@@ -243,8 +226,7 @@ public class Main {
          */
         File from = new File(source).getAbsoluteFile();
         if (!from.exists()) {
-            System.err.println("cp: `" + source + "': No such file or directory");
-            System.exit(1);
+            IOUtils.printErrorAndExit("cp: `" + source + "': No such file or directory");
         }
         File to = new File(dist).getAbsoluteFile();
         if (!to.exists()) {
@@ -289,24 +271,21 @@ public class Main {
                         f.getAbsolutePath()).getChannel();
                 dstChannel.transferFrom(srcChannel, 0, srcChannel.size());
             } catch (Exception e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
+                IOUtils.printErrorAndExit(e.getMessage());
             } finally {
                 try {
                     if (srcChannel != null) {
                         srcChannel.close();
                     }
                 } catch (Exception e) {
-                    System.err.println(e.getMessage());
-                    System.exit(1);
+                    IOUtils.printErrorAndExit(e.getMessage());
                 }
                 try {
                     if (dstChannel != null) {
                         dstChannel.close();
                     }
                 } catch (Exception e) {
-                    System.err.println(e.getMessage());
-                    System.exit(1);
+                    IOUtils.printErrorAndExit(e.getMessage());
                 }
             }
         }
@@ -316,8 +295,7 @@ public class Main {
         File from = new File(source).getAbsoluteFile();
         File to = new File(dist).getAbsoluteFile();
         if (!from.exists()) {
-            System.err.println("mv: `" + source + "': No such file or directory");
-            System.exit(1);
+            IOUtils.printErrorAndExit("mv: `" + source + "': No such file or directory");
         }
         if (!to.exists()) {
             to = mkdirExecute(to.getAbsolutePath());
