@@ -99,7 +99,7 @@ public class Shell {
         }
         StringBuilder stringBuilder = new StringBuilder();
         for (String string: stack) {
-            stringBuilder.append("/");
+            stringBuilder.append(File.separator);
             stringBuilder.append(string);
         }
         return stringBuilder.toString();
