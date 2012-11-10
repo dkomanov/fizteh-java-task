@@ -27,8 +27,9 @@ public class Sorter implements Runnable{
         } else {
             Collections.sort(container);
         }
+        ResultContainer resultContainer = new ResultContainer(ignoreCase, container)
         synchronized (finish) {
-            finish.add(new ResultContainer(ignoreCase, container));
+            finish.add(resultContainer);
         }
     }
 }
