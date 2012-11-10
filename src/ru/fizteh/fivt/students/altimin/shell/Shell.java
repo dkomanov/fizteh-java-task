@@ -1,7 +1,5 @@
 package ru.fizteh.fivt.students.altimin.shell;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -21,11 +19,11 @@ public class Shell {
         final String name;
         final int expectedArguments;
 
-        public Command(String name, int expectedArguments) throws NotImplementedException {
+        public Command(String name, int expectedArguments) throws IllegalArgumentException {
             this.name = name;
             this.expectedArguments = expectedArguments;
             if (expectedArguments > 2 || expectedArguments < -1) {
-                throw new NotImplementedException();
+                throw new IllegalArgumentException(expectedArguments + " arguments not supported");
             }
         }
 
