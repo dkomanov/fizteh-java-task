@@ -3,6 +3,7 @@ package ru.fizteh.fivt.students.myhinMihail;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.lang.Math;
 
 class SortPiece {
     public int from = 0;
@@ -19,14 +20,14 @@ public class ParallelSort {
     final static int MIN_LENGTH = 1000;
     
     public static boolean onlyUnique = false;
-    public static boolean caseSensitive = false;
+    public static boolean notCaseSensitive = false;
     public static int threadsCount = 0;
     public static String output = "";
     
     public static class Sorter extends Thread {
         private List<String> list;
         private Object synchronizer;
-        private  LinkedBlockingQueue<SortPiece> queue;
+        private LinkedBlockingQueue<SortPiece> queue;
 
         public Sorter(List<String> inList, LinkedBlockingQueue<SortPiece> q, Object sync) {
             list = inList;
@@ -47,10 +48,14 @@ public class ParallelSort {
                         }
                         break;
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    System.err.println(e.getMessage());
                 }
-                Collections.sort(list.subList(sync.from, sync.to));
+                if (notCaseSensitive) {
+                    Collections.sort(list.subList(sync.from, sync.to), String.CASE_INSENSITIVE_ORDER);
+                } else {
+                    Collections.sort(list.subList(sync.from, sync.to));
+                }
             }
         }
         
@@ -60,8 +65,9 @@ public class ParallelSort {
         List<String> mergeList = new ArrayList<String>();
         int h = low, j = mid, k;
             
-        while (h < mid && j < high) {        
-            if (inList.get(h).compareTo(inList.get(j)) <= 0) {                    
+        while (h < mid && j < high) {
+            if ((!notCaseSensitive && inList.get(h).compareTo(inList.get(j)) <= 0) || 
+                    (notCaseSensitive && String.CASE_INSENSITIVE_ORDER.compare(inList.get(h), inList.get(j)) <= 0)) {                    
                 mergeList.add(inList.get(h));
                 h++;
             } else {
@@ -75,12 +81,12 @@ public class ParallelSort {
                 mergeList.add(inList.get(k)); 
             }
        } else {
-            for  (k = h; k < mid; k++) {
-                 mergeList.add(inList.get(k)); 
+            for (k = h; k < mid; k++) {
+                mergeList.add(inList.get(k)); 
             }
        }
 
-       for(k = low; k < high; k++) {
+       for (k = low; k < high; k++) {
             inList.set(k, mergeList.get(k-low));
        }
 
@@ -110,7 +116,7 @@ public class ParallelSort {
                             break;
                         
                         case 'i':
-                            caseSensitive = true;
+                            notCaseSensitive = true;
                             break;
                         
                         case 't':
@@ -164,25 +170,24 @@ public class ParallelSort {
         File file = new File(path);
         FileReader fr = null;
         BufferedReader reader = null;
-            
+        
+        if (!file.exists()) {
+            System.err.println("Error: can not open " + file);
+            System.exit(1);
+        }
+
         try {
             fr = new FileReader(file);
             reader = new BufferedReader(fr);
             String line;
             
             while ((line = reader.readLine()) != null) {
-               if (!line.isEmpty()) {
-                        list.add(caseSensitive ? line : line.toLowerCase());
-                }
+                list.add(line);
             } 
                 
         } finally {
-            if (fr != null) {
-                fr.close();
-            }
-            if (reader != null) {
-                reader.close();
-            }
+            Utils.tryClose(fr);
+            Utils.tryClose(reader);
         }    
     }
         
@@ -207,9 +212,7 @@ public class ParallelSort {
                     osw = new OutputStreamWriter(fos);
                     out = new BufferedWriter(osw);
                 } catch (Exception e) {
-                    if (out != null) {
-                        out.close();
-                    }
+                    Utils.tryClose(out);
                     System.err.println("Can not write to " + output + "\n" + e.getMessage());
                     System.exit(1);
                 }
@@ -220,13 +223,15 @@ public class ParallelSort {
             int linesCount = list.size();
             int portion = 0;
             
-            if (linesCount >= MIN_LENGTH * threadsCount && linesCount <= MAX_LENGTH * threadsCount) {
+            int maxLength = Math.max(linesCount / threadsCount, MAX_LENGTH);
+            
+            if (linesCount >= MIN_LENGTH * threadsCount && linesCount <= maxLength * threadsCount) {
                 portion = linesCount / threadsCount;
             } else { 
-                if (linesCount <= MAX_LENGTH * threadsCount) {
+                if (linesCount <= maxLength * threadsCount) {
                     portion = MIN_LENGTH; 
                 } else {
-                    portion = MAX_LENGTH;
+                    portion = maxLength;
                 }
             }
             
@@ -308,14 +313,24 @@ public class ParallelSort {
                 }
                 
             } else {
-                Collections.sort(list);
+                if (notCaseSensitive) {
+                    Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
+                } else {
+                    Collections.sort(list);
+                }
             }
             
             out.write(list.get(0) + separator);
             for (int i = 1; i < list.size(); ++i) {
                 if (onlyUnique) {
-                    if (!list.get(i).equals(list.get(i-1))) {
-                        out.write(list.get(i) + separator);
+                    if (notCaseSensitive) {
+                        if (String.CASE_INSENSITIVE_ORDER.compare(list.get(i), list.get(i - 1)) != 0) {
+                            out.write(list.get(i) + separator);
+                        }
+                    } else {
+                        if (!list.get(i).equals(list.get(i - 1))) {
+                            out.write(list.get(i) + separator);
+                        }
                     }
                 } else { 
                     out.write(list.get(i) + separator);
@@ -326,28 +341,17 @@ public class ParallelSort {
             System.err.println("Error: " + expt.getMessage());
         } finally {
             if (!output.isEmpty()) {
+                Utils.tryClose(out);
+            } else {
                 try {
-                    out.close();
-                } catch (IOException e) {
-                    System.err.println("Error: can not close" + output);
+                    out.flush();
+                } catch (Exception e) {
+                    System.err.println("Error: " + e.getMessage());
                 }
             }
             
-            if (osw != null) {
-                try {
-                    osw.close();
-                } catch (IOException e) {
-                    System.err.println("Error: can not close" + osw);
-                }
-            }
-            
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    System.err.println("Error: can not close" + fos);
-                }
-            }
+            Utils.tryClose(osw);
+            Utils.tryClose(fos);
         }
         
     }

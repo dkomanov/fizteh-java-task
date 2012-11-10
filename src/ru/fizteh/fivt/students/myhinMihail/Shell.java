@@ -1,4 +1,5 @@
 package ru.fizteh.fivt.students.myhinMihail;
+
 import java.io.*;
 import java.util.Vector;
 
@@ -41,7 +42,7 @@ public class Shell {
             is = new FileInputStream(source);
             os = new FileOutputStream(dest);
             int nLength;
-            byte[] buf = new byte[8000];
+            byte[] buf = new byte[8192];
             while (true) {
                 nLength = is.read(buf);
                 if (nLength < 0) {
@@ -53,18 +54,8 @@ public class Shell {
         } catch (Exception excpt) {
             errorAndExit(command +": " + excpt.getMessage());
         } finally {
-            if (is != null) {
-               try {
-                   is.close();
-               } catch (Exception ex) {
-               }
-            }
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (Exception ex) {
-                }
-            }
+              Utils.tryClose(is);
+              Utils.tryClose(os);
         }
         return false;
     }
@@ -143,7 +134,10 @@ public class Shell {
     
     public static boolean checkCommandsCount(Vector<String> params, int size) {
         if (params.size() < size) {
-            errorAndExit("Bad command");
+            if (!console) {
+                System.err.println("Bad command");
+                System.exit(1);
+            }
             return false;
         }
         return true;
@@ -288,10 +282,14 @@ public class Shell {
                 BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
                 while (true) {
                     System.out.print("$ ");
-                    String commands[] = input.readLine().split("[\\s]*[;][\\s]*");
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(input.readLine()).append(" ; ");
+                    
+                    String commands[] = sb.toString().split("\\s*;\\s*");
                     for (String s : commands) {
                         if (!executeCommand(s)) {
                             System.err.println("Bad command \'"+ s + "\'");
+                            break;
                         }
                     }
                 }
@@ -302,8 +300,9 @@ public class Shell {
                     sb.append(args[i]).append(" ");
                 }
                 sb.append(args[args.length - 1]);
+                sb.append(" ; ");
                 
-                String commands[] = sb.toString().split("[\\s]*[;][\\s]*");
+                String commands[] = sb.toString().split("\\s*;\\s*");
                 for (String s : commands) {
                     executeCommand(s);
                 }

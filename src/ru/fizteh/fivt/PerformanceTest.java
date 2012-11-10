@@ -32,15 +32,15 @@ public class PerformanceTest {
         long msecs = nanos / 1000;
         long millis = msecs / 1000;
 
-        System.out.println("Total (nanos):    " + nanos);
-        System.out.println("Total (msecs):    " + msecs);
-        System.out.println("Total (millis):   " + millis);
-        System.out.println("Total (seconds):  " + (millis / 1000));
+        System.err.println("Total (nanos):    " + nanos);
+        System.err.println("Total (msecs):    " + msecs);
+        System.err.println("Total (millis):   " + millis);
+        System.err.println("Total (seconds):  " + (millis / 1000));
 
-        System.out.println("Single (nanos):   " + (nanos / n));
-        System.out.println("Single (msecs):   " + (msecs / n));
-        System.out.println("Single (millis):  " + (millis / n));
-        System.out.println("Single (seconds): " + (millis / 1000 / n));
+        System.err.println("Single (nanos):   " + (nanos / n));
+        System.err.println("Single (msecs):   " + (msecs / n));
+        System.err.println("Single (millis):  " + (millis / n));
+        System.err.println("Single (seconds): " + (millis / 1000 / n));
     }
 
     public static void main(String[] args) {
