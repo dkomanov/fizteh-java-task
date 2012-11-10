@@ -1,6 +1,8 @@
 package ru.fizteh.fivt.students.fedyuninV.parallelSort;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
 
 /**
  * Fedyunin Valeriy
@@ -8,11 +10,11 @@ import java.util.ArrayList;
  */
 public class Sorter implements Runnable{
 
-    ArrayList<String> container = null;
+    List<String> container = null;
     ResultContainer finish = null;
     boolean ignoreCase;
 
-    public Sorter(ResultContainer finish, ArrayList<String> container, boolean ignoreCase) {
+    public Sorter(ResultContainer finish, List<String> container, boolean ignoreCase) {
         this.ignoreCase = ignoreCase;
         this.finish = finish;
         this.container = container;
@@ -20,12 +22,13 @@ public class Sorter implements Runnable{
 
 
     public void run() {
-        ResultContainer result = new ResultContainer(ignoreCase);
-        while (!container.isEmpty()) {
-            result.add(container.remove(container.size() - 1));
+        if (ignoreCase) {
+            Collections.sort(container, String.CASE_INSENSITIVE_ORDER);
+        } else {
+            Collections.sort(container);
         }
         synchronized (finish) {
-            finish.add(result);
+            finish.add(new ResultContainer(ignoreCase, container));
         }
     }
 }

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -56,18 +57,18 @@ public class Reader implements Runnable{
         String incomingData;
         int currNum = 0;
         try {
-            ArrayList <String> container = new ArrayList<String>();
+            List <String> container = new ArrayList<String>();
             while ((incomingData = reader.readLine()) != null) {
                 container.add(incomingData);
                 currNum++;
                 if (currNum == blockSize) {
                     currNum = 0;
-                    sorters.execute(new Sorter(finish, (ArrayList<String>) container.clone(), ignoreCase));
-                    container.clear();
+                    sorters.execute(new Sorter(finish, container, ignoreCase));
+                    container = new ArrayList<String>();
                 }
             }
             if (container.size() != 0) {
-                sorters.execute(new Sorter(finish, (ArrayList<String>) container.clone(), ignoreCase));
+                sorters.execute(new Sorter(finish, container, ignoreCase));
             }
             reader.close();
         } catch (Exception ex) {

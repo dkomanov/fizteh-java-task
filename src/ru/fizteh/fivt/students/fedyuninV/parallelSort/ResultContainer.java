@@ -1,7 +1,8 @@
 package ru.fizteh.fivt.students.fedyuninV.parallelSort;
 
+import ru.fizteh.fivt.students.fedyuninV.IOUtils;
+
 import java.io.BufferedWriter;
-import java.io.Closeable;
 import java.io.FileWriter;
 import java.io.OutputStreamWriter;
 import java.util.*;
@@ -12,49 +13,73 @@ import java.util.*;
  */
 public class ResultContainer {
 
-    private SortedMap<String, Integer> container = null;
+    List<String> string;
+    List<Integer> count;
+    Boolean ignoreCase;
 
-    private static <T extends Closeable> void tryClose(T stream) {
-        if (stream != null) {
-            try {
-                stream.close();
-            } catch (Exception ex) {
-                System.err.println(ex.getMessage());
-                System.exit(1);
-            }
-        }
-    }
-
-    public ResultContainer(boolean ignoreCase) {
+    private int compare(String x,String y) {
         if (ignoreCase) {
-            container = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
+            return x.compareToIgnoreCase(y);
         } else {
-            container = new TreeMap<String, Integer>();
+            return x.compareTo(y);
         }
     }
 
-    public void add(ResultContainer given) {
-        if (given == null) {
-            return;
-        }
-        for (SortedMap.Entry<String, Integer> entry: given.container.entrySet()) {
-            Integer currCount = container.get(entry.getKey());
-            if (currCount != null) {
-                container.put(entry.getKey(), currCount + entry.getValue());
+    public ResultContainer(boolean ignoreCase, List<String> data) {
+        int currSize = 0;
+        this.ignoreCase = ignoreCase;
+        string  = new ArrayList<String>();
+        count = new ArrayList<Integer>();
+        for (String s: data) {
+            if (currSize != 0  &&  compare(string.get(currSize - 1), s) == 0) {
+                count.set(currSize - 1, count.get(currSize - 1) + 1);
             } else {
-                container.put(entry.getKey(), entry.getValue());
+                string.add(s);
+                count.add(1);
+                currSize++;
             }
         }
-
+        //System.out.println("OK");
+        //System.out.flush();
     }
 
-    public void add(String word) {
-        Integer currCount = container.get(word);
-        if (currCount != null) {
-            container.put(word, currCount + 1);
-        } else {
-            container.put(word, 1);
+    public Integer size() {
+        return string.size();
+    }
+
+    public void add(ResultContainer data) {
+        List<String> newString = new ArrayList<String>();
+        List<Integer> newCount = new ArrayList<Integer>();
+        int i = 0, j = 0;
+        while (i < this.size()  ||  j < data.size()) {
+            if (i == this.size()) {
+                newString.add(data.string.get(j));
+                newCount.add(data.count.get(j));
+                j++;
+            } else if (j == data.size()) {
+                newString.add(string.get(i));
+                newCount.add(count.get(i));
+                i++;
+            } else {
+                int compResult = compare(string.get(i), data.string.get(j));
+                if (compResult == 0) {
+                    newString.add(data.string.get(j));
+                    newCount.add(data.count.get(j) + count.get(i));
+                    i++;
+                    j++;
+                } else if (compResult > 0) {
+                    newString.add(data.string.get(j));
+                    newCount.add(data.count.get(j));
+                    j++;
+                } else {
+                    newString.add(string.get(i));
+                    newCount.add(count.get(i));
+                    i++;
+                }
+            }
         }
+        string = newString;
+        count = newCount;
     }
 
     public void print(boolean unique, String fileName) {
@@ -70,14 +95,15 @@ public class ResultContainer {
                 writer = new BufferedWriter(fWriter);
             }
             if (unique) {
-                for (Map.Entry<String, Integer> entry: container.entrySet()) {
-                    writer.write(entry.getKey() + '\n');
+                for (String s: string) {
+                    writer.write(s + '\n');
                     writer.flush();
                 }
             } else {
-                for (Map.Entry<String, Integer> entry: container.entrySet()) {
-                    for (int i = 0; i < entry.getValue(); i++) {
-                        writer.write(entry.getKey() + '\n');
+                for (int i = 0; i < size(); i++) {
+                    String s = string.get(i);
+                    for (int j = 0; j < count.get(i); j++) {
+                        writer.write(s + '\n');
                         writer.flush();
                     }
                 }
@@ -86,9 +112,9 @@ public class ResultContainer {
             System.err.println(ex.getMessage());
             System.exit(1);
         } finally {
-            tryClose(fWriter);
-            tryClose(writer);
-            tryClose(oStreamWriter);
+            IOUtils.tryClose(fWriter);
+            IOUtils.tryClose(writer);
+            IOUtils.tryClose(oStreamWriter);
         }
     }
 
