@@ -102,7 +102,7 @@ public class Shell {
     }
 
     private static void run(String command) {
-        String[] args = command.split("[\\s]+");
+        String[] args = command.split("[ ]+");
         if (args[0].equals("exit")) {
             if (args.length != 1) {
                 error("exit: Incorrect arguments");
@@ -195,17 +195,15 @@ public class Shell {
                 IOUtils.tryClose(iReader);
             }
         } else {
-            //System.out.println(args.length);
             interactive = false;
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = 0; i < args.length; i++) {
                 stringBuilder.append(args[i]);
                 stringBuilder.append(' ');
             }
-            commands = stringBuilder.toString().split("[\\s]*[;][\\s]*");
+            commands = stringBuilder.toString().split("[ ]*[;][ ]*");
 
             for(String command : commands) {
-                //System.out.println(command);
                 run(command);
             }
         }
