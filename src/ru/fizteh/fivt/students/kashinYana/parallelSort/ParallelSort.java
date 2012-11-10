@@ -12,13 +12,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class ParallelSort {
 
-    static final int size = 2;
+    static final int size = 16;
     static LinkedBlockingQueue queue;
     static ExecutorService service;
     static String STOP = "stop";
     static int numberThreads;
     static Vector ans;
-    static String outputFile;
+    static String outputFile = null;
     static Vector<String> inputString;
     static boolean isI = false;
     static boolean isU = false;
@@ -44,16 +44,30 @@ public class ParallelSort {
         queue = new LinkedBlockingQueue();
         service = Executors.newFixedThreadPool(numberThreads);
         Sorter sorter[] = new Sorter[numberThreads];
+
         for (int i = 0; i < numberThreads; i++) {
             sorter[i] = new Sorter(new Integer(i).toString());
             sorter[i].start();
         }
-        reader(inputString);
+        try {
+            reader(inputString);
+        } catch (Exception e) {
+            System.err.println("Error in reader");
+            System.exit(1);
+        }
+
         for (int i = 0; i < numberThreads; i++) {
             sorter[i].join();
         }
+
         service.shutdown(); //??????????????????????
-        printAnswer(outputFile);
+
+        try {
+            printAnswer(outputFile);
+        } catch (Exception e) {
+            System.err.println("Error in print answer");
+            System.exit(1);
+        }
     }
 
     static void readKeys(String[] args) throws Exception {
@@ -78,9 +92,6 @@ public class ParallelSort {
         }
         if (!isT) {
             numberThreads = 4;  ///??????????
-        }
-        if (!isO) {
-            outputFile = "answer.txt"; ///??????????
         }
         if (!((isI && !isU) || (!isI && isU))) {
             throw new Exception("bad isI and isU");
@@ -205,10 +216,16 @@ public class ParallelSort {
         FileWriter out = null;
         File file = null;
         try {
-            file = new File(nameFile);
-            out = new FileWriter(file);
-            for (int i = 0; i < ans.size(); i++) {
-                out.write("\'" + ans.elementAt(i).toString() + "\'" + "\n");
+            if (isO) {
+                file = new File(nameFile);
+                out = new FileWriter(file);
+                for (int i = 0; i < ans.size(); i++) {
+                    out.write(ans.elementAt(i).toString() + "\n");
+                }
+            } else {
+                for (int i = 0; i < ans.size(); i++) {
+                    System.out.println(ans.elementAt(i).toString());
+                }
             }
         } finally {
             if (out != null) {
