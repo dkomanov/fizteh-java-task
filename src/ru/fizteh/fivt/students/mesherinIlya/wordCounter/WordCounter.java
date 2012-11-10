@@ -113,7 +113,19 @@ public class WordCounter {
                         builder.append((char) c);
                     }
                     else {
-                        if (!whiteSpace) {
+                        if (linesMode && c == '\n') {
+                            whiteSpace = true;
+                            wordCount++;
+                        }
+                        if (linesMode && c == '\r') {
+                            if (!whiteSpace) {
+                                wordCount++;
+                            }
+                            else {
+                                whiteSpace = false;
+                            }
+                        }
+                        if (wordsMode && !whiteSpace) {
                             whiteSpace = true;
                             wordCount++;
                             word = builder.toString();
@@ -129,13 +141,16 @@ public class WordCounter {
                     }
                 
                 }
+                
             }
             catch (IOException e) {
                 System.err.println("Error: can't open the file \"" + args[param] + '\"');
                 System.exit(1);
             }
             finally {
-                f.close();
+                if (f != null) {
+                    f.close();
+                }
             }
             
             if (!agregate) {
