@@ -38,9 +38,9 @@ public class Shell {
     }
 
     private static void mkdir(String dirName) {
-        File newDir = new File(currPath + '/' + dirName);
+        File newDir = new File(dirName);
         if (!newDir.mkdir()) {
-            error("mkdir: '" + newDir.getName() + "': directory already exists");
+            error("mkdir: '" + newDir.getName() + "': failed to create directory");
         }
     }
 
@@ -102,7 +102,7 @@ public class Shell {
     }
 
     private static void run(String command) {
-        String[] args = command.split("[ ]+");
+        String[] args = command.split("[\\s]+");
         if (args[0].equals("exit")) {
             if (args.length != 1) {
                 error("exit: Incorrect arguments");
@@ -195,14 +195,17 @@ public class Shell {
                 IOUtils.tryClose(iReader);
             }
         } else {
+            //System.out.println(args.length);
             interactive = false;
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = 0; i < args.length; i++) {
                 stringBuilder.append(args[i]);
                 stringBuilder.append(' ');
             }
-            commands = stringBuilder.toString().split("[ ]*[;][ ]*");
+            commands = stringBuilder.toString().split("[\\s]*[;][\\s]*");
+
             for(String command : commands) {
+                //System.out.println(command);
                 run(command);
             }
         }
