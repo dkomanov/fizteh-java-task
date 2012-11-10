@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Fedyunin Valeriy
@@ -83,9 +84,9 @@ public class ParallelSort {
             }
         }
         readers.shutdown();
-        while(!readers.isTerminated());
+        readers.awaitTermination(1, TimeUnit.DAYS);
         sorters.shutdown();
-        while(!sorters.isTerminated());
+        sorters.awaitTermination(1, TimeUnit.DAYS);
         finish.print(unique, fileName);
         return;
     }
