@@ -54,7 +54,6 @@ public class Shell {
                 try {
                     throw ((IllegalArgumentException) exception.getTargetException());
                 } catch (ClassCastException e) {
-                    System.err.println(e.toString());
                 }
                 try {
                     throw ((InterruptedException) exception.getTargetException());
@@ -81,26 +80,11 @@ public class Shell {
     }
 
     private String normalizePath(String path) {
-        String[] splittedPath = path.split(File.separator);
-        Stack<String> stack = new Stack<String>();
-        for (String string: splittedPath) {
-            if (string.length() == 0 || string.equals(".")) {
-                continue;
-            }
-            if (string.equals("..")) {
-                if (stack.size() > 0) {
-                    stack.pop();
-                }
-                continue;
-            }
-            stack.push(string);
+        try {
+            return new File(path).getCanonicalPath();
+        } catch (IOException e) {
+            return new File(path).getAbsolutePath();
         }
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String string: stack) {
-            stringBuilder.append(File.separator);
-            stringBuilder.append(string);
-        }
-        return stringBuilder.toString();
     }
 
 
@@ -263,6 +247,7 @@ public class Shell {
                 return;
             }
         }
+        throw new IllegalArgumentException(commandName + ": command not found");
     }
 
     public void processCommands(String cmds) throws IllegalArgumentException, InterruptedException {
