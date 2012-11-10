@@ -71,7 +71,7 @@ MyInterface.method(
 от параметров метода. Мы будем использовать в качестве диспетчеризации первое
 встреченное целое число (int или long) среди аргументов метода. Выбор объекта,
 у которого будет производиться вызов будет осуществляться так:
-```targets[targets.length % numberArgument]```
+```targets[numberArgument % targets.length]```
 
 Плюс к этом необходимо поддержать аннотации [DoNotProxy](https://github.com/dkomanov/fizteh-java-task/blob/master/src/ru/fizteh/fivt/proxy/DoNotProxy.java)
 и [Collect](https://github.com/dkomanov/fizteh-java-task/blob/master/src/ru/fizteh/fivt/proxy/Collect.java).
