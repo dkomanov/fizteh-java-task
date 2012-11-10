@@ -96,6 +96,9 @@ public class User {
             ByteBuffer buffer = ByteBuffer.allocate(4).put(bLength);
             buffer.position(0);
             int length = buffer.getInt();
+            if(length <= 0 || length > 100) {
+                throw new RuntimeException();
+            }
             byte[] bName = new byte[length];
             if (iStream.read(bName, 0, length) != length) {
                 throw new RuntimeException();
@@ -131,6 +134,9 @@ public class User {
             }
             buffer.position(0);
             int length = buffer.getInt();
+            if(length > 1000) {
+                throw new RuntimeException();
+            }
             byte[] bName = new byte[length];
             for (int i = 0; i < length; ++i) {
                 int tmp;
@@ -152,6 +158,9 @@ public class User {
             }
             buffer.position(0);
             length = buffer.getInt();
+            if(length > 1000) {
+                throw new RuntimeException();
+            }
             byte[] bMess = new byte[length];
             for (int i = 0; i < length; ++i) {
                 int tmp;
