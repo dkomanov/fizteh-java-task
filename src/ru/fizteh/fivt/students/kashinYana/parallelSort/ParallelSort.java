@@ -12,7 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class ParallelSort {
 
-    static final int size = 16;
+    static final int size = 32768;
     static LinkedBlockingQueue queue;
     static ExecutorService service;
     static String STOP = "stop";
