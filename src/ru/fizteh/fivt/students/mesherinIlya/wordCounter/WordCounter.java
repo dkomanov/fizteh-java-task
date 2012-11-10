@@ -87,7 +87,7 @@ public class WordCounter {
         }
         for (; param < args.length; param++) {
             //откроем очередной файл
-            FileReader f;
+            FileReader f = null;
             try {
                 f = new FileReader(args[param]);
                 
@@ -142,15 +142,15 @@ public class WordCounter {
                 
                 }
                 
-                f.close();
-                
             }
             catch (IOException e) {
                 System.err.println("Error: can't open the file \"" + args[param] + '\"');
                 System.exit(1);
             }
             finally {
-            //    f.close();
+                if (f != null) {
+                    f.close();
+                }
             }
             
             if (!agregate) {
