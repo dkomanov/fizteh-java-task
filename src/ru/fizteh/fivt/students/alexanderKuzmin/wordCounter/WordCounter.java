@@ -97,12 +97,9 @@ public class WordCounter {
                         System.out.println(count);
                         count = 0;
                     } else {
-                        StringBuilder sb = new StringBuilder();
                         for (String str : hmap.keySet()) {
-                            sb.append(str).append(" ").append(hmap.get(str))
-                                    .append("\n");
+                            System.out.println(str + " " + hmap.get(str));
                         }
-                        System.out.println(sb);
                         hmap.clear();
                     }
                 }
