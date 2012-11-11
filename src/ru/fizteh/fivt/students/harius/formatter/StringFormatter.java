@@ -26,7 +26,7 @@ public class StringFormatter
     }
 
     @Override
-    public synchronized void format(StringBuilder buffer, String format, Object... args)
+    public void format(StringBuilder buffer, String format, Object... args)
         throws FormatterException {
 
         StringBuilder safe = new StringBuilder();
