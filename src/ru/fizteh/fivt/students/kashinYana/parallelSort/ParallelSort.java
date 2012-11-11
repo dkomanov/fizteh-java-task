@@ -13,9 +13,10 @@ import java.util.concurrent.TimeUnit;
 
 public class ParallelSort {
 
-    static public class Pair{
+    static public class Pair {
         String string;
         String id;
+
         Pair(String string_, String id_) {
             string = string_;
             id = id_;
@@ -24,6 +25,7 @@ public class ParallelSort {
         public String merge() {
             return string + " " + id;
         }
+
         public String toString() {
             return string;
         }
@@ -42,6 +44,7 @@ public class ParallelSort {
     static boolean isT = false;
     static boolean isO = false;
     static boolean isInput = false;
+
     public static void main(String[] args) throws Exception {
 
         inputString = new Vector<String>();
@@ -113,43 +116,43 @@ public class ParallelSort {
 
     static void reader(Vector<String> nameFile) throws Exception {
 
-            BufferedReader in = null;
-            FileReader file = null;
-            try {
-                if(isInput) {
-                    for (int j = 0; j < nameFile.size(); j++) {
-                        int numberWord = 0;
-                        file = new FileReader(nameFile.elementAt(j));
-                        in = new BufferedReader(file);
-                        while (in.ready()) {
-                            String currentLine = in.readLine();
-                            String[] words = currentLine.split("[ \\t\\n.!?,:;]+");
-                            for (int i = 0; i < words.length; i++) {
-                                queue.put(new Pair(words[i], new Integer(j).toString() + " " + new Integer(numberWord).toString()));
-                                numberWord++;
-                            }
-                        }
-                    }
-                } else {
-                    in = new BufferedReader(new InputStreamReader(System.in));
-                    String currentLine;
-                    while((currentLine = in.readLine()) != null) {
-                        int numberWord = 0;
+        BufferedReader in = null;
+        FileReader file = null;
+        try {
+            if (isInput) {
+                for (int j = 0; j < nameFile.size(); j++) {
+                    int numberWord = 0;
+                    file = new FileReader(nameFile.elementAt(j));
+                    in = new BufferedReader(file);
+                    while (in.ready()) {
+                        String currentLine = in.readLine();
                         String[] words = currentLine.split("[ \\t\\n.!?,:;]+");
                         for (int i = 0; i < words.length; i++) {
-                            queue.put(new Pair(words[i], new Integer(1).toString() + " " + new Integer(numberWord).toString()));
+                            queue.put(new Pair(words[i], new Integer(j).toString() + " " + new Integer(numberWord).toString()));
                             numberWord++;
                         }
                     }
                 }
-            } finally {
-                if (in != null) {
-                    in.close();
-                }
-                if (file != null) {
-                    file.close();
+            } else {
+                in = new BufferedReader(new InputStreamReader(System.in));
+                String currentLine;
+                while ((currentLine = in.readLine()) != null) {
+                    int numberWord = 0;
+                    String[] words = currentLine.split("[ \\t\\n.!?,:;]+");
+                    for (int i = 0; i < words.length; i++) {
+                        queue.put(new Pair(words[i], new Integer(1).toString() + " " + new Integer(numberWord).toString()));
+                        numberWord++;
+                    }
                 }
             }
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+            if (file != null) {
+                file.close();
+            }
+        }
         for (int i = 0; i < numberThreads; i++) {
             queue.put(STOP);
         }
@@ -198,23 +201,23 @@ public class ParallelSort {
                                 int idArray = 0;
                                 int indexAns = 0;
                                 while (idArray < array.size() && indexAns < ans.size()) {
-                                        if (isI) {
-                                            if (new ComparatorLower().compare(array.elementAt(idArray), ans.elementAt(indexAns)) < 0) {
-                                                tempArray.add(array.elementAt(idArray));
-                                                idArray++;
-                                            } else {
-                                                tempArray.add(ans.elementAt(indexAns));
-                                                indexAns++;
-                                            }
+                                    if (isI) {
+                                        if (new ComparatorLower().compare(array.elementAt(idArray), ans.elementAt(indexAns)) < 0) {
+                                            tempArray.add(array.elementAt(idArray));
+                                            idArray++;
                                         } else {
-                                            if (new ComparatorNotLower().compare(array.elementAt(idArray), ans.elementAt(indexAns)) < 0) {
-                                                tempArray.add(array.elementAt(idArray));
-                                                idArray++;
-                                            } else {
-                                                tempArray.add(ans.elementAt(indexAns));
-                                                indexAns++;
-                                            }
+                                            tempArray.add(ans.elementAt(indexAns));
+                                            indexAns++;
                                         }
+                                    } else {
+                                        if (new ComparatorNotLower().compare(array.elementAt(idArray), ans.elementAt(indexAns)) < 0) {
+                                            tempArray.add(array.elementAt(idArray));
+                                            idArray++;
+                                        } else {
+                                            tempArray.add(ans.elementAt(indexAns));
+                                            indexAns++;
+                                        }
+                                    }
                                 }
                                 while (idArray < array.size()) {
                                     tempArray.add(array.elementAt(idArray));
@@ -250,17 +253,16 @@ public class ParallelSort {
                 out = new FileWriter(file);
                 //BufferedWriter
                 for (int i = 0; i < ans.size(); i++) {
-                    if(!isU || i == 0)
-                    {
+                    if (!isU || i == 0) {
                         out.write(ans.elementAt(i).toString() + "\n");
                     } else {
-                        String last = ans.elementAt(i-1).toString();
+                        String last = ans.elementAt(i - 1).toString();
                         String now = ans.elementAt(i).toString();
-                        if(isI){
+                        if (isI) {
                             last = last.toLowerCase();
                             now = now.toLowerCase();
                         }
-                        if(!last.equals(now)){
+                        if (!last.equals(now)) {
                             out.write(ans.elementAt(i).toString() + "\n");
                         }
                     }
