@@ -11,6 +11,7 @@ public class StringContainer {
     private int lineNum;
     private String string;
 
+
     public StringContainer(String string, int lineNum, int fileNum) {
         this.string = string;
         this.lineNum = lineNum;
