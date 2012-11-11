@@ -4,8 +4,10 @@ import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageBuilder;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 class Manager {
@@ -36,7 +38,8 @@ class Manager {
             if (currentWorker != null) {
                 currentWorker.close(true, false);
             }
-            System.err.println("Cannot connect to " + host + ":" + port + ".");
+            System.err.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) +
+                    "] Cannot connect to " + host + ":" + port + ".");
         }
     }
 
@@ -62,7 +65,7 @@ class Manager {
             currentWorker.activate();
         }
         servers.remove(server);
-        System.out.println("Closed connection with server '" + server.name() + "'.");
+        System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) + "] Closed connection with server '" + server.name() + "'.");
     }
 
     public String list() {

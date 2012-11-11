@@ -2,7 +2,6 @@ package ru.fizteh.fivt.students.dmitriyBelyakov.chat;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 
 public final class MessageBuilder {
     private MessageBuilder() {
@@ -36,7 +35,6 @@ public final class MessageBuilder {
             buf.putInt(b.length);
             buf.put(b);
         }
-        System.out.println(Arrays.toString(buf.array()));
         return buf.array();
     }
 }
