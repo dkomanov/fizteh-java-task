@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.fedyuninV.parallelSort;
 
+import ru.fizteh.fivt.students.fedyuninV.IOUtils;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.InputStreamReader;
@@ -40,15 +42,9 @@ public class Reader implements Runnable{
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             try {
-                if (iStreamReader != null) {
-                    iStreamReader.close();
-                }
-                if (fReader != null) {
-                    fReader.close();
-                }
-                if (reader != null) {
-                    reader.close();
-                }
+                IOUtils.tryClose(iStreamReader);
+                IOUtils.tryClose(fReader);
+                IOUtils.tryClose(reader);
             } catch (Exception exc) {
                 System.err.println(exc.getMessage());
             }
