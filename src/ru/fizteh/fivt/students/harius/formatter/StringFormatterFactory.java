@@ -17,9 +17,6 @@ public class StringFormatterFactory
         for (String name : extensionClassNames) {
             try {
                 Class clazz = Class.forName(name);
-                // Class<? extends StringFormatterExtension> casted =
-                //     StringFormatterExtension.class.asSubclass(clazz);
-                // ext[index] = casted.newInstance();
                 ext[index] = StringFormatterExtension.class.cast(clazz.newInstance());
             } catch (ClassNotFoundException notFound) {
                 throw new FormatterException(name + " is not a valid class");

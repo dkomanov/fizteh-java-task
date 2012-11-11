@@ -5,11 +5,15 @@ import ru.fizteh.fivt.format.StringFormatterExtension;
 import java.util.Arrays;
 import java.math.BigInteger;
 
+class Another {
+    public int a = 76;
+}
+
 class Dummy {
     public int x = 3;
     public float y = 7.5f;
     public Object obj = null;
-    public int[] arr = new int[57];
+    public Another an = new Another();
     private long z = -10;
 }
 
@@ -37,17 +41,19 @@ public abstract class StringFormatterTest {
         check(basic, "", "{0.obj}", d);
         check(basic, "{hello}", "{{{0}}}", "hello");
         check(basic, "{0}", "{{0}}", "hello");
-        check(basic, "" + d.arr.length, "{0.arr.length}", d);
+        check(basic, "" + d.an.a, "{0.an.a}", d);
     }
 
     public static void simpleDouble() {
-        StringFormatter dbasic = factory.create("ru.fizteh.fivt.students.harius.formatter.StringFormatterDoubleExtension");
+        StringFormatter dbasic = factory.create("ru.fizteh.fivt.students." +
+"harius.formatter.StringFormatterDoubleExtension");
         check(dbasic, "hello", "hello");
         check(dbasic, "3.14", "{0:.2}", 3.1415926);
     }
 
     public static void simpleBigInteger() {
-        StringFormatter ibasic = factory.create("ru.fizteh.fivt.students.harius.formatter.StringFormatterBigIntegerExtension");
+        StringFormatter ibasic = factory.create("ru.fizteh.fivt.students." +
+"harius.formatter.StringFormatterBigIntegerExtension");
         check(ibasic, "hello", "hello");
         check(ibasic, "1234321", "{0:}", BigInteger.valueOf(1111 * 1111));
     }
@@ -72,14 +78,17 @@ public abstract class StringFormatterTest {
         try {
             String result = formatter.format(pattern, args);
             if (!result.equals(correct)) {
-                System.err.println(result + "\t!=\t" + pattern + "\t" + Arrays.toString(args));
+                System.err.println(String.format("%s\t!=\t%s\t%s",
+                    result, pattern, Arrays.toString(args)));
                 System.err.println("correct one is " + correct);
                 System.exit(1);
             } else {
-                System.err.println(result + "\t==\t" + pattern + "\t" + Arrays.toString(args));
+                System.err.println(String.format("%s\t==\t%s\t%s",
+                    result, pattern, Arrays.toString(args)));
             }
         } catch (Exception ex) {
-            System.err.println(ex.getClass().getSimpleName() + " was thrown unexpectedly");
+            System.err.println(ex.getClass().getSimpleName() +
+                " was thrown unexpectedly");
             System.err.println(ex.getMessage());
             System.exit(1);
         }
@@ -90,14 +99,17 @@ public abstract class StringFormatterTest {
 
         try {
             String result = formatter.format(pattern, args);
-            System.err.println(result + "\t!=\t" + pattern + "\t" + Arrays.toString(args));
+            System.err.println(String.format("%s\t!=\t%s\t%s",
+                result, pattern, Arrays.toString(args)));
             System.err.println("no exception was thrown when needed");
             System.exit(1);
         } catch (Exception ex) {
             if (FormatterException.class.isInstance(ex)) {
-                System.err.println("fail:<" + ex.getMessage() + ">\t==\t" + pattern + "\t" + Arrays.toString(args));
+                System.err.println(String.format("fail:<%s>\t==\t%s\t%s",
+                    ex.getMessage(), pattern, Arrays.toString(args)));
             } else {
-                System.err.println("wrong exception was thrown: " + ex.getClass().getSimpleName());
+                System.err.println("wrong exception was thrown: " +
+                    ex.getClass().getSimpleName());
                 System.exit(1);
             }
         }
