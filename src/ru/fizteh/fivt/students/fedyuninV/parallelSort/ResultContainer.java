@@ -13,11 +13,25 @@ import java.util.*;
  */
 public class ResultContainer {
 
-    List<String> string;
-    List<Integer> count;
-    Boolean ignoreCase;
+    List<StringContainer> strings;
+    Comparator<StringContainer> comparator;
+    boolean ignoreCase;
 
-    private int compare(String x,String y) {
+    public ResultContainer(boolean ignoreCase, List<StringContainer> data) {
+        this.ignoreCase = ignoreCase;
+        if (ignoreCase) {
+            this.comparator = new StringContainer.CaseInsensitiveComparator();
+        } else {
+            this.comparator = new StringContainer.DefaultComparator();
+        }
+        strings  = data;
+    }
+
+    public Comparator<StringContainer> getComparator() {
+        return comparator;
+    }
+
+    private int compareStrings(String x, String y) {
         if (ignoreCase) {
             return x.compareToIgnoreCase(y);
         } else {
@@ -25,61 +39,31 @@ public class ResultContainer {
         }
     }
 
-    public ResultContainer(boolean ignoreCase, List<String> data) {
-        int currSize = 0;
-        this.ignoreCase = ignoreCase;
-        string  = new ArrayList<String>();
-        count = new ArrayList<Integer>();
-        for (String s: data) {
-            if (currSize != 0  &&  compare(string.get(currSize - 1), s) == 0) {
-                count.set(currSize - 1, count.get(currSize - 1) + 1);
-            } else {
-                string.add(s);
-                count.add(1);
-                currSize++;
-            }
-        }
-        //System.out.println("OK");
-        //System.out.flush();
-    }
-
     public Integer size() {
-        return string.size();
+        return strings.size();
     }
 
     public void add(ResultContainer data) {
-        List<String> newString = new ArrayList<String>();
-        List<Integer> newCount = new ArrayList<Integer>();
+        List<StringContainer> newStrings = new ArrayList<StringContainer>();
         int i = 0, j = 0;
         while (i < this.size()  ||  j < data.size()) {
             if (i == this.size()) {
-                newString.add(data.string.get(j));
-                newCount.add(data.count.get(j));
+                newStrings.add(data.strings.get(j));
                 j++;
             } else if (j == data.size()) {
-                newString.add(string.get(i));
-                newCount.add(count.get(i));
+                newStrings.add(strings.get(i));
                 i++;
             } else {
-                int compResult = compare(string.get(i), data.string.get(j));
-                if (compResult == 0) {
-                    newString.add(data.string.get(j));
-                    newCount.add(data.count.get(j) + count.get(i));
+                if (comparator.compare(strings.get(i), data.strings.get(j)) < 0) {
+                    newStrings.add(strings.get(i));
                     i++;
-                    j++;
-                } else if (compResult > 0) {
-                    newString.add(data.string.get(j));
-                    newCount.add(data.count.get(j));
-                    j++;
                 } else {
-                    newString.add(string.get(i));
-                    newCount.add(count.get(i));
-                    i++;
+                    newStrings.add(data.strings.get(j));
+                    j++;
                 }
             }
         }
-        string = newString;
-        count = newCount;
+        strings = newStrings;
     }
 
     public void print(boolean unique, String fileName) {
@@ -94,18 +78,10 @@ public class ResultContainer {
                 fWriter = new FileWriter(fileName);
                 writer = new BufferedWriter(fWriter);
             }
-            if (unique) {
-                for (String s: string) {
-                    writer.write(s + '\n');
+            for (int i = 0; i < strings.size(); i++) {
+                if (!unique  ||  (i == 0  ||  compareStrings(strings.get(i - 1).string(), strings.get(i).string()) < 0)) {
+                    writer.write(strings.get(i).string() + '\n');
                     writer.flush();
-                }
-            } else {
-                for (int i = 0; i < size(); i++) {
-                    String s = string.get(i);
-                    for (int j = 0; j < count.get(i); j++) {
-                        writer.write(s + '\n');
-                        writer.flush();
-                    }
                 }
             }
         } catch (Exception ex) {

@@ -17,13 +17,16 @@ public class Reader implements Runnable{
     ExecutorService sorters = null;
     boolean ignoreCase;
     ResultContainer finish;
-    int blockSize = 1024;
+    int fileNum;
+    int blockSize = 1024 * 128;
 
-    public Reader(String fileName, ExecutorService sorters,
+
+    public Reader(String fileName, int fileNum, ExecutorService sorters,
                     boolean ignoreCase, ResultContainer finish) {
         this.finish = finish;
         this.ignoreCase = ignoreCase;
         this.sorters = sorters;
+        this.fileNum = fileNum;
         InputStreamReader iStreamReader = null;
         FileReader fReader = null;
         try {
@@ -57,14 +60,13 @@ public class Reader implements Runnable{
         String incomingData;
         int currNum = 0;
         try {
-            List <String> container = new ArrayList<String>();
+            List <StringContainer> container = new ArrayList<StringContainer>();
             while ((incomingData = reader.readLine()) != null) {
-                container.add(incomingData);
+                container.add(new StringContainer(incomingData, currNum, fileNum));
                 currNum++;
-                if (currNum == blockSize) {
-                    currNum = 0;
+                if (currNum % blockSize == 0) {
                     sorters.execute(new Sorter(finish, container, ignoreCase));
-                    container = new ArrayList<String>();
+                    container = new ArrayList<StringContainer>();
                 }
             }
             if (container.size() != 0) {
