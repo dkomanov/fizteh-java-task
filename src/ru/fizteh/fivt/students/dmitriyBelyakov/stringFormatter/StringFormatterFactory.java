@@ -1,9 +1,19 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.stringFormatter;
 
+import ru.fizteh.fivt.format.FormatterException;
+
 public class StringFormatterFactory implements ru.fizteh.fivt.format.StringFormatterFactory {
     @Override
     public StringFormatter create(String... extensionClassNames) {
-        // TODO
-        return new StringFormatter();
+        try {
+            StringFormatter formatter = new StringFormatter();
+            for (String extensionClass : extensionClassNames) {
+                StringFormatterExtension extension = (StringFormatterExtension) Class.forName(extensionClass).newInstance();
+                formatter.addExtension(extension);
+            }
+            return formatter;
+        } catch (Throwable t) {
+            throw new FormatterException("Cannot create formatter with this extensions.");
+        }
     }
 }

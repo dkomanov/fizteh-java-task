@@ -141,4 +141,18 @@ public class UnitTests extends Assert {
         assertEquals("I was born 11.12.1993 at 04:50.", formatter.format("I was born {0:dd.MM.yyyy} at {1.calendar:HH:mm}.",
                 calendar, new ClassWithCalendar(calendar)));
     }
+
+    // Tests for StringFormatterFactory
+
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterExtension() {
+        new StringFormatterFactory().create("ru.fizteh.fivt.students.dmitriyBelyakov.stringFormatter.CalendarFormat", "java.util.Calendar");
+    }
+
+    @Test
+    public void testStringFormatterFactory() {
+        StringFormatter formatter = new StringFormatterFactory().create("ru.fizteh.fivt.students.dmitriyBelyakov.stringFormatter.CalendarFormat");
+        assertTrue(formatter.supported(Calendar.class));
+        assertFalse(formatter.supported(Long.class));
+    }
 }
