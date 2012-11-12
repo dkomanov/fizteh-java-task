@@ -1,6 +1,8 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.server;
 
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 
 public class ChatServer {
@@ -25,13 +27,15 @@ public class ChatServer {
                     }
                     manager = new Manager(port);
                     manager.start();
-                    System.out.println("Listen port " + port);
+                    System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) + "] "
+                            + "Listening port " + port + ".");
                 } else if (command.equals("/stop")) {
                     if (manager != null) {
                         manager.stop();
                         manager.join();
                         manager = null;
-                        System.out.println("Server stopped.");
+                        System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) + "] "
+                                + "Server stopped.");
                     }
                 } else if (command.equals("/list")) {
                     if (manager != null) {
