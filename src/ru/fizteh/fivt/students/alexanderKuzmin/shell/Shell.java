@@ -14,24 +14,18 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import ru.fizteh.fivt.students.alexanderKuzmin.shell.Errors;
 
 public class Shell {
 
-    private static void printErrAndExit(String message) {
-        System.err.println(message);
-        System.exit(1);
-    }
-
-    private static void printErrAndNoExit(String message) {
-        System.err.println(message);
-    }
+    private static String currentPath = System.getProperty("user.dir");
 
     private static <T extends Closeable> void closeStream(T stream) {
         if (stream != null) {
             try {
                 stream.close();
             } catch (IOException e) {
-                printErrAndExit(e.getMessage());
+                Errors.printErrAndExit(e.getMessage());
             }
         }
     }
@@ -45,7 +39,6 @@ public class Shell {
         } else {
             shellPackageExecutor(args);
         }
-
     }
 
     public static void shellInteractiveExecutor() {
@@ -57,14 +50,17 @@ public class Shell {
             try {
                 command = reader.readLine();
             } catch (IOException e) {
-                printErrAndNoExit(e.getMessage());
+                Errors.printErrAndNoExit(e.getMessage());
+            }
+            if (command == null) {
+                goodExit();
             }
             String[] commands = command.toString().split(";");
             for (String ex : commands) {
                 try {
                     commandsExecutor(ex);
                 } catch (Exception e) {
-                    printErrAndNoExit(e.getMessage());
+                    Errors.printErrAndNoExit(e.getMessage());
                 }
             }
         }
@@ -80,7 +76,7 @@ public class Shell {
             try {
                 commandsExecutor(ex);
             } catch (Exception e) {
-                printErrAndExit(e.getMessage());
+                Errors.printErrAndExit(e.getMessage());
             }
         }
     }
@@ -161,7 +157,7 @@ public class Shell {
     }
 
     private static void printDirectory() {
-        String[] files = new File(System.getProperty("user.dir")).list();
+        String[] files = new File(currentPath).list();
         StringBuilder sb = new StringBuilder();
         for (String fileName : files) {
             sb.append(fileName).append("\n");
@@ -171,8 +167,9 @@ public class Shell {
 
     private static void move(String source, String destination)
             throws Exception {
-        if (!new File(destination).exists()) {
-            new File(source).renameTo(new File(destination));
+        File destFile = new File(currentPath + File.separator + destination);
+        if (!destFile.exists()) {
+            new File(currentPath + File.separator + source).renameTo(destFile);
         } else {
             copy(source, destination);
             remove(source);
@@ -181,8 +178,10 @@ public class Shell {
 
     private static void copy(String source, String destination)
             throws Exception {
-        File sourceFile = new File(source).getAbsoluteFile();
-        File destinationFile = new File(destination).getAbsoluteFile();
+        File sourceFile = new File(currentPath + File.separator + source)
+                .getAbsoluteFile();
+        File destinationFile = new File(currentPath + File.separator
+                + destination).getAbsoluteFile();
         if (sourceFile.exists()) {
             if (destinationFile.exists() && destinationFile.isDirectory()) {
                 if (sourceFile.isDirectory()) {
@@ -215,7 +214,7 @@ public class Shell {
             iStream = new FileInputStream(sourceFile);
             oStream = new FileOutputStream(destinationFile);
             int nLength;
-            byte[] buf = new byte[8000];
+            byte[] buf = new byte[8192];
             while (true) {
                 nLength = iStream.read(buf);
                 if (nLength < 0) {
@@ -248,15 +247,14 @@ public class Shell {
                         + cur), new File(destinationFile.getAbsolutePath()
                         + File.separator + cur));
             } else {
-                throw new Exception("cp: \'" + sourceFile
+                throw new Exception("\'" + sourceFile
                         + "\': can't copy this, it's a strange file.");
             }
         }
     }
 
     private static void remove(String file) throws Exception {
-        File cur = new File(System.getProperty("user.dir") + File.separator
-                + file);
+        File cur = new File(currentPath + File.separator + file);
         if (cur.exists()) {
             deleteObject(cur);
         } else {
@@ -286,16 +284,14 @@ public class Shell {
 
     private static void printWorkingDirectory() {
         try {
-            System.out.println((new File(System.getProperty("user.dir"))
-                    .getCanonicalPath()));
+            System.out.println((new File(currentPath).getCanonicalPath()));
         } catch (IOException e) {
-            printErrAndNoExit(e.getMessage());
+            Errors.printErrAndNoExit(e.getMessage());
         }
     }
 
     private static void makeDirectory(String dirName) throws Exception {
-        File cur = new File(System.getProperty("user.dir") + File.separator
-                + dirName);
+        File cur = new File(currentPath + File.separator + dirName);
         if (!cur.mkdir()) {
             throw new Exception("mkdir: can't create directory \'" + dirName
                     + "\': such directory already exist.");
@@ -303,9 +299,14 @@ public class Shell {
     }
 
     private static void changeDirectory(String path) throws Exception {
-        File newFile = new File(path).getAbsoluteFile();
+        File newFile = new File(currentPath + File.separator + path)
+                .getAbsoluteFile();
+        File newShortFile = new File(path).getAbsoluteFile();
         if (newFile.exists() && newFile.isDirectory()) {
-            System.setProperty("user.dir", newFile.getAbsolutePath());
+            currentPath = newFile.getAbsolutePath();
+        } else if (newShortFile.exists() && newShortFile.isDirectory()
+                && !(path.equals(".") || path.equals(".."))) {
+            currentPath = newShortFile.getAbsolutePath();
         } else {
             throw new Exception("cd: \'" + path
                     + "\': No such file or directory");
