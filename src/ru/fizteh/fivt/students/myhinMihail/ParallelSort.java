@@ -159,9 +159,23 @@ public class ParallelSort {
             }
         }
         
-        if (params == args.length) {
-            System.err.println("Error: No arguments.\nUsage: [-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
-            System.exit(1);
+        BufferedReader br = null;
+        InputStreamReader isr = null;
+        
+        try {
+            if (params == args.length) {
+                isr = new InputStreamReader(System.in);
+                br = new BufferedReader(isr);
+                String line;
+            
+                while ((line = br.readLine()) != null) {
+                    list.add(line);
+                }
+            }
+        } catch (Exception expt) {
+            Utils.printErrorAndExit(expt.getMessage());
+        } finally {
+            Utils.tryClose(br);
         }
        
     }
@@ -240,11 +254,10 @@ public class ParallelSort {
                 int curFrom = 0;
                 int curTo = 0;
                 int realTreadsCount = 0;
-                int done = 0;
                 Object synchronizer = new Object();
                 
                 LinkedBlockingQueue<SortPiece> queue = new LinkedBlockingQueue<SortPiece>(threadsCount);
-                for(int i = 0; i < threadsCount; i++) {
+                for (int i = 0; i < threadsCount; i++) {
                     curFrom = curTo ;
                     curTo = curFrom + portion;
                 
@@ -258,29 +271,10 @@ public class ParallelSort {
                     
                     mergeRange.add(curFrom);
                     SortPiece sync = new SortPiece(curFrom, curTo);
-                    done += curTo - curFrom;
                     queue.put(sync);
                     Sorter srt = new Sorter(list, queue, synchronizer);
                     srt.start();
                     realTreadsCount++;
-                }
-            
-                while (done < linesCount) {
-                    curFrom = curTo;
-                    curTo = curFrom + portion;
-                    
-                    if (linesCount - curTo < portion) {
-                        curTo = linesCount;
-                    }
-                    
-                    if (curFrom >= linesCount) { 
-                        break; 
-                    }
-                    
-                    mergeRange.add(curFrom);
-                    SortPiece sync = new SortPiece(curFrom, curTo);
-                    done += curTo - curFrom;
-                    queue.put(sync);
                 }
                 mergeRange.add(curTo);
             
@@ -295,21 +289,20 @@ public class ParallelSort {
                     }
                 }
                 
-                while (mergeRange.size() > 2) {
-                    Vector<Integer> newMergeRange = new Vector<Integer>();
-                    int i = 0;
+                int mult = 1;
+                int i = 0;
+                while (2 * mult < mergeRange.size()) {
+                    i = 0;
                     while (i < mergeRange.size() - 1) {
-                        if (i + 2 < mergeRange.size()) {
-                            merge(list, mergeRange.get(i), mergeRange.get(i + 1), mergeRange.get(i + 2));
-                            newMergeRange.add(mergeRange.get(i));
-                            i += 2;
+                        if (i + 2 * mult < mergeRange.size()) {
+                            merge(list, mergeRange.get(i), mergeRange.get(i + mult), mergeRange.get(i + 2 * mult));
+                            i += 2 * mult;
                         } else {
-                            merge(list, mergeRange.get(i - 2), mergeRange.get(i), mergeRange.get(i + 1));
+                            merge(list, mergeRange.get(i - 2 * mult), mergeRange.get(i), mergeRange.get(i + mult));
                             break;
                         }
                     }
-                    newMergeRange.add(mergeRange.get(mergeRange.size() - 1));
-                    mergeRange = newMergeRange;
+                    mult *= 2;
                 }
                 
             } else {
