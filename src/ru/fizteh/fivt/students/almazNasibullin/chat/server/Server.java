@@ -16,6 +16,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
+import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
+import ru.fizteh.fivt.students.almazNasibullin.MessageType;
+import ru.fizteh.fivt.students.almazNasibullin.MessageUtils;
+import ru.fizteh.fivt.students.almazNasibullin.WrapperPrimitive;
 
 /**
  * 17.10.12
@@ -51,22 +55,17 @@ public class Server {
                 handlerClients(selector, clients, withoutName, ar);
             }
         } catch (Exception e) {
-            printErrorAndExit("Something bad happened: " + e.getMessage());
+            IOUtils.printErrorAndExit("Something bad happened: " + e.getMessage());
         }
     }
-
-    public static void printErrorAndExit(String error) {
-        System.err.println(error);
-        System.exit(1);
-    }
-
+    
     public static void closeChannel(SocketChannel sc) {
         try {
             if (sc != null) {
                 sc.close();
             }
         } catch (Exception e) {
-            printErrorAndExit("Bad closing: " + e.getMessage());
+            IOUtils.printErrorAndExit("Bad closing: " + e.getMessage());
         }
     }
 
@@ -90,13 +89,13 @@ public class Server {
                             SelectionKey.OP_ACCEPT);
                     System.out.println("Listening on port: " + port.t);
                 } else {
-                    printErrorAndExit("Usage: /listen portNumber");
+                    IOUtils.printErrorAndExit("Usage: /listen portNumber");
                 }
             } else {
-                printErrorAndExit("Only one port is available!");
+                IOUtils.printErrorAndExit("Only one port is available!");
             }
         } catch (Exception e) {
-            printErrorAndExit(e.getMessage());
+            IOUtils.printErrorAndExit(e.getMessage());
         }
     }
 
@@ -110,7 +109,7 @@ public class Server {
                         ar.get().close();
                     }
                 } catch (Exception e) {
-                    printErrorAndExit("Could not close the current channel: " + e.getMessage());
+                    IOUtils.printErrorAndExit("Could not close the current channel: " + e.getMessage());
                 }
                 Iterator iter = clients.entrySet().iterator();
                 while (iter.hasNext()) {
@@ -123,10 +122,10 @@ public class Server {
                 }
                 clients.clear();
             } else {
-                printErrorAndExit("Nothing to stop");
+                IOUtils.printErrorAndExit("Nothing to stop");
             }
         } catch (Exception e) {
-            printErrorAndExit(e.getMessage());
+            IOUtils.printErrorAndExit(e.getMessage());
         }
     }
 
@@ -136,7 +135,7 @@ public class Server {
                 String name = st.nextToken();
                 if (!clients.containsKey(name)) {
                     // проверяем есть ли такой клиент вообще
-                    printErrorAndExit(name + ": there is no such client");
+                    IOUtils.printErrorAndExit(name + ": there is no such client");
                 } else {
                     SocketChannel clientToClose = clients.get(name);
                     clients.remove(name);
@@ -146,10 +145,10 @@ public class Server {
                     System.out.println(name + " is offline");
                 }
             } else {
-                printErrorAndExit("Usage: /send clientName");
+                IOUtils.printErrorAndExit("Usage: /send clientName");
             }
         } catch (Exception e) {
-            printErrorAndExit(e.getMessage());
+            IOUtils.printErrorAndExit(e.getMessage());
         }
     }
 
@@ -184,10 +183,10 @@ public class Server {
                             sendMessage(clients.get(name),
                                     MessageUtils.message("server", sb.toString()), clients);
                         } else {
-                            printErrorAndExit(name + ": there is no such client");
+                            IOUtils.printErrorAndExit(name + ": there is no such client");
                         }
                     } else {
-                        printErrorAndExit("Usage: /send clientName");
+                        IOUtils.printErrorAndExit("Usage: /send clientName");
                     }
                 } else if (cmd.equals("/sendall")) {
                     StringBuilder sb = new StringBuilder();
@@ -207,16 +206,16 @@ public class Server {
                             selector.close();
                         }
                     } catch (Exception e) {
-                        printErrorAndExit("Bad closing selector: " + e.getMessage());
+                        IOUtils.printErrorAndExit("Bad closing selector: " + e.getMessage());
                     }
                     clients.clear();
                     System.exit(0);
                 } else {
-                    printErrorAndExit(cmd + ": bad command");
+                    IOUtils.printErrorAndExit(cmd + ": bad command");
                 }
             }
         } catch (Exception e) {
-            printErrorAndExit(e.getMessage());
+            IOUtils.printErrorAndExit(e.getMessage());
         }
     }
 
@@ -234,7 +233,7 @@ public class Server {
                     //SocketChannel sc = ssc.get(0).accept();
                     SocketChannel sc = ar.get().accept();
                     if (sc == null) {
-                        printErrorAndExit("Bad accepting");
+                        IOUtils.printErrorAndExit("Bad accepting");
                     }
                     withoutName.add(sc);
                     sc.configureBlocking(false);
@@ -321,7 +320,7 @@ public class Server {
             }
             keys.clear();
         } catch (Exception e) {
-            printErrorAndExit(e.getMessage());
+            IOUtils.printErrorAndExit(e.getMessage());
         }
     }
 
@@ -343,7 +342,7 @@ public class Server {
                 sc.write(bf);
             }
         } catch (Exception e) {
-            printErrorAndExit("Bad sending message!" + e.getMessage());
+            IOUtils.printErrorAndExit("Bad sending message!" + e.getMessage());
         }
     }
 
@@ -357,7 +356,7 @@ public class Server {
                 return true;
             }
         } catch (Exception e) {
-            printErrorAndExit("Bad geting message!" + e.getMessage());
+            IOUtils.printErrorAndExit("Bad geting message!" + e.getMessage());
         }
         return false;
     }
