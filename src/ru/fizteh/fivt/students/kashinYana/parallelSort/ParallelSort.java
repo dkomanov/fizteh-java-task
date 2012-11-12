@@ -86,7 +86,6 @@ public class ParallelSort {
         service.shutdown();
         service.awaitTermination(1, TimeUnit.DAYS);
 
-
         Merge merge = new Merge(ans2, 0);
         merge.run();
         merge.join();
