@@ -126,23 +126,17 @@ public class ParallelSort {
                     in = new BufferedReader(file);
                     while (in.ready()) {
                         String currentLine = in.readLine();
-                        String[] words = currentLine.split("[ \\t\\n.!?,:;]+");
-                        for (int i = 0; i < words.length; i++) {
-                            queue.put(new Pair(words[i], new Integer(j).toString() + " " + new Integer(numberWord).toString()));
-                            numberWord++;
-                        }
+                        queue.put(new Pair(currentLine, j + " " + numberWord));
+                        numberWord++;
                     }
                 }
             } else {
                 in = new BufferedReader(new InputStreamReader(System.in));
                 String currentLine;
+                int numberWord = 0;
                 while ((currentLine = in.readLine()) != null) {
-                    int numberWord = 0;
-                    String[] words = currentLine.split("[ \\t\\n.!?,:;]+");
-                    for (int i = 0; i < words.length; i++) {
-                        queue.put(new Pair(words[i], new Integer(1).toString() + " " + new Integer(numberWord).toString()));
-                        numberWord++;
-                    }
+                    queue.put(new Pair(currentLine, 1 + " " + numberWord));
+                    numberWord++;
                 }
             }
         } finally {
