@@ -31,14 +31,16 @@ public class ParallelSort {
         }
     }
 
-    static final int size = 32768;
+    static final int size = 1024 * 2 * 2;
     static LinkedBlockingQueue queue;
     static ExecutorService service;
     static String STOP = "stop";
     static int numberThreads;
-    static Vector<Pair> ans;
+    static ArrayList<Pair> ans;
+    static ArrayList<Pair> ans2;
+
     static String outputFile = null;
-    static Vector<String> inputString;
+    static ArrayList<String> inputString;
     static boolean isI = false;
     static boolean isU = false;
     static boolean isT = false;
@@ -46,9 +48,10 @@ public class ParallelSort {
     static boolean isInput = false;
 
     public static void main(String[] args) throws Exception {
-
-        inputString = new Vector<String>();
-        ans = new Vector();
+        //Date date = new Date();
+        inputString = new ArrayList<String>();
+        ans = new ArrayList();
+        ans2 = new ArrayList();
         if (args.length == 0) {
             System.err.println("[-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
             System.exit(1);
@@ -66,7 +69,7 @@ public class ParallelSort {
         Sorter sorter[] = new Sorter[numberThreads];
 
         for (int i = 0; i < numberThreads; i++) {
-            sorter[i] = new Sorter(new Integer(i).toString());
+            sorter[i] = new Sorter(i);
             sorter[i].start();
         }
         try {
@@ -79,6 +82,15 @@ public class ParallelSort {
         for (int i = 0; i < numberThreads; i++) {
             sorter[i].join();
         }
+
+        service.shutdown();
+        service.awaitTermination(1, TimeUnit.DAYS);
+
+
+        Merge merge = new Merge(ans2, 0);
+        merge.run();
+        merge.join();
+
         service.shutdown();
         service.awaitTermination(1, TimeUnit.DAYS);
 
@@ -88,6 +100,8 @@ public class ParallelSort {
             System.err.println("Error in print answer");
             System.exit(1);
         }
+        //Date date2 = new Date();
+        //System.out.println(date2.getTime() - date.getTime());
     }
 
     static void readKeys(String[] args) throws Exception {
@@ -114,7 +128,7 @@ public class ParallelSort {
         }
     }
 
-    static void reader(Vector<String> nameFile) throws Exception {
+    static void reader(ArrayList<String> nameFile) throws Exception {
 
         BufferedReader in = null;
         FileReader file = null;
@@ -122,7 +136,7 @@ public class ParallelSort {
             if (isInput) {
                 for (int j = 0; j < nameFile.size(); j++) {
                     int numberWord = 0;
-                    file = new FileReader(nameFile.elementAt(j));
+                    file = new FileReader(nameFile.get(j));
                     in = new BufferedReader(file);
                     while (in.ready()) {
                         String currentLine = in.readLine();
@@ -153,12 +167,12 @@ public class ParallelSort {
     }
 
     static class Sorter extends Thread {
-        Vector array;
-        String name;
+        ArrayList array;
+        int name;
 
-        Sorter(String name_) {
+        Sorter(int name_) {
             name = name_;
-            array = new Vector();
+            array = new ArrayList();
         }
 
         public void run() {
@@ -167,8 +181,8 @@ public class ParallelSort {
                 if (array.size() < size) {
                     try {
                         array.add(queue.take());
-                        if (array.lastElement() == STOP) {
-                            array.removeElementAt(array.size() - 1);
+                        if (array.get(array.size() - 1) == STOP) {
+                            array.remove(array.size() - 1);
                             isStop = true;
                         }
                     } catch (Exception e) {
@@ -177,62 +191,71 @@ public class ParallelSort {
                     }
                 }
                 if (array.size() >= size || isStop) {
-                    class Merge implements Runnable {
-                        Vector<Pair> array = new Vector<Pair>();
-
-                        public Merge(Vector array_) {
-                            array = array_;
-                            if (isI) {
-                                Collections.sort(array, new ComparatorLower());
-                            } else {
-                                Collections.sort(array, new ComparatorNotLower());
-                            }
-                        }
-
-                        public void run() {
-                            synchronized (ans) {
-                                Vector<Pair> tempArray = new Vector<Pair>();
-                                int idArray = 0;
-                                int indexAns = 0;
-                                while (idArray < array.size() && indexAns < ans.size()) {
-                                    if (isI) {
-                                        if (new ComparatorLower().compare(array.elementAt(idArray), ans.elementAt(indexAns)) < 0) {
-                                            tempArray.add(array.elementAt(idArray));
-                                            idArray++;
-                                        } else {
-                                            tempArray.add(ans.elementAt(indexAns));
-                                            indexAns++;
-                                        }
-                                    } else {
-                                        if (new ComparatorNotLower().compare(array.elementAt(idArray), ans.elementAt(indexAns)) < 0) {
-                                            tempArray.add(array.elementAt(idArray));
-                                            idArray++;
-                                        } else {
-                                            tempArray.add(ans.elementAt(indexAns));
-                                            indexAns++;
-                                        }
-                                    }
-                                }
-                                while (idArray < array.size()) {
-                                    tempArray.add(array.elementAt(idArray));
-                                    idArray++;
-                                }
-                                while (indexAns < ans.size()) {
-                                    tempArray.add(ans.elementAt(indexAns));
-                                    indexAns++;
-                                }
-                                ans.setSize(0);
-                                for (int i = 0; i < tempArray.size(); i++) {
-                                    ans.add(tempArray.elementAt(i));
-                                }
-                            }
-                        }
-                    }
-                    service.submit(new Merge(array));
-                    array = new Vector();
+                    service.submit(new Merge(array, name));
+                    array = new ArrayList();
                     if (isStop) {
                         return;
                     }
+                }
+            }
+        }
+    }
+
+    static class Merge extends Thread {
+        ArrayList<Pair> array = new ArrayList<Pair>();
+        int id;
+
+        public Merge(ArrayList<Pair> array_, int id_) {
+            id = id_;
+            array = array_;
+            if (isI) {
+                Collections.sort(array, new ComparatorLower());
+            } else {
+                Collections.sort(array, new ComparatorNotLower());
+            }
+        }
+
+        public void run() {
+            ArrayList<Pair> mergeArray;
+            if (id % 2 == 0) {
+                mergeArray = ans;
+            } else {
+                mergeArray = ans2;
+            }
+            synchronized (mergeArray) {
+                ArrayList<Pair> tempArray = new ArrayList<Pair>();
+                int idArray = 0;
+                int indexAns = 0;
+                while (idArray < array.size() && indexAns < mergeArray.size()) {
+                    if (isI) {
+                        if (new ComparatorLower().compare(array.get(idArray), mergeArray.get(indexAns)) < 0) {
+                            tempArray.add(array.get(idArray));
+                            idArray++;
+                        } else {
+                            tempArray.add(mergeArray.get(indexAns));
+                            indexAns++;
+                        }
+                    } else {
+                        if (new ComparatorNotLower().compare(array.get(idArray), mergeArray.get(indexAns)) < 0) {
+                            tempArray.add(array.get(idArray));
+                            idArray++;
+                        } else {
+                            tempArray.add(mergeArray.get(indexAns));
+                            indexAns++;
+                        }
+                    }
+                }
+                while (idArray < array.size()) {
+                    tempArray.add(array.get(idArray));
+                    idArray++;
+                }
+                while (indexAns < mergeArray.size()) {
+                    tempArray.add(mergeArray.get(indexAns));
+                    indexAns++;
+                }
+                mergeArray.clear();
+                for (int i = 0; i < tempArray.size(); i++) {
+                    mergeArray.add(tempArray.get(i));
                 }
             }
         }
@@ -248,22 +271,22 @@ public class ParallelSort {
                 //BufferedWriter
                 for (int i = 0; i < ans.size(); i++) {
                     if (!isU || i == 0) {
-                        out.write(ans.elementAt(i).toString() + "\n");
+                        out.write(ans.get(i).toString() + "\n");
                     } else {
-                        String last = ans.elementAt(i - 1).toString();
-                        String now = ans.elementAt(i).toString();
+                        String last = ans.get(i - 1).toString();
+                        String now = ans.get(i).toString();
                         if (isI) {
                             last = last.toLowerCase();
                             now = now.toLowerCase();
                         }
                         if (!last.equals(now)) {
-                            out.write(ans.elementAt(i).toString() + "\n");
+                            out.write(ans.get(i).toString() + "\n");
                         }
                     }
                 }
             } else {
                 for (int i = 0; i < ans.size(); i++) {
-                    System.out.println(ans.elementAt(i).toString());
+                    System.out.println(ans.get(i).toString());
                 }
             }
         } finally {
