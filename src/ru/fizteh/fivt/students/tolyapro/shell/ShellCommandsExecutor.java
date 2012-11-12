@@ -1,6 +1,8 @@
 package ru.fizteh.fivt.students.tolyapro.shell;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 public class ShellCommandsExecutor {
 
@@ -14,7 +16,7 @@ public class ShellCommandsExecutor {
     }
 
     public static void printWorkingDirectory(String currPath) throws Exception {
-        System.out.println(currPath);
+        System.out.println(new File(currPath).getCanonicalPath());
     }
 
     public static String changeDirectory(String newDir, String currPath)
