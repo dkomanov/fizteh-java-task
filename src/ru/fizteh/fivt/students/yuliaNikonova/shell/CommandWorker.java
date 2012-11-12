@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
-import java.util.*;
 
 public class CommandWorker {
     static private File mPath = new File(".");
@@ -130,11 +129,17 @@ public class CommandWorker {
         if (comms.length != 3) {
             throw new Exception("mv: wrong number of args");
         } else {
-            File file = getFile(comms[1]);
+            File fileIn = getFile(comms[1]);
 
-            File dir = getFile(comms[2]);
+            File fileOut = getFile(comms[2]);
 
-            boolean success = file.renameTo(new File(dir, file.getName()));
+            boolean success;
+            if (fileOut.isDirectory()) {
+                success = fileIn.renameTo(new File(fileOut, fileIn.getName()));
+            } else {
+                //System.out.println(fileOut.getAbsolutePath());
+                success = fileIn.renameTo(fileOut);
+            }
             if (!success) {
                 throw new Exception("mv: cannot move \'" + comms[1] + "\'");
             }
@@ -230,11 +235,15 @@ public class CommandWorker {
         if (name.length() > 1 && name.charAt(name.length() - 1) == File.separatorChar) {
             name = name.substring(0, name.length() - 1);
         }
-
-        if (name.equals(mfile.getCanonicalPath())) {
-            return mfile;
-        } else {
+        //System.out.println(mfile.getCanonicalPath());
+        //System.out.println(mfile.getName());
+        if (name.equals(mfile.getName()) || (File.separator+name).equals(mfile.getName())) {
+            //System.out.println("lalala");
             return new File(mPath, name);
+            
+        } else {
+            //System.out.println("jajaja");
+            return mfile;
         }
     }
 }
