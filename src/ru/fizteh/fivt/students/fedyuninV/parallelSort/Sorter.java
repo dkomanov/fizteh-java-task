@@ -10,11 +10,11 @@ import java.util.Collections;
  */
 public class Sorter implements Runnable{
 
-    List<String> container = null;
+    List<StringContainer> container = null;
     ResultContainer finish = null;
     boolean ignoreCase;
 
-    public Sorter(ResultContainer finish, List<String> container, boolean ignoreCase) {
+    public Sorter(ResultContainer finish, List<StringContainer> container, boolean ignoreCase) {
         this.ignoreCase = ignoreCase;
         this.finish = finish;
         this.container = container;
@@ -23,9 +23,9 @@ public class Sorter implements Runnable{
 
     public void run() {
         if (ignoreCase) {
-            Collections.sort(container, String.CASE_INSENSITIVE_ORDER);
+            Collections.sort(container, new StringContainer.CaseInsensitiveComparator());
         } else {
-            Collections.sort(container);
+            Collections.sort(container, new StringContainer.DefaultComparator());
         }
         ResultContainer resultContainer = new ResultContainer(ignoreCase, container);
         synchronized (finish) {

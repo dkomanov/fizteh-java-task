@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.fedyuninV.parallelSort;
 
+import ru.fizteh.fivt.students.fedyuninV.IOUtils;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.InputStreamReader;
@@ -17,13 +19,16 @@ public class Reader implements Runnable{
     ExecutorService sorters = null;
     boolean ignoreCase;
     ResultContainer finish;
-    int blockSize = 1024;
+    int fileNum;
+    int blockSize = 1024 * 128;
 
-    public Reader(String fileName, ExecutorService sorters,
+
+    public Reader(String fileName, int fileNum, ExecutorService sorters,
                     boolean ignoreCase, ResultContainer finish) {
         this.finish = finish;
         this.ignoreCase = ignoreCase;
         this.sorters = sorters;
+        this.fileNum = fileNum;
         InputStreamReader iStreamReader = null;
         FileReader fReader = null;
         try {
@@ -37,15 +42,9 @@ public class Reader implements Runnable{
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             try {
-                if (iStreamReader != null) {
-                    iStreamReader.close();
-                }
-                if (fReader != null) {
-                    fReader.close();
-                }
-                if (reader != null) {
-                    reader.close();
-                }
+                IOUtils.tryClose(iStreamReader);
+                IOUtils.tryClose(fReader);
+                IOUtils.tryClose(reader);
             } catch (Exception exc) {
                 System.err.println(exc.getMessage());
             }
@@ -57,14 +56,13 @@ public class Reader implements Runnable{
         String incomingData;
         int currNum = 0;
         try {
-            List <String> container = new ArrayList<String>();
+            List <StringContainer> container = new ArrayList<StringContainer>();
             while ((incomingData = reader.readLine()) != null) {
-                container.add(incomingData);
+                container.add(new StringContainer(incomingData, currNum, fileNum));
                 currNum++;
-                if (currNum == blockSize) {
-                    currNum = 0;
+                if (currNum % blockSize == 0) {
                     sorters.execute(new Sorter(finish, container, ignoreCase));
-                    container = new ArrayList<String>();
+                    container = new ArrayList<StringContainer>();
                 }
             }
             if (container.size() != 0) {

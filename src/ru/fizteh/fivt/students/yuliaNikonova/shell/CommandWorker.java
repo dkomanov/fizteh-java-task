@@ -36,7 +36,7 @@ public class CommandWorker {
         } else if (commandName.equals("cp")) {
             copyFileorDir(commandArguments);
         } else {
-            System.err.println(commandName + ": unknown command");
+            throw new Exception(commandName + ": unknown command");
         }
     }
 
@@ -61,18 +61,16 @@ public class CommandWorker {
     private void copyDir(File original, File dest) throws Exception {
 
         String name = original.getName();
-        if (!dest.isDirectory()) {
-            throw new Exception("cp: \'" + dest.getCanonicalPath() + "\': No such directory");
-        }
         File destination = new File(dest.getCanonicalPath() + File.separator + name);
-
         if (destination.exists()) {
             deleteDirectory(destination);
         }
         Thread.sleep(100);
         boolean rr = destination.mkdir();
         if (!rr) {
+
             throw new Exception("cp: cannot copy \'" + name + "\'");
+
         } else {
             String[] files = original.list();
             for (String file : files) {
@@ -101,7 +99,6 @@ public class CommandWorker {
             } else {
                 outFile = newFolder;
             }
-
             outFile.createNewFile();
 
             in = new FileInputStream(inFile);
@@ -120,19 +117,11 @@ public class CommandWorker {
             throw new Exception("cp: \'" + srFile + "\'" + e.getMessage());
         } finally {
             if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    throw new Exception("cp: \'" + srFile + "\'" + e.getMessage());
-                }
+                in.close();
             }
 
             if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    throw new Exception("cp: \'" + srFile + "\'" + e.getMessage());
-                }
+                out.close();
             }
         }
     }
@@ -238,7 +227,7 @@ public class CommandWorker {
                 return new File(mPath.getAbsoluteFile().getParent());
             }
         }
-        if (name.charAt(name.length() - 1) == File.separatorChar) {
+        if (name.length() > 1 && name.charAt(name.length() - 1) == File.separatorChar) {
             name = name.substring(0, name.length() - 1);
         }
 
@@ -247,7 +236,5 @@ public class CommandWorker {
         } else {
             return new File(mPath, name);
         }
-
     }
-
 }

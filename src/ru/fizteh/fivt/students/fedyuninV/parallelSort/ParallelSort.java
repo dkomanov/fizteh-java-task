@@ -69,17 +69,17 @@ public class ParallelSort {
             maxReaders = 1;
             sorters = Executors.newFixedThreadPool(maxSorters);
             readers = Executors.newFixedThreadPool(maxReaders);
-            finish = new ResultContainer(ignoreCase, new ArrayList<String>());
-            readers.execute(new Reader(null, sorters, ignoreCase, finish));
+            finish = new ResultContainer(ignoreCase, new ArrayList<StringContainer>());
+            readers.execute(new Reader(null, 0, sorters, ignoreCase, finish));
         } else {
             if (args.length - firstFileIndex < maxReaders) {
-                maxReaders = 2; //it seems to be the best variant
+                maxReaders = 1; //it seems to be the best variant
             }
             sorters = Executors.newFixedThreadPool(maxSorters);
             readers = Executors.newFixedThreadPool(maxReaders);
-            finish = new ResultContainer(ignoreCase, new ArrayList<String>());
+            finish = new ResultContainer(ignoreCase, new ArrayList<StringContainer>());
             for (int i = firstFileIndex; i < args.length; i++) {
-                readers.execute(new Reader(args[i], sorters, ignoreCase, finish));
+                readers.execute(new Reader(args[i], i, sorters, ignoreCase, finish));
             }
         }
         readers.shutdown();
