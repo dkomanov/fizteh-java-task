@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.stringFormatter;
 
 import ru.fizteh.fivt.format.FormatterException;
+import ru.fizteh.fivt.format.StringFormatterExtension;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -24,5 +25,10 @@ public class CalendarFormat extends StringFormatterExtension {
         } catch (Throwable t) {
             throw new FormatterException(t.getMessage());
         }
+    }
+
+    @Override
+    public boolean supports(Class<?> clazz) {
+        return this.clazz.isAssignableFrom(clazz);
     }
 }
