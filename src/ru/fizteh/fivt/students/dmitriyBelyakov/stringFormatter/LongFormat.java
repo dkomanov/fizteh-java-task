@@ -1,7 +1,6 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.stringFormatter;
 
 import ru.fizteh.fivt.format.FormatterException;
-import ru.fizteh.fivt.format.StringFormatterExtension;
 
 import java.util.Formatter;
 

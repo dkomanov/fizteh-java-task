@@ -6,6 +6,23 @@ import ru.fizteh.fivt.format.FormatterException;
 
 import java.util.Calendar;
 
+class ClassEleven {
+    public int intField = 11;
+    public String stringField = "eleven";
+}
+
+class ClassTwelve {
+    ClassEleven eleven = new ClassEleven();
+}
+
+class ClassWithCalendar {
+    Calendar calendar;
+
+    ClassWithCalendar(Calendar calendar) {
+        this.calendar = calendar;
+    }
+}
+
 public class UnitTests extends Assert {
 
     // Tests for class CalendarFormat
@@ -75,23 +92,13 @@ public class UnitTests extends Assert {
 
     @Test(expected = FormatterException.class)
     public void testStringFormatterNullPointerExtension() {
-        new StringFormatter().addExtension(Calendar.class, null);
-    }
-
-    @Test(expected = FormatterException.class)
-    public void testStringFormatterNullPointerClassExtension() {
-        new StringFormatter().addExtension(null, new CalendarFormat());
-    }
-
-    @Test(expected = FormatterException.class)
-    public void testStringFormatterUnsupportedExtensionForClass() {
-        new StringFormatter().addExtension(Long.class, new CalendarFormat());
+        new StringFormatter().addExtension(null);
     }
 
     @Test
     public void testStringFormatterAddExtension() {
         StringFormatter formatter = new StringFormatter();
-        formatter.addExtension(Calendar.class, new CalendarFormat());
+        formatter.addExtension(new CalendarFormat());
         assertFalse(formatter.supported(Long.class));
         assertTrue(formatter.supported(Calendar.class));
     }
@@ -106,11 +113,32 @@ public class UnitTests extends Assert {
         new StringFormatter().format("{{0}", 0);
     }
 
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterUnsupportedType() {
+        new StringFormatter().format("{0:yyyy.MM.dd}", Calendar.getInstance());
+    }
+
     @Test
     public void testStringFormatter() {
         StringFormatter formatter = new StringFormatter();
         assertEquals("first text {second text} third text", formatter.format("first text {{second text}} third text"));
         assertEquals("This is text: text example.", formatter.format("This is text: {0}.", "text example"));
         assertEquals("Example: first {1} 2.", formatter.format("Example: {0} {{1}} {1}.", "first", 2));
+        String string = "Hello, world!";
+        assertEquals("Text 'Hello, world!', length {13}.", formatter.format("Text '{0}', length {{{1}}}.", string, string.length()));
+        assertEquals("Class class java.util.Calendar", formatter.format("Class {0}", Calendar.class));
+        assertEquals("eleven is 11", formatter.format("{0.stringField} is {0.intField}", new ClassEleven()));
+        assertEquals("eleven", formatter.format("{0.eleven.stringField}", new ClassTwelve()));
+        formatter.addExtension(new CalendarFormat());
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR, 16);
+        calendar.set(Calendar.MINUTE, 50);
+        calendar.set(Calendar.SECOND, 00);
+        calendar.set(Calendar.YEAR, 1993);
+        calendar.set(Calendar.MONTH, 11);
+        calendar.set(Calendar.DAY_OF_MONTH, 10);
+        assertEquals("1993.12.11", formatter.format("{0:yyyy.MM.dd}", calendar));
+        assertEquals("I was born 11.12.1993 at 04:50.", formatter.format("I was born {0:dd.MM.yyyy} at {1.calendar:HH:mm}.",
+                calendar, new ClassWithCalendar(calendar)));
     }
 }
