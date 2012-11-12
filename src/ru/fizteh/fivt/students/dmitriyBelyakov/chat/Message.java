@@ -11,15 +11,15 @@ public class Message {
         this.text = text;
     }
 
-    MessageType getType() {
+    public MessageType getType() {
         return type;
     }
 
-    String getName() {
+    public String getName() {
         return name;
     }
 
-    String getText() {
+    public String getText() {
         return text;
     }
 }
