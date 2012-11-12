@@ -60,7 +60,6 @@ public class Shell {
         if (!source.exists()) {
             error(comm + ": '" + source.getName() + "': No such file or directory");
         }
-        destination = new File(destination, source.getName());
         if (source.isDirectory()) {
             if (!destination.exists()) {
                 if (!destination.mkdir()) {
@@ -202,7 +201,6 @@ public class Shell {
                 stringBuilder.append(' ');
             }
             commands = stringBuilder.toString().split("[ ]*[;][ ]*");
-
             for(String command : commands) {
                 run(command);
             }
