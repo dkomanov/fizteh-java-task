@@ -176,7 +176,6 @@ public class ParallelSort {
             Utils.printErrorAndExit(expt.getMessage());
         } finally {
             Utils.tryClose(br);
-            Utils.tryClose(isr);
         }
        
     }
