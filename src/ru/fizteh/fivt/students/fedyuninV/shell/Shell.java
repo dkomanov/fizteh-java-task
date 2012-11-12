@@ -80,7 +80,7 @@ public class Shell {
                 writer = new FileOutputStream(destination);
                 byte[] buffer = new byte[1024];
                 int length;
-                while((length = reader.read(buffer)) > 0) {
+                while ((length = reader.read(buffer)) != -1) {
                     writer.write(buffer, 0, length);
                 }
             } catch (Exception ex) {
