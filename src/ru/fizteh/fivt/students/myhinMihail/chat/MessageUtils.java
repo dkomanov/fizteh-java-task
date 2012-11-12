@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.myhinMihail.chat;
 
+import ru.fizteh.fivt.students.myhinMihail.Utils;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
