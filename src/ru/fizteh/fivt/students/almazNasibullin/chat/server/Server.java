@@ -17,8 +17,8 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
-import ru.fizteh.fivt.students.almazNasibullin.MessageType;
-import ru.fizteh.fivt.students.almazNasibullin.MessageUtils;
+import ru.fizteh.fivt.students.almazNasibullin.chat.MessageType;
+import ru.fizteh.fivt.students.almazNasibullin.chat.MessageUtils;
 import ru.fizteh.fivt.students.almazNasibullin.WrapperPrimitive;
 
 /**
