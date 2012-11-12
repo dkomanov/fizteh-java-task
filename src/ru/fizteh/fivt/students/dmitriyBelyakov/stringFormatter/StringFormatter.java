@@ -23,8 +23,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     }
 
     public boolean supported(Class<?> clazz) {
-        for(StringFormatterExtension extension: extensions) {
-            if(extension.supports(clazz)) {
+        for (StringFormatterExtension extension : extensions) {
+            if (extension.supports(clazz)) {
                 return true;
             }
         }
@@ -32,8 +32,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     }
 
     public StringFormatterExtension getExtension(Object object) {
-        for(StringFormatterExtension extension: extensions) {
-            if(extension.supports(object.getClass())) {
+        for (StringFormatterExtension extension : extensions) {
+            if (extension.supports(object.getClass())) {
                 return extension;
             }
         }
@@ -101,20 +101,20 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                         if (field) {
                             if (c == '.' || c == ':' || c == '}') {
                                 object = object.getClass().getDeclaredField(format.substring(numOfFieldPosition, i)).get(object);
-                                if(object == null) {
+                                if (object == null) {
                                     throw new FormatterException("Null pointer field.");
                                 }
-                                if(c == ':') {
+                                if (c == ':') {
                                     field = false;
                                     pattern = true;
                                     numOfPatternPosition = i + 1;
-                                } else if(c == '}') {
+                                } else if (c == '}') {
                                     buffer.append(object.toString());
                                     isArgument = false;
                                     objectGet = false;
                                     pattern = false;
                                     field = false;
-                                } else if(c == '.') {
+                                } else if (c == '.') {
                                     numOfFieldPosition = i + 1;
                                 }
                             }

@@ -11,7 +11,7 @@ public class CalendarFormat extends StringFormatterExtension {
     }
 
     @Override
-    public void format(StringBuilder buffer, Object object, String pattern) throws FormatterException{
+    public void format(StringBuilder buffer, Object object, String pattern) throws FormatterException {
         try {
             if (object == null) {
                 throw new FormatterException("Null pointer.");
