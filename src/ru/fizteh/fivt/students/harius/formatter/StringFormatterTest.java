@@ -45,15 +45,15 @@ public abstract class StringFormatterTest {
     }
 
     public static void simpleDouble() {
-        StringFormatter dbasic = factory.create("ru.fizteh.fivt.students." +
-"harius.formatter.StringFormatterDoubleExtension");
+        StringFormatter dbasic = factory.create(
+            StringFormatterDoubleExtension.class.getName());
         check(dbasic, "hello", "hello");
         check(dbasic, "3.14", "{0:.2}", 3.1415926);
     }
 
     public static void simpleBigInteger() {
-        StringFormatter ibasic = factory.create("ru.fizteh.fivt.students." +
-"harius.formatter.StringFormatterBigIntegerExtension");
+        StringFormatter ibasic = factory.create(
+            StringFormatterBigIntegerExtension.class.getName());
         check(ibasic, "hello", "hello");
         check(ibasic, "1234321", "{0:}", BigInteger.valueOf(1111 * 1111));
     }
