@@ -11,7 +11,7 @@ public abstract class StringFormatterExtension {
         this.clazz = clazz;
     }
 
-    public final boolean supports(Class<?> clazz) {
+    public boolean supports(Class<?> clazz) {
         return this.clazz.equals(clazz);
     }
 
