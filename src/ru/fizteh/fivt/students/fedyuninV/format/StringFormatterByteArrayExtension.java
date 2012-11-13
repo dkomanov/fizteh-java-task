@@ -1,8 +1,10 @@
 package ru.fizteh.fivt.students.fedyuninV.format;
 
+import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
-import java.util.Formatter;
+import java.util.UnknownFormatConversionException;
+
 
 /**
  * Fedyunin Valeriy
@@ -14,6 +16,10 @@ public class StringFormatterByteArrayExtension extends StringFormatterExtension{
     }
 
     public void format(StringBuilder buffer, Object o, String pattern) {
-        buffer.append(String.format("%" + pattern + "s", o.toString()));
+        try {
+            buffer.append(String.format("%" + pattern + "s", o.toString()));
+        } catch (UnknownFormatConversionException ex) {
+            throw new FormatterException("Incorrect pattern");
+        }
     }
 }

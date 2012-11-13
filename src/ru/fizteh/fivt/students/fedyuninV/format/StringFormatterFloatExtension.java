@@ -1,8 +1,10 @@
 package ru.fizteh.fivt.students.fedyuninV.format;
 
+import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
 import java.util.Formatter;
+import java.util.UnknownFormatConversionException;
 
 /**
  * Fedyunin Valeriy
@@ -13,10 +15,15 @@ public class StringFormatterFloatExtension extends StringFormatterExtension{
 
     protected StringFormatterFloatExtension() {
         super(Float.class);
-        formatter = new Formatter();
+
     }
 
     public void format(StringBuilder buffer, Object o, String pattern) {
-        buffer.append(formatter.format("%" + pattern + "f", o));
+        formatter = new Formatter();
+        try {
+            buffer.append(formatter.format("%" + pattern + "f", o));
+        } catch (UnknownFormatConversionException ex) {
+            throw new FormatterException("Incorrect pattern");
+        }
     }
 }

@@ -19,9 +19,7 @@ public class StringFormatterFactory implements ru.fizteh.fivt.format.StringForma
     public StringFormatter create(String... extensionClassNames) throws FormatterException {
         extensionList = new ArrayList<StringFormatterExtension>();
         List<String> classNames = new ArrayList<String>();
-        for (String className: extensionClassNames) {
-            classNames.add(className);
-        }
+        Collections.addAll(classNames, extensionClassNames);
         Collections.sort(classNames);
         for (int i = 0; i < classNames.size(); i++) {
             String currClassName = classNames.get(i);
@@ -34,7 +32,6 @@ public class StringFormatterFactory implements ru.fizteh.fivt.format.StringForma
                 throw new FormatterException("Unable to create formatter for tihs classes");
             }
         }
-        System.out.println(extensionList.size());
         return new StringFormatter(extensionList);
     }
 }

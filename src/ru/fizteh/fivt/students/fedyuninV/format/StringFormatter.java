@@ -84,7 +84,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
             for (int i = 1; i < fields.length; i++) {
                 finalArg = finalArg.getClass().getField(fields[i]).get(finalArg);
             }
-        } catch (Exception ex) {;
+        } catch (Exception ex) {
             throw new FormatterException("Incorrect term in brackets");
         }
         if (patternBegin == format.length()) {
@@ -92,6 +92,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
                 buffer.append(finalArg.toString());
             }
         } else {
+            if (patternBegin == format.length() - 1) {
+                throw new FormatterException("Void pattern with ':'");
+            }
             boolean extNotFound = true;
             for (StringFormatterExtension extension: extensions) {
                 if (extension.supports(finalArg.getClass())) {
