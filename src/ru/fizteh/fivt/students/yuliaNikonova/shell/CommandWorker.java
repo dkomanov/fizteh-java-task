@@ -141,6 +141,7 @@ public class CommandWorker {
                 success = fileIn.renameTo(fileOut);
             }
             if (!success) {
+                // System.out.println("lala");
                 throw new Exception("mv: cannot move \'" + comms[1] + "\'");
             }
         }
