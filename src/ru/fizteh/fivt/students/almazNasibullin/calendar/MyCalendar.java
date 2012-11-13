@@ -7,6 +7,8 @@ import java.util.StringTokenizer;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
+import ru.fizteh.fivt.students.almazNasibullin.WrapperPrimitive;
 
 /**
  * 30.10.12
@@ -50,6 +52,17 @@ public class MyCalendar {
         if (!timeZone.t.equals("")) {
             tz = TimeZone.getTimeZone(timeZone.t);
             calendar.setTimeZone(tz);
+            String[] zones = TimeZone.getAvailableIDs();
+            boolean exist = false;
+            for (int i = 0; i < zones.length; ++i) {
+                if (timeZone.t.equals(zones[i])) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                IOUtils.printErrorAndExit(timeZone.t + ": no such time zone");
+            }
         }
 
         printCalendar(calendar, weak,timeZone, tz);
@@ -76,16 +89,16 @@ public class MyCalendar {
                             try {
                                 month.t = Integer.parseInt(st.nextToken());
                                 if (!(month.t >= 1 && month.t <= 12)) {
-                                    LoUtils.printErrorAndExit("Wrong number of the month");
+                                    IOUtils.printErrorAndExit("Wrong number of the month");
                                 }
                             } catch (Exception e) {
-                                LoUtils.printErrorAndExit("Usage: [-m MONTH]");
+                                IOUtils.printErrorAndExit("Usage: [-m MONTH]");
                             }
                         } else {
-                            LoUtils.printErrorAndExit("Usage: [-m MONTH]");
+                            IOUtils.printErrorAndExit("Usage: [-m MONTH]");
                         }
                     } else {
-                        LoUtils.printErrorAndExit("You put number of the month several times");
+                        IOUtils.printErrorAndExit("You put number of the month several times");
                     }
                 } else if (str.equals("-y")) {
                     if (year.t == -1) {
@@ -93,35 +106,35 @@ public class MyCalendar {
                             try {
                                 year.t = Integer.parseInt(st.nextToken());
                                 if (year.t < 0) {
-                                    LoUtils.printErrorAndExit("Wrong year");
+                                    IOUtils.printErrorAndExit("Wrong year");
                                 }
                             } catch (Exception e) {
-                                LoUtils.printErrorAndExit("Usage: [-y YEAR]");
+                                IOUtils.printErrorAndExit("Usage: [-y YEAR]");
                             }
                         } else {
-                            LoUtils.printErrorAndExit("Usage: [-y YEAR]");
+                            IOUtils.printErrorAndExit("Usage: [-y YEAR]");
                         }
                     } else {
-                        LoUtils.printErrorAndExit("You put year several times");
+                        IOUtils.printErrorAndExit("You put year several times");
                     }
                 } else if (str.equals("-w")) {
                     if (!weak.t) {
                         weak.t = true;
                     } else {
-                        LoUtils.printErrorAndExit("You put key '-w' several times");
+                        IOUtils.printErrorAndExit("You put key '-w' several times");
                     }
                 } else if (str.equals("-t")) {
                     if (timeZone.t.equals("")) {
                         if (st.hasMoreTokens()) {
                             timeZone.t = st.nextToken();
                         } else {
-                            LoUtils.printErrorAndExit("Usage: [-t TIMEZONE]");
+                            IOUtils.printErrorAndExit("Usage: [-t TIMEZONE]");
                         }
                     } else {
-                        LoUtils.printErrorAndExit("You put the time zone several times");
+                        IOUtils.printErrorAndExit("You put the time zone several times");
                     }
                 } else {
-                    LoUtils.printErrorAndExit(str + ": bad command");
+                    IOUtils.printErrorAndExit(str + ": bad command");
                 }
             }
         }

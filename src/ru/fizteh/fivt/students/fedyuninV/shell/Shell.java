@@ -60,7 +60,6 @@ public class Shell {
         if (!source.exists()) {
             error(comm + ": '" + source.getName() + "': No such file or directory");
         }
-        destination = new File(destination, source.getName());
         if (source.isDirectory()) {
             if (!destination.exists()) {
                 if (!destination.mkdir()) {
@@ -81,7 +80,7 @@ public class Shell {
                 writer = new FileOutputStream(destination);
                 byte[] buffer = new byte[1024];
                 int length;
-                while((length = reader.read(buffer)) > 0) {
+                while ((length = reader.read(buffer)) != -1) {
                     writer.write(buffer, 0, length);
                 }
             } catch (Exception ex) {
@@ -202,7 +201,6 @@ public class Shell {
                 stringBuilder.append(' ');
             }
             commands = stringBuilder.toString().split("[ ]*[;][ ]*");
-
             for(String command : commands) {
                 run(command);
             }
