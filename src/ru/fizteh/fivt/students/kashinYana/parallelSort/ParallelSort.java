@@ -48,7 +48,7 @@ public class ParallelSort {
     static boolean isInput = false;
 
     public static void main(String[] args) throws Exception {
-        //Date date = new Date();
+        Date date = new Date();
         inputString = new ArrayList<String>();
         ans = new ArrayList();
         ans2 = new ArrayList();
@@ -68,10 +68,6 @@ public class ParallelSort {
         service = Executors.newFixedThreadPool(numberThreads);
         Sorter sorter[] = new Sorter[numberThreads];
 
-        for (int i = 0; i < numberThreads; i++) {
-            sorter[i] = new Sorter(i);
-            sorter[i].start();
-        }
         try {
             reader(inputString);
         } catch (Exception e) {
@@ -80,8 +76,13 @@ public class ParallelSort {
         }
 
         for (int i = 0; i < numberThreads; i++) {
-            sorter[i].join();
+            sorter[i] = new Sorter(i);
+            sorter[i].start();
         }
+
+         for (int i = 0; i < numberThreads; i++) {
+            sorter[i].join();
+         }
 
         service.shutdown();
         service.awaitTermination(1, TimeUnit.DAYS);
@@ -99,8 +100,8 @@ public class ParallelSort {
             System.err.println("Error in print answer");
             System.exit(1);
         }
-        //Date date2 = new Date();
-        //System.out.println(date2.getTime() - date.getTime());
+        Date date2 = new Date();
+        System.out.println(date2.getTime() - date.getTime());
     }
 
     static void readKeys(String[] args) throws Exception {
