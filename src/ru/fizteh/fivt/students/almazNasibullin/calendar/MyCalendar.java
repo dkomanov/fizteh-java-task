@@ -224,10 +224,26 @@ public class MyCalendar {
                 System.out.println();
                 ++weekOfYear;
                 if (weak.t) {
-                    if (weekOfYear <= 9) {
-                        printSpace(1);
+                    if (calendar.get(Calendar.MONTH) == Calendar.DECEMBER) {
+                        if ((calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+                                - dayOfMonth) < 4) {
+                            weekOfYear = getLastWeekOfyear(calendar);
+                            if (weekOfYear <= 9) {
+                                printSpace(1);
+                            }
+                            System.out.print(weekOfYear + " ");
+                        } else {
+                            if (weekOfYear <= 9) {
+                                printSpace(1);
+                            }
+                            System.out.print(weekOfYear + " ");
+                        }
+                    } else {
+                        if (weekOfYear <= 9) {
+                            printSpace(1);
+                        }
+                        System.out.print(weekOfYear + " ");
                     }
-                    System.out.print(weekOfYear + " ");
                 }
             }
             printSpace(maxLengthOfday - Integer.toString(dayOfMonth).length());
@@ -238,6 +254,18 @@ public class MyCalendar {
         System.out.println();
 
         if (tz != null) { // печатаем дату и время в указанной временной зоне
+            String[] zones = TimeZone.getAvailableIDs();
+            boolean curZone = false;
+            for (int i = 0; i < zones.length; ++i) {
+                if (zones[i].equals(tz.getID())) {
+                    curZone = true;
+                    System.out.println(zones[i] + tz.getID());
+                    break;
+                }
+            }
+            if (!curZone) {
+                IOUtils.printErrorAndExit(tz.toString() + ": no such zone");
+            }
             System.out.println();
             DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             dateFormat.setTimeZone(tz);
@@ -249,7 +277,8 @@ public class MyCalendar {
     public static int getWeekOfYear(Calendar calendar) {
         // находит номер недели в году первой недели текущего месяца
         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(
+                Calendar.DAY_OF_MONTH));
         int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
         calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
         return weekOfYear;
@@ -267,5 +296,15 @@ public class MyCalendar {
         } else {
             return 7; // sunday
         }
+    }
+
+    public static int getLastWeekOfyear(Calendar calendar) {
+        // находит номер дня в недели первого дня текущего месяца
+        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(
+                Calendar.DAY_OF_MONTH));
+        int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
+        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        return weekOfYear;
     }
 }
