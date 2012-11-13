@@ -18,7 +18,7 @@ public class StringFormatterByteArrayExtension extends StringFormatterExtension{
     public void format(StringBuilder buffer, Object o, String pattern) {
         try {
             buffer.append(String.format("%" + pattern + "s", o.toString()));
-        } catch (UnknownFormatConversionException ex) {
+        } catch (Exception ex) {
             throw new FormatterException("Incorrect pattern");
         }
     }

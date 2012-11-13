@@ -50,7 +50,12 @@ public class StringFormatterTester{
 
     @Test(expected = FormatterException.class)
     public void badPattern() {
-        formatter.format("Hello {{1}}} {0:hren} world!", (float) 3.1415926);
+        formatter.format("Hello {{1}} {0:.....2323....} world!", (float) 3.1415926, (float) 3.1415926);
+    }
+
+    @Test(expected = FormatterException.class)
+    public void outOfArray() {
+        formatter.format("Hello {{1}} {2} world!", (float) 3.1415926, (float) 3.1415926);
     }
 
     @Test
@@ -59,6 +64,9 @@ public class StringFormatterTester{
 
         testString = formatter.format("Hello {{1}} {0:.3} world!", (float) 3.1415926);
         Assert.assertEquals("Hello {1} 3.142 world!", testString);
+
+        testString = formatter.format("Hello {{1}} {{{0:.3}}} world!", (float) 3.1415926);
+        Assert.assertEquals("Hello {1} {3.142} world!", testString);
 
         testString = formatter.format("Hello 1}} {0:.3} world!", (float) 3.1415926);
         Assert.assertEquals("Hello 1} 3.142 world!", testString);
@@ -72,11 +80,22 @@ public class StringFormatterTester{
         testString = formatter.format("Hello {{1}} {0:.3}}} world!", (float) 3.1415926);
         Assert.assertEquals("Hello {1} 3.142} world!", testString);
 
-        testString = formatter.format("Hello {{1}} {0:.6} world!", (float) 3.1415926);
+        testString = formatter.format("Hello {{1}} {2:.6} world!", (float) 3.1415926, (float) 3.1415926, (float) 3.1415926);
         Assert.assertEquals("Hello {1} 3.141593 world!", testString);
 
         testString = formatter.format("Hello {{1}} {0} world!", (float) 3.1415926);
         Assert.assertEquals("Hello {1} 3.1415925 world!", testString);
+
+        byte[] test = {1, 12, 123, 14, 15};
+        testString = formatter.format("Hello {{1}} {0} world!", test);
+        Assert.assertEquals("Hello {1} " + test.toString() + " world!", testString);
+
+        test = null;
+        testString = formatter.format("Hello {{1}} {{{0}}} world!", test);
+        Assert.assertEquals("Hello {1} {} world!", testString);
+
+        testString = formatter.format("Hello {{1}} {0} world!", test);
+        Assert.assertEquals("Hello {1}  world!", testString);
     }
 }
 

@@ -22,7 +22,7 @@ public class StringFormatterFloatExtension extends StringFormatterExtension{
         formatter = new Formatter();
         try {
             buffer.append(formatter.format("%" + pattern + "f", o));
-        } catch (UnknownFormatConversionException ex) {
+        } catch (Exception ex) {
             throw new FormatterException("Incorrect pattern");
         }
     }
