@@ -227,7 +227,7 @@ public class MyCalendar {
                     if (calendar.get(Calendar.MONTH) == Calendar.DECEMBER) {
                         if ((calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
                                 - dayOfMonth) < 4) {
-                            weekOfYear = getLastWeekOfyear(calendar);
+                            weekOfYear = getLastWeekOfYear(calendar);
                             if (weekOfYear <= 9) {
                                 printSpace(1);
                             }
@@ -298,7 +298,7 @@ public class MyCalendar {
         }
     }
 
-    public static int getLastWeekOfyear(Calendar calendar) {
+    public static int getLastWeekOfYear(Calendar calendar) {
         // находит номер дня в недели первого дня текущего месяца
         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
         calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(
