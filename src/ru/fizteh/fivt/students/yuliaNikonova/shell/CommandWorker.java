@@ -137,7 +137,7 @@ public class CommandWorker {
             if (fileOut.isDirectory()) {
                 success = fileIn.renameTo(new File(fileOut, fileIn.getName()));
             } else {
-                //System.out.println(fileOut.getAbsolutePath());
+                // System.out.println(fileOut.getAbsolutePath());
                 success = fileIn.renameTo(fileOut);
             }
             if (!success) {
@@ -226,23 +226,29 @@ public class CommandWorker {
             return mPath;
         } else if (name.equals("..")) {
             if (mPath.getName().equals(".")) {
-                File path = new File(mPath.getCanonicalPath());
-                return new File(path.getAbsoluteFile().getParent());
-            } else {
-                return new File(mPath.getAbsoluteFile().getParent());
+                mPath = new File(mPath.getCanonicalPath());
             }
+            try {
+                File newFile = new File(mPath.getAbsoluteFile().getParent());
+            } catch (Exception e) {
+                return mPath;
+            }
+            return new File(mPath.getAbsoluteFile().getParent());
         }
+
         if (name.length() > 1 && name.charAt(name.length() - 1) == File.separatorChar) {
             name = name.substring(0, name.length() - 1);
         }
-        //System.out.println(mfile.getCanonicalPath());
-        //System.out.println(mfile.getName());
-        if (name.equals(mfile.getName()) || (File.separator+name).equals(mfile.getName())) {
-            //System.out.println("lalala");
-            return new File(mPath, name);
-            
+
+        String fName;
+        if (File.separator.equals("\\")) {
+            fName = name.replaceAll("\\\\", "");
         } else {
-            //System.out.println("jajaja");
+            fName = name.replaceAll(File.separator, "");
+        }
+        if (fName.equals(mfile.getName())) {
+            return new File(mPath, name);
+        } else {
             return mfile;
         }
     }
