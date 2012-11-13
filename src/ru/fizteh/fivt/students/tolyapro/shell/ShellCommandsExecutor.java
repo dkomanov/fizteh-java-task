@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
+import ru.fizteh.fivt.students.tolyapro.wordCounter.BufferCloser;
+
 public class ShellCommandsExecutor {
 
-    public static String separator = System.getProperty("file.separator");
+    public static String separator = File.separator;
 
     public static void showDir(String currPath) {
         String[] children = (new File(currPath).list());
@@ -110,7 +112,7 @@ public class ShellCommandsExecutor {
                 out = new FileOutputStream(destFile);
                 byte[] buf = new byte[1024];
                 int len;
-                while ((len = in.read(buf)) > 0) {
+                while ((len = in.read(buf)) != -1) {
                     out.write(buf, 0, len);
                 }
             } finally {
