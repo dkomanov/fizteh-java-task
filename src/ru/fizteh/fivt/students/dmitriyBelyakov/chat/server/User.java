@@ -3,11 +3,11 @@ package ru.fizteh.fivt.students.dmitriyBelyakov.chat.server;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageBuilder;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
+import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 
 class UserThread extends Thread {
     private final InputStream iStream;
@@ -36,7 +36,13 @@ class UserThread extends Thread {
             }
         } catch (Throwable t) {
             if (!isInterrupted()) {
-                user.close(true, true);
+                String messageText;
+                if(t.getMessage() != null) {
+                    messageText = t.getMessage();
+                } else {
+                    messageText = "Unknown.";
+                }
+                user.close(User.ERROR, User.SEND_MESSAGE, messageText);
             }
         }
 
@@ -50,6 +56,10 @@ public class User {
     private boolean authorized;
     private final Manager myManager;
 
+    static final boolean ERROR = true;
+    static final boolean BYE = false;
+    static final boolean SEND_MESSAGE = true;
+    static final boolean NOT_SEND_MESSAGE = false;
 
     public User(Socket socket, Manager listener) {
         authorized = false;
@@ -58,12 +68,12 @@ public class User {
         myManager = listener;
     }
 
-    public void close(boolean isError, boolean sendMessage) {
+    public void close(boolean isError, boolean sendMessage, String messageText) {
         myThread.interrupt();
-        if (sendMessage && isError) {
-            sendMessage(new Message(MessageType.ERROR, "", ""));
+        if (sendMessage == SEND_MESSAGE && isError == ERROR) {
+            sendMessage(new Message(MessageType.ERROR, "", messageText));
         } else if (sendMessage) {
-            sendMessage(new Message(MessageType.BYE, "", ""));
+            sendMessage(new Message(MessageType.BYE, "", messageText));
         }
         if (!socket.isClosed()) {
             try {
@@ -72,6 +82,13 @@ public class User {
             }
         }
         myManager.deleteUser(this);
+        if(authorized) {
+            myManager.showInServer("User " + name + " disconnected.");
+        }
+    }
+
+    public void close(boolean isError, boolean sendMessage) {
+        close(isError, sendMessage, "");
     }
 
     public void start() {
@@ -79,95 +96,56 @@ public class User {
             myThread = new UserThread(this, socket.getInputStream());
             myThread.start();
         } catch (Throwable t) {
-            close(true, true);
+            String messageText;
+            if(t.getMessage() != null) {
+                messageText = t.getMessage();
+            } else {
+                messageText = "Unknown.";
+            }
+            close(ERROR, SEND_MESSAGE, messageText);
         }
     }
 
     void getHelloMessage() {
         try {
-            InputStream iStream = socket.getInputStream();
-            if ((byte) iStream.read() != 1) {
-                throw new RuntimeException();
-            }
-            byte[] bLength = new byte[4];
-            if (iStream.read(bLength, 0, 4) != 4) {
-                throw new RuntimeException();
-            }
-            ByteBuffer buffer = ByteBuffer.allocate(4).put(bLength);
-            buffer.position(0);
-            int length = buffer.getInt();
-            byte[] bName = new byte[length];
-            if (iStream.read(bName, 0, length) != length) {
-                throw new RuntimeException();
-            }
-            name = new String(bName);
-            if (myManager.names.contains(name) || name.matches(".*\\s.*")) {
-                throw new RuntimeException();
+            Message message =  MessageUtils.getHelloMessage(socket.getInputStream());
+            name = message.getName();
+            if (myManager.names.contains(name) || name.matches(".*\\s+.*")) {
+                throw new RuntimeException("Incorrect or already used name.");
             }
             myManager.names.add(name);
             authorized = true;
+            myManager.showInServer("User " + name + " connected.");
         } catch (Throwable e) {
-            close(true, true);
+            String messageText;
+            if(e.getMessage() != null) {
+                messageText = e.getMessage();
+            } else {
+                messageText = "Unknown.";
+            }
+            close(ERROR, SEND_MESSAGE, messageText);
         }
     }
 
     void getMessage() {
         if (!authorized) {
-            close(true, true);
+            close(ERROR, SEND_MESSAGE, "You are not authorised");
             return;
         }
         try {
-            InputStream iStream = socket.getInputStream();
-            if ((byte) iStream.read() != 2) {
+            Message message = MessageUtils.getMessage(socket.getInputStream());
+            if (!(message.getName().equals(name))) {
                 throw new RuntimeException();
             }
-            ByteBuffer buffer = ByteBuffer.allocate(4);
-            for (int i = 0; i < 4; ++i) {
-                int tmp;
-                if ((tmp = iStream.read()) < 0) {
-                    throw new RuntimeException();
-                }
-                buffer.put((byte) tmp);
-            }
-            buffer.position(0);
-            int length = buffer.getInt();
-            byte[] bName = new byte[length];
-            for (int i = 0; i < length; ++i) {
-                int tmp;
-                if ((tmp = iStream.read()) < 0) {
-                    throw new RuntimeException();
-                }
-                bName[i] = (byte) tmp;
-            }
-            if (!(new String(bName).equals(name))) {
-                throw new RuntimeException();
-            }
-            buffer = ByteBuffer.allocate(4);
-            for (int i = 0; i < 4; ++i) {
-                int tmp;
-                if ((tmp = iStream.read()) < 0) {
-                    throw new RuntimeException();
-                }
-                buffer.put((byte) tmp);
-            }
-            buffer.position(0);
-            length = buffer.getInt();
-            byte[] bMess = new byte[length];
-            for (int i = 0; i < length; ++i) {
-                int tmp;
-                if ((tmp = iStream.read()) < 0) {
-                    throw new RuntimeException();
-                }
-                bMess[i] = (byte) tmp;
-            }
-            Message message = new Message(MessageType.MESSAGE, name, new String(bMess));
-            try {
-                myManager.sendAll(message, this);
-            } catch (Exception e) {
-                System.out.println(e.getClass().getName());
-            }
+            myManager.sendAll(message, this);
         } catch (Throwable e) {
-            close(true, true);
+            String messageText;
+            if(e.getMessage() != null) {
+                messageText = e.getMessage();
+            } else {
+                messageText = "Unknown.";
+            }
+            close(ERROR, SEND_MESSAGE, messageText);
         }
     }
 
@@ -176,18 +154,29 @@ public class User {
     }
 
     void getByeMessage() {
-        close(false, false);
+        close(BYE, NOT_SEND_MESSAGE);
     }
 
     void getErrorMessage() {
-        close(true, false);
+        try {
+            Message message = MessageUtils.getErrorMessage(socket.getInputStream());
+            myManager.showInServer(message.getText());
+        } catch (Throwable t) {
+            close(ERROR, NOT_SEND_MESSAGE);
+        }
     }
 
     public void sendMessage(Message message) {
         try {
             socket.getOutputStream().write(MessageBuilder.getMessageBytes(message));
         } catch (Throwable e) {
-            close(true, true);
+            String messageText;
+            if(e.getMessage() != null) {
+                messageText = e.getMessage();
+            } else {
+                messageText = "Unknown.";
+            }
+            close(ERROR, SEND_MESSAGE, messageText);
         }
     }
 

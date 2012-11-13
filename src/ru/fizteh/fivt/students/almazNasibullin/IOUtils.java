@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.almazNasibullin.calendar;
+package ru.fizteh.fivt.students.almazNasibullin;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.io.IOException;
  * @author almaz
  */
 
-public class LoUtils {
+public class IOUtils {
 
     public static void printErrorAndExit(String error) {
         System.err.println(error);

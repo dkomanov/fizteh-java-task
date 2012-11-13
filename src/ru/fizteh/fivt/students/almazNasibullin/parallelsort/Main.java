@@ -13,6 +13,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
+import ru.fizteh.fivt.students.almazNasibullin.WrapperPrimitive;
 
 /**
  * 23.10.12
@@ -39,14 +41,14 @@ public class Main {
 
         // строки из входных файлов или из stdin
         List<String> lines;
-        
+
         if (args.length > 0) {
             readArguments(args, withoutReg, uniqLines, countThreads, outputFile, files);
         }
-        
+
         // считывание строк
         lines = readLines(files, uniqLines, outputFile);
-        
+
         files.clear();
 
         int size = lines.size();
@@ -54,7 +56,7 @@ public class Main {
             System.exit(0);
         }
 
-        int countOfLinesForOneThread = 2500;
+        int countOfLinesForOneThread = 2000;
 
         if (countThreads.t == 0) {
             if (size > countOfLinesForOneThread) {
@@ -72,14 +74,13 @@ public class Main {
             // каждый поток сортирует свою часть и  записывает результат в result
             List<List<String> > result;
 
-            // работа с потоками: запуск и ожидание завершения их работы
+            // работа с потоками: сортировка
+            result = startingThreadsToSort(lines, countThreads, withoutReg);
 
-            result = startingThreads(lines, countThreads, withoutReg);
-
-            // результат слияния полученных результатов всех потоков
-            List<String> res = MergeResult(result, withoutReg);
-
-            printResult(uniqLines, outputFile, res);
+            // работа с потоками: слияние
+            List<String> res = startingThreadsToMerge(result, withoutReg);
+            
+            printResult(uniqLines, outputFile, res, withoutReg);
             res.clear();
         } else {
             // работа без запуска дополнительных потоков по причине малого
@@ -90,20 +91,20 @@ public class Main {
             } else {
                 Collections.sort(lines);
             }
-
-            printResult(uniqLines, outputFile, lines);
+            
+            printResult(uniqLines, outputFile, lines, withoutReg);
             lines.clear();
         }
     }
-    
+
     public static void checkOrderArguments(WrapperPrimitive<Boolean> key,
             List<String> files) {
         if (files.isEmpty()) {
-            // предпологается, что все ключи должны стоять перед 
-            // именами файлов, из которых будет считываться информация 
+            // предпологается, что все ключи должны стоять перед
+            // именами файлов, из которых будет считываться информация
             key.t = true;
         } else {
-            LoUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
+            IOUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
         }
     }
 
@@ -131,13 +132,13 @@ public class Main {
                         try {
                             countThreads.t = Integer.parseInt(st.nextToken());
                         } catch (Exception e) {
-                            LoUtils.printErrorAndExit("Usage: [-t THREAD_COUNT]." + e.getMessage());
+                            IOUtils.printErrorAndExit("Usage: [-t THREAD_COUNT]." + e.getMessage());
                         }
                     } else {
-                        LoUtils.printErrorAndExit("Usage: [-t THREAD_COUNT]");
+                        IOUtils.printErrorAndExit("Usage: [-t THREAD_COUNT]");
                     }
                 } else {
-                    LoUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT]"
+                    IOUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT]"
                         + "[-o OUTPUT] [FILES...]");
                 }
             } else if (str.equals("-o")) {
@@ -145,10 +146,10 @@ public class Main {
                     if (st.hasMoreTokens()) {
                         outputFile.t = st.nextToken();
                     } else {
-                        LoUtils.printErrorAndExit("Usage: [-o OUTPUT]");
+                        IOUtils.printErrorAndExit("Usage: [-o OUTPUT]");
                     }
                 } else {
-                    LoUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT]"
+                    IOUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT]"
                         + "[-o OUTPUT] [FILES...]");
                 }
             } else {
@@ -158,28 +159,20 @@ public class Main {
     }
 
     public static void readFromBufferedReader(BufferedReader br, boolean fromConsole,
-            FileReader fr, List <String> lines, WrapperPrimitive<Boolean> uniqLines,
+            FileReader fr, List<String> lines, WrapperPrimitive<Boolean> uniqLines,
             WrapperPrimitive<String> outputFile) {
         try {
             String str;
-            boolean allLinesEmpty = true;
             while ((str = br.readLine()) != null) {
                 lines.add(str);
-                if (allLinesEmpty && !str.isEmpty()) {
-                    allLinesEmpty = false;
-                }
-            }
-            if (allLinesEmpty) {
-                lines.add("");
-                printResult(uniqLines, outputFile, lines);
             }
         } catch (Exception e) {
-            LoUtils.printErrorAndExit("Bad reading from BufferedReader: " + e.getMessage());
+            IOUtils.printErrorAndExit("Bad reading from BufferedReader: " + e.getMessage());
         } finally {
             if (!fromConsole) {
-                LoUtils.closeOrExit(fr);
+                IOUtils.closeOrExit(fr);
             }
-            LoUtils.closeOrExit(br);
+            IOUtils.closeOrExit(br);
         }
     }
 
@@ -193,9 +186,9 @@ public class Main {
                  br = new BufferedReader(new InputStreamReader(System.in));
                  readFromBufferedReader(br, true, null, lines, uniqLines, outputFile);
             } catch (Exception e) {
-                LoUtils.printErrorAndExit("Bad opening BufferedReader: " + e.getMessage());
+                IOUtils.printErrorAndExit("Bad opening BufferedReader: " + e.getMessage());
             } finally {
-                LoUtils.closeOrExit(br);
+                IOUtils.closeOrExit(br);
             }
         } else { // считывание из файлов
             for (int i = 0; i < files.size(); ++i) {
@@ -205,17 +198,17 @@ public class Main {
                     br = new BufferedReader(fr);
                     readFromBufferedReader(br, false, fr, lines, uniqLines, outputFile);
                 } catch (Exception e) {
-                    LoUtils.printErrorAndExit("Bad opening BufferedReader: " +
+                    IOUtils.printErrorAndExit("Bad opening BufferedReader: " +
                             e.getMessage());
                 } finally {
-                    LoUtils.closeOrExit(br);
+                    IOUtils.closeOrExit(br);
                 }
             }
         }
         return lines;
     }
 
-    public static List<List<String> > startingThreads(List<String> lines,
+    public static List<List<String> > startingThreadsToSort(List<String> lines,
             WrapperPrimitive<Integer> countThreads, WrapperPrimitive<Boolean> withoutReg) {
         List<List<String> > result = new ArrayList<List<String> >();
 
@@ -227,7 +220,7 @@ public class Main {
             int size = lines.size();
             int start = 0;
             int end = size / (countThreads.t - 1) - 1;
-            
+
             for (int i = 0; i < countThreads.t - 1; ++i) {
                 Sorter s = new Sorter(lines, start, end, result.get(i), withoutReg.t);
                 threads.add(new Thread(s));
@@ -248,17 +241,62 @@ public class Main {
                 try {
                     threads.get(i).join();
                 } catch (Exception e) {
-                    LoUtils.printErrorAndExit("Bad joining: " + e.getMessage());
+                    IOUtils.printErrorAndExit("Bad joining: " + e.getMessage());
                 }
             }
             lines.clear();
         } catch (Exception e) {
-            LoUtils.printErrorAndExit("Smth bad happened while threads were working: " +
+            IOUtils.printErrorAndExit("Smth bad happened while threads were sorting: " +
                     e.getMessage());
         }
         return result;
     }
 
+    public static List<String> startingThreadsToMerge(List<List<String> > result,
+            WrapperPrimitive<Boolean> withoutReg) {
+        try {
+            int size = result.size();
+            List<List<String> > res;
+
+            while (size > 4) {
+                List<Thread> threads = new ArrayList<Thread>(size / 5);
+                res = new ArrayList<List<String> >(size / 5);
+                for (int i = 0; i < size / 5; ++i) {
+                    res.add(new ArrayList<String>());
+                }
+                int start = 0;
+                int end = 4;
+
+                for (int i = 0; i < size / 5; ++i) {
+                    Merger m = new Merger(res.get(i), result, start, end, withoutReg.t);
+                    threads.add(new Thread(m));
+                    threads.get(i).start();
+                    start += 5;
+                    end += 5;
+                }
+
+                for (int i = 0; i < size / 5; ++i) {
+                    try {
+                        threads.get(i).join();
+                    } catch (Exception e) {
+                        IOUtils.printErrorAndExit("Bad joining: " + e.getMessage());
+                    }
+                }
+
+                if (start != size) {
+                    for (int i = start; i < size; ++i) {
+                        res.add(result.get(i));
+                    }
+                }
+                result = res;
+                size = result.size();
+            }
+        } catch (Exception e) {
+            IOUtils.printErrorAndExit("Smth bad happened while threads were merging: " +
+                    e.getMessage());
+        }
+        return MergeResult(result, withoutReg);
+    }
     public static void removeAndAdd(List<List<String> > result, List<String> res,
             TreeMap<String, List<Pair> > tm) {
         // достаем строчку наименьшую из tm и добавляем в res
@@ -282,7 +320,7 @@ public class Main {
             WrapperPrimitive<Boolean> withoutReg) {
         // res - результат слияния result
         List<String> res = new ArrayList<String>();
-        
+
         // хранит в качестве ключа входные слова, в качестве значения массив
         // пар координаты в двумерном массиве result
         TreeMap<String, List<Pair> > tm;
@@ -304,7 +342,7 @@ public class Main {
         } else {
             tm = new TreeMap<String, List<Pair> >();
         }
-        
+
         for (int i = 0; i < result.size(); ++i) {
             String cur = result.get(i).get(0);
             if (!tm.containsKey(cur)) {
@@ -320,34 +358,42 @@ public class Main {
     }
 
     public static void writeLineToBufferedWriter(BufferedWriter bw,
-            List<String> lines, int i, boolean withLineBreak) {
+            List<String> lines, int i) {
         try {
-            if (withLineBreak) {
-                bw.newLine();
-                bw.write(lines.get(i), 0, lines.get(i).length());
-            } else {
-                bw.write(lines.get(i), 0, lines.get(i).length());
-            }
+            bw.write(lines.get(i) + "\n", 0, lines.get(i).length() + 1);
             bw.flush();
         } catch (IOException e) {
-            LoUtils.printErrorAndExit("Bad writing to BufferedWriter: " + e.getMessage());
+            IOUtils.printErrorAndExit("Bad writing to BufferedWriter: " + e.getMessage());
         }
     }
 
     public static void printResult(WrapperPrimitive<Boolean> uniqLines,
-             WrapperPrimitive<String> outputFile, List<String> lines) {
+             WrapperPrimitive<String> outputFile, List<String> lines,
+             WrapperPrimitive<Boolean> withoutReg) {
         int size = lines.size();
         if (outputFile.t.equals("")) { // вывод в stdout
             if (uniqLines.t) { // вывод уникальных строк
-                String prev = lines.get(0).toLowerCase();
+                String prev;
+                if (withoutReg.t) {
+                    prev = lines.get(0).toLowerCase();
+                } else {
+                    prev = lines.get(0);
+                }
                 System.out.println(lines.get(0));
                 for (int i = 1; i < size; ++i) {
-                    if (!lines.get(i).toLowerCase().equals(prev)) {
-                        System.out.println(lines.get(i));
-                        prev = lines.get(i).toLowerCase();
+                    if (withoutReg.t) {
+                        if (!lines.get(i).toLowerCase().equals(prev)) {
+                            System.out.println(lines.get(i));
+                            prev = lines.get(i).toLowerCase();
+                        }
+                    } else {
+                        if (!lines.get(i).equals(prev)) {
+                            System.out.println(lines.get(i));
+                            prev = lines.get(i);
+                        }
                     }
                 }
-             } else {
+            } else {
                 for (int i = 0; i < size; ++i) {
                     System.out.println(lines.get(i));
                 }
@@ -359,26 +405,36 @@ public class Main {
                 fw = new FileWriter(new File(outputFile.t));
                 bw = new BufferedWriter(fw);
                 if (uniqLines.t) { // вывод уникальных строк
-                    String prev = lines.get(0).toLowerCase();
-                    bw.write(lines.get(0), 0, lines.get(0).length());
-                    bw.flush();
+                    writeLineToBufferedWriter(bw, lines, 0);
+                    String prev;
+                    if (withoutReg.t) {
+                        prev = lines.get(0).toLowerCase();
+                    } else {
+                        prev = lines.get(0);
+                    }
                     for (int i = 1; i < size; ++i) {
-                        if (!lines.get(i).toLowerCase().equals(prev)) {
-                            writeLineToBufferedWriter(bw, lines, i, true);
-                            prev = lines.get(i).toLowerCase();
+                        if (withoutReg.t) {
+                            if (!lines.get(i).toLowerCase().equals(prev)) {
+                                writeLineToBufferedWriter(bw, lines, i);
+                                prev = lines.get(i).toLowerCase();
+                            }
+                        } else {
+                            if (!lines.get(i).equals(prev)) {
+                                writeLineToBufferedWriter(bw, lines, i);
+                                prev = lines.get(i);
+                            }
                         }
                     }
                 } else {
-                    writeLineToBufferedWriter(bw, lines, 0,false);
-                    for (int i = 1; i < size; ++i) {
-                        writeLineToBufferedWriter(bw, lines, i, true);
+                    for (int i = 0; i < size; ++i) {
+                        writeLineToBufferedWriter(bw, lines, i);
                     }
                 }
             } catch (Exception e) {
-                LoUtils.printErrorAndExit(e.getMessage());
+                IOUtils.printErrorAndExit(e.getMessage());
             } finally {
-                LoUtils.closeOrExit(fw);
-                LoUtils.closeOrExit(bw);
+                IOUtils.closeOrExit(fw);
+                IOUtils.closeOrExit(bw);
             }
         }
     }

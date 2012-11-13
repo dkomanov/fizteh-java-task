@@ -7,7 +7,6 @@ public class Shell {
         ArgumentParser argParser = new ArgumentParser(args);
         if (args.length > 0) {
             String commandLine = argParser.parse();
-            System.out.println(commandLine);
             execute(commandLine, false);
         } else {
             boolean work = true;

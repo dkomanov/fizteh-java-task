@@ -38,11 +38,9 @@ public class Shell {
     }
 
     private static void mkdir(String dirName) {
-        File newDir = new File(currPath + '/' + dirName);
-        if (!newDir.exists()) {
-            newDir.mkdir();
-        } else {
-            error("mkdir: '" + newDir.getName() + "': directory already exists");
+        File newDir = new File(dirName);
+        if (!newDir.mkdir()) {
+            error("mkdir: '" + newDir.getName() + "': failed to create directory");
         }
     }
 
@@ -62,7 +60,6 @@ public class Shell {
         if (!source.exists()) {
             error(comm + ": '" + source.getName() + "': No such file or directory");
         }
-        destination = new File(destination, source.getName());
         if (source.isDirectory()) {
             if (!destination.exists()) {
                 if (!destination.mkdir()) {
@@ -83,7 +80,7 @@ public class Shell {
                 writer = new FileOutputStream(destination);
                 byte[] buffer = new byte[1024];
                 int length;
-                while((length = reader.read(buffer)) > 0) {
+                while ((length = reader.read(buffer)) != -1) {
                     writer.write(buffer, 0, length);
                 }
             } catch (Exception ex) {
@@ -125,6 +122,7 @@ public class Shell {
             } else {
                 args[1] = setToAbsolute(args[1]);
                 cd(args[1]);
+                setToAbsolute(currPath);
             }
         } else if (args[0].equals("rm")) {
             if (args.length != 2) {
@@ -137,7 +135,11 @@ public class Shell {
             if (args.length != 1) {
                 error("pwd: Incorrect arguments");
             } else {
-                System.out.println(currPath);
+                try {
+                    System.out.println(new File(currPath).getCanonicalPath());
+                } catch (Exception ex) {
+                    error("pwd: " + ex.getMessage());
+                }
             }
         } else if (args[0].equals("dir")) {
             if (args.length != 1) {
@@ -168,7 +170,7 @@ public class Shell {
 
     public static void main(String[] args) {
         String[] commands;
-        currPath = new File(".").getAbsolutePath();
+        currPath = new File("").getAbsolutePath();
         if (args.length == 0) {
             interactive = true;
             BufferedReader reader = null;
@@ -196,11 +198,9 @@ public class Shell {
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = 0; i < args.length; i++) {
                 stringBuilder.append(args[i]);
-                if (i < args.length - 1) {
-                    stringBuilder.append(' ');
-                }
+                stringBuilder.append(' ');
             }
-            commands = stringBuilder.toString().split(";");
+            commands = stringBuilder.toString().split("[ ]*[;][ ]*");
             for(String command : commands) {
                 run(command);
             }
