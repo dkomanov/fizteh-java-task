@@ -90,6 +90,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
         }
         boolean extNotFound = true;
         if (patternBegin == format.length()) {
+            extNotFound = false;
             if (finalArg != null) {
                 buffer.append(finalArg.toString());
             }
