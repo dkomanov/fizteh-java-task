@@ -17,21 +17,15 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
         this.extensions = extensions;
     }
 
-    public String format(String format, Object... args)
+    public synchronized String format(String format, Object... args)
             throws FormatterException {
         StringBuilder buffer = new StringBuilder();
-        startParse(buffer, format, args);
+        format(buffer, format, args);
         return buffer.toString();
     }
 
-    public void format(StringBuilder buffer, String format, Object... args)
+    public synchronized void format(StringBuilder buffer, String format, Object... args)
             throws FormatterException {
-        startParse(buffer, format, 0, args);
-    }
-
-    //this function guarantees thread-safety
-    private synchronized void startParse(StringBuilder buffer, String format, Object... args)
-            throws FormatterException{
         parse(buffer, format, 0, args);
     }
 
@@ -62,7 +56,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
                 parse(buffer, format, closeBracket + 1, args);
             }
         } else {  // format looks like "*}*" or "*}*{*"
-            if(closeBracket + 1 < format.length()  &&  format.charAt(closeBracket + 1) == '}') {
+            if (closeBracket + 1 < format.length()  &&  format.charAt(closeBracket + 1) == '}') {
                 buffer.append(format.substring(leftBound, closeBracket + 1));
                 parse(buffer, format, closeBracket + 2, args);
             } else {

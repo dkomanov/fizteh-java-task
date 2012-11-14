@@ -3,8 +3,6 @@ package ru.fizteh.fivt.students.fedyuninV.format;
 import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
-import java.util.UnknownFormatConversionException;
-
 
 /**
  * Fedyunin Valeriy
@@ -17,7 +15,7 @@ public class StringFormatterByteArrayExtension extends StringFormatterExtension{
 
     public void format(StringBuilder buffer, Object o, String pattern) {
         try {
-            buffer.append(String.format("%" + pattern + "s", o.toString()));
+            buffer.append(String.format("%" + pattern, o.toString()));
         } catch (Exception ex) {
             throw new FormatterException("Incorrect pattern");
         }
