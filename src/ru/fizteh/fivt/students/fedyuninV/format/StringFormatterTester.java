@@ -6,8 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.fizteh.fivt.format.FormatterException;
 
-import java.util.Arrays;
-
 /**
  * Fedyunin Valeriy
  * MIPT FIVT 195
@@ -83,11 +81,11 @@ public class StringFormatterTester{
         Assert.assertEquals("Hello {1} 3.141593 world!", testString);
 
         testString = formatter.format("Hello {{1}} {0} world!", 3.1415926f);
-        Assert.assertEquals("Hello {1} 3.141593 world!", testString);
+        Assert.assertEquals("Hello {1} 3.1415925 world!", testString);
 
         byte[] test = {1, 12, 123, 14, 15};
         testString = formatter.format("Hello {{1}} {0} world!", test);
-        Assert.assertEquals("Hello {1} " + Arrays.toString(test) + " world!", testString);
+        Assert.assertEquals("Hello {1} " + test.toString() + " world!", testString);
 
         test = null;
         testString = formatter.format("Hello {{1}} {{{0}}} world!", test);
