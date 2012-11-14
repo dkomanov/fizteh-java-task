@@ -46,16 +46,16 @@ public class UnitTests extends Assert {
         calendar.set(Calendar.SECOND, 00);
         calendar.set(Calendar.YEAR, 1993);
         calendar.set(Calendar.MONTH, 11);
-        calendar.set(Calendar.DAY_OF_MONTH, 10);
+        calendar.set(Calendar.DAY_OF_MONTH, 11);
         CalendarFormat formatter = new CalendarFormat();
         formatter.format(builder, calendar, "yyyy.MM.dd HH:mm:ss");
-        assertEquals("1993.12.11 04:50:00", builder.toString());
+        assertEquals("1993.12.11 16:50:00", builder.toString());
         builder = new StringBuilder();
         formatter.format(builder, calendar, "dd.MM.yy");
         assertEquals("11.12.93", builder.toString());
         builder = new StringBuilder();
         formatter.format(builder, calendar, "HH.mm dd.MM.yyyy");
-        assertEquals("04.50 11.12.1993", builder.toString());
+        assertEquals("16.50 11.12.1993", builder.toString());
     }
 
     @Test(expected = FormatterException.class)
@@ -136,9 +136,9 @@ public class UnitTests extends Assert {
         calendar.set(Calendar.SECOND, 00);
         calendar.set(Calendar.YEAR, 1993);
         calendar.set(Calendar.MONTH, 11);
-        calendar.set(Calendar.DAY_OF_MONTH, 10);
+        calendar.set(Calendar.DAY_OF_MONTH, 11);
         assertEquals("1993.12.11", formatter.format("{0:yyyy.MM.dd}", calendar));
-        assertEquals("I was born 11.12.1993 at 04:50.", formatter.format("I was born {0:dd.MM.yyyy} at {1.calendar:HH:mm}.",
+        assertEquals("I was born 11.12.1993 at 16:50.", formatter.format("I was born {0:dd.MM.yyyy} at {1.calendar:HH:mm}.",
                 calendar, new ClassWithCalendar(calendar)));
     }
 
