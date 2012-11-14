@@ -92,12 +92,10 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
         if (patternBegin == format.length()) {
             patternBegin--;
         }
-        synchronized (extensions) {
-            for (StringFormatterExtension extension: extensions) {
-                if (extension.supports(finalArg.getClass())) {
-                    extNotFound = false;
-                    extension.format(buffer, finalArg, format.substring(patternBegin + 1));
-                }
+        for (StringFormatterExtension extension: extensions) {
+            if (extension.supports(finalArg.getClass())) {
+                extNotFound = false;
+                extension.format(buffer, finalArg, format.substring(patternBegin + 1));
             }
         }
         if (extNotFound) {
