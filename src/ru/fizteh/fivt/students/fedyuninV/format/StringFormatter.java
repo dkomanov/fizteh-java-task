@@ -90,12 +90,15 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
         }
         boolean extNotFound = true;
         if (patternBegin == format.length()) {
-            patternBegin--;
-        }
-        for (StringFormatterExtension extension: extensions) {
-            if (extension.supports(finalArg.getClass())) {
-                extNotFound = false;
-                extension.format(buffer, finalArg, format.substring(patternBegin + 1));
+            if (finalArg != null) {
+                buffer.append(finalArg.toString());
+            }
+        } else {
+            for (StringFormatterExtension extension: extensions) {
+                if (extension.supports(finalArg.getClass())) {
+                    extNotFound = false;
+                    extension.format(buffer, finalArg, format.substring(patternBegin + 1));
+                }
             }
         }
         if (extNotFound) {
