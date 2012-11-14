@@ -102,18 +102,28 @@ public class ParallelSort {
 
     static void readKeys(String[] args) throws Exception {
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-i") && !isInput) {
-                isI = true;
-            } else if (args[i].equals("-u") && !isInput) {
-                isU = true;
-            } else if (args[i].equals("-o") && !isInput) {
-                outputFile = args[i + 1];
-                i++;
-                isO = true;
-            } else if (args[i].equals("-t") && !isInput) {
-                numberThreads = Integer.parseInt(args[i + 1]);
-                i++;
-                isT = true;
+            if(!isInput && args[i].charAt(0) == '-') {
+                if(args[i].equals("-i")) {
+                    isI = true;
+                } else if(args[i].equals("-u")) {
+                    isU = true;
+                } else if(args[i].equals("-iu") || args[i].equals("-ui")) {
+                    isI = true;
+                    isU = true;
+                } else if(args[i].equals("-o")) {
+                    outputFile = args[i + 1];
+                    i++;
+                    isO = true;
+                } else if(args[i].equals("-t")) {
+                    numberThreads = Integer.parseInt(args[i + 1]);
+                    i++;
+                    isT = true;
+                    if(numberThreads < 1) {
+                        throw new Exception("Error in number thread");
+                    }
+                } else {
+                    throw new Exception("Error key " + args[i]);
+                }
             } else {
                 isInput = true;
                 inputString.add(args[i]);
