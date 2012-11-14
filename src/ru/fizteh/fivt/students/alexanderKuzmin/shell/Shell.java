@@ -8,27 +8,16 @@ package ru.fizteh.fivt.students.alexanderKuzmin.shell;
  */
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import ru.fizteh.fivt.students.alexanderKuzmin.shell.Errors;
+import ru.fizteh.fivt.students.alexanderKuzmin.Closers;
 
 public class Shell {
 
     private static String currentPath = System.getProperty("user.dir");
-
-    private static <T extends Closeable> void closeStream(T stream) {
-        if (stream != null) {
-            try {
-                stream.close();
-            } catch (IOException e) {
-                Errors.printErrAndExit(e.getMessage());
-            }
-        }
-    }
 
     /**
      * @param args
@@ -50,7 +39,7 @@ public class Shell {
             try {
                 command = reader.readLine();
             } catch (IOException e) {
-                Errors.printErrAndNoExit(e.getMessage());
+                Closers.printErrAndNoExit(e.getMessage());
             }
             if (command == null) {
                 goodExit();
@@ -60,7 +49,7 @@ public class Shell {
                 try {
                     commandsExecutor(ex);
                 } catch (Exception e) {
-                    Errors.printErrAndNoExit(e.getMessage());
+                    Closers.printErrAndNoExit(e.getMessage());
                 }
             }
         }
@@ -76,7 +65,7 @@ public class Shell {
             try {
                 commandsExecutor(ex);
             } catch (Exception e) {
-                Errors.printErrAndExit(e.getMessage());
+                Closers.printErrAndExit(e.getMessage());
             }
         }
     }
@@ -223,8 +212,8 @@ public class Shell {
                 oStream.write(buf, 0, nLength);
             }
         } finally {
-            closeStream(iStream);
-            closeStream(oStream);
+            Closers.closeStream(iStream);
+            Closers.closeStream(oStream);
         }
     }
 
@@ -286,7 +275,7 @@ public class Shell {
         try {
             System.out.println((new File(currentPath).getCanonicalPath()));
         } catch (IOException e) {
-            Errors.printErrAndNoExit(e.getMessage());
+            Closers.printErrAndNoExit(e.getMessage());
         }
     }
 
