@@ -106,12 +106,26 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                     } else {
                         if (field) {
                             if (c == '.' || c == ':' || c == '}') {
-                                Field fieldObject = object.getClass().getDeclaredField(format.substring(numOfFieldPosition, i));
+                                boolean notFound = true;
+                                Field fieldObject = null;
+                                Class clazz = object.getClass();
+                                do {
+                                    notFound = false;
+                                    try {
+                                        fieldObject = clazz.getDeclaredField(format.substring(numOfFieldPosition, i));
+                                    } catch (NoSuchFieldException e) {
+                                        notFound = true;
+                                        clazz = clazz.getSuperclass();
+                                        if (clazz == null) { // Hasn't superclass
+                                            return;
+                                        }
+                                    }
+                                } while (notFound);
                                 fieldObject.setAccessible(true);
                                 object = fieldObject.get(object);
                                 fieldObject.setAccessible(false);
                                 if (object == null) {
-                                    throw new FormatterException("Null pointer field.");
+                                    return;
                                 }
                                 if (c == ':') {
                                     field = false;

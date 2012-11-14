@@ -9,9 +9,10 @@ import java.util.Calendar;
 class ClassEleven {
     private int intField = 11;
     public String stringField = "eleven";
+    String nullField = null;
 }
 
-class ClassTwelve {
+class ClassTwelve extends ClassEleven {
     ClassEleven eleven = new ClassEleven();
 }
 
@@ -158,6 +159,9 @@ public class UnitTests extends Assert {
         assertEquals("Class class java.util.Calendar", formatter.format("Class {0}", Calendar.class));
         assertEquals("eleven is 11", formatter.format("{0.stringField} is {0.intField}", new ClassEleven()));
         assertEquals("eleven", formatter.format("{0.eleven.stringField}", new ClassTwelve()));
+        assertEquals("eleven", formatter.format("{0.stringField}", new ClassTwelve()));
+        assertEquals("", formatter.format("{0.nullField} something", new ClassEleven()));
+        assertEquals("", formatter.format("{0.notExistField}", new ClassTwelve()));
         formatter.addExtension(new CalendarFormat());
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 16);
