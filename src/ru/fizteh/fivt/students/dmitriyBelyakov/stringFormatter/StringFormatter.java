@@ -106,7 +106,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                     } else {
                         if (field) {
                             if (c == '.' || c == ':' || c == '}') {
-                                Field fieldObject =  object.getClass().getDeclaredField(format.substring(numOfFieldPosition, i));
+                                Field fieldObject = object.getClass().getDeclaredField(format.substring(numOfFieldPosition, i));
                                 fieldObject.setAccessible(true);
                                 object = fieldObject.get(object);
                                 fieldObject.setAccessible(false);
