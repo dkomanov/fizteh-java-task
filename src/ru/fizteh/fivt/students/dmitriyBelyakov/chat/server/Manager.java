@@ -7,10 +7,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.List;
-import java.util.HashSet;
-import java.util.Collections;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class Manager implements Runnable {
     private final int port;
@@ -27,6 +25,10 @@ public class Manager implements Runnable {
         names = new HashSet<>();
         users = Collections.synchronizedList(new ArrayList<User>());
         userDeleteRegulator = new UserDeleteRegulator(this);
+    }
+
+    public void showInServer(String text) {
+        System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) + "] " + text);
     }
 
     public void start() throws IOException {

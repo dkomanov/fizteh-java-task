@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
-import java.util.*;
 
 public class CommandWorker {
     static private File mPath = new File(".");
@@ -36,7 +35,7 @@ public class CommandWorker {
         } else if (commandName.equals("cp")) {
             copyFileorDir(commandArguments);
         } else {
-            System.err.println(commandName + ": unknown command");
+            throw new Exception(commandName + ": unknown command");
         }
     }
 
@@ -61,18 +60,16 @@ public class CommandWorker {
     private void copyDir(File original, File dest) throws Exception {
 
         String name = original.getName();
-        if (!dest.isDirectory()) {
-            throw new Exception("cp: \'" + dest.getCanonicalPath() + "\': No such directory");
-        }
         File destination = new File(dest.getCanonicalPath() + File.separator + name);
-
         if (destination.exists()) {
             deleteDirectory(destination);
         }
         Thread.sleep(100);
         boolean rr = destination.mkdir();
         if (!rr) {
+
             throw new Exception("cp: cannot copy \'" + name + "\'");
+
         } else {
             String[] files = original.list();
             for (String file : files) {
@@ -101,7 +98,6 @@ public class CommandWorker {
             } else {
                 outFile = newFolder;
             }
-
             outFile.createNewFile();
 
             in = new FileInputStream(inFile);
@@ -120,19 +116,11 @@ public class CommandWorker {
             throw new Exception("cp: \'" + srFile + "\'" + e.getMessage());
         } finally {
             if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    throw new Exception("cp: \'" + srFile + "\'" + e.getMessage());
-                }
+                in.close();
             }
 
             if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    throw new Exception("cp: \'" + srFile + "\'" + e.getMessage());
-                }
+                out.close();
             }
         }
     }
@@ -141,12 +129,19 @@ public class CommandWorker {
         if (comms.length != 3) {
             throw new Exception("mv: wrong number of args");
         } else {
-            File file = getFile(comms[1]);
+            File fileIn = getFile(comms[1]);
 
-            File dir = getFile(comms[2]);
+            File fileOut = getFile(comms[2]);
 
-            boolean success = file.renameTo(new File(dir, file.getName()));
+            boolean success;
+            if (fileOut.isDirectory()) {
+                success = fileIn.renameTo(new File(fileOut, fileIn.getName()));
+            } else {
+                System.out.println(fileOut.getAbsolutePath());
+                success = fileIn.renameTo(fileOut);
+            }
             if (!success) {
+
                 throw new Exception("mv: cannot move \'" + comms[1] + "\'");
             }
         }
@@ -232,22 +227,31 @@ public class CommandWorker {
             return mPath;
         } else if (name.equals("..")) {
             if (mPath.getName().equals(".")) {
-                File path = new File(mPath.getCanonicalPath());
-                return new File(path.getAbsoluteFile().getParent());
-            } else {
-                return new File(mPath.getAbsoluteFile().getParent());
+                mPath = new File(mPath.getCanonicalPath());
             }
+            if (mPath.getCanonicalFile().getCanonicalPath().equals(File.separator)) {
+                return mPath;
+            }
+            
+            try {
+                //System.out.println(mPath.getAbsoluteFile().getCanonicalPath());
+                File newFile = new File(mPath.getAbsoluteFile().getParent());
+            } catch (Exception e) {
+                return mPath;
+            }
+            return new File(mPath.getAbsoluteFile().getParent());
         }
-        if (name.charAt(name.length() - 1) == File.separatorChar) {
+
+        if (name.length() > 1 && name.charAt(name.length() - 1) == File.separatorChar) {
             name = name.substring(0, name.length() - 1);
         }
 
-        if (name.equals(mfile.getCanonicalPath())) {
+        
+        //System.out.println(name+" || "+mfile.getCanonicalFile().getCanonicalPath());
+        if (name.equals(mfile.getCanonicalPath()) || mfile.getName().equals("..")) {
             return mfile;
         } else {
             return new File(mPath, name);
         }
-
     }
-
 }

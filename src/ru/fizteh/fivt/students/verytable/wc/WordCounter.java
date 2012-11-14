@@ -1,13 +1,13 @@
 package ru.fizteh.fivt.students.verytable.wc;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
+import ru.fizteh.fivt.students.verytable.IOUtils;
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,25 +33,13 @@ public class WordCounter {
         } catch (Exception ex1) {
             System.err.println(fileName + " failed to open.");
             try {
-                closeFile(fileName, fr);
+                IOUtils.closeFile(fileName, fr);
             } catch (Exception ex2) {
                 System.out.println(fileName + " failed to close.");
                 throw ex2;
             }
         }
         return br;
-    }
-
-    static void closeFile(String fileName,
-                          Closeable closeable) throws IOException {
-        try {
-            if(closeable != null) {
-                closeable.close();
-            }
-        } catch (IOException ex) {
-            System.err.println(fileName + " failed to close.");
-            throw ex;
-        }
     }
 
     static void stringWordsCounter(String s, HashMap<String, Integer> elements,
@@ -133,7 +121,7 @@ public class WordCounter {
             }
         }
         finally {
-            closeFile(fileName, br);
+            IOUtils.closeFile(fileName, br);
         }
     }
 

@@ -2,11 +2,13 @@ package ru.fizteh.fivt.students.dmitriyBelyakov.chat.client;
 
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
+import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 class ServerWorkerThread extends Thread {
     private final InputStream iStream;
@@ -24,18 +26,26 @@ class ServerWorkerThread extends Thread {
             while (!isInterrupted() && (iType = iStream.read()) > 0) {
                 byte type = (byte) iType;
                 if (type == MessageType.BYE.getId()) {
-                    worker.close(false, false);
+                    worker.close(ServerWorker.BYE, ServerWorker.NOT_SEND_MESSAGE);
                 } else if (type == MessageType.MESSAGE.getId()) {
                     worker.getMessage();
                 } else if (type == MessageType.ERROR.getId()) {
-                    worker.close(false, false);
+                    Message message = MessageUtils.getErrorMessage(iStream);
+                    System.out.println("[Server error] " + message.getText());
+                    worker.close(ServerWorker.ERROR, ServerWorker.NOT_SEND_MESSAGE);
                 } else {
-                    worker.close(true, true);
+                    throw new RuntimeException("Incorrect message type.");
                 }
             }
         } catch (Exception e) {
             if (!isInterrupted()) {
-                worker.close(true, true);
+                String messageText;
+                if(e.getMessage() != null) {
+                    messageText = e.getMessage();
+                } else {
+                    messageText = "Unknown.";
+                }
+                worker.close(ServerWorker.ERROR, ServerWorker.SEND_MESSAGE, messageText);
             }
         }
     }
@@ -49,6 +59,11 @@ class ServerWorker {
     private Thread myThread;
     private boolean isActive;
 
+    static final boolean ERROR = true;
+    static final boolean BYE = false;
+    static final boolean SEND_MESSAGE = true;
+    static final boolean NOT_SEND_MESSAGE = false;
+
     ServerWorker(String host, int port, Manager manager) {
         myManager = manager;
         this.name = host + ":" + port;
@@ -56,7 +71,7 @@ class ServerWorker {
             socket = new Socket(host, port);
             iStream = socket.getInputStream();
         } catch (Throwable t) {
-            close(true, true);
+            close(ERROR, SEND_MESSAGE, "Cannot establish connection.");
         }
         myThread = null;
         isActive = true;
@@ -80,43 +95,25 @@ class ServerWorker {
             return;
         }
         try {
-            if ((byte) iStream.read() != 2) {
-                close(true, true);
-            }
-            byte[] bLength = new byte[4];
-            if (iStream.read(bLength, 0, 4) != 4) {
-                close(true, true);
-            }
-            ByteBuffer buffer = ByteBuffer.allocate(4).put(bLength);
-            buffer.position(0);
-            int length = buffer.getInt();
-            byte[] bName = new byte[length];
-            if (iStream.read(bName, 0, length) != length) {
-                close(true, true);
-            }
-            System.out.print("<" + new String(bName) + "> ");
-            bLength = new byte[4];
-            if (iStream.read(bLength, 0, 4) != 4) {
-                close(true, true);
-            }
-            buffer = ByteBuffer.allocate(4).put(bLength);
-            buffer.position(0);
-            length = buffer.getInt();
-            byte[] bMess = new byte[length];
-            if (iStream.read(bMess, 0, length) != length) {
-                close(true, true);
-            }
-            System.out.println(new String(bMess));
+            Message message = MessageUtils.getMessage(iStream);
+            System.out.println("[" + message.getName() + " at "
+                    + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) + "] " + message.getText());
         } catch (Exception e) {
-            close(true, true);
+            String messageText;
+            if(e.getMessage() != null) {
+                messageText = e.getMessage();
+            } else {
+                messageText = "Unknown.";
+            }
+            close(ERROR, SEND_MESSAGE, messageText);
         }
     }
 
-    public void close(boolean isError, boolean sendMessage) {
-        if (sendMessage && isError) {
-            myManager.sendMessage(new Message(MessageType.ERROR, "", ""));
-        } else if (sendMessage) {
-            myManager.sendMessage(new Message(MessageType.BYE, "", ""));
+    public void close(boolean isError, boolean sendMessage, String messageText) {
+        if (sendMessage == SEND_MESSAGE && isError == ERROR) {
+            myManager.sendMessage(new Message(MessageType.ERROR, "", messageText));
+        } else if (sendMessage == SEND_MESSAGE) {
+            myManager.sendMessage(new Message(MessageType.BYE, "", messageText));
         }
         if (!socket.isClosed()) {
             try {
@@ -126,6 +123,10 @@ class ServerWorker {
         }
         myManager.deleteServer(this);
         myThread.interrupt();
+    }
+
+    public void close(boolean isError, boolean sendMessage) {
+        close(isError, sendMessage, "");
     }
 
     public void join() throws InterruptedException {

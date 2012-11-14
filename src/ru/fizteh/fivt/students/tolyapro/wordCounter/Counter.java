@@ -89,7 +89,8 @@ public class Counter {
                         paramNumb++;
                     }
                     if (i > 2) {
-                        paramNumb--;
+                        paramNumb -= i;
+                        paramNumb += 2;
                     }
                 } else {
                     break;
@@ -108,6 +109,10 @@ public class Counter {
             dict = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
         } else {
             dict = new TreeMap<String, Integer>();
+        }
+        if (paramNumb >= args.length) {
+            System.out.println("Usage: java Counter [keys] FILE1 FILE2 ...");
+            System.exit(1);            
         }
         for (int i = paramNumb; i < args.length; ++i) {
             String s = args[i];
