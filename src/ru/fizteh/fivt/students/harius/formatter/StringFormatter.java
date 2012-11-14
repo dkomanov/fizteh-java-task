@@ -1,3 +1,9 @@
+/*
+ * StringFormatter.java
+ * Nov 14, 2012
+ * By github.com/harius
+ */
+
 package ru.fizteh.fivt.students.harius.formatter;
 
 import ru.fizteh.fivt.format.FormatterException;
@@ -7,15 +13,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 
+/*
+ * Formats strings
+ */
 public class StringFormatter
     implements ru.fizteh.fivt.format.StringFormatter {
 
+    /* List of enabled extensions */
     private List<StringFormatterExtension> ext = new ArrayList<>();
 
+    /* Constructor */
     public StringFormatter(StringFormatterExtension... ext) {
         this.ext = Arrays.asList(ext);
     }
 
+    /* Returns the formatted string */
     @Override
     public String format(String format, Object... args)
         throws FormatterException {
@@ -25,17 +37,27 @@ public class StringFormatter
         return buffer.toString();
     }
 
+    /* Formats the string and writer the result to buffer */
     @Override
     public void format(StringBuilder buffer, String format, Object... args)
         throws FormatterException {
+
+        if (buffer == null) {
+            throw new FormatterException("Null buffer");
+        }
 
         StringBuilder safe = new StringBuilder();
         format(safe, format, 0, args);
         buffer.append(safe);
     }
 
+    /* Format starting from given index */
     private void format(StringBuilder buffer, String format, int start, Object... args)
         throws FormatterException {
+
+        if (format == null) {
+            throw new FormatterException("Null format string");
+        }
 
         int first = format.indexOf('{', start);
         int close = format.indexOf('}', start);
@@ -69,6 +91,7 @@ public class StringFormatter
         }
     }
 
+    /* Format a single fragment */
     private void formatOne(StringBuilder buffer, String token, Object... args)
         throws FormatterException {
 
@@ -86,6 +109,7 @@ public class StringFormatter
         }
     }
 
+    /* Get an object from the string like '0.foo.bar' */
     private Object getFromChain(String chain, Object... args)
         throws FormatterException {
 
@@ -100,6 +124,8 @@ public class StringFormatter
             throw new FormatterException(sIndex + " is not a valid argument index");
         } catch (ArrayIndexOutOfBoundsException out) {
             throw new FormatterException("Argument index out of bounds: " + index);
+        } catch (NullPointerException nullEx) {
+            throw new FormatterException("Null arguments array");
         }
         while (tok.hasMoreTokens()) {
             String field = tok.nextToken();
@@ -113,6 +139,7 @@ public class StringFormatter
         return arg;
     }
 
+    /* Simple format */
     private void applyPlain(StringBuilder buffer, Object arg) {
         if (arg != null) {
             buffer.append(arg.toString());
@@ -121,6 +148,7 @@ public class StringFormatter
         }
     }
 
+    /* Format using an extension */
     private void applyPattern(StringBuilder buffer, String pattern, Object arg)
         throws FormatterException {
 

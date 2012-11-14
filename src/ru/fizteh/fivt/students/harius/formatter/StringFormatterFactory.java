@@ -1,14 +1,29 @@
+/*
+ * StringFormatterFactory.java
+ * Nov 14, 2012
+ * By github.com/harius
+ */
+
 package ru.fizteh.fivt.students.harius.formatter;
 
 import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
+
+/*
+ * A factory for creating StringFormatters with extensions
+ */
 public class StringFormatterFactory
     implements ru.fizteh.fivt.format.StringFormatterFactory {
 
+    /* Create a formatter with given extension names */
     @Override
     public StringFormatter create(String... extensionClassNames)
         throws FormatterException {
+
+        if (extensionClassNames == null) {
+            throw new FormatterException("Got null array of extension class names");
+        }
 
         StringFormatterExtension[] ext =
             new StringFormatterExtension[extensionClassNames.length];
@@ -24,6 +39,8 @@ public class StringFormatterFactory
                 throw new FormatterException(name + " is not an extension class");
             } catch (InstantiationException | IllegalAccessException inst) {
                 throw new FormatterException(name + " cannot been instantiated");
+            } catch (NullPointerException nullEx) {
+                throw new FormatterException("Got null extension class name");
             }
             ++index;
         }
