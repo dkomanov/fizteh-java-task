@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -18,13 +19,13 @@ public class Reader implements Runnable{
     BufferedReader reader = null;
     ExecutorService sorters = null;
     boolean ignoreCase;
-    ResultContainer finish;
+    ResultContainer finish[];
     int fileNum;
     int blockSize = 1024 * 128;
 
 
     public Reader(String fileName, int fileNum, ExecutorService sorters,
-                    boolean ignoreCase, ResultContainer finish) {
+                    boolean ignoreCase, ResultContainer[] finish) {
         this.finish = finish;
         this.ignoreCase = ignoreCase;
         this.sorters = sorters;
@@ -53,6 +54,7 @@ public class Reader implements Runnable{
     }
 
     public void run() {
+        Random random = new Random();
         String incomingData;
         int currNum = 0;
         try {
@@ -61,12 +63,12 @@ public class Reader implements Runnable{
                 container.add(new StringContainer(incomingData, currNum, fileNum));
                 currNum++;
                 if (currNum % blockSize == 0) {
-                    sorters.execute(new Sorter(finish, container, ignoreCase));
+                    sorters.execute(new Sorter(finish[random.nextInt(finish.length)], container, ignoreCase));
                     container = new ArrayList<StringContainer>();
                 }
             }
             if (container.size() != 0) {
-                sorters.execute(new Sorter(finish, container, ignoreCase));
+                sorters.execute(new Sorter(finish[random.nextInt(finish.length)], container, ignoreCase));
             }
             reader.close();
         } catch (Exception ex) {
