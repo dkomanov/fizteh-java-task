@@ -7,7 +7,7 @@ import ru.fizteh.fivt.format.FormatterException;
 import java.util.Calendar;
 
 class ClassEleven {
-    public int intField = 11;
+    private int intField = 11;
     public String stringField = "eleven";
 }
 
@@ -47,6 +47,11 @@ public class UnitTests extends Assert {
         new CalendarFormat().format(null, Calendar.getInstance(), "yyyy");
     }
 
+    @Test(expected = FormatterException.class)
+    public void testCalendarFormatEmptyPattern() {
+        new CalendarFormat().format(new StringBuilder(), Calendar.getInstance(), "");
+    }
+
     @Test
     public void testCalendarFormat() {
         StringBuilder builder = new StringBuilder();
@@ -67,8 +72,6 @@ public class UnitTests extends Assert {
         formatter.format(builder, calendar, "HH.mm dd.MM.yyyy");
         assertEquals("16.50 11.12.1993", builder.toString());
         builder = new StringBuilder();
-        formatter.format(builder, calendar, "");
-        assertEquals("", builder.toString());
     }
 
     @Test(expected = FormatterException.class)
@@ -112,7 +115,6 @@ public class UnitTests extends Assert {
         builder = new StringBuilder();
         formatter.format(builder, new Long(11), "5x");
         assertEquals("    b", builder.toString());
-        builder = new StringBuilder();
     }
 
     // Tests for StringFormatter

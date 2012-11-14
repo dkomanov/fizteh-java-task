@@ -14,6 +14,9 @@ public class CalendarFormat extends StringFormatterExtension {
     @Override
     public void format(StringBuilder buffer, Object object, String pattern) throws FormatterException {
         try {
+            if (pattern.equals("")) {
+                throw new FormatterException("Empty pattern.");
+            }
             if (buffer == null) {
                 throw new FormatterException("Buffer is null.");
             }
