@@ -51,13 +51,11 @@ public class Shell {
 
     static boolean execCd(String destinedPath) {
         File parentFile = new File(curPath).getParentFile();
-        File absoluteDestinedFile = new File(destinedPath).getAbsoluteFile();
-        File destinedFile = new File(curPath + File.separatorChar
-                                     + destinedPath);
+        File destinedFile = new File(destinedPath);
 
         if (destinedPath.equals("..")) {
             if (parentFile == null) {
-                System.err.println("Unable to cd ..");
+                System.err.println("Unable to cd in this directory.");
                 if (isPackageMode) {
                     System.exit(1);
                 }
@@ -71,15 +69,23 @@ public class Shell {
                 return false;
             }
         } else if (!destinedPath.equals(".")) {
-            if (absoluteDestinedFile.exists()) {
-                curPath = absoluteDestinedFile.toString();
-            } else if (destinedFile.exists()) {
-                curPath = destinedFile.toString();
-            } else {
-                reportError("Cd: " + destinedPath
-                            + " - no such directory");
+            if (!destinedFile.isAbsolute()) {
+                try {
+                    destinedFile = new File(curPath + File.separatorChar
+                                            + destinedPath).getCanonicalFile();
+                    } catch (Exception ex) {
+                        System.err.println(ex.getMessage());
+                        System.exit(1);
+                    }
+            }
+
+            if(!destinedFile.exists()) {
+                reportError("Cd: " + destinedPath + " - doesn't exist.");
                 return false;
             }
+
+            curPath = destinedFile.toString();
+            return true;
         }
         return true;
     }
@@ -118,8 +124,13 @@ public class Shell {
         }
         File fileToDelete = new File(fileName);
         if (!fileToDelete.isAbsolute()) {
-            fileToDelete = new File(curPath + File.separatorChar
-                                    + fileName);
+            try {
+                fileToDelete = new File(curPath + File.separatorChar
+                                        + fileName).getCanonicalFile();
+            } catch (Exception ex) {
+                System.err.println(ex.getMessage());
+                System.exit(1);
+            }
         }
         if (fileToDelete.isDirectory()) {
             File[] files = fileToDelete.listFiles();
