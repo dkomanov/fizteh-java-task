@@ -32,8 +32,9 @@ public class StringFormatterTest {
     static void testWithInteger() throws Exception {
         StringFormatter basic = factory.create(StringFormatterIntegerExtension.class.getName());
         check("Int = 12", basic.format("Int = {0}", 12));
-        check("Int = 0012 00010", basic.format("Int = {0:04} {1:05}", 12, 10));
-        check("Int = {   7}", basic.format("Int = {{{0:4}}}", 7));
+        check("Int = 0012 00010", basic.format("Int = {0:04d} {1:05d}", 12, 10));
+        check("Int = {   7}", basic.format("Int = {{{0:4d}}}", 7));
+        check("Int = {10}", basic.format("Int = {{{0:o}}}", 8));
     }
 
     static void testWithDate() throws Exception {
@@ -46,7 +47,7 @@ public class StringFormatterTest {
         calendar.set(GregorianCalendar.MINUTE, 30);
         calendar.set(GregorianCalendar.SECOND, 07);
 
-        check("Date = 17:30:07", basic.format("Date = {0:HH:mm:ss}", calendar.getTime()));
+        check("Date = 05:30:07", basic.format("Date = {0:HH:mm:ss}", calendar.getTime()));
     }
 
     static void check(String correct, String answer) {

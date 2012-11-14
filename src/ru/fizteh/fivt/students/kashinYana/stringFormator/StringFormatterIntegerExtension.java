@@ -14,6 +14,6 @@ public class StringFormatterIntegerExtension
     @Override
     public void format(StringBuilder buffer, Object o, String pattern) {
         Formatter formatter = new Formatter();
-        buffer.append(formatter.format("%" + pattern + "d", o));
+        buffer.append(formatter.format("%" + pattern, o));
     }
 }

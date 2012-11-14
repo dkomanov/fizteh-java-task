@@ -7,10 +7,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Student: Yana Kashinskaya, 195 gr.
- */
-
 public class ParallelSort {
 
     static public class Pair {
@@ -143,6 +139,8 @@ public class ParallelSort {
                         queue.put(new Pair(currentLine, j + " " + numberWord));
                         numberWord++;
                     }
+                    in.close();
+                    file.close();
                 }
             } else {
                 in = new BufferedReader(new InputStreamReader(System.in));
@@ -152,6 +150,7 @@ public class ParallelSort {
                     queue.put(new Pair(currentLine, 1 + " " + numberWord));
                     numberWord++;
                 }
+                in.close();
             }
         } finally {
             if (in != null) {
@@ -170,8 +169,8 @@ public class ParallelSort {
         ArrayList array;
         int name;
 
-        Sorter(int name_) {
-            name = name_;
+        Sorter(int nameNew) {
+            name = nameNew;
             array = new ArrayList();
         }
 
@@ -205,9 +204,9 @@ public class ParallelSort {
         ArrayList<Pair> array = new ArrayList<Pair>();
         int id;
 
-        public Merge(ArrayList<Pair> array_, int id_) {
-            id = id_;
-            array = array_;
+        public Merge(ArrayList<Pair> arrayNew, int idNew) {
+            id = idNew;
+            array = arrayNew;
             if (isI) {
                 Collections.sort(array, new ComparatorLower());
             } else {

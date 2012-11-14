@@ -4,15 +4,16 @@ import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
-    private ArrayList<StringFormatterExtension> template = new ArrayList<StringFormatterExtension>();
+    private List<StringFormatterExtension> template;
 
     public StringFormatter(ArrayList<StringFormatterExtension> ext) {
-        template = ext;
+        template = ext.subList(0, ext.size());
     }
 
     @Override
@@ -25,9 +26,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     @Override
     public void format(StringBuilder buffer, String inputString, Object... args) throws FormatterException {
-        StringBuilder answer = new StringBuilder();
-        format(answer, inputString, 0, args);
-        buffer.append(answer);
+        format(buffer, inputString, 0, args);
     }
 
     private void format(StringBuilder answer, String string, int startPosition, Object... args)
