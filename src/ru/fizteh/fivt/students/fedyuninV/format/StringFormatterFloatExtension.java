@@ -10,7 +10,6 @@ import java.util.Formatter;
  * MIPT FIVT 195
  */
 public class StringFormatterFloatExtension extends StringFormatterExtension{
-    private Formatter formatter;
 
     protected StringFormatterFloatExtension() {
         super(Float.class);
@@ -20,7 +19,7 @@ public class StringFormatterFloatExtension extends StringFormatterExtension{
 
 
     public void format(StringBuilder buffer, Object o, String pattern) {
-        formatter = new Formatter();
+        Formatter formatter = new Formatter();
         try {
             if (pattern.length() == 0) {
                 pattern = "f";

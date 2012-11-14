@@ -17,8 +17,9 @@ import java.util.List;
 public class StringFormatterFactory implements ru.fizteh.fivt.format.StringFormatterFactory{
 
     List<StringFormatterExtension> extensionList;
+
     public StringFormatter create(String... extensionClassNames) throws FormatterException {
-        extensionList = new ArrayList<StringFormatterExtension>();
+        extensionList = new ArrayList<>();
         Collections.sort(Arrays.asList(extensionClassNames));
         for (int i = 0; i < extensionClassNames.length; i++) {
             String currClassName = extensionClassNames[i];
