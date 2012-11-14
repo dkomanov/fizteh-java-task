@@ -38,6 +38,10 @@ public class ParallelSort {
                     System.exit(1);
                 } else {
                     maxSorters = Integer.parseInt(args[currIndex + 1]);
+                    if (maxSorters < 1  ||  maxSorters > Runtime.getRuntime().availableProcessors() * 10) {
+                        printUsage();
+                        System.exit(1);
+                    }
                 }
                 currIndex += 2;
             } else {
