@@ -16,6 +16,7 @@ public class ParallelSort {
     static private int maxReaders = 3;
     static private int maxSorters;
     static private String fileName = null;
+    static private int queueNum = 4; //experimental constant, seems to be good enough...
 
     private static void printUsage() {
         System.out.println("");
