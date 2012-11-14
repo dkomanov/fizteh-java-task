@@ -27,10 +27,17 @@ public class StringFormatterDoubleExtension
     /* Format the given Double */
     @Override
     public void format(StringBuilder buffer, Object o, String pattern) {
+        if (pattern == null) {
+            throw new FormatterException("Null pattern string");
+        }
         if (!pattern.matches(".*[" + conv + "]")) {
             throw new FormatterException("Pattern for Double must end with one of " + conv);
         }
-        buffer.append(formatter.format("%" + pattern, o));
+        try {
+            buffer.append(formatter.format("%" + pattern, o));
+        } catch (Exception ex) {
+            throw new FormatterException("Error while formatting Double: " + ex.getMessage());
+        }
     }
     
 }

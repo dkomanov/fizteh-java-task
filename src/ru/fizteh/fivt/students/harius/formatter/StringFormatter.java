@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.StringTokenizer;
+import java.lang.reflect.Field;
 
 /*
  * Formats strings
@@ -130,7 +131,9 @@ public class StringFormatter
         while (tok.hasMoreTokens()) {
             String field = tok.nextToken();
             try {
-                arg = arg.getClass().getField(field).get(arg);
+                Field target = arg.getClass().getDeclaredField(field);
+                target.setAccessible(true);
+                arg = target.get(arg);
             } catch (NoSuchFieldException | IllegalAccessException bad) {
                 throw new FormatterException("Error while fetching " +
                     field + " from " + arg.getClass().getSimpleName());

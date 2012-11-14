@@ -57,6 +57,7 @@ public abstract class StringFormatterTest {
         check(basic, "{hello}", "{{{0}}}", "hello");
         check(basic, "{0}", "{{0}}", "hello");
         check(basic, "" + d.an.a, "{0.an.a}", d);
+        check(basic, "-10", "{0.z}", d);
     }
 
     /* Basic tests of formatting double */
@@ -94,7 +95,6 @@ public abstract class StringFormatterTest {
         checkFail(basic, "{0}}", "hello");
         checkFail(basic, "{crash!}", "hello");
         checkFail(basic, "{-1}", "hello");
-        checkFail(basic, "{0.z}", d);
         checkFail(basic, null);
         checkFail(basic, "{0} {1}", (Object[])null);
 
