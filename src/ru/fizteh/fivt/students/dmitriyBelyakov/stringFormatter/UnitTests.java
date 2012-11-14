@@ -98,6 +98,11 @@ public class UnitTests extends Assert {
         new LongFormat().format(new StringBuilder(), new Long(11), null);
     }
 
+    @Test(expected = FormatterException.class)
+    public void testLongFormatNullPointerToObject() {
+        new LongFormat().format(new StringBuilder(), null, "5d");
+    }
+
     @Test
     public void testLongFormat() {
         StringBuilder builder = new StringBuilder();
@@ -108,8 +113,6 @@ public class UnitTests extends Assert {
         formatter.format(builder, new Long(11), "5x");
         assertEquals("    b", builder.toString());
         builder = new StringBuilder();
-        formatter.format(builder, null, "5d");
-        assertEquals(" null", builder.toString());
     }
 
     // Tests for StringFormatter
@@ -166,7 +169,7 @@ public class UnitTests extends Assert {
                 calendar, new ClassWithCalendar(calendar)));
         formatter.addExtension(new LongFormat());
         assertEquals("11 is eleven. b in hex.", formatter.format("{0:d} is eleven. {0:x} in hex.", new Long(11)));
-        assertEquals("null is null.", formatter.format("{0} is null.", null));
+        assertEquals("", formatter.format("{0} is null.", null));
         assertEquals("Without arguments.", formatter.format("Without arguments."));
     }
 

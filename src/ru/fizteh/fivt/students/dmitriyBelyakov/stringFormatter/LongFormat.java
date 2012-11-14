@@ -18,6 +18,9 @@ public class LongFormat extends StringFormatterExtension {
         if (pattern == null) {
             throw new FormatterException("Pattern is null.");
         }
+        if(object == null) {
+            throw new FormatterException("Object is null.");
+        }
         try {
             if (object != null && !Long.class.isAssignableFrom(object.getClass())) {
                 throw new FormatterException("Incorrect object type.");

@@ -45,6 +45,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         if (args == null) {
             throw new FormatterException("Args is null.");
         }
+        StringBuilder builder = new StringBuilder();
         try {
             boolean isArgument = false;
             boolean objectGet = false;
@@ -59,7 +60,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 if (!isArgument) {
                     if (c == '{') {
                         if (format.charAt(i + 1) == '{') {
-                            buffer.append('{');
+                            builder.append('{');
                             ++i;
                         } else {
                             isArgument = true;
@@ -67,13 +68,13 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                         }
                     } else if (c == '}') {
                         if (format.charAt(i + 1) == '}') {
-                            buffer.append('}');
+                            builder.append('}');
                             ++i;
                         } else {
                             throw new FormatterException("Incorrect format.");
                         }
                     } else {
-                        buffer.append(c);
+                        builder.append(c);
                     }
                 } else {
                     if (!objectGet) {
@@ -89,9 +90,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                 numOfPatternPosition = i + 1;
                             } else {
                                 if (object == null) {
-                                    buffer.append("null");
+                                    return;
                                 } else {
-                                    buffer.append(object.toString());
+                                    builder.append(object.toString());
                                 }
                                 isArgument = false;
                                 objectGet = false;
@@ -114,9 +115,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                     numOfPatternPosition = i + 1;
                                 } else if (c == '}') {
                                     if (object == null) {
-                                        buffer.append("null");
+                                        return;
                                     } else {
-                                        buffer.append(object.toString());
+                                        builder.append(object.toString());
                                     }
                                     isArgument = false;
                                     objectGet = false;
@@ -129,12 +130,12 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                         } else if (pattern) {
                             if (c == '}') {
                                 if (object == null) {
-                                    buffer.append("null");
+                                    return;
                                 } else {
                                     if (!supported(object.getClass())) {
                                         throw new FormatterException("Type doesn't supported.");
                                     }
-                                    getExtension(object).format(buffer, object, format.substring(numOfPatternPosition, i));
+                                    getExtension(object).format(builder, object, format.substring(numOfPatternPosition, i));
                                 }
                                 isArgument = false;
                                 objectGet = false;
@@ -148,6 +149,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         } catch (Throwable t) {
             throw new FormatterException(t.getMessage());
         }
+        buffer.append(builder.toString());
     }
 
     @Override
