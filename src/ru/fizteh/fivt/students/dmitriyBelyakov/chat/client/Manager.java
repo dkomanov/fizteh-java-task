@@ -1,135 +1,87 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.client;
 
-import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
-import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageBuilder;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 
-class Manager {
-    private List<ServerWorker> servers;
-    private ServerWorker currentWorker;
-    private final String name;
-    private ServerWorkerDeleteRegulator serverWorkerDeleteRegulator;
+class Listener implements Runnable {
+    volatile private InputStream    iStream;
+    private boolean                 closed;
 
-    Manager(String name) {
-        this.name = name;
-        currentWorker = null;
-        servers = Collections.synchronizedList(new ArrayList<ServerWorker>());
-        serverWorkerDeleteRegulator = new ServerWorkerDeleteRegulator(this);
+    Listener(InputStream stream) {
+        iStream = stream;
+        closed = false;
+        Thread thread = new Thread(this);
+        thread.start();
     }
 
-    synchronized void newConnection(String host, int port) {
+    void getMessage() {
         try {
-            ServerWorker last = currentWorker;
-            currentWorker = new ServerWorker(host, port, this);
-            currentWorker.start();
-            servers.add(currentWorker);
-            if (last != null) {
-                last.deactivate();
+            if ((byte) iStream.read() != 2) {
+                stop(true);
             }
-            currentWorker.activate();
-            sendMessage(new Message(MessageType.HELLO, name, ""));
-        } catch (Throwable t) {
-            if (currentWorker != null) {
-                currentWorker.close(true, false);
+            byte[] bLength = new byte[4];
+            if (iStream.read(bLength, 0, 4) != 4) {
+                stop(true);
             }
-            System.err.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) +
-                    "] Cannot connect to " + host + ":" + port + ".");
+            ByteBuffer buffer = ByteBuffer.allocate(4).put(bLength);
+            buffer.position(0);
+            int length = buffer.getInt();
+            byte[] bName = new byte[length];
+            if (iStream.read(bName, 0, length) != length) {
+                stop(true);
+            }
+            System.out.print("<" + new String(bName) + "> ");
+            bLength = new byte[4];
+            if (iStream.read(bLength, 0, 4) != 4) {
+                stop(true);
+            }
+            buffer = ByteBuffer.allocate(4).put(bLength);
+            buffer.position(0);
+            length = buffer.getInt();
+            byte[] bMess = new byte[length];
+            if(iStream.read(bMess, 0, length) != length) {
+                stop(true);
+            }
+            System.out.println(new String(bMess));
+        } catch (Exception e) {
+            stop(true);
         }
     }
 
-    public void sendMessage(Message message) {
+    @Override
+    public void run() {
         try {
-            if (currentWorker != null) {
-                currentWorker.socket.getOutputStream().write(MessageBuilder.getMessageBytes(message));
-            }
-        } catch (Throwable e) {
-            if (currentWorker != null) {
-                currentWorker.close(true, false);
-            }
-        }
-    }
-
-    synchronized public void deleteServer(ServerWorker server) {
-        serverWorkerDeleteRegulator.delete(server);
-    }
-
-    synchronized public void delete(ServerWorker server) {
-        if (server == currentWorker) {
-            currentWorker = servers.size() > 0 ? servers.get(0) : null;
-            currentWorker.activate();
-        }
-        servers.remove(server);
-        System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) + "] Closed connection with server '" + server.name() + "'.");
-    }
-
-    public String list() {
-        StringBuilder builder = new StringBuilder();
-        try {
-            serverWorkerDeleteRegulator.lock();
-            for (ServerWorker w : servers) {
-                builder.append(w.name());
-                builder.append(System.lineSeparator());
-            }
-        } finally {
-            serverWorkerDeleteRegulator.unlock();
-        }
-        return builder.toString();
-    }
-
-    void clear() {
-        try {
-            serverWorkerDeleteRegulator.lock();
-            for (ServerWorker w : servers) {
-                w.close(false, true);
-            }
-        } finally {
-            serverWorkerDeleteRegulator.unlock();
-        }
-        ArrayList<ServerWorker> tmp = new ArrayList<>(servers);
-        for (ServerWorker w : tmp) {
-            try {
-                w.join();
-            } catch (Throwable t) {
-            }
-        }
-    }
-
-    public void whereAmI() {
-        if (currentWorker != null) {
-            System.out.println(currentWorker.name());
-        }
-    }
-
-    public void disconnect() {
-        if (currentWorker != null) {
-            currentWorker.close(false, true);
-            if (servers.size() > 0) {
-                currentWorker = servers.get(0);
-            } else {
-                currentWorker = null;
-            }
-        }
-    }
-
-    void use(String name) {
-        serverWorkerDeleteRegulator.lock();
-        try {
-            for (ServerWorker w : servers) {
-                if (w.name().equals(name)) {
-                    currentWorker.deactivate();
-                    currentWorker = w;
-                    currentWorker.activate();
-                    break;
+            int iType;
+            while (!Thread.currentThread().isInterrupted() && (iType = iStream.read()) >= 0) {
+                byte type = (byte) iType;
+                if (type == MessageType.valueOf("BYE").getId()) {
+                    stop(true);
+                } else if (type == MessageType.valueOf("MESSAGE").getId()) {
+                    getMessage();
+                } else {
+                    stop(true);
                 }
             }
-        } finally {
-            serverWorkerDeleteRegulator.unlock();
+        } catch (Exception e) {
+            System.out.println("Ooops...");
+            if(!Thread.currentThread().isInterrupted()) {
+                System.out.println("?");
+                stop(true);
+            }
         }
+    }
+
+    synchronized public void stop(boolean exit) {
+        Thread.currentThread().interrupt();
+        try {
+            iStream.close();
+        } catch (Exception e) {
+        }
+    }
+
+    boolean isClosed() {
+        return closed;
     }
 }
