@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
-import java.util.*;
 
 public class CommandWorker {
     static private File mPath = new File(".");
@@ -130,12 +129,19 @@ public class CommandWorker {
         if (comms.length != 3) {
             throw new Exception("mv: wrong number of args");
         } else {
-            File file = getFile(comms[1]);
+            File fileIn = getFile(comms[1]);
 
-            File dir = getFile(comms[2]);
+            File fileOut = getFile(comms[2]);
 
-            boolean success = file.renameTo(new File(dir, file.getName()));
+            boolean success;
+            if (fileOut.isDirectory()) {
+                success = fileIn.renameTo(new File(fileOut, fileIn.getName()));
+            } else {
+                System.out.println(fileOut.getAbsolutePath());
+                success = fileIn.renameTo(fileOut);
+            }
             if (!success) {
+
                 throw new Exception("mv: cannot move \'" + comms[1] + "\'");
             }
         }
@@ -221,17 +227,28 @@ public class CommandWorker {
             return mPath;
         } else if (name.equals("..")) {
             if (mPath.getName().equals(".")) {
-                File path = new File(mPath.getCanonicalPath());
-                return new File(path.getAbsoluteFile().getParent());
-            } else {
-                return new File(mPath.getAbsoluteFile().getParent());
+                mPath = new File(mPath.getCanonicalPath());
             }
+            if (mPath.getCanonicalFile().getCanonicalPath().equals(File.separator)) {
+                return mPath;
+            }
+            
+            try {
+                //System.out.println(mPath.getAbsoluteFile().getCanonicalPath());
+                File newFile = new File(mPath.getAbsoluteFile().getParent());
+            } catch (Exception e) {
+                return mPath;
+            }
+            return new File(mPath.getAbsoluteFile().getParent());
         }
+
         if (name.length() > 1 && name.charAt(name.length() - 1) == File.separatorChar) {
             name = name.substring(0, name.length() - 1);
         }
 
-        if (name.equals(mfile.getCanonicalPath())) {
+        
+        //System.out.println(name+" || "+mfile.getCanonicalFile().getCanonicalPath());
+        if (name.equals(mfile.getCanonicalPath()) || mfile.getName().equals("..")) {
             return mfile;
         } else {
             return new File(mPath, name);
