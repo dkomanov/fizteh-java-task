@@ -130,7 +130,7 @@ public class ParallelSort {
         FileReader file = null;
         try {
             if (isInput) {
-                for (int j = 0; j < nameFile.size(); j++) {
+                for (int j = 0; j < nameFile.size(); j++) {     // read from files
                     int numberWord = 0;
                     file = new FileReader(nameFile.get(j));
                     in = new BufferedReader(file);
@@ -142,7 +142,7 @@ public class ParallelSort {
                     in.close();
                     file.close();
                 }
-            } else {
+            } else {                                           // read from stdin
                 in = new BufferedReader(new InputStreamReader(System.in));
                 String currentLine;
                 int numberWord = 0;
