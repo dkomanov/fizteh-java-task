@@ -10,12 +10,13 @@ import java.util.concurrent.TimeUnit;
  * MIPT FIVT 195
  */
 public class ParallelSort {
-    static private ResultContainer finish = null;
+    static private ResultContainer[] finish;
     static private boolean ignoreCase = false;
     static private boolean unique = false;
     static private int maxReaders = 3;
     static private int maxSorters;
     static private String fileName = null;
+    static private int queueNum = 3; //experimental constant, seems to be good enough...
 
     private static void printUsage() {
         System.out.println("");
@@ -68,12 +69,15 @@ public class ParallelSort {
         maxSorters = Runtime.getRuntime().availableProcessors();
         ExecutorService sorters = null;
         ExecutorService readers = null;
+        finish = new ResultContainer[queueNum];
         int firstFileIndex;
         if (args.length == 0  ||  (firstFileIndex = parseOptions(args)) == args.length) {
             maxReaders = 1;
             sorters = Executors.newFixedThreadPool(maxSorters);
             readers = Executors.newFixedThreadPool(maxReaders);
-            finish = new ResultContainer(ignoreCase, new ArrayList<StringContainer>());
+            for (int i = 0; i < queueNum; i++) {
+                finish[i] = new ResultContainer(ignoreCase, new ArrayList<StringContainer>());
+            }
             readers.execute(new Reader(null, 0, sorters, ignoreCase, finish));
         } else {
             if (args.length - firstFileIndex < maxReaders) {
@@ -81,7 +85,9 @@ public class ParallelSort {
             }
             sorters = Executors.newFixedThreadPool(maxSorters);
             readers = Executors.newFixedThreadPool(maxReaders);
-            finish = new ResultContainer(ignoreCase, new ArrayList<StringContainer>());
+            for (int i = 0; i < queueNum; i++) {
+                finish[i] = new ResultContainer(ignoreCase, new ArrayList<StringContainer>());
+            }
             for (int i = firstFileIndex; i < args.length; i++) {
                 readers.execute(new Reader(args[i], i, sorters, ignoreCase, finish));
             }
@@ -90,6 +96,9 @@ public class ParallelSort {
         readers.awaitTermination(1, TimeUnit.DAYS);
         sorters.shutdown();
         sorters.awaitTermination(1, TimeUnit.DAYS);
-        finish.print(unique, fileName);
+        for (int i = 1; i < queueNum; i++) {
+            finish[0].add(finish[i]);
+        }
+        finish[0].print(unique, fileName);
     }
 }
