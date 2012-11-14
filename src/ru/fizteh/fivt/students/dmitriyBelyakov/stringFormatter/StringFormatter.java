@@ -3,6 +3,7 @@ package ru.fizteh.fivt.students.dmitriyBelyakov.stringFormatter;
 import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
@@ -105,7 +106,10 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                     } else {
                         if (field) {
                             if (c == '.' || c == ':' || c == '}') {
-                                object = object.getClass().getDeclaredField(format.substring(numOfFieldPosition, i)).get(object);
+                                Field fieldObject = object.getClass().getDeclaredField(format.substring(numOfFieldPosition, i));
+                                fieldObject.setAccessible(true);
+                                object = fieldObject.get(object);
+                                fieldObject.setAccessible(false);
                                 if (object == null) {
                                     throw new FormatterException("Null pointer field.");
                                 }
