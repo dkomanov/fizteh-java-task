@@ -20,14 +20,10 @@ public class StringFormatterFloatExtension extends StringFormatterExtension{
     public void format(StringBuilder buffer, Object o, String pattern) {
         formatter = new Formatter();
         try {
-            switch (pattern.charAt(pattern.length() - 1)) {
-                case 'f':
-                case 'e':
-                    buffer.append(formatter.format("%" + pattern, o));
-                    break;
-                default:
-                    throw new FormatterException("Incorrect pattern");
+            if (pattern.lastIndexOf('f') == -1  &&  pattern.lastIndexOf('e') == -1) {
+                throw new FormatterException("Incorrect pattern");
             }
+            buffer.append(formatter.format("%" + pattern, o));
         } catch (Exception ex) {
             throw new FormatterException("Incorrect pattern");
         }

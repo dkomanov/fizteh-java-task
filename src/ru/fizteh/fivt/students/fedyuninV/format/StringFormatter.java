@@ -17,7 +17,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
         this.extensions = extensions;
     }
 
-    public synchronized String format(String format, Object... args)
+    public String format(String format, Object... args)
             throws FormatterException {
         StringBuilder buffer = new StringBuilder();
         format(buffer, format, args);
