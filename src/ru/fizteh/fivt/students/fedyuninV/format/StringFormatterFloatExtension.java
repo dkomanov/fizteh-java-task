@@ -17,9 +17,14 @@ public class StringFormatterFloatExtension extends StringFormatterExtension{
 
     }
 
+
+
     public void format(StringBuilder buffer, Object o, String pattern) {
         formatter = new Formatter();
         try {
+            if (pattern.length() == 0) {
+                pattern = "f";
+            }
             if (pattern.lastIndexOf('f') == -1  &&  pattern.lastIndexOf('e') == -1) {
                 throw new FormatterException("Incorrect pattern");
             }

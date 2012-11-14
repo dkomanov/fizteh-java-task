@@ -81,24 +81,25 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
         } catch (Exception ex) {
             throw new FormatterException("Incorrect term in brackets");
         }
+        if (patternBegin == format.length() - 1) {
+            throw new FormatterException("Void pattern with ':'");
+        }
+        if (finalArg == null) {
+            buffer.append("");
+            return;
+        }
+        boolean extNotFound = true;
         if (patternBegin == format.length()) {
-            if(finalArg != null) {
-                buffer.append(finalArg.toString());
+            patternBegin--;
+        }
+        for (StringFormatterExtension extension: extensions) {
+            if (extension.supports(finalArg.getClass())) {
+                extNotFound = false;
+                extension.format(buffer, finalArg, format.substring(patternBegin + 1));
             }
-        } else {
-            if (patternBegin == format.length() - 1) {
-                throw new FormatterException("Void pattern with ':'");
-            }
-            boolean extNotFound = true;
-            for (StringFormatterExtension extension: extensions) {
-                if (extension.supports(finalArg.getClass())) {
-                    extNotFound = false;
-                    extension.format(buffer, finalArg, format.substring(patternBegin + 1));
-                }
-            }
-            if (extNotFound) {
-                throw new FormatterException("There is no relative extension");
-            }
+        }
+        if (extNotFound) {
+            throw new FormatterException("There is no relative extension");
         }
     }
 }
