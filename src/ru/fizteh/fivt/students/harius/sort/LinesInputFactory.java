@@ -1,3 +1,5 @@
+package ru.fizteh.fivt.students.harius.sort;
+
 import java.io.*;
 
 public abstract class LinesInputFactory {

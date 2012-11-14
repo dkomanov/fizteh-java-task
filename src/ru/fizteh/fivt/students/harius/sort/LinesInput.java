@@ -1,3 +1,5 @@
+package ru.fizteh.fivt.students.harius.sort;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
@@ -15,8 +17,12 @@ public class LinesInput implements Callable<List<String>> {
     public List<String> call() throws IOException {
         List<String> result = new ArrayList<String>();
         try {
-            while (input.ready()) {
-                result.add(input.readLine());
+            while (true) {
+                String line = input.readLine();
+                if (line == null) {
+                    break;
+                }
+                result.add(line);
             }
         } finally {
             input.close();
