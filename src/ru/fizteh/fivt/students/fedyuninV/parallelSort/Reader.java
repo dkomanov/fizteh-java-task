@@ -7,7 +7,8 @@ import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.Random;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Fedyunin Valeriy
@@ -16,17 +17,12 @@ import java.util.concurrent.ExecutorService;
 public class Reader implements Runnable{
 
     BufferedReader reader = null;
-    ExecutorService sorters = null;
-    boolean ignoreCase;
-    ResultContainer finish;
+    LinkedBlockingQueue<List<StringContainer>> sorters = null;
     int fileNum;
     int blockSize = 1024 * 128;
 
 
-    public Reader(String fileName, int fileNum, ExecutorService sorters,
-                    boolean ignoreCase, ResultContainer finish) {
-        this.finish = finish;
-        this.ignoreCase = ignoreCase;
+    public Reader(String fileName, int fileNum, LinkedBlockingQueue<List<StringContainer>> sorters) {
         this.sorters = sorters;
         this.fileNum = fileNum;
         InputStreamReader iStreamReader = null;
@@ -53,6 +49,7 @@ public class Reader implements Runnable{
     }
 
     public void run() {
+        Random random = new Random();
         String incomingData;
         int currNum = 0;
         try {
@@ -61,12 +58,12 @@ public class Reader implements Runnable{
                 container.add(new StringContainer(incomingData, currNum, fileNum));
                 currNum++;
                 if (currNum % blockSize == 0) {
-                    sorters.execute(new Sorter(finish, container, ignoreCase));
+                    sorters.add(container);
                     container = new ArrayList<StringContainer>();
                 }
             }
             if (container.size() != 0) {
-                sorters.execute(new Sorter(finish, container, ignoreCase));
+                sorters.add(container);
             }
             reader.close();
         } catch (Exception ex) {
