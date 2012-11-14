@@ -30,6 +30,9 @@ public class StringFormatterFactory
 
         int index = 0;
         for (String name : extensionClassNames) {
+            if (name == null) {
+                throw new FormatterException("Got null extension class name");
+            }
             try {
                 Class clazz = Class.forName(name);
                 ext[index] = StringFormatterExtension.class.cast(clazz.newInstance());
@@ -39,8 +42,6 @@ public class StringFormatterFactory
                 throw new FormatterException(name + " is not an extension class");
             } catch (InstantiationException | IllegalAccessException inst) {
                 throw new FormatterException(name + " cannot been instantiated");
-            } catch (NullPointerException nullEx) {
-                throw new FormatterException("Got null extension class name");
             }
             ++index;
         }

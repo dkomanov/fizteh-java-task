@@ -22,7 +22,7 @@ public class StringFormatter
     /* List of enabled extensions */
     private List<StringFormatterExtension> ext = new ArrayList<>();
 
-    /* Constructor */
+    /* Construct formatter supporting listed extensions */
     public StringFormatter(StringFormatterExtension... ext) {
         this.ext = Arrays.asList(ext);
     }

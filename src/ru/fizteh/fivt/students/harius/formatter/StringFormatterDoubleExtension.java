@@ -17,6 +17,7 @@ public class StringFormatterDoubleExtension
     extends StringFormatterExtension {
 
     private Formatter formatter = new Formatter();
+    private final String conv = "bBhHsSeEfgGaA";
 
     /* Constructor */
     protected StringFormatterDoubleExtension() {
@@ -26,6 +27,9 @@ public class StringFormatterDoubleExtension
     /* Format the given Double */
     @Override
     public void format(StringBuilder buffer, Object o, String pattern) {
+        if (!pattern.matches(".*[" + conv + "]")) {
+            throw new FormatterException("Pattern for Double must end with one of " + conv);
+        }
         buffer.append(formatter.format("%" + pattern, o));
     }
     
