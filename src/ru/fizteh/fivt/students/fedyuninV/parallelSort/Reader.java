@@ -37,13 +37,7 @@ public class Reader implements Runnable{
             }
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
-            try {
-                IOUtils.tryClose(iStreamReader);
-                IOUtils.tryClose(fReader);
-                IOUtils.tryClose(reader);
-            } catch (Exception exc) {
-                System.err.println(exc.getMessage());
-            }
+            IOUtils.tryClose(fReader);
             System.exit(1);
         }
     }
