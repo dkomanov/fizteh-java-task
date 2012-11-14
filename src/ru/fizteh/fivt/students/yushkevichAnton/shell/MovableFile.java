@@ -1,3 +1,4 @@
+/*V 1.1, to understand that all is right*/
 package misc.shell;
 
 import java.io.*;
@@ -5,27 +6,23 @@ import java.io.*;
 public class MovableFile {
     private File file;
 
-    public MovableFile(String pathname) {
-        try {
-            file = new File(pathname).getCanonicalFile();
-        } catch (IOException e) {
-            System.out.println("Severe IO error.");
-            System.exit(1);
-        }
+    public MovableFile(String path) throws IOException {
+        file = new File(path).getCanonicalFile();
     }
 
-    public void move(String target) {
+    public boolean move(String target) {
         try {
             File t = new File(target);
             if (t.isAbsolute()) {
                 file = t.getCanonicalFile();
             } else {
-                file = new File(file.getAbsolutePath() + "/" + target).getCanonicalFile();
+                file = new File(file.getAbsolutePath() + File.separator + target).getCanonicalFile();
             }
         } catch (IOException e) {
-            System.out.println("Severe IO error.");
-            System.exit(1);
+            System.err.println("Severe IO error.");
+            return false;
         }
+        return true;
     }
 
     public File getFile() {

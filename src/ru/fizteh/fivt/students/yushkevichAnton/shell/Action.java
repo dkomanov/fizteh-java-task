@@ -1,3 +1,4 @@
+/*V 1.1, to understand that all is right*/
 package misc.shell;
 
 import java.io.*;
@@ -11,9 +12,12 @@ public class Action implements Executable {
     }
 
     @Override
-    public void execute() {
+    public boolean execute() {
         for (Command command : commands) {
-            command.execute();
+            if (!command.execute()) {
+                return false;
+            }
         }
+        return true;
     }
 }

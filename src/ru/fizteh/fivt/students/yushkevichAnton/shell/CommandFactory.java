@@ -1,3 +1,4 @@
+/*V 1.1, to understand that all is right*/
 package misc.shell;
 
 import misc.shell.commands.*;
@@ -56,6 +57,10 @@ public class CommandFactory {
 
         if (command.equals("cp")) {
             return new Cp(arguments, position);
+        }
+
+        if (command.equals("mv")) {
+            return new Mv(arguments, position);
         }
 
         return new UnknownCommand(command);
