@@ -65,9 +65,14 @@ public class Comand {
             copySourceTo(from, to);
         } else {
             File toFile = new File(to);
-            mkdir(toFile.getAbsolutePath());
-            mkdir(toFile.getAbsolutePath() + File.separator + fromFile.getName());
-            copySourceTo(from, toFile.getAbsolutePath() + File.separator + fromFile.getName());
+            if (!toFile.exists()) {
+                mkdir(toFile.getAbsolutePath());
+            }
+            toFile = new File(toFile.getAbsolutePath() + File.separator + fromFile.getName());
+            if (!toFile.exists()) {
+                mkdir(toFile.getAbsolutePath());
+            }
+            copySourceTo(from, toFile.getAbsolutePath());
         }
     }
     
@@ -187,7 +192,7 @@ public class Comand {
         }
         File newDir = new File(newPath);
         if (newDir.exists()) {
-            throw new ShellException(task, "Directory exist: ");
+            throw new ShellException(task, "Directory exists: " + s);
         } else {
             if (!newDir.mkdir()) {
                 throw new ShellException(task, "Can't make directory: " + s);

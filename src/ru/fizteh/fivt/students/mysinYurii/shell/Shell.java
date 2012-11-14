@@ -10,11 +10,15 @@ public class Shell {
             while (true) {
                 System.out.print("$ ");
                 String s = inputData.nextLine();
-                try {
-                    runner.parseAndExec(s);
-                } catch(ShellException e) {
-                    System.out.println(e.getMessage());
-                    continue;
+                if (s == null) {
+                    System.out.println("Can't read input data");
+                } else {
+                    try {
+                        runner.parseAndExec(s);
+                    } catch(ShellException e) {
+                        System.out.println(e.getMessage());
+                        continue;
+                    }
                 }
             }
         } else {
@@ -27,6 +31,7 @@ public class Shell {
                 runner.parseAndExec(newComand.toString());
             } catch (ShellException e) {
                 System.out.println(e.getMessage());
+                System.exit(1);
             }
         }
     }
