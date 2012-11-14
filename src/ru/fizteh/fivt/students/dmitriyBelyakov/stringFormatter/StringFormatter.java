@@ -42,6 +42,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     }
 
     private void formatWithArray(StringBuilder buffer, String format, Object[] args) throws FormatterException {
+        if (args == null) {
+            throw new FormatterException("Args is null.");
+        }
         try {
             boolean isArgument = false;
             boolean objectGet = false;
@@ -75,25 +78,25 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 } else {
                     if (!objectGet) {
                         if (c == '.' || c == ':' || c == '}') {
-                            try {
-                                int argumentNumber = Integer.parseInt(format.substring(numOfObjectPosition, i));
-                                object = args[argumentNumber];
-                                objectGet = true;
-                                if (c == '.') {
-                                    field = true;
-                                    numOfFieldPosition = i + 1;
-                                } else if (c == ':') {
-                                    pattern = true;
-                                    numOfPatternPosition = i + 1;
+                            int argumentNumber = Integer.parseInt(format.substring(numOfObjectPosition, i));
+                            object = args[argumentNumber];
+                            objectGet = true;
+                            if (c == '.') {
+                                field = true;
+                                numOfFieldPosition = i + 1;
+                            } else if (c == ':') {
+                                pattern = true;
+                                numOfPatternPosition = i + 1;
+                            } else {
+                                if (object == null) {
+                                    buffer.append("null");
                                 } else {
                                     buffer.append(object.toString());
-                                    isArgument = false;
-                                    objectGet = false;
-                                    pattern = false;
-                                    field = false;
                                 }
-                            } catch (Throwable t) {
-                                throw new FormatterException(t.getMessage());
+                                isArgument = false;
+                                objectGet = false;
+                                pattern = false;
+                                field = false;
                             }
                         } else if (!Character.isDigit(c)) {
                             throw new FormatterException("Incorrect format.");
@@ -110,7 +113,11 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                     pattern = true;
                                     numOfPatternPosition = i + 1;
                                 } else if (c == '}') {
-                                    buffer.append(object.toString());
+                                    if (object == null) {
+                                        buffer.append("null");
+                                    } else {
+                                        buffer.append(object.toString());
+                                    }
                                     isArgument = false;
                                     objectGet = false;
                                     pattern = false;
@@ -121,10 +128,14 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                             }
                         } else if (pattern) {
                             if (c == '}') {
-                                if (!supported(object.getClass())) {
-                                    throw new RuntimeException("Type doesn't supported.");
+                                if (object == null) {
+                                    buffer.append("null");
+                                } else {
+                                    if (!supported(object.getClass())) {
+                                        throw new FormatterException("Type doesn't supported.");
+                                    }
+                                    getExtension(object).format(buffer, object, format.substring(numOfPatternPosition, i));
                                 }
-                                getExtension(object).format(buffer, object, format.substring(numOfPatternPosition, i));
                                 isArgument = false;
                                 objectGet = false;
                                 pattern = false;
@@ -135,13 +146,16 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 }
             }
         } catch (Throwable t) {
-            //System.out.println(t.getClass().getName());
             throw new FormatterException(t.getMessage());
         }
     }
 
     @Override
     public String format(String format, Object... args) throws FormatterException {
+        if (args == null) {
+            args = new Object[1];
+            args[0] = null;
+        }
         StringBuilder builder = new StringBuilder();
         format(builder, format, args);
         return builder.toString();
@@ -149,6 +163,10 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     @Override
     public void format(StringBuilder buffer, String format, Object... args) {
+        if (args == null) {
+            args = new Object[1];
+            args[0] = null;
+        }
         formatWithArray(buffer, format, args);
     }
 }
