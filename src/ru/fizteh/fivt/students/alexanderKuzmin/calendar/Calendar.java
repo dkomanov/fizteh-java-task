@@ -7,7 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.Locale;
-import ru.fizteh.fivt.students.alexanderKuzmin.shell.Errors;
+import ru.fizteh.fivt.students.alexanderKuzmin.Closers;
 
 /**
  * @author Alexander Kuzmin group 196 Class Calendar
@@ -18,7 +18,6 @@ public class NewCalendar {
 
     private void executeCalendar(Calendar calendar, boolean printWeek,
             TimeZone tZone, boolean printZone) {
-        calendar.set(Calendar.MONTH, Calendar.SEPTEMBER);
         StringBuilder output = new StringBuilder();
         output.append("\t\t")
                 .append(calendar.getDisplayName(Calendar.MONTH, Calendar.LONG,
@@ -58,8 +57,8 @@ public class NewCalendar {
             DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             dateFormat.setTimeZone(tZone);
             Date date = new Date();
-            output.append("\nNow: ").append(dateFormat.format(date)).append(" ")
-                    .append(tZone.getDisplayName());
+            output.append("\nNow: ").append(dateFormat.format(date))
+                    .append(" ").append(tZone.getDisplayName());
         }
         System.out.println(output);
     }
@@ -71,6 +70,7 @@ public class NewCalendar {
      * [-w] - if specified, displays the number of the week.
      * [-t TIMEZONE] - if specified, under the calendar displays the current time in a specified time zone.
      */
+
     public static void main(String[] args) {
         NewCalendar myCalendar = new NewCalendar();
         TimeZone tZone = TimeZone.getDefault();
@@ -86,12 +86,12 @@ public class NewCalendar {
                     if (month <= calendar.getActualMaximum(Calendar.MONTH)
                             && month >= calendar
                                     .getActualMinimum(Calendar.MONTH)) {
-                        calendar.set(Calendar.MONTH, month);
+                        calendar.set(Calendar.MONTH, --month);
                     } else {
                         throw new Exception();
                     }
                 } catch (Exception e) {
-                    Errors.printErrAndExit("Kye '-m': Invalid argument. Use: [-m MONTH] , MONTH = {1, ..., 12}");
+                    Closers.printErrAndExit("Key '-m': Invalid argument. Use: [-m MONTH] , MONTH = {1, ..., 12}");
                 }
             } else if (args[i].equals("-y") && args.length >= i + 2) {
                 try {
@@ -102,13 +102,13 @@ public class NewCalendar {
                         throw new Exception();
                     }
                 } catch (Exception e) {
-                    Errors.printErrAndExit("Kye '-y': Invalid argument. Use: [-y YEAR] , YEAR = 4 digits.");
+                    Closers.printErrAndExit("Key '-y': Invalid argument. Use: [-y YEAR] , YEAR = 4 digits.");
                 }
             } else if (args[i].equals("-t") && args.length >= i + 2) {
                 tZone = TimeZone.getTimeZone(args[++i]);
                 printZone = true;
             } else {
-                Errors.printErrAndExit("Invalid argument. Use: 'java Calendar [-m MONTH] [-y YEAR] [-w] [-t TIMEZONE]'.");
+                Closers.printErrAndExit("Invalid argument. Use: 'java Calendar [-m MONTH] [-y YEAR] [-w] [-t TIMEZONE]'.");
             }
         }
         myCalendar.executeCalendar(calendar, printWeek, tZone, printZone);
