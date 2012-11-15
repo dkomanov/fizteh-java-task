@@ -89,8 +89,6 @@ public class ResultContainer {
             System.exit(1);
         } finally {
             IOUtils.tryClose(fWriter);
-            IOUtils.tryClose(writer);
-            IOUtils.tryClose(oStreamWriter);
         }
     }
 
