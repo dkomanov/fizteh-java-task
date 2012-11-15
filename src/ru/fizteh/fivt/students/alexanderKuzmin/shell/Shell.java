@@ -185,11 +185,8 @@ public class Shell {
                                         + File.separator + sourceFile.getName()));
                     } else {
                         throw new Exception("cp: \'" + destination
-                                + "\': can't copy this, it's a strange file.");
+                                + "\': can't copy to this file, it exists.");
                     }
-                } else if (destinationFile.isFile() && sourceFile.isFile()) {
-                    copyFile(sourceFile,
-                            new File(destinationFile.getAbsolutePath()));
                 } else {
                     throw new Exception("cp: \'" + destination
                             + "\': can't copy this, it's a strange files.");
