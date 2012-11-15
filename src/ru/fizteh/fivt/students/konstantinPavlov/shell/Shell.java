@@ -236,8 +236,13 @@ public class Shell {
             }
         } else {
             if (!dst.mkdir()) {
-                initError("cannot create directory \'" + dst
-                        + "\': No such file or directory");
+                if (dst.exists()) {
+                    initError("cannot create directory \'" + dst
+                            + "\': this directory already exsists");
+                } else {
+                    initError("cannot create directory \'" + dst
+                            + "\': No such file or directory");
+                }
                 return;
             }
 
