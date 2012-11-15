@@ -15,7 +15,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     public void addExtension(StringFormatterExtension extension) throws FormatterException {
         if (extension == null) {
-            throw new FormatterException("Null pointer.", new Throwable());
+            throw new FormatterException("Null pointer.");
         }
         try {
             extensions.add(extension);
@@ -39,12 +39,12 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 return extension;
             }
         }
-        throw new FormatterException("Extension not find.", new Throwable());
+        throw new FormatterException("Extension not find.");
     }
 
     private void formatWithArray(StringBuilder buffer, String format, Object[] args) throws FormatterException {
         if (args == null) {
-            throw new FormatterException("Args is null.", new Throwable());
+            throw new FormatterException("Args is null.");
         }
         try {
             boolean isArgument = false;
@@ -71,7 +71,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                             buffer.append('}');
                             ++i;
                         } else {
-                            throw new FormatterException("Incorrect format.", new Throwable());
+                            throw new FormatterException("Incorrect format.");
                         }
                     } else {
                         buffer.append(c);
@@ -100,7 +100,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                 field = false;
                             }
                         } else if (!Character.isDigit(c)) {
-                            throw new FormatterException("Incorrect format.", new Throwable());
+                            throw new FormatterException("Incorrect format.");
                         }
                     } else {
                         if (field) {
@@ -155,7 +155,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                     buffer.append("");
                                 } else {
                                     if (!supported(object.getClass())) {
-                                        throw new FormatterException("Type doesn't supported.", new Throwable());
+                                        throw new FormatterException("Type doesn't supported.");
                                     }
                                     getExtension(object).format(buffer, object, format.substring(numOfPatternPosition, i));
                                 }
