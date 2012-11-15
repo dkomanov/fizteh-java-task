@@ -236,14 +236,11 @@ public class Shell {
             }
         } else {
             if (!dst.mkdir()) {
-                if (dst.exists()) {
-                    initError("cannot create directory \'" + dst
-                            + "\': this directory already exsists");
-                } else {
+                if (!dst.exists()) {
                     initError("cannot create directory \'" + dst
                             + "\': No such file or directory");
+                    return;
                 }
-                return;
             }
 
             for (String s : src.list()) {
