@@ -209,6 +209,10 @@ public class Shell {
 
     static void copyPath(File src, File dst) throws Exception {
         if (src.isFile()) {
+            if (src.equals(dst)) {
+                initError("cp: cannot copy file to itself");
+                return;
+            }
             FileInputStream in = null;
             FileOutputStream out = null;
             try {
