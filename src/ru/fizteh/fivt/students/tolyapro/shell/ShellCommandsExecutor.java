@@ -25,11 +25,11 @@ public class ShellCommandsExecutor {
             throws Exception {
         File relNewDir = new File(currPath + separator + newDir); // relative
         File absNewDir = new File(newDir); // absolute path
-        if (relNewDir.exists() && relNewDir.isDirectory()) {
-            currPath = currPath + separator + newDir;
+        if (absNewDir.exists() && absNewDir.exists()) {
+            currPath = newDir;
         } else {
-            if (absNewDir.exists() && absNewDir.isDirectory()) {
-                currPath = newDir;
+            if (relNewDir.exists() && relNewDir.isDirectory()) {
+                currPath = currPath + separator + newDir;
             } else {
                 throw new Exception("No such directory: " + newDir);
             }
