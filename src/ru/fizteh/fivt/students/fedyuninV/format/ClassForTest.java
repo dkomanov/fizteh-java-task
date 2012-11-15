@@ -8,7 +8,7 @@ public class ClassForTest {
     public final float height = 100f;
     public byte[] params = {12, 13, 14, 15};
     private final int deep = 100;
-    protected final double dispersion = 0.12;
+    protected double dispersion = 0.12;
 }
 
 class ChildForTest extends ClassForTest{

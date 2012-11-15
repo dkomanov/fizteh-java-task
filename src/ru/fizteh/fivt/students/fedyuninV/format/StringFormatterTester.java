@@ -57,24 +57,28 @@ public class StringFormatterTester{
         formatter.format("Hello {{1}} {2} world!", 3.1415926f, 3.1415926f);
     }
 
-    @Test(expected = FormatterException.class)
+    @Test
     public void tryingToParentPrivateField() {
-        formatter.format("{0.deep}", new ChildForTest(), 3.1415926f);
+        String testString = formatter.format("{0.deep}", new ChildForTest(), 3.1415926f);
+        Assert.assertEquals(testString, "100");
     }
 
-    @Test(expected = FormatterException.class)
+    @Test
     public void tryingToParentProtectedField() {
-        formatter.format("{0.dispersion}", new ChildForTest(), 3.1415926f);
+        String testString = formatter.format("{0.dispersion}", new ChildForTest(), 3.1415926f);
+        Assert.assertEquals(testString, "0.12");
     }
 
-    @Test(expected = FormatterException.class)
+    @Test
     public void tryingToPrivateField() {
-        formatter.format("{0.deep}", new ClassForTest(), 3.1415926f);
+        String testString = formatter.format("{0.deep}", new ClassForTest(), 3.1415926f);
+        Assert.assertEquals(testString, "100");
     }
 
-    @Test(expected = FormatterException.class)
+    @Test
     public void tryingToProtectedField() {
-        formatter.format("{0.dispersion}", new ClassForTest(), 3.1415926f);
+        String testString = formatter.format("{0.dispersion}", new ClassForTest(), 3.1415926f);
+        Assert.assertEquals(testString, "0.12");
     }
 
     @Test(expected = FormatterException.class)
