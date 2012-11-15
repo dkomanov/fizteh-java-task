@@ -28,7 +28,7 @@ public class LongFormat extends StringFormatterExtension {
             Formatter formatter = new Formatter().format("%" + pattern, object);
             buffer.append(formatter.toString());
         } catch (Throwable t) {
-            throw new FormatterException(t.getMessage(), new Throwable());
+            throw new FormatterException(t.getMessage(), t);
         }
     }
 }

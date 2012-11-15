@@ -14,7 +14,7 @@ public class StringFormatterFactory implements ru.fizteh.fivt.format.StringForma
             }
             return formatter;
         } catch (Throwable t) {
-            throw new FormatterException("Cannot create formatter with this extensions.", new Throwable());
+            throw new FormatterException("Cannot create formatter with this extensions.", t);
         }
     }
 }

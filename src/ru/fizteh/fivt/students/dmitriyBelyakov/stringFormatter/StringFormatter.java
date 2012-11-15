@@ -169,7 +169,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 }
             }
         } catch (Throwable t) {
-            throw new FormatterException(t.getMessage(), new Throwable());
+            throw new FormatterException(t.getMessage(), t);
         }
     }
 
