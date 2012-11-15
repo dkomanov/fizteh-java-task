@@ -172,18 +172,27 @@ public class Shell {
         File destinationFile = new File(currentPath + File.separator
                 + destination).getAbsoluteFile();
         if (sourceFile.exists()) {
-            if (destinationFile.exists() && destinationFile.isDirectory()) {
-                if (sourceFile.isDirectory()) {
-                    copyDir(sourceFile,
-                            new File(destinationFile.getAbsolutePath()
-                                    + File.separator + sourceFile.getName()));
-                } else if (sourceFile.isFile()) {
+            if (destinationFile.exists()) {
+                if (destinationFile.isDirectory()) {
+                    if (sourceFile.isDirectory()) {
+                        copyDir(sourceFile,
+                                new File(destinationFile.getAbsolutePath()
+                                        + File.separator + sourceFile.getName()));
+                    } else if (sourceFile.isFile()) {
+                        copyFile(
+                                sourceFile,
+                                new File(destinationFile.getAbsolutePath()
+                                        + File.separator + sourceFile.getName()));
+                    } else {
+                        throw new Exception("cp: \'" + destination
+                                + "\': can't copy this, it's a strange file.");
+                    }
+                } else if (destinationFile.isFile() && sourceFile.isFile()) {
                     copyFile(sourceFile,
-                            new File(destinationFile.getAbsolutePath()
-                                    + File.separator + sourceFile.getName()));
+                            new File(destinationFile.getAbsolutePath()));
                 } else {
                     throw new Exception("cp: \'" + destination
-                            + "\': can't copy this, it's a strange file.");
+                            + "\': can't copy this, it's a strange files.");
                 }
             } else {
                 throw new Exception("cp: \'" + destination
@@ -292,7 +301,7 @@ public class Shell {
                 .getAbsoluteFile();
         File newShortFile = new File(path).getAbsoluteFile();
         if (newShortFile.exists() && newShortFile.isDirectory()
-                && !(path.equals(".") || path.equals(".."))) {
+                && !(path.charAt(0) == '.')) {
             currentPath = newShortFile.getAbsolutePath();
         } else if (newFile.exists() && newFile.isDirectory()) {
             currentPath = newFile.getAbsolutePath();
