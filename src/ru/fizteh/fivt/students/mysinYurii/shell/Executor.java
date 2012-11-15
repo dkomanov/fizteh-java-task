@@ -1,15 +1,16 @@
+package ru.fizteh.fivt.students.mysinYurii.shell;
 
 public class Executor {
-    Comand comander;
+    Command comander;
     
     public Executor() {
-        comander = new Comand();
+        comander = new Command();
     }
     public void parseAndExec(String comand) throws ShellException {
         comand.trim();
         String[] comandList = comand.split(" ");
         if ((comandList.length == 1) && (comandList[0].equals("exit"))) {
-            System.exit(0);
+            throw new ShellException("exit");
         } else {
             int i = 0;
             while (i < comandList.length) {
@@ -58,7 +59,7 @@ public class Executor {
                         inRange(task, left, i ,2);
                     }
                 } else {
-                    throw new ShellException(task, "Uknown comand: " + comandList[left]);
+                    throw new ShellException("shell", "Uknown comand: " + comandList[left]);
                 }
                 ++i;
             }

@@ -10,7 +10,7 @@ import java.util.Locale;
 import ru.fizteh.fivt.students.alexanderKuzmin.Closers;
 
 /**
- * @author Alexander Kuzmin group 196 Class Calendar
+ * @author Alexander Kuzmin group 196 Class NewCalendar
  * 
  */
 
@@ -83,9 +83,9 @@ public class NewCalendar {
             } else if (args[i].equals("-m") && args.length >= i + 2) {
                 try {
                     int month = Integer.parseInt(args[++i]);
-                    if (month <= calendar.getActualMaximum(Calendar.MONTH)
+                    if (month <= calendar.getActualMaximum(Calendar.MONTH) + 1
                             && month >= calendar
-                                    .getActualMinimum(Calendar.MONTH)) {
+                                    .getActualMinimum(Calendar.MONTH) + 1) {
                         calendar.set(Calendar.MONTH, --month);
                     } else {
                         throw new Exception();
@@ -106,6 +106,9 @@ public class NewCalendar {
                 }
             } else if (args[i].equals("-t") && args.length >= i + 2) {
                 tZone = TimeZone.getTimeZone(args[++i]);
+                if (tZone.getID().equals("GMT")) {
+                    Closers.printErrAndExit("Invalid argument. Use: 'java Calendar [-m MONTH] [-y YEAR] [-w] [-t TIMEZONE]'.");
+                }
                 printZone = true;
             } else {
                 Closers.printErrAndExit("Invalid argument. Use: 'java Calendar [-m MONTH] [-y YEAR] [-w] [-t TIMEZONE]'.");
