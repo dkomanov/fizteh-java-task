@@ -194,6 +194,10 @@ public class Shell {
                     throw new Exception("cp: \'" + destination
                             + "\': can't copy this, it's a strange files.");
                 }
+            }
+            if (sourceFile.isFile()) {
+                copyFile(sourceFile,
+                        new File(destinationFile.getAbsolutePath()));
             } else {
                 throw new Exception("cp: \'" + destination
                         + "\': No such file or directory.");
