@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.almazNasibullin.chat.server;
+package ru.fizteh.fivt.students.almazNasibullin.chat;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

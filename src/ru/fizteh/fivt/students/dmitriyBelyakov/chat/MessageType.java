@@ -1,9 +1,4 @@
-package ru.fizteh.fivt.students.almazNasibullin.chat.server;
-
-/**
- * 19.10.12
- * @author almaz
- */
+package ru.fizteh.fivt.students.dmitriyBelyakov.chat;
 
 public enum MessageType {
     HELLO(1),

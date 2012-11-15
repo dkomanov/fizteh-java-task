@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.almazNasibullin.chat.client;
+package ru.fizteh.fivt.students.almazNasibullin.chat;
 
 /**
  * 19.10.12
