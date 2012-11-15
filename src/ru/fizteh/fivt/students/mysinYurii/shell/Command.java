@@ -6,11 +6,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 
-
-public class Comand {
+public class Command {
     public String path;
     
-    Comand() {
+    Command() {
         File cwd = new File("");
         path = new String(cwd.getAbsolutePath());
     }
