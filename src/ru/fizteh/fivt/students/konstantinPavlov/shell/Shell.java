@@ -39,8 +39,7 @@ public class Shell {
                 return;
             }
             File newPath = getAbsolute(commands[1]);
-            if (!(newPath.exists() && newPath.isDirectory())
-                    && !newPath.mkdir()) {
+            if (!newPath.mkdir()) {
                 initError("mkdir: cannot create directory \'" + commands[1]
                         + "\': No such file or directory");
             }
