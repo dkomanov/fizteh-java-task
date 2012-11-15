@@ -25,7 +25,8 @@ public class ShellCommandsExecutor {
             throws Exception {
         File relNewDir = new File(currPath + separator + newDir); // relative
         File absNewDir = new File(newDir); // absolute path
-        if (absNewDir.exists() && absNewDir.exists()) {
+        if (absNewDir.exists() && absNewDir.isDirectory()
+                && absNewDir.isAbsolute()) {
             currPath = newDir;
         } else {
             if (relNewDir.exists() && relNewDir.isDirectory()) {
