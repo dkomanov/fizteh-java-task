@@ -27,7 +27,7 @@ public class ParallelSort {
         }
     }
 
-    static final int size = 1024 * 2 * 2;
+    static final int size = 1024 * 1024;
     static LinkedBlockingQueue queue;
     static ExecutorService service;
     static String STOP = "stop";
