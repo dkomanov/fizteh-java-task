@@ -6,7 +6,7 @@ import ru.fizteh.fivt.PerformanceTest;
 /**
  * @author Alexander Kuzmin
  */
-public class WordCounterTest {
+public class Test {
 
     /**
      * @param args

@@ -19,7 +19,10 @@ spurious wake up](http://yadi.sk/d/IUVaBNVg0Eh1k)
 7. [Многопоточность: устройство коллекций, happens-before, Executor Framework,
 Thread.stop(), Shutdown hook. java.lang.reflect.Proxy]
 (http://yadi.sk/d/n9q6dYPI0QX67)
-8. Метаданные, байт-код
+8. [Сериализация, XML (DOM, SAX, StAX, JAXB), properties]
+(http://yadi.sk/d/RTEyqb3p0bsfP)
+9. [Метаданные, структура class-файла](http://yadi.sk/d/zvIHFjHa0icS5)
+10. Байт-код
 
 ## Семинары
 В папке [tasks](fizteh-java-task/tree/master/tasks) находятся описания заданий на
