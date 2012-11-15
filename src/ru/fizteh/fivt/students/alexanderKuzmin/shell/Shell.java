@@ -156,9 +156,14 @@ public class Shell {
 
     private static void move(String source, String destination)
             throws Exception {
+        File sourceFile = new File(source).getAbsoluteFile();
+        if (!sourceFile.exists()) {
+            sourceFile = new File(currentPath + File.separator + source);
+        }
+        File destShortFile = new File(destination);
         File destFile = new File(currentPath + File.separator + destination);
-        if (!destFile.exists()) {
-            new File(currentPath + File.separator + source).renameTo(destFile);
+        if (!destFile.exists() && !destShortFile.exists()) {
+            sourceFile.renameTo(destFile);
         } else {
             copy(source, destination);
             remove(source);
@@ -258,7 +263,10 @@ public class Shell {
     }
 
     private static void remove(String file) throws Exception {
-        File cur = new File(currentPath + File.separator + file);
+        File cur = new File(file);
+        if (!cur.exists()) {
+            cur = new File(currentPath + File.separator + file);
+        }
         if (cur.exists()) {
             deleteObject(cur);
         } else {
