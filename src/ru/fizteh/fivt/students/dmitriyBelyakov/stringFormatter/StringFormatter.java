@@ -126,7 +126,6 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                 if (fieldObject != null) {
                                     fieldObject.setAccessible(true);
                                     object = fieldObject.get(object);
-                                    fieldObject.setAccessible(false);
                                 } else {
                                     object = null;
                                 }
