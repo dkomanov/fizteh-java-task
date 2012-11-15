@@ -91,6 +91,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                 numOfPatternPosition = i + 1;
                             } else {
                                 if (object == null) {
+                                    buffer.append("");
                                     return;
                                 } else {
                                     builder.append(object.toString());
@@ -109,14 +110,16 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                 boolean notFound = true;
                                 Field fieldObject = null;
                                 Class clazz = object.getClass();
+                                String nameOfField = format.substring(numOfFieldPosition, i);
                                 do {
                                     notFound = false;
                                     try {
-                                        fieldObject = clazz.getDeclaredField(format.substring(numOfFieldPosition, i));
+                                        fieldObject = clazz.getDeclaredField(nameOfField);
                                     } catch (NoSuchFieldException e) {
                                         notFound = true;
                                         clazz = clazz.getSuperclass();
                                         if (clazz == null) { // Hasn't superclass
+                                            buffer.append("");
                                             return;
                                         }
                                     }
@@ -125,6 +128,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                 object = fieldObject.get(object);
                                 fieldObject.setAccessible(false);
                                 if (object == null) {
+                                    buffer.append("");
                                     return;
                                 }
                                 if (c == ':') {
@@ -133,6 +137,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                     numOfPatternPosition = i + 1;
                                 } else if (c == '}') {
                                     if (object == null) {
+                                        buffer.append("");
                                         return;
                                     } else {
                                         builder.append(object.toString());
@@ -148,6 +153,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                         } else if (pattern) {
                             if (c == '}') {
                                 if (object == null) {
+                                    buffer.append("");
                                     return;
                                 } else {
                                     if (!supported(object.getClass())) {
