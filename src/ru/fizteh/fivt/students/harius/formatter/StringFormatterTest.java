@@ -25,6 +25,12 @@ class Dummy {
     public Object obj = null;
     public Another an = new Another();
     private long z = -10;
+    private short zz = 32;
+    protected String s = "oO";
+}
+
+class Stuff extends Dummy {
+    private long z = -9;
 }
 
 /*
@@ -33,6 +39,7 @@ class Dummy {
 public abstract class StringFormatterTest {
     private static StringFormatterFactory factory = new StringFormatterFactory();
     private static Dummy d = new Dummy();
+    private static Stuff st = new Stuff();
 
     /* Do the tests */
     public static void main(String[] args) {
@@ -58,6 +65,9 @@ public abstract class StringFormatterTest {
         check(basic, "{0}", "{{0}}", "hello");
         check(basic, "" + d.an.a, "{0.an.a}", d);
         check(basic, "-10", "{0.z}", d);
+        check(basic, "-9", "{0.z}", st);
+        check(basic, "32", "{0.zz}", st);
+        check(basic, "7.5", "{0.y}", st);
     }
 
     /* Basic tests of formatting double */

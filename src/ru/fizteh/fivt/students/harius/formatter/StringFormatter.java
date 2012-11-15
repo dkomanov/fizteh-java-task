@@ -130,16 +130,35 @@ public class StringFormatter
         }
         while (tok.hasMoreTokens()) {
             String field = tok.nextToken();
-            try {
-                Field target = arg.getClass().getDeclaredField(field);
-                target.setAccessible(true);
-                arg = target.get(arg);
-            } catch (NoSuchFieldException | IllegalAccessException bad) {
-                throw new FormatterException("Error while fetching " +
-                    field + " from " + arg.getClass().getSimpleName());
-            }
+            arg = getField(arg, field);
         }
         return arg;
+    }
+
+    private Object getField(Object arg, String name)
+        throws FormatterException {
+
+        Class deep = arg.getClass();
+        try {
+            try {
+                return deep.getField(name).get(arg);
+            } catch (NoSuchFieldException noField) {
+                while (deep != null) {
+                    try {
+                        Field field = deep.getDeclaredField(name);
+                        field.setAccessible(true);
+                        return field.get(arg);
+                    } catch (NoSuchFieldException noDamnField) {
+                        deep = deep.getSuperclass();
+                    }
+                }
+                throw new FormatterException(String.format(
+                    "No field %s in %s", name, arg.getClass().getSimpleName()));
+            }
+        } catch (IllegalAccessException accEx) {
+            throw new FormatterException(String.format(
+                "Illegal access to field %s of %s", name, arg.getClass().getSimpleName()));
+        }
     }
 
     /* Simple format */
