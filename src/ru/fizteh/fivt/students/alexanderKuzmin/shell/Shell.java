@@ -167,10 +167,16 @@ public class Shell {
 
     private static void copy(String source, String destination)
             throws Exception {
-        File sourceFile = new File(currentPath + File.separator + source)
-                .getAbsoluteFile();
-        File destinationFile = new File(currentPath + File.separator
-                + destination).getAbsoluteFile();
+        File sourceFile = new File(source).getAbsoluteFile();
+        if (!sourceFile.exists()) {
+            sourceFile = new File(currentPath + File.separator + source)
+                    .getAbsoluteFile();
+        }
+        File destinationFile = new File(destination).getAbsoluteFile();
+        if (!destinationFile.exists()) {
+            destinationFile = new File(currentPath + File.separator
+                    + destination).getAbsoluteFile();
+        }
         if (sourceFile.exists()) {
             if (destinationFile.exists()) {
                 if (destinationFile.isDirectory()) {
@@ -191,8 +197,7 @@ public class Shell {
                     throw new Exception("cp: \'" + destination
                             + "\': can't copy this, it's a strange files.");
                 }
-            }
-            if (sourceFile.isFile()) {
+            } else if (sourceFile.isFile()) {
                 copyFile(sourceFile,
                         new File(destinationFile.getAbsolutePath()));
             } else {
