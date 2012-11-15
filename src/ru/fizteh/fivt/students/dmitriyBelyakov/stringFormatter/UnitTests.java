@@ -153,6 +153,11 @@ public class UnitTests extends Assert {
         new StringFormatter().format("{.field} something", new ClassEleven());
     }
 
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterIncorrectFormatWithFormat() {
+        new StringFormatter().format("{:2d} something", new Long(11));
+    }
+
     @Test
     public void testStringFormatter() {
         StringFormatter formatter = new StringFormatter();
