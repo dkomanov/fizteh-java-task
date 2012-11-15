@@ -1,11 +1,14 @@
 package ru.fizteh.fivt.students.fedyuninV.parallelSort;
 
+import ru.fizteh.fivt.students.fedyuninV.IOUtils;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.Random;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Fedyunin Valeriy
@@ -14,16 +17,14 @@ import java.util.concurrent.ExecutorService;
 public class Reader implements Runnable{
 
     BufferedReader reader = null;
-    ExecutorService sorters = null;
-    boolean ignoreCase;
-    ResultContainer finish;
-    int blockSize = 1024;
+    LinkedBlockingQueue<List<StringContainer>> sorters = null;
+    int fileNum;
+    int blockSize = 1024 * 128;
 
-    public Reader(String fileName, ExecutorService sorters,
-                    boolean ignoreCase, ResultContainer finish) {
-        this.finish = finish;
-        this.ignoreCase = ignoreCase;
+
+    public Reader(String fileName, int fileNum, LinkedBlockingQueue<List<StringContainer>> sorters) {
         this.sorters = sorters;
+        this.fileNum = fileNum;
         InputStreamReader iStreamReader = null;
         FileReader fReader = null;
         try {
@@ -36,39 +37,27 @@ public class Reader implements Runnable{
             }
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
-            try {
-                if (iStreamReader != null) {
-                    iStreamReader.close();
-                }
-                if (fReader != null) {
-                    fReader.close();
-                }
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (Exception exc) {
-                System.err.println(exc.getMessage());
-            }
+            IOUtils.tryClose(fReader);
             System.exit(1);
         }
     }
 
     public void run() {
+        Random random = new Random();
         String incomingData;
         int currNum = 0;
         try {
-            List <String> container = new ArrayList<String>();
+            List <StringContainer> container = new ArrayList<StringContainer>();
             while ((incomingData = reader.readLine()) != null) {
-                container.add(incomingData);
+                container.add(new StringContainer(incomingData, currNum, fileNum));
                 currNum++;
-                if (currNum == blockSize) {
-                    currNum = 0;
-                    sorters.execute(new Sorter(finish, container, ignoreCase));
-                    container = new ArrayList<String>();
+                if (currNum % blockSize == 0) {
+                    sorters.add(container);
+                    container = new ArrayList<StringContainer>();
                 }
             }
             if (container.size() != 0) {
-                sorters.execute(new Sorter(finish, container, ignoreCase));
+                sorters.add(container);
             }
             reader.close();
         } catch (Exception ex) {

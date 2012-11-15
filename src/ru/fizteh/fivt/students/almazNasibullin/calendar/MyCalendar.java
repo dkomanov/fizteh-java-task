@@ -7,6 +7,8 @@ import java.util.StringTokenizer;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
+import ru.fizteh.fivt.students.almazNasibullin.WrapperPrimitive;
 
 /**
  * 30.10.12
@@ -50,8 +52,20 @@ public class MyCalendar {
         if (!timeZone.t.equals("")) {
             tz = TimeZone.getTimeZone(timeZone.t);
             calendar.setTimeZone(tz);
+            String[] zones = TimeZone.getAvailableIDs();
+            boolean exist = false;
+            for (int i = 0; i < zones.length; ++i) {
+                if (timeZone.t.equals(zones[i])) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                IOUtils.printErrorAndExit(timeZone.t + ": no such time zone");
+            }
         }
 
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
         printCalendar(calendar, weak,timeZone, tz);
     }
 
@@ -76,16 +90,16 @@ public class MyCalendar {
                             try {
                                 month.t = Integer.parseInt(st.nextToken());
                                 if (!(month.t >= 1 && month.t <= 12)) {
-                                    LoUtils.printErrorAndExit("Wrong number of the month");
+                                    IOUtils.printErrorAndExit("Wrong number of the month");
                                 }
                             } catch (Exception e) {
-                                LoUtils.printErrorAndExit("Usage: [-m MONTH]");
+                                IOUtils.printErrorAndExit("Usage: [-m MONTH]");
                             }
                         } else {
-                            LoUtils.printErrorAndExit("Usage: [-m MONTH]");
+                            IOUtils.printErrorAndExit("Usage: [-m MONTH]");
                         }
                     } else {
-                        LoUtils.printErrorAndExit("You put number of the month several times");
+                        IOUtils.printErrorAndExit("You put number of the month several times");
                     }
                 } else if (str.equals("-y")) {
                     if (year.t == -1) {
@@ -93,35 +107,35 @@ public class MyCalendar {
                             try {
                                 year.t = Integer.parseInt(st.nextToken());
                                 if (year.t < 0) {
-                                    LoUtils.printErrorAndExit("Wrong year");
+                                    IOUtils.printErrorAndExit("Wrong year");
                                 }
                             } catch (Exception e) {
-                                LoUtils.printErrorAndExit("Usage: [-y YEAR]");
+                                IOUtils.printErrorAndExit("Usage: [-y YEAR]");
                             }
                         } else {
-                            LoUtils.printErrorAndExit("Usage: [-y YEAR]");
+                            IOUtils.printErrorAndExit("Usage: [-y YEAR]");
                         }
                     } else {
-                        LoUtils.printErrorAndExit("You put year several times");
+                        IOUtils.printErrorAndExit("You put year several times");
                     }
                 } else if (str.equals("-w")) {
                     if (!weak.t) {
                         weak.t = true;
                     } else {
-                        LoUtils.printErrorAndExit("You put key '-w' several times");
+                        IOUtils.printErrorAndExit("You put key '-w' several times");
                     }
                 } else if (str.equals("-t")) {
                     if (timeZone.t.equals("")) {
                         if (st.hasMoreTokens()) {
                             timeZone.t = st.nextToken();
                         } else {
-                            LoUtils.printErrorAndExit("Usage: [-t TIMEZONE]");
+                            IOUtils.printErrorAndExit("Usage: [-t TIMEZONE]");
                         }
                     } else {
-                        LoUtils.printErrorAndExit("You put the time zone several times");
+                        IOUtils.printErrorAndExit("You put the time zone several times");
                     }
                 } else {
-                    LoUtils.printErrorAndExit(str + ": bad command");
+                    IOUtils.printErrorAndExit(str + ": bad command");
                 }
             }
         }
@@ -181,10 +195,16 @@ public class MyCalendar {
         if (maxLengthOfday < 2) {
             maxLengthOfday = 2;
         }
-        
-        int weekOfYear = getWeekOfYear(calendar);
+
         int dayOfMonth = calendar.getActualMinimum(Calendar.DAY_OF_MONTH);
-        int dayOfWeek = getDayOfWeek(calendar);
+        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+        if (dayOfWeek > 1) {
+            --dayOfWeek;
+        } else {
+            dayOfWeek = 7;
+        }
 
         if (weak.t) {
             if (weekOfYear <= 9) {
@@ -211,6 +231,9 @@ public class MyCalendar {
                 System.out.println();
                 ++weekOfYear;
                 if (weak.t) {
+                    if (weekOfYear > calendar.getActualMaximum(Calendar.WEEK_OF_YEAR)) {
+                        weekOfYear = 1;
+                    }
                     if (weekOfYear <= 9) {
                         printSpace(1);
                     }
@@ -225,34 +248,23 @@ public class MyCalendar {
         System.out.println();
 
         if (tz != null) { // печатаем дату и время в указанной временной зоне
+            String[] zones = TimeZone.getAvailableIDs();
+            boolean curZone = false;
+            for (int i = 0; i < zones.length; ++i) {
+                if (zones[i].equals(tz.getID())) {
+                    curZone = true;
+                    System.out.println(zones[i] + tz.getID());
+                    break;
+                }
+            }
+            if (!curZone) {
+                IOUtils.printErrorAndExit(tz.toString() + ": no such zone");
+            }
             System.out.println();
             DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             dateFormat.setTimeZone(tz);
             System.out.print("Now: " + dateFormat.format(new Date()) + " ");
             System.out.println(calendar.getTimeZone().getDisplayName());
-        }
-    }
-
-    public static int getWeekOfYear(Calendar calendar) {
-        // находит номер недели в году первой недели текущего месяца
-        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
-        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        return weekOfYear;
-    }
-
-    public static int getDayOfWeek(Calendar calendar) {
-        // находит номер дня в недели первого дня текущего месяца
-        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(
-                Calendar.DAY_OF_MONTH));
-        int DayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        if (DayOfWeek > 1) {
-            return DayOfWeek - 1;
-        } else {
-            return 7; // sunday
         }
     }
 }
