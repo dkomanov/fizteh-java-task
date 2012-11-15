@@ -186,7 +186,7 @@ public class ParallelSort {
                             break;
                         
                         default:
-                            System.err.println("Unknown parametr: \'" + args[i].charAt(j) + "\'");
+                        	Utils.printErrorAndExit("Unknown parametr: \'" + args[i].charAt(j) + "\'");
                             break;
                     }
                     if (toBreak) {
@@ -374,7 +374,7 @@ public class ParallelSort {
             
             out.write(list.get(0) + separator);
             for (int i = 1; i < list.size(); ++i) {
-                if (onlyUnique && realTreadsCount == 1) {
+                if (onlyUnique && realTreadsCount <= 1) {
                     if (notCaseSensitive) {
                         if (String.CASE_INSENSITIVE_ORDER.compare(list.get(i), list.get(i - 1)) != 0) {
                             out.write(list.get(i) + separator);
