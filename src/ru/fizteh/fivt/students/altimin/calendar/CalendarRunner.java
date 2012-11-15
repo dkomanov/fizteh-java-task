@@ -24,6 +24,21 @@ public class CalendarRunner {
         argumentsParser.addKey("m", true);
         argumentsParser.addKey("t", true);
         ArgumentsParser.ParseResult parseResult = argumentsParser.parse(args);
+        if (parseResult.hasProperty("t")) {
+            String[] availableTimeZones = TimeZone.getAvailableIDs();
+            String timeZone = parseResult.getProperty("t");
+            boolean correctTimeZone = false;
+            for (String tz: availableTimeZones) {
+                if (tz.equals(availableTimeZones)) {
+                    correctTimeZone = true;
+                    break;
+                }
+            }
+            if (!correctTimeZone) {
+                System.err.println("Incorrect time zone");
+                System.exit(1);
+            }
+        }
         CalendarPrinter calendarPrinter = new CalendarPrinter(
                 parseInt(parseResult.getProperty("y")),
                 parseInt(parseResult.getProperty("m")),

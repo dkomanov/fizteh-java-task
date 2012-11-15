@@ -20,20 +20,21 @@ public class CalendarPrinter {
     private TimeZone timeZone;
 
     private int convertMonthValue(int value) throws IllegalArgumentException {
-        if (value == 1) return Calendar.JANUARY;
-        if (value == 2) return Calendar.FEBRUARY;
-        if (value == 3) return Calendar.MARCH;
-        if (value == 4) return Calendar.APRIL;
-        if (value == 5) return Calendar.MAY;
-        if (value == 6) return Calendar.JUNE;
-        if (value == 7) return Calendar.JULY;
-        if (value == 8) return Calendar.AUGUST;
-        if (value == 9) return Calendar.SEPTEMBER;
-        if (value == 10) return Calendar.OCTOBER;
-        if (value == 11) return Calendar.NOVEMBER;
-        if (value == 12) return Calendar.DECEMBER;
-        throw new IllegalArgumentException(value + " is not valid month number");
-
+        switch (value) {
+            case 1:   return Calendar.JANUARY;
+            case 2:   return Calendar.FEBRUARY;
+            case 3:   return Calendar.MARCH;
+            case 4:   return Calendar.APRIL;
+            case 5:   return Calendar.MAY;
+            case 6:   return Calendar.JUNE;
+            case 7:   return Calendar.JULY;
+            case 8:   return Calendar.AUGUST;
+            case 9:   return Calendar.SEPTEMBER;
+            case 10:  return Calendar.OCTOBER;
+            case 11:  return Calendar.NOVEMBER;
+            case 12:  return Calendar.DECEMBER;
+            default: throw new IllegalArgumentException(value + " is not valid month number");
+        }
     }
 
     public CalendarPrinter(Integer year, Integer month, boolean printWeekNumber, TimeZone timeZone)
@@ -70,7 +71,7 @@ public class CalendarPrinter {
         if (printWeekNumber) {
             System.out.print("   ");
         }
-        Map<String, Integer> dn = calendar.getDisplayNames(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
+        Map<String, Integer> dn = calendar.getDisplayNames(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());
         Map<Integer, String> dayNames = new TreeMap<Integer, String>();
         for (String key: dn.keySet()) {
             dayNames.put(dn.get(key), key);
