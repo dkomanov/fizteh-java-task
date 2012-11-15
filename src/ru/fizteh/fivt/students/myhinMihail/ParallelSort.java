@@ -186,7 +186,7 @@ public class ParallelSort {
                             break;
                         
                         default:
-                        	Utils.printErrorAndExit("Unknown parametr: \'" + args[i].charAt(j) + "\'");
+                            Utils.printErrorAndExit("Unknown parametr: \'" + args[i].charAt(j) + "\'");
                             break;
                     }
                     if (toBreak) {
