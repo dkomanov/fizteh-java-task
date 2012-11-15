@@ -19,21 +19,15 @@ public class Shell {
         switch (action) {
         case "cd": {
             if (commands.length != 2) {
-                System.err.println("cd: invalid number of arguments");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
+                initError("cd: invalid number of arguments");
                 return;
             }
             File newPath = getAbsolute(commands[1]);
-            if (newPath.isDirectory()) {
+            if (newPath.exists() && newPath.isDirectory()) {
                 pwd = newPath;
             } else {
-                System.err.println("cd: \'" + commands[1]
+                initError("cd: \'" + commands[1]
                         + "\': No such file or directory");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
                 return;
             }
             return;
@@ -41,30 +35,21 @@ public class Shell {
 
         case "mkdir": {
             if (commands.length != 2) {
-                System.err.println("mkdir: invalid number of arguments");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
+                initError("mkdir: invalid number of arguments");
                 return;
             }
             File newPath = getAbsolute(commands[1]);
             if (!(newPath.exists() && newPath.isDirectory())
                     && !newPath.mkdir()) {
-                System.err.println("mkdir: cannot create directory \'"
-                        + commands[1] + "\': No such file or directory");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
+                initError("mkdir: cannot create directory \'" + commands[1]
+                        + "\': No such file or directory");
             }
             return;
         }
 
         case "pwd": {
             if (commands.length != 1) {
-                System.err.println("pwd: invalid number of arguments");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
+                initError("pwd: invalid number of arguments");
                 return;
             }
             System.out.println(pwd.getCanonicalPath());
@@ -73,10 +58,7 @@ public class Shell {
 
         case "rm": {
             if (commands.length != 2) {
-                System.err.println("rm: invalid number of arguments");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
+                initError("rm: invalid number of arguments");
                 return;
             }
             File pathToDelete = getAbsolute(commands[1]);
@@ -84,17 +66,11 @@ public class Shell {
                 try {
                     deletePath(pathToDelete);
                 } catch (Exception e) {
-                    System.err.println("rm:" + e.getMessage());
-                    if (!isInteractiveMode) {
-                        System.exit(1);
-                    }
+                    initError("rm:" + e.getMessage());
                 }
             } else {
-                System.err.println("rm: cannot remove \'" + commands[1]
+                initError("rm: cannot remove \'" + commands[1]
                         + "\': No such file or directory");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
                 return;
             }
             return;
@@ -102,29 +78,20 @@ public class Shell {
 
         case "cp": {
             if (commands.length != 3) {
-                System.err.println("cp: invalid number of arguments");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
+                initError("cp: invalid number of arguments");
                 return;
             }
             File src = getAbsolute(commands[1]);
             File dst = getAbsolute(commands[2]);
             if (!src.exists()) {
-                System.err.println("cp: cannot stat \'" + commands[1]
+                initError("cp: cannot stat \'" + commands[1]
                         + "\': No such file or directory");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
                 return;
             }
             try {
                 copyPath(src, dst);
             } catch (Exception e) {
-                System.err.println("cp:" + e.getMessage());
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
+                initError("cp:" + e.getMessage());
                 return;
             }
             return;
@@ -132,29 +99,20 @@ public class Shell {
 
         case "mv": {
             if (commands.length != 3) {
-                System.err.println("mv: invalid number of arguments");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
+                initError("mv: invalid number of arguments");
                 return;
             }
             File src = getAbsolute(commands[1]);
             File dst = getAbsolute(commands[2]);
             if (!src.exists()) {
-                System.err.println("mv: cannot stat \'" + commands[1]
+                initError("mv: cannot stat \'" + commands[1]
                         + "\': No such file or directory");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
             }
             try {
                 copyPath(src, dst);
                 deletePath(src);
             } catch (Exception e) {
-                System.err.println("mv: " + e.getMessage());
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
+                initError("mv: " + e.getMessage());
                 return;
             }
             return;
@@ -162,10 +120,7 @@ public class Shell {
 
         case "dir": {
             if (commands.length != 1) {
-                System.err.println("dir: invalid number of arguments");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
+                initError("dir: invalid number of arguments");
                 return;
             }
             for (String element : pwd.list()) {
@@ -179,10 +134,7 @@ public class Shell {
         }
 
         default:
-            System.err.println("error: invalid command '" + action + "'");
-            if (!isInteractiveMode) {
-                System.exit(1);
-            }
+            initError("error: invalid command '" + action + "'");
             return;
         }
     }
@@ -207,9 +159,9 @@ public class Shell {
     static void runInteractiveMode() throws Exception {
         BufferedReader reader = null;
         try {
+            reader = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
                 System.out.print("$ ");
-                reader = new BufferedReader(new InputStreamReader(System.in));
                 String commands = reader.readLine();
                 String[] command = commands.split("[\\s]*[;][\\s]*");
                 for (String element : command) {
@@ -240,6 +192,13 @@ public class Shell {
         return f;
     }
 
+    public static void initError(String message) {
+        System.err.println(message);
+        if (!isInteractiveMode) {
+            System.exit(1);
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         if (args.length == 0) {
             isInteractiveMode = true;
@@ -257,7 +216,7 @@ public class Shell {
                 in = new FileInputStream(src);
                 out = new FileOutputStream(dst);
                 int nLength;
-                byte[] buf = new byte[8000];
+                byte[] buf = new byte[8192];
                 while (true) {
                     nLength = in.read(buf);
                     if (nLength < 0) {
@@ -266,10 +225,7 @@ public class Shell {
                     out.write(buf, 0, nLength);
                 }
             } catch (Exception e) {
-                System.err.println(e.getMessage());
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
+                initError(e.getMessage());
                 return;
             } finally {
                 closer(in);
@@ -277,11 +233,8 @@ public class Shell {
             }
         } else {
             if (!dst.mkdir()) {
-                System.err.println("cannot create directory \'" + dst
+                initError("cannot create directory \'" + dst
                         + "\': No such file or directory");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
                 return;
             }
 
@@ -296,11 +249,8 @@ public class Shell {
     static void deletePath(File newFile) throws Exception {
         if (newFile.isFile()) {
             if (!newFile.delete()) {
-                System.err.println("cannot remove \'" + newFile
+                initError("cannot remove \'" + newFile
                         + "\': No such file or directory");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
                 return;
             }
         } else {
@@ -309,11 +259,8 @@ public class Shell {
                         + File.separator + s));
             }
             if (!newFile.delete()) {
-                System.err.println("cannot remove \'" + newFile
+                initError("cannot remove \'" + newFile
                         + "\': No such file or directory");
-                if (!isInteractiveMode) {
-                    System.exit(1);
-                }
                 return;
             }
         }
