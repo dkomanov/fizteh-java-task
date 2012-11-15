@@ -135,6 +135,7 @@ public class StringFormatter
         return arg;
     }
 
+    /* Get a field from an object or one of its parents */
     private Object getField(Object arg, String name)
         throws FormatterException {
 
