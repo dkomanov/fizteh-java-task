@@ -102,6 +102,15 @@ public class StringFormatterTester{
     }
 
     @Test
+    public void nullParentField() {
+        String testString = formatter.format("{0.x} {0.y}", new ChildForTest());
+        Assert.assertEquals(testString, " ");
+
+        testString = formatter.format("{1.x}", new ChildForTest(), new ChildForTest());
+        Assert.assertEquals(testString, "");
+    }
+
+    @Test
     public void goodTests() {
         String testString;
 
