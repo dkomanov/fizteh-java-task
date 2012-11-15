@@ -10,6 +10,8 @@ import ru.fizteh.fivt.format.FormatterException;
  * Fedyunin Valeriy
  * MIPT FIVT 195
  */
+
+
 public class StringFormatterTester{
 
     private static StringFormatter formatter;
@@ -56,6 +58,35 @@ public class StringFormatterTester{
     }
 
     @Test
+    public void tryingToParentPrivateField() {
+        String testString = formatter.format("{0.deep}", new ChildForTest(), 3.1415926f);
+        Assert.assertEquals(testString, "100");
+    }
+
+    @Test
+    public void tryingToParentProtectedField() {
+        String testString = formatter.format("{0.dispersion}", new ChildForTest(), 3.1415926f);
+        Assert.assertEquals(testString, "0.12");
+    }
+
+    @Test
+    public void tryingToPrivateField() {
+        String testString = formatter.format("{0.deep}", new ClassForTest(), 3.1415926f);
+        Assert.assertEquals(testString, "100");
+    }
+
+    @Test
+    public void tryingToProtectedField() {
+        String testString = formatter.format("{0.dispersion}", new ClassForTest(), 3.1415926f);
+        Assert.assertEquals(testString, "0.12");
+    }
+
+    @Test(expected = FormatterException.class)
+    public void tryingToNonExistingField() {
+        formatter.format("{0.nonExistingField}", new ClassForTest(), 3.1415926f);
+    }
+
+    @Test
     public void goodTests() {
         String testString;
 
@@ -93,6 +124,12 @@ public class StringFormatterTester{
 
         testString = formatter.format("Hello {{1}} {0} world!", test);
         Assert.assertEquals("Hello {1}  world!", testString);
+
+        testString = formatter.format("{0.height:.6f} {0.width} {0.params:s}", new ChildForTest());
+        Assert.assertEquals(testString, "100.000000 1000 [12, 13, 14, 15]");
+
+        testString = formatter.format("{0.height:.6f} {0.params:s}", new ClassForTest());
+        Assert.assertEquals(testString, "100.000000 [12, 13, 14, 15]");
     }
 }
 

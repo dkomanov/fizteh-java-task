@@ -3,6 +3,7 @@ package ru.fizteh.fivt.students.fedyuninV.format;
 import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 /**
@@ -76,7 +77,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
             int argNum = Integer.parseInt(fields[0]);
             finalArg = args[argNum];
             for (int i = 1; i < fields.length; i++) {
-                finalArg = finalArg.getClass().getField(fields[i]).get(finalArg);
+                finalArg = getFieldFromName(finalArg, fields[i]);
             }
         } catch (Exception ex) {
             throw new FormatterException("Incorrect term in brackets");
@@ -104,6 +105,30 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
         }
         if (extNotFound) {
             throw new FormatterException("There is no relative extension");
+        }
+    }
+
+    private Object getFieldFromName (Object arg, String fieldName) throws FormatterException {
+        try {
+            return arg.getClass().getField(fieldName).get(arg);
+        } catch (NoSuchFieldException noPublicField) {
+            try {
+                Class parent = arg.getClass();
+                while (parent != null) {
+                    try {
+                        Field field = parent.getDeclaredField(fieldName);
+                        field.setAccessible(true);
+                        return field.get(arg);
+                    } catch (NoSuchFieldException againNoField) {
+                        parent = parent.getSuperclass();
+                    }
+                }
+                throw new FormatterException("Field " + fieldName + " doesn't exists");
+            } catch (Exception ex) {
+                throw new FormatterException("Cannot get field" + fieldName);
+            }
+        } catch (Exception ex) {
+            throw new FormatterException("Cannot get field" + fieldName);
         }
     }
 }
