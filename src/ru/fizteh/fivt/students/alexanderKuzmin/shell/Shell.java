@@ -291,11 +291,11 @@ public class Shell {
         File newFile = new File(currentPath + File.separator + path)
                 .getAbsoluteFile();
         File newShortFile = new File(path).getAbsoluteFile();
-        if (newFile.exists() && newFile.isDirectory()) {
-            currentPath = newFile.getAbsolutePath();
-        } else if (newShortFile.exists() && newShortFile.isDirectory()
+        if (newShortFile.exists() && newShortFile.isDirectory()
                 && !(path.equals(".") || path.equals(".."))) {
             currentPath = newShortFile.getAbsolutePath();
+        } else if (newFile.exists() && newFile.isDirectory()) {
+            currentPath = newFile.getAbsolutePath();
         } else {
             throw new Exception("cd: \'" + path
                     + "\': No such file or directory");
