@@ -111,6 +111,36 @@ public class StringFormatterTester{
     }
 
     @Test
+    public void wrongNumber() {
+        thrown.expect(FormatterException.class);
+        thrown.expectMessage("Incorrect number in brackets");
+        formatter.format("{0{1}}", new ClassForTest(), 3.1415926f);
+    }
+
+
+    @Test
+    public void minusZero() {
+        thrown.expect(FormatterException.class);
+        thrown.expectMessage("Incorrect number in brackets");
+        formatter.format("{-0}", new ClassForTest(), 3.1415926f);
+    }
+
+    @Test
+    public void minusOne() {
+        thrown.expect(FormatterException.class);
+        thrown.expectMessage("Incorrect number in brackets");
+        formatter.format("{-1}", new ClassForTest(), 3.1415926f);
+    }
+
+    @Test
+    public void voidFloatPattern() {
+        thrown.expect(FormatterException.class);
+        thrown.expectMessage("Incorrect patter");
+        formatter.format("{1:}", new ClassForTest(), 3.1415926f);
+    }
+
+
+    @Test
     public void goodTests() {
         String testString;
 

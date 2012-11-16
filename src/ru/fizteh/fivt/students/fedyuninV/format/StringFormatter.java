@@ -75,6 +75,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
         String[] fields = format.substring(0, patternBegin).split("[.]");
         try {
             int argNum = Integer.parseInt(fields[0]);
+            if ((fields[0].length() > 0  &&  fields[0].charAt(0) == '-') || argNum < 0) {
+                throw new NumberFormatException();
+            }
             finalArg = args[argNum];
             for (int i = 1; i < fields.length; i++) {
                 finalArg = getFieldFromName(finalArg, fields[i]);
@@ -83,6 +86,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
             throw ex;
         } catch (ArrayIndexOutOfBoundsException outOfArray) {
             throw new FormatterException("Index out of array");
+        } catch (NumberFormatException wrongNumb) {
+            throw new FormatterException("Incorrect number in brackets");
         }
         if (finalArg == null) {
             buffer.append("");
