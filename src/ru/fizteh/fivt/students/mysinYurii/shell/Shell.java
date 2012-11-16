@@ -26,16 +26,20 @@ public class Shell {
                 }
             }
         } else {
-            StringBuilder newComand = new StringBuilder();
+            StringBuilder newCommand = new StringBuilder();
             for (int i = 0; i < args.length; ++i) {
-                newComand.append(args[i]);
-                newComand.append(" ");
+                newCommand.append(args[i]);
+                newCommand.append(" ");
             }
-            try {
-                runner.parseAndExec(newComand.toString());
-            } catch (ShellException e) {
-                System.out.println(e.getMessage());
-                System.exit(1);
+            String[] commandArray = newCommand.toString().split(";");
+            for (int i = 0; i < commandArray.length; ++i) {
+                commandArray[i].trim();
+                try {
+                    runner.parseAndExec(commandArray[i]);
+                } catch (ShellException e) {
+                    System.out.println(e.getMessage());
+                    System.exit(1);
+                }
             }
         }
     }
