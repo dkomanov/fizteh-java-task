@@ -14,10 +14,15 @@ public class MovableFile {
         try {
             File t = new File(target);
             if (t.isAbsolute()) {
-                file = t.getCanonicalFile();
+                t = t.getCanonicalFile();
             } else {
-                file = new File(file.getAbsolutePath() + File.separator + target).getCanonicalFile();
+                t = new File(file.getAbsolutePath() + File.separator + target).getCanonicalFile();
             }
+            if (!t.exists()) {
+                System.err.println("Could not find " + t.getPath() + ".");
+                return false;
+            }
+            file = t;
         } catch (IOException e) {
             System.err.println("Severe IO error.");
             return false;
