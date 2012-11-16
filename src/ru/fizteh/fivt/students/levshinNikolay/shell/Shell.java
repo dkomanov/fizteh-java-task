@@ -24,7 +24,7 @@ public class Shell {
     public static void cd(String path) {
         File newFile = new File(path);
         if (!newFile.exists()) {
-            error("cd: '" + newFile.getName() + ": No such file or directory.");
+            error("cd: '" + newFile.getName() + "': No such file or directory.");
         }
         currPath = path;
     }
@@ -32,7 +32,7 @@ public class Shell {
     public static void mkdir(String name) {
         File newDir = new File(name);
         if (!newDir.mkdir()) {
-            error("mkdir: '" + newDir.getName() + ": Failed to create new directory.");
+            error("mkdir: '" + newDir.getName() + "': Failed to create new directory.");
         }
     }
 
@@ -81,13 +81,12 @@ public class Shell {
                 in = new FileInputStream(source);
                 out = new FileOutputStream(destination);
                 byte[] buf = new byte[1024];
-                int length = 0;
-                while (length >= 0) {
-                    length = in.read(buf);
+                int length;
+                while ((length = in.read(buf)) > 0) {
                     out.write(buf, 0, length);
                 }
             } catch (Exception ex) {
-                error("cp: " + ex.getMessage());
+                error(mode + ": " + ex.getMessage());
             } finally {
                 Utils.tryClose(in);
                 Utils.tryClose(out);
@@ -149,7 +148,7 @@ public class Shell {
                     error("cp: Incorrect arguments.");
                 }
                 args[1] = createAbsolute(args[1]);
-                args[2] = createAbsolute(args[1]);
+                args[2] = createAbsolute(args[2]);
                 cp(new File(args[1]), new File(args[2]), args[0]);
                 break;
 
