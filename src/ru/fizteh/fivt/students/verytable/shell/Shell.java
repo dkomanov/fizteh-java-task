@@ -304,7 +304,7 @@ public class Shell {
         File curDir = new File(curPath);
         File[] fileList = curDir.listFiles();
         for (int i = 0; i < fileList.length; i++) {
-            System.out.println(fileList[i]);
+            System.out.println(fileList[i].getName());
         }
     }
 
