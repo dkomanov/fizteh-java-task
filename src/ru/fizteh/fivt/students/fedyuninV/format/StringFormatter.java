@@ -125,9 +125,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
                         parent = parent.getSuperclass();
                     }
                 }
-                throw new FormatterException("Field " + fieldName + " doesn't exists");
-            } catch (FormatterException ex) {
-                throw ex;
+                throw new NoSuchFieldException();
+            } catch (NoSuchFieldException noField) {
+                return null;
             } catch (Exception ex) {
                 throw new FormatterException("Cannot get field " + fieldName);
             }

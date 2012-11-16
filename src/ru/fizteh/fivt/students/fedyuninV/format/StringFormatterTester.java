@@ -96,9 +96,8 @@ public class StringFormatterTester{
 
     @Test
     public void tryingToNonExistingField() {
-        thrown.expect(FormatterException.class);
-        thrown.expectMessage("Field nonExistingField doesn't exists");
-        formatter.format("{0.nonExistingField}", new ClassForTest(), 3.1415926f);
+        String testString = formatter.format("{0.nonExistingField}", new ClassForTest(), 3.1415926f);
+        Assert.assertEquals(testString, "");
     }
 
     @Test
