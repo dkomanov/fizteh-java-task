@@ -4,14 +4,6 @@ import java.io.*;
 import java.util.StringTokenizer;
 import ru.fizteh.fivt.students.verytable.IOUtils;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Arseny
- * Date: 20.10.12
- * Time: 1:10
- * To change this template use File | Settings | File Templates.
- */
-
 public class Shell {
 
     static String curPath;
@@ -50,69 +42,61 @@ public class Shell {
 
     }
 
-    static boolean execCd(String destinedPath) {
-        File parentFile = new File(curPath).getParentFile();
-        File absoluteDestinedFile = new File(destinedPath).getAbsoluteFile();
-        File destinedFile = new File(curPath + File.separatorChar
-                                     + destinedPath);
+    static void reportError(String errorMessage) {
+        System.err.println(errorMessage);
+        if (isPackageMode) {
+            System.exit(1);
+        }
+    }
 
-        if (destinedPath.equals("..")) {
-            if (parentFile == null) {
-                System.err.println("Unable to cd ..");
-                if (isPackageMode) {
-                    System.exit(1);
-                }
-                return false;
-            }
-            String parentPath = parentFile.toString();
-            if (parentFile.exists()) {
-                curPath = parentPath;
-            } else {
-                System.err.println("No such directory.");
-                if (isPackageMode) {
-                    System.exit(1);
-                }
-                return false;
-            }
-        } else if (!destinedPath.equals(".")) {
-            if (absoluteDestinedFile.exists()) {
-                curPath = absoluteDestinedFile.toString();
-            } else if (destinedFile.exists()) {
-                curPath = destinedFile.toString();
-            } else {
-                System.err.println("Cd: " + destinedPath
-                                   + " - no such directory");
-                if (isPackageMode) {
-                    System.exit(1);
-                }
-                return false;
-            }
+    static boolean execCd(String destinedPath) {
+        File destinedFile = new File(destinedPath);
+        if (!destinedFile.isAbsolute()) {
+            destinedFile = new File(curPath + File.separatorChar
+                                    + destinedPath);
+        }
+
+        if (!destinedFile.isDirectory()) {
+            reportError("Cd: No such directory " + destinedFile);
+            return false;
+        }
+
+        if(!destinedFile.exists()) {
+            reportError("Cd: " + destinedPath + " - doesn't exist.");
+            return false;
+        }
+
+        try {
+            curPath = destinedFile.getCanonicalPath();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
         }
         return true;
     }
 
     static boolean execMkdir(String dirName) {
-        File desiredFile = new File(curPath + File.separatorChar
-                                    + dirName);
+        File desiredFile = null;
+        try {
+            desiredFile = new File(curPath + File.separatorChar
+                                   + dirName).getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
+        }
 
         if (desiredFile.exists()) {
-            System.err.println("mkdir: " + dirName
-                               + " already exists.");
-            if (isPackageMode) {
-                System.exit(1);
-            }
+             reportError("mkdir: " + dirName
+                         + " already exists.");
             return false;
         } else try {
             if (!desiredFile.mkdir()) {
-                System.err.println("mkdir: " + dirName
-                                   + " can't create directory.");
-                if (isPackageMode) {
-                    System.exit(1);
-                }
+                reportError("mkdir: " + dirName
+                            + " can't create directory.");
                 return false;
             }
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            System.err.println(ex.getMessage());
             System.exit(1);
         }
         return true;
@@ -124,15 +108,19 @@ public class Shell {
 
     static boolean execRm(String fileName) {
         if (fileName.equals("..") || fileName.equals(".")) {
-            if (isPackageMode) {
-                System.exit(1);
-            }
+            reportError("Unable to remove " + fileName);
             return false;
         }
         File fileToDelete = new File(fileName);
         if (!fileToDelete.isAbsolute()) {
             fileToDelete = new File(curPath + File.separatorChar
                                     + fileName);
+        }
+        try {
+            fileToDelete = fileToDelete.getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
         }
         if (fileToDelete.isDirectory()) {
             File[] files = fileToDelete.listFiles();
@@ -142,25 +130,16 @@ public class Shell {
                         return false;
                     }
                 } else if (!files[i].delete()) {
-                    System.err.println("Can't delete1 " + fileName);
-                    if (isPackageMode) {
-                        System.exit(1);
-                    }
+                    reportError("Unable to remove " + fileName);
                     return false;
                 }
             }
             if (!fileToDelete.delete()) {
-                System.err.println("Can't delete2 " + fileName);
-                if (isPackageMode) {
-                    System.exit(1);
-                }
+                reportError("Unable to remove " + fileName);
                 return false;
             }
         } else if (!fileToDelete.delete()) {
-            System.err.println("Can't delete3 " + fileName);
-            if (isPackageMode) {
-                System.exit(1);
-            }
+            reportError("Unable to remove " + fileName);
             return false;
         }
         return true;
@@ -169,7 +148,6 @@ public class Shell {
     static boolean execCp(String source, String destination) {
         File from = new File(source);
         File to = new File(destination);
-
         if (!from.isAbsolute()) {
             from = new File(curPath + File.separatorChar + source);
         }
@@ -177,39 +155,40 @@ public class Shell {
             to = new File(curPath + File.separatorChar + destination);
         }
         if (!from.exists()) {
-            System.err.println("cp: " + from + " doesn't exist");
-            if (isPackageMode) {
-                System.exit(1);
-            }
+            reportError("cp: " + from + " doesn't exist");
             return false;
         }
         if (!to.exists()) {
-            System.err.println("cp: " + to + " doesn't exist.");
-            if (isPackageMode) {
-                System.exit(1);
-            }
+            reportError("cp: " + to + " doesn't exist.");
             return false;
         }
+        try {
+            from = from.getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
+        }
+        try {
+            to = to.getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
+        }
 
-        FileInputStream fis = null;
-        FileOutputStream fos = null;
         String fromStr = from.toString();
         String toStr = to.toString();
         int fromLen = fromStr.length();
         int toLen = toStr.length();
-        String relativeSourceFile = fromStr.substring(fromStr.lastIndexOf(File.separatorChar) + 1);
 
         if (fromStr.equals(toStr.substring(0, Math.min(fromLen, toLen)))) {
-            System.err.println("cp: unable to copy from " + from
-                               + " to it's subdirectory " + to);
-            if (isPackageMode) {
-                System.exit(1);
-            }
+            reportError("cp: unable to copy from " + from
+                        + " to it's subdirectory " + to);
             return false;
         }
+
+        String relativeSourceFile = fromStr.substring(fromStr.lastIndexOf(File.separatorChar) + 1);
         if (from.isDirectory()) {
-            File directoryCopy = new File(to.toString()
-                                          + File.separatorChar
+            File directoryCopy = new File(toStr + File.separatorChar
                                           + relativeSourceFile);
             if (!directoryCopy.exists()) {
                 if (!directoryCopy.mkdir()) {
@@ -224,8 +203,7 @@ public class Shell {
                 }
             }
         } else {
-            File fileToCopy = new File(to.toString()
-                                       + File.separatorChar
+            File fileToCopy = new File(toStr + File.separatorChar
                                        + relativeSourceFile);
             try {
                 fileToCopy.createNewFile();
@@ -233,9 +211,10 @@ public class Shell {
                 System.err.println(ex.getMessage());
                 System.exit(1);
             }
+            FileInputStream fis = null;
+            FileOutputStream fos = null;
             try {
-                File fromFile = new File(to.toString()
-                                         + File.separatorChar
+                File fromFile = new File(toStr + File.separatorChar
                                          + relativeSourceFile);
                 fis = new FileInputStream(fromFile);
                 fos = new FileOutputStream(fileToCopy);
@@ -248,8 +227,8 @@ public class Shell {
                 System.err.println(ex.getMessage());
                 System.exit(1);
             } finally {
-                IOUtils.closeFile(from.toString(), fis);
-                IOUtils.closeFile(to.toString(), fos);
+                IOUtils.closeFile(fromStr, fis);
+                IOUtils.closeFile(toStr, fos);
             }
         }
         return true;
@@ -266,18 +245,24 @@ public class Shell {
             to = new File(curPath + File.separatorChar + destination);
         }
         if (!from.exists()) {
-            System.err.println("cp: " + from + " doesn't exist");
-            if (isPackageMode) {
-                System.exit(1);
-            }
+            reportError("cp: " + from + " doesn't exist");
             return false;
         }
         if (!to.exists()) {
-            System.err.println("cp: " + to + " doesn't exist.");
-            if (isPackageMode) {
-                System.exit(1);
-            }
+            reportError("cp: " + to + " doesn't exist.");
             return false;
+        }
+        try {
+            from = from.getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
+        }
+        try {
+            to = to.getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
         }
 
         if (from.equals(to)) {
@@ -320,41 +305,29 @@ public class Shell {
                 if (tokenizer.countTokens() == 1) {
                     execCd(tokenizer.nextToken());
                 } else {
-                    System.err.println("Cd usage: "
-                                       + "cd <absolute path | relative path>");
-                    if (isPackageMode) {
-                        System.exit(1);
-                    }
+                    reportError("Cd usage: "
+                                + "cd <absolute path | relative path>");
                 }
                 break;
             case MKDIR:
                 if (tokenizer.countTokens() == 1) {
                     execMkdir(tokenizer.nextToken());
                 } else {
-                    System.err.println("Mkdir usage: mkdir <dirname>");
-                    if (isPackageMode) {
-                        System.exit(1);
-                    }
+                    reportError("Mkdir usage: mkdir <dirname>");
                 }
                 break;
             case PWD:
                 if (!tokenizer.hasMoreTokens()) {
                     execPwd();
                 } else {
-                    System.err.println("Pwd usage: pwd");
-                    if (isPackageMode) {
-                        System.exit(1);
-                    }
+                    reportError("Pwd usage: pwd");
                 }
                 break;
             case RM:
                 if (tokenizer.countTokens() == 1) {
                     execRm(tokenizer.nextToken());
                 } else {
-                    System.err.println("Rm usage: rm <file | dir>");
-                    if (isPackageMode) {
-                        System.exit(1);
-                    }
+                    reportError("Rm usage: rm <file | dir>");
                 }
                 break;
             case CP:
@@ -363,10 +336,7 @@ public class Shell {
                     String destination = tokenizer.nextToken();
                     execCp(source, destination);
                 } else {
-                    System.err.println("Cp usage: <source> <destination>");
-                    if (isPackageMode) {
-                        System.exit(1);
-                    }
+                    reportError("Cp usage: <source> <destination>");
                 }
                 break;
             case MV:
@@ -375,38 +345,26 @@ public class Shell {
                     String destination = tokenizer.nextToken();
                     execMv(source, destination);
                 } else {
-                    System.err.println("Mv usage: mv <source> <destination>");
-                    if (isPackageMode) {
-                        System.exit(1);
-                    }
+                    reportError("Mv usage: mv <source> <destination>");
                 }
                 break;
             case DIR:
                 if (!tokenizer.hasMoreTokens()) {
                     execDir();
                 } else {
-                    System.err.println("Dir usage: dir");
-                    if (isPackageMode) {
-                        System.exit(1);
-                    }
+                    reportError("Dir usage: dir");
                 }
                 break;
             case EXIT:
                 if (!tokenizer.hasMoreTokens()) {
                     execExit();
                 } else {
-                    System.err.println("Exit usage: exit");
-                    if (isPackageMode) {
-                        System.exit(1);
-                    }
+                    reportError("Exit usage: exit");
                 }
                 break;
             case NOC:
-                System.err.println("Unknown command. Possible commands: "
-                                   + "cd, mkdir, pwd, rm, cp, mv, dir, exit.");
-                if (isPackageMode) {
-                    System.exit(1);
-                }
+                reportError("Unknown command. Possible commands: "
+                            + "cd, mkdir, pwd, rm, cp, mv, dir, exit.");
         }
     }
 
@@ -414,18 +372,13 @@ public class Shell {
     public static void main(String args[]) {
 
         curPath = new File("").getAbsolutePath();
-        InputStreamReader isr;
-        BufferedReader br;
-        String curArgLine = null;
-        String curToken;
-        StringTokenizer tokenizer;
-        StringBuilder sb = null;
 
         try {
             if (args.length == 0) {
                 isPackageMode = false;
-                isr = new InputStreamReader(System.in);
-                br = new BufferedReader(isr);
+                InputStreamReader isr = new InputStreamReader(System.in);
+                BufferedReader br = new BufferedReader(isr);
+                String curArgLine = null;
                 while (true) {
                     System.out.print("$ ");
                     try {
@@ -434,11 +387,8 @@ public class Shell {
                         System.err.println(ex.getMessage());
                         System.exit(1);
                     }
-                    if (curArgLine == null) {
-                        System.err.println("Empty input");
-                        System.exit(1);
-                    }
-                    tokenizer = new StringTokenizer(curArgLine, ";");
+                    StringTokenizer tokenizer = new StringTokenizer(curArgLine, ";");
+                    String curToken;
                     while (tokenizer.hasMoreTokens()) {
                         curToken = tokenizer.nextToken();
                         exec(curToken);
@@ -446,11 +396,13 @@ public class Shell {
                 }
             } else {
                 isPackageMode = true;
+                StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < args.length; ++i) {
                     sb.append(args[i]);
                     sb.append(" ");
                 }
-                tokenizer = new StringTokenizer(curArgLine, ";");
+                StringTokenizer tokenizer = new StringTokenizer(sb.toString(), ";");
+                String curToken;
                 while (tokenizer.hasMoreTokens()) {
                     curToken = tokenizer.nextToken();
                     exec(curToken);
