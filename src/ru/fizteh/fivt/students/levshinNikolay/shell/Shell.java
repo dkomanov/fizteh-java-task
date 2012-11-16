@@ -39,7 +39,7 @@ public class Shell {
     public static String createAbsolute(String path) {
         File curFile = new File(path);
         if (!curFile.isAbsolute()) {
-            path = currPath + '/' + path;
+            path = currPath + File.separator + path;
         }
         return path;
     }
