@@ -58,6 +58,10 @@ public class CalendarPrinter {
         return value != null ? String.format("%1$" + offset + "d", value) : "  ";
     }
 
+    private String format(String value) {
+        return value != null ? String.format("%1$" + offset + "s", value) : "  ";
+    }
+
     private void printMonthName() {
         if (printWeekNumber) {
             System.out.print("   ");
@@ -78,8 +82,8 @@ public class CalendarPrinter {
         }
         for (int i = minimalWeekDayNumber; i <= maximalWeekDayNumber; i ++) {
             String curDayName = dayNames.get(i);
-            curDayName = curDayName.substring(0, offset);
-            System.out.print(((i == minimalWeekDayNumber) ? "" : " ") + curDayName);
+            curDayName = curDayName.length() <= offset ? curDayName : curDayName.substring(0, offset);
+            System.out.print(((i == minimalWeekDayNumber) ? "" : " ") + format(curDayName));
         }
         System.out.println();
     }
