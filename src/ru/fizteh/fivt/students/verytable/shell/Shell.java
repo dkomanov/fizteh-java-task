@@ -158,10 +158,6 @@ public class Shell {
             reportError("cp: " + from + " doesn't exist");
             return false;
         }
-        if (!to.exists()) {
-            reportError("cp: " + to + " doesn't exist.");
-            return false;
-        }
         try {
             from = from.getCanonicalFile();
         } catch (Exception ex) {
@@ -194,7 +190,7 @@ public class Shell {
                             + "to file - " + toStr);
                 return false;
             } else if (!directoryCopy.exists()) {
-                if (!directoryCopy.mkdir()) {
+                if (!directoryCopy.mkdirs()) {
                     reportError("Cp: unable to create " + directoryCopy);
                     return false;
                 }
@@ -210,7 +206,7 @@ public class Shell {
             File fileWhereToCopy = new File(toStr);
             if (to.isDirectory()) {
                 fileWhereToCopy = new File(toStr + File.separatorChar
-                                      + relativeSourceFile);
+                                           + relativeSourceFile);
             }
             try {
                 if (!fileWhereToCopy.exists()) {
@@ -253,10 +249,6 @@ public class Shell {
         }
         if (!from.exists()) {
             reportError("cp: " + from + " doesn't exist");
-            return false;
-        }
-        if (!to.exists()) {
-            reportError("cp: " + to + " doesn't exist.");
             return false;
         }
         try {
