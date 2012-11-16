@@ -1,4 +1,4 @@
-﻿package ru.fizteh.fivt.students.frolovNikolay.shell;
+package ru.fizteh.fivt.students.frolovNikolay.shell;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
