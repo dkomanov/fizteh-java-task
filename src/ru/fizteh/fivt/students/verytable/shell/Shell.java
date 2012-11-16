@@ -185,13 +185,17 @@ public class Shell {
                         + " to it's subdirectory " + to);
             return false;
         }
-
         String relativeSourceFile = fromStr.substring(fromStr.lastIndexOf(File.separatorChar) + 1);
         if (from.isDirectory()) {
             File directoryCopy = new File(toStr + File.separatorChar
                                           + relativeSourceFile);
-            if (!directoryCopy.exists()) {
+            if (directoryCopy.exists() && !directoryCopy.isDirectory()) {
+                reportError("Cp: Unable to copy non file - " + fromStr
+                            + "to file - " + toStr);
+                return false;
+            } else if (!directoryCopy.exists()) {
                 if (!directoryCopy.mkdir()) {
+                    reportError("Cp: unable to create " + directoryCopy);
                     return false;
                 }
             }
@@ -203,10 +207,15 @@ public class Shell {
                 }
             }
         } else {
-            File fileToCopy = new File(toStr + File.separatorChar
-                                       + relativeSourceFile);
+            File fileWhereToCopy = new File(toStr);
+            if (to.isDirectory()) {
+                fileWhereToCopy = new File(toStr + File.separatorChar
+                                      + relativeSourceFile);
+            }
             try {
-                fileToCopy.createNewFile();
+                if (!fileWhereToCopy.exists()) {
+                    fileWhereToCopy.createNewFile();
+                }
             } catch (Exception ex) {
                 System.err.println(ex.getMessage());
                 System.exit(1);
@@ -214,10 +223,8 @@ public class Shell {
             FileInputStream fis = null;
             FileOutputStream fos = null;
             try {
-                File fromFile = new File(toStr + File.separatorChar
-                                         + relativeSourceFile);
-                fis = new FileInputStream(fromFile);
-                fos = new FileOutputStream(fileToCopy);
+                fis = new FileInputStream(from);
+                fos = new FileOutputStream(fileWhereToCopy);
                 byte[] buffer = new byte[1024];
                 int dataSize;
                 while ((dataSize = fis.read(buffer)) >= 0) {
@@ -275,9 +282,12 @@ public class Shell {
             from.renameTo(renamedFile);
         } else {
             if (!execCp(source, destination)) {
+                reportError("Mv: unable to execute cp "
+                            + source + " " + destination);
                 return false;
             }
             if (!execRm(from.toString())) {
+                reportError("Mv: unable to execute rm " + from.toString());
                 return false;
             }
         }
