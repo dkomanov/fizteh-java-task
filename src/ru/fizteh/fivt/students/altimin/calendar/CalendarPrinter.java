@@ -85,18 +85,20 @@ public class CalendarPrinter {
     }
 
     private void printTable() {
-        int weeksInCurrentMonth = calendar.getActualMaximum(Calendar.WEEK_OF_MONTH);
+        int weeksInCurrentMonth = calendar.getActualMaximum(Calendar.WEEK_OF_MONTH)
+                - calendar.get(Calendar.WEEK_OF_MONTH) + 1;
         Integer[][] buffer = new Integer[weeksInCurrentMonth][DAYS_IN_WEEK];
         int firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - minimalWeekDayNumber;
         int minDayNumber = calendar.getActualMinimum(Calendar.DATE);
         int maxDayNumber = calendar.getActualMaximum(Calendar.DATE);
         for (int date = minDayNumber; date <= maxDayNumber; date ++) {
             int position = firstDayOfWeek + date - minDayNumber;
-            buffer[date / DAYS_IN_WEEK][date % DAYS_IN_WEEK] = date;
+            buffer[position / DAYS_IN_WEEK][position % DAYS_IN_WEEK] = date;
         }
         for (int i = 0; i < weeksInCurrentMonth; i ++) {
             if (printWeekNumber) {
-                System.out.print(format(calendar.get(Calendar.WEEK_OF_YEAR) + i) + " ");
+                System.out.print(format(calendar.get(Calendar.WEEK_OF_YEAR)
+                        - calendar.getActualMinimum(Calendar.WEEK_OF_YEAR) + 1 + i) + " ");
             }
             for (int j = 0; j < DAYS_IN_WEEK; j ++) {
                 System.out.print(((j == 0) ? "" : " ") + format(buffer[i][j]));
