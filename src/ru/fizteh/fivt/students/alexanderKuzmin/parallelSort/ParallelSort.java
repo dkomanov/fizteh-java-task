@@ -1,10 +1,7 @@
 package ru.fizteh.fivt.students.alexanderKuzmin.parallelSort;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import ru.fizteh.fivt.students.alexanderKuzmin.Closers;
@@ -18,16 +15,16 @@ import ru.fizteh.fivt.students.alexanderKuzmin.parallelSort.WorkWithStream;
 
 public class ParallelSort {
 
-    private static void readAndSort(String[] args, int n, boolean insensitive,
+    private static void readAndSort(ArrayList<String> inputFiles, boolean insensitive,
             boolean unique, int threadCount, boolean outputToFile,
             String output, boolean inputFromFile) {
         InputStream stream = null;
-        ArrayList<String> input = new ArrayList<String>();
-        if (n < args.length) {
-            for (int i = n; i < args.length; ++i) {
+        ArrayList<String> inputLines = new ArrayList<String>();
+        if (!inputFiles.isEmpty()) {
+            for (int i = 0; i < inputFiles.size(); ++i) {
                 try {
-                    stream = new FileInputStream(args[i]);
-                    readerFromStream(input, stream);
+                    stream = new FileInputStream(inputFiles.get(i));
+                    WorkWithStream.readerFromStream(inputLines, stream);
                 } catch (Exception e) {
                     Closers.printErrAndExit(e.getMessage());
                 } finally {
@@ -36,13 +33,13 @@ public class ParallelSort {
             }
         } else {
             try {
-                readerFromStream(input, System.in);
+                WorkWithStream.readerFromStream(inputLines, System.in);
             } catch (Exception e) {
                 Closers.printErrAndExit(e.getMessage());
             }
         }
-        ParallelMergeSort mySort = new ParallelMergeSort(input, 0,
-                input.size(), threadCount, input.size() / threadCount,
+        ParallelMergeSort mySort = new ParallelMergeSort(inputLines, 0,
+                inputLines.size(), threadCount, inputLines.size() / threadCount,
                 insensitive);
         mySort.run();
         printOutput(mySort.result, outputToFile, output, unique, insensitive);
@@ -80,25 +77,6 @@ public class ParallelSort {
         WorkWithStream.closeStream(pStream);
     }
 
-    private static void readerFromStream(ArrayList<String> answer,
-            InputStream stream) throws IOException {
-        BufferedReader bufReader = null;
-        InputStreamReader inputReader = null;
-        try {
-            inputReader = new InputStreamReader(stream);
-            bufReader = new BufferedReader(inputReader);
-            String str;
-            while ((str = bufReader.readLine()) != null) {
-                answer.add(str);
-            }
-        } catch (Exception e) {
-            Closers.printErrAndExit(e.getMessage());
-        } finally {
-            Closers.closeStream(bufReader);
-            Closers.closeStream(inputReader);
-        }
-    }
-
     /**
      * @param args
      * [-iu] - i = insensitive comparison, u = print only unique
@@ -110,15 +88,15 @@ public class ParallelSort {
      * [FILES...] the names of files which the program
      *  have to sort (default: reading from stdin);
      */
-     
+
     public static void main(String[] args) {
-        // long start = System.currentTimeMillis();// TODO delete
         boolean insensitive = false; // key -i
         boolean unique = false; // key -u
         int threadCount = Runtime.getRuntime().availableProcessors();
         boolean outputToFile = false; // key -o
         boolean inputFromFile = false;
         String output = null;
+        ArrayList<String> inputFiles = new ArrayList<String>();
         int i = 0;
         for (; i < args.length; ++i) {
             if (args[i].equals("-o") && args.length > i + 1) {
@@ -146,11 +124,10 @@ public class ParallelSort {
                     Closers.printErrAndExit("!Invalid argument. Use: java ParallelSort [-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
                 }
             } else {
-                break;
+                inputFiles.add(args[i]);
             }
         }
-        readAndSort(args, i, insensitive, unique, threadCount, outputToFile,
+        readAndSort(inputFiles, insensitive, unique, threadCount, outputToFile,
                 output, inputFromFile);
-        // System.out.println(System.currentTimeMillis() - start); TODO delete
     }
 }
