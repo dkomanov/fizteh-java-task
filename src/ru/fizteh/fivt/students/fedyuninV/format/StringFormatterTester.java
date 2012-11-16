@@ -27,6 +27,12 @@ public class StringFormatterTester{
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    @Test
+    public void incorrectClass() {
+        thrown.expect(FormatterException.class);
+        thrown.expectMessage("There is no relative extension");
+        formatter.format("Hello {0.deep:d} world!", new ChildForTest());
+    }
 
     @Test
     public void singleOpenBracket() {
@@ -96,9 +102,8 @@ public class StringFormatterTester{
 
     @Test
     public void tryingToNonExistingField() {
-        thrown.expect(FormatterException.class);
-        thrown.expectMessage("Field nonExistingField doesn't exists");
-        formatter.format("{0.nonExistingField}", new ClassForTest(), 3.1415926f);
+        String testString = formatter.format("{0.nonExistingField}", new ClassForTest(), 3.1415926f);
+        Assert.assertEquals(testString, "");
     }
 
     @Test
@@ -109,6 +114,36 @@ public class StringFormatterTester{
         testString = formatter.format("{1.x}", new ChildForTest(), new ChildForTest());
         Assert.assertEquals(testString, "");
     }
+
+    @Test
+    public void wrongNumber() {
+        thrown.expect(FormatterException.class);
+        thrown.expectMessage("Incorrect number in brackets");
+        formatter.format("{0{1}}", new ClassForTest(), 3.1415926f);
+    }
+
+
+    @Test
+    public void minusZero() {
+        thrown.expect(FormatterException.class);
+        thrown.expectMessage("Incorrect number in brackets");
+        formatter.format("{-0}", new ClassForTest(), 3.1415926f);
+    }
+
+    @Test
+    public void minusOne() {
+        thrown.expect(FormatterException.class);
+        thrown.expectMessage("Incorrect number in brackets");
+        formatter.format("{-1}", new ClassForTest(), 3.1415926f);
+    }
+
+    @Test
+    public void voidFloatPattern() {
+        thrown.expect(FormatterException.class);
+        thrown.expectMessage("Incorrect patter");
+        formatter.format("{1:}", new ClassForTest(), 3.1415926f);
+    }
+
 
     @Test
     public void goodTests() {
