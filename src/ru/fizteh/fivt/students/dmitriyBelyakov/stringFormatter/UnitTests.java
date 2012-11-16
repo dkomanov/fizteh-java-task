@@ -6,24 +6,6 @@ import ru.fizteh.fivt.format.FormatterException;
 
 import java.util.Calendar;
 
-class ClassEleven {
-    private int intField = 11;
-    public String stringField = "eleven";
-    String nullField = null;
-}
-
-class ClassTwelve extends ClassEleven {
-    ClassEleven eleven = new ClassEleven();
-}
-
-class ClassWithCalendar {
-    Calendar calendar;
-
-    ClassWithCalendar(Calendar calendar) {
-        this.calendar = calendar;
-    }
-}
-
 public class UnitTests extends Assert {
 
     // Tests for class CalendarFormat
@@ -123,6 +105,26 @@ public class UnitTests extends Assert {
     @Test(expected = FormatterException.class)
     public void testStringFormatterNullPointerExtension() {
         new StringFormatter().addExtension(null);
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterUnsupportedExtension() {
+        new StringFormatter().getExtension("java.util.Calendar");
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterIncorrectPatternFormat() {
+        new StringFormatter().format("something0}");
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterNotDigit() {
+        new StringFormatter().format("{a0:d}", new Long(11));
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterUnsupportedExtensionInPattern() {
+        new StringFormatter().format("{0:d} something", new Long(11));
     }
 
     @Test

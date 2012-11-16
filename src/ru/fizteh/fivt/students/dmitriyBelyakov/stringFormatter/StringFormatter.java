@@ -39,7 +39,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 return extension;
             }
         }
-        throw new FormatterException("Extension not find.");
+        throw new FormatterException("Extension not found.");
     }
 
     private void formatWithArray(StringBuilder buffer, String format, Object[] args) throws FormatterException {
