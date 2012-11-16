@@ -1,7 +1,7 @@
 package ru.fizteh.fivt.students.levshinNikolay.shell;
 
 
-import ru.fizteh.fivt.students.levshinNikolay.Utils;
+import ru.fizteh.fivt.students.levshinNikolay.*;
 
 import java.io.*;
 
@@ -87,7 +87,7 @@ public class Shell {
                     out.write(buf, 0, length);
                 }
             } catch (Exception ex) {
-                error("cp: '" + ex.getMessage());
+                error("cp: " + ex.getMessage());
             } finally {
                 Utils.tryClose(in);
                 Utils.tryClose(out);
@@ -207,8 +207,9 @@ public class Shell {
         } else {
             console = false;
             StringBuilder sb = new StringBuilder();
-            for (int i = 1; i < args.length; ++i) {
-                sb.append(args[i]).append(' ');
+            for (int i = 0; i < args.length; ++i) {
+                sb.append(args[i]);
+                sb.append(' ');
             }
             commands = sb.toString().split("\\s*;\\s*");
             for (String command : commands) {
