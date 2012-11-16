@@ -9,7 +9,7 @@ import java.io.FileOutputStream;
  * за выполнение команд.
  */
 public class Executer {
-    final private static String separator = System.getProperty("file.separator").toString();
+    final private static String separator = System.getProperty("file.separator");
     
     public static String execute(String[] commandArray, String currentDir) throws Exception {
         if (commandArray[0].equals("cd")) {
