@@ -51,17 +51,15 @@ public class StringFormatterTester{
     @Test
     public void fieldsInherited() {
         B b = new B();
-        b.a = 1;
-        b.b = 2;
-        Assert.assertEquals("12", formatter.format("{0.a}{0.b}", b));
+        Assert.assertEquals("", formatter.format("{0.a.a}", b));
     }
 
     private static class A {
         public int a;
     }
 
-    private static class B extends A {
-        public int b;
+    private static class B {
+        public A a = null;
     }
 
     @Test
