@@ -51,7 +51,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
                 parse(buffer, format, openBracket + 2, args);
             } else {
                 if (closeBracket == openBracket + 1  ||  closeBracket == format.length()) {
-                    throw new FormatterException("Incorrect brackets sequence");
+                    throw new FormatterException("Incorrect bracket sequence");
                 }
                 parseArg(buffer, format.substring(openBracket + 1, closeBracket), args);
                 parse(buffer, format, closeBracket + 1, args);
@@ -79,11 +79,10 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
             for (int i = 1; i < fields.length; i++) {
                 finalArg = getFieldFromName(finalArg, fields[i]);
             }
-        } catch (Exception ex) {
-            throw new FormatterException("Incorrect term in brackets");
-        }
-        if (patternBegin == format.length() - 1) {
-            throw new FormatterException("Void pattern with ':'");
+        } catch (FormatterException ex) {
+            throw ex;
+        } catch (ArrayIndexOutOfBoundsException outOfArray) {
+            throw new FormatterException("Index out of array");
         }
         if (finalArg == null) {
             buffer.append("");
@@ -124,11 +123,13 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
                     }
                 }
                 throw new FormatterException("Field " + fieldName + " doesn't exists");
+            } catch (FormatterException ex) {
+                throw ex;
             } catch (Exception ex) {
-                throw new FormatterException("Cannot get field" + fieldName);
+                throw new FormatterException("Cannot get field " + fieldName);
             }
         } catch (Exception ex) {
-            throw new FormatterException("Cannot get field" + fieldName);
+            throw new FormatterException("Cannot get field " + fieldName);
         }
     }
 }
