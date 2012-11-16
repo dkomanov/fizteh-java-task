@@ -112,6 +112,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
 
     private Object getFieldFromName (Object arg, String fieldName) throws FormatterException {
         try {
+            if (arg == null) {
+                return null;
+            }
             Class parent = arg.getClass();
             while (parent != null) {
                 try {
@@ -125,7 +128,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
             throw new NoSuchFieldException();
         } catch (NoSuchFieldException noField) {
             return null;
-        } catch (Exception ex) {
+        } catch (IllegalAccessException ex) {
             throw new FormatterException("Cannot get field " + fieldName);
         }
     }
