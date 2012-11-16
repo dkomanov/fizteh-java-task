@@ -157,7 +157,9 @@ public class Shell {
             return;
         }
         File dest = getFile(filename);
-        if (!dest.mkdir()) {
+        if (dest.exists()) {
+            panic("mkdir: file already exists");
+        } else if (!dest.mkdir()) {
             panic("mkdir: cannot create the folder");
         }
     }
@@ -182,7 +184,6 @@ public class Shell {
         if (file.isDirectory()) {
             for (File child : file.listFiles()) {
                 if (!recursiveRm(child)) {
-                    panic("rm: '" + child.getAbsolutePath() + "': cannot remove the file");
                     return false;
                 }
             }

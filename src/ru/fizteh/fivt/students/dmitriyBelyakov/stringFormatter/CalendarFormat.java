@@ -14,8 +14,17 @@ public class CalendarFormat extends StringFormatterExtension {
     @Override
     public void format(StringBuilder buffer, Object object, String pattern) throws FormatterException {
         try {
+            if (pattern.equals("")) {
+                throw new FormatterException("Empty pattern.");
+            }
+            if (buffer == null) {
+                throw new FormatterException("Buffer is null.");
+            }
+            if (pattern == null) {
+                throw new FormatterException("Pattern is null.");
+            }
             if (object == null) {
-                throw new FormatterException("Null pointer.");
+                throw new FormatterException("Calendar is null.");
             }
             if (!Calendar.class.isAssignableFrom(object.getClass())) {
                 throw new FormatterException("Incorrect object type.");
@@ -23,7 +32,7 @@ public class CalendarFormat extends StringFormatterExtension {
             SimpleDateFormat formatter = new SimpleDateFormat(pattern);
             buffer.append(formatter.format(((Calendar) object).getTime()));
         } catch (Throwable t) {
-            throw new FormatterException(t.getMessage());
+            throw new FormatterException(t.getMessage(), t);
         }
     }
 
