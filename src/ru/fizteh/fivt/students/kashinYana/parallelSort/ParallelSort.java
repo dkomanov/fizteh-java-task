@@ -11,15 +11,16 @@ public class ParallelSort {
 
     static public class Pair {
         String string;
-        String id;
+        int idFile, idWord;
 
-        Pair(String string_, String id_) {
-            string = string_;
-            id = id_;
+        Pair(String stringNew, int idFileNew, int idWordNew) {
+            string = stringNew;
+            idFile = idFileNew;
+            idWord = idWordNew;
         }
 
         public String merge() {
-            return string + " " + id;
+            return string + " " + idFile + " " + idWord;
         }
 
         public String toString() {
@@ -146,7 +147,7 @@ public class ParallelSort {
                     in = new BufferedReader(file);
                     while (in.ready()) {
                         String currentLine = in.readLine();
-                        queue.put(new Pair(currentLine, j + " " + numberWord));
+                        queue.put(new Pair(currentLine, j, numberWord));
                         numberWord++;
                     }
                     in.close();
@@ -157,7 +158,7 @@ public class ParallelSort {
                 String currentLine;
                 int numberWord = 0;
                 while ((currentLine = in.readLine()) != null) {
-                    queue.put(new Pair(currentLine, 1 + " " + numberWord));
+                    queue.put(new Pair(currentLine, 1, numberWord));
                     numberWord++;
                 }
                 in.close();
@@ -277,7 +278,6 @@ public class ParallelSort {
             if (isO) {
                 file = new File(nameFile);
                 out = new FileWriter(file);
-                //BufferedWriter
                 for (int i = 0; i < ans.size(); i++) {
                     if (!isU || i == 0) {
                         out.write(ans.get(i).toString() + "\n");
@@ -307,25 +307,51 @@ public class ParallelSort {
 
     static class ComparatorLower implements Comparator<Pair> {
         public int compare(Pair string1, Pair string2) {
-            int ans = string1.merge().toLowerCase().compareTo(string2.merge().toLowerCase());
-            if (ans < 0)
+            int ans = string1.toString().toLowerCase().compareTo(string2.toString().toLowerCase());
+            if (ans < 0) {
                 return -1;
-            else if (ans == 0)
-                return 0;
-            else
+            } else if (ans == 0) {
+                if(string1.idFile < string2.idFile) {
+                    return -1;
+                } else if (string1.idFile > string2.idFile) {
+                    return 1;
+                } else {
+                    if(string1.idWord < string2.idWord) {
+                        return -1;
+                    } else if (string1.idWord > string2.idWord) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            } else {
                 return 1;
+            }
         }
     }
 
     static class ComparatorNotLower implements Comparator<Pair> {
         public int compare(Pair string1, Pair string2) {
-            int ans = string1.merge().compareTo(string2.merge());
-            if (ans < 0)
+            int ans = string1.toString().compareTo(string2.toString());
+            if (ans < 0) {
                 return -1;
-            else if (ans == 0)
-                return 0;
-            else
+            } else if (ans == 0) {
+                if(string1.idFile < string2.idFile) {
+                    return -1;
+                } else if (string1.idFile > string2.idFile) {
+                    return 1;
+                } else {
+                    if(string1.idWord < string2.idWord) {
+                        return -1;
+                    } else if (string1.idWord > string2.idWord) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            } else {
                 return 1;
+            }
         }
     }
 }
