@@ -139,7 +139,7 @@ public class ParallelSort {
             } else if (args[i].equals("-t") && args.length > i + 1) {
                 try {
                     int tmp = Integer.parseInt(args[++i]);
-                    if (tmp < threadCount) {
+                    if (tmp < threadCount && tmp > 0) {
                         threadCount = tmp;
                     }
                 } catch (Exception e) {
