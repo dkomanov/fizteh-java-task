@@ -12,7 +12,7 @@ public class Rm extends IOCommand {
 
     @Override
     public boolean execute() {
-        if (arguments.length == 0) {
+        if (arguments.length != 1) {
             System.err.println("Incorrect syntax. You should use it like:");
             System.err.println("rm <file | directory>");
             return false;
@@ -23,14 +23,14 @@ public class Rm extends IOCommand {
             file = new File(position.getFile().getAbsolutePath() + File.separator + arguments[0]);
         }
 
-        delete(file);
-
-        return true;
+        return delete(file);
     }
 
     private boolean delete(File file) {
-        if (!file.exists())
+        if (!file.exists()) {
+            System.err.println("File not found " + file.getPath() + ".");
             return false;
+        }
 
         boolean ok = true;
 
