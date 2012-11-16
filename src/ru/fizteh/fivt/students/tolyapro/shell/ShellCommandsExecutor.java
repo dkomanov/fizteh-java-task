@@ -25,7 +25,8 @@ public class ShellCommandsExecutor {
             throws Exception {
         File relNewDir = new File(currPath + separator + newDir); // relative
         File absNewDir = new File(newDir); // absolute path
-        if (absNewDir.exists() && absNewDir.exists()) {
+        if (absNewDir.exists() && absNewDir.isDirectory()
+                && absNewDir.isAbsolute()) {
             currPath = newDir;
         } else {
             if (relNewDir.exists() && relNewDir.isDirectory()) {
@@ -140,48 +141,48 @@ public class ShellCommandsExecutor {
             if (tokens.length == 1) {
                 showDir(currPath);
             } else {
-                System.err.println("Usage: dir");
+                throw new Exception("Usage: dir");
             }
         } else if (tokens[0].equals("cd")) {
             if (tokens.length == 2) {
                 currPath = changeDirectory(tokens[1], currPath);
             } else {
-                System.err.println("Usage: cd <absolute path|relative path>");
+                throw new Exception("Usage: cd <absolute path|relative path>");
             }
         } else if (tokens[0].equals("pwd")) {
             if (tokens.length == 1) {
                 printWorkingDirectory(currPath);
             } else {
-                System.err.println("Usage: pwd");
+                throw new Exception("Usage: pwd");
             }
         } else if (tokens[0].equals("rm")) {
             if (tokens.length == 2) {
                 removeDirectory(tokens[1], currPath);
             } else {
-                System.err.println("Usage: rm <file|dir>");
+                throw new Exception("Usage: rm <file|dir>");
             }
         } else if (tokens[0].equals("cp")) {
             if (tokens.length == 3) {
                 copy(tokens[1], tokens[2], currPath);
             } else {
-                System.err.println("Usage: cp <source> <destination>");
+                throw new Exception("Usage: cp <source> <destination>");
             }
         } else if (tokens[0].equals("mkdir")) {
             if (tokens.length == 2) {
                 makeDirectory(currPath, tokens[1]);
             } else {
-                System.err.println("Usage: mkdir <dirname>");
+                throw new Exception("Usage: mkdir <dirname>");
             }
         } else if (tokens[0].equals("mv")) {
             if (tokens.length == 3) {
                 move(tokens[1], tokens[2], currPath);
             } else {
-                System.err.println("Usage: mv <source> <destination>");
+                throw new Exception("Usage: mv <source> <destination>");
             }
         } else if (tokens[0].equals("exit")) {
             System.exit(0);
         } else {
-            System.err.println("Unknown command: " + tokens[0]);
+            throw new Exception("Unknown command: " + tokens[0]);
         }
         return currPath;
     }

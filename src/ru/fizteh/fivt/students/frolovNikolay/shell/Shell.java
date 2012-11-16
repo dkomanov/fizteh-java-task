@@ -29,7 +29,6 @@ public class Shell {
                     System.exit(1);
                 }
                 if (command == null) {
-                    Closer.close(reader);
                     System.exit(0);
                 } else {
                     int i = 0;
@@ -48,10 +47,8 @@ public class Shell {
                             currentDir = Executer.execute(commandArray, currentDir);
                         } catch (Exception crush) {
                             System.err.println(crush.getMessage());
-                            System.err.flush();
                         }
                         if (currentDir == null) {
-                            Closer.close(reader);
                             System.exit(0);
                         }
                     }
