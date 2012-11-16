@@ -156,9 +156,14 @@ public class Shell {
 
     private static void move(String source, String destination)
             throws Exception {
+        File sourceFile = new File(source).getAbsoluteFile();
+        if (!sourceFile.exists()) {
+            sourceFile = new File(currentPath + File.separator + source);
+        }
+        File destShortFile = new File(destination);
         File destFile = new File(currentPath + File.separator + destination);
-        if (!destFile.exists()) {
-            new File(currentPath + File.separator + source).renameTo(destFile);
+        if (!destFile.exists() && !destShortFile.exists()) {
+            sourceFile.renameTo(destFile);
         } else {
             copy(source, destination);
             remove(source);
@@ -167,10 +172,16 @@ public class Shell {
 
     private static void copy(String source, String destination)
             throws Exception {
-        File sourceFile = new File(currentPath + File.separator + source)
-                .getAbsoluteFile();
-        File destinationFile = new File(currentPath + File.separator
-                + destination).getAbsoluteFile();
+        File sourceFile = new File(source).getAbsoluteFile();
+        if (!sourceFile.exists()) {
+            sourceFile = new File(currentPath + File.separator + source)
+                    .getAbsoluteFile();
+        }
+        File destinationFile = new File(destination).getAbsoluteFile();
+        if (!destinationFile.exists()) {
+            destinationFile = new File(currentPath + File.separator
+                    + destination).getAbsoluteFile();
+        }
         if (sourceFile.exists()) {
             if (destinationFile.exists()) {
                 if (destinationFile.isDirectory()) {
@@ -191,8 +202,7 @@ public class Shell {
                     throw new Exception("cp: \'" + destination
                             + "\': can't copy this, it's a strange files.");
                 }
-            }
-            if (sourceFile.isFile()) {
+            } else if (sourceFile.isFile()) {
                 copyFile(sourceFile,
                         new File(destinationFile.getAbsolutePath()));
             } else {
@@ -253,7 +263,10 @@ public class Shell {
     }
 
     private static void remove(String file) throws Exception {
-        File cur = new File(currentPath + File.separator + file);
+        File cur = new File(file);
+        if (!cur.exists()) {
+            cur = new File(currentPath + File.separator + file);
+        }
         if (cur.exists()) {
             deleteObject(cur);
         } else {
