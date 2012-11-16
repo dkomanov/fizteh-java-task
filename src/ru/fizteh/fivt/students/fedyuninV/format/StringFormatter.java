@@ -82,8 +82,6 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
             for (int i = 1; i < fields.length; i++) {
                 finalArg = getFieldFromName(finalArg, fields[i]);
             }
-        } catch (FormatterException ex) {
-            throw ex;
         } catch (ArrayIndexOutOfBoundsException outOfArray) {
             throw new FormatterException("Index out of array");
         } catch (NumberFormatException wrongNumb) {
