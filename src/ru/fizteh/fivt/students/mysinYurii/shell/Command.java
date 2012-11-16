@@ -17,9 +17,6 @@ public class Command {
     public String toAbsolutePath(String s) throws IOException {
         StringBuilder sFormat = new StringBuilder();
         sFormat.append(s);
-        while (sFormat.length() > 0 && (sFormat.lastIndexOf(File.separator) == sFormat.length() - 1)) {
-            sFormat.setLength(sFormat.length() - 1);
-        }
         File newPath = new File(sFormat.toString());
         if (newPath.isAbsolute()) {
             return newPath.getCanonicalPath();
