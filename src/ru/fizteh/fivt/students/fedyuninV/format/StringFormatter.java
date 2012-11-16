@@ -128,7 +128,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
             throw new NoSuchFieldException();
         } catch (NoSuchFieldException noField) {
             return null;
-        } catch (Exception ex) {
+        } catch (IllegalAccessException ex) {
             throw new FormatterException("Cannot get field " + fieldName);
         }
     }
