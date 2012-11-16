@@ -30,7 +30,6 @@ public class Executor {
                         if (i - left == 2) {
                             comander.mkdir(comandList[left + 1]);
                         } else {
-                            System.out.print("mkdir: ");
                             inRange(task, left, i, 2);
                         }
                     } else if (task.equals("cd")) {
