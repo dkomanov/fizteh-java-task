@@ -27,6 +27,12 @@ public class StringFormatterTester{
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    @Test
+    public void incorrectClass() {
+        thrown.expect(FormatterException.class);
+        thrown.expectMessage("There is no relative extension");
+        formatter.format("Hello {0.deep:d} world!", new ChildForTest());
+    }
 
     @Test
     public void singleOpenBracket() {
