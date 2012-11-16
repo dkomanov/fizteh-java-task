@@ -31,7 +31,6 @@ public class WorkWithStream {
             Closers.printErrAndExit(e.getMessage());
         } finally {
             Closers.closeStream(bufReader);
-            Closers.closeStream(inputReader);
         }
     }
 

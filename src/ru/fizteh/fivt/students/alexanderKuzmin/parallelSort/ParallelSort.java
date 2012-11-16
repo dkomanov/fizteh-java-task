@@ -25,6 +25,7 @@ public class ParallelSort {
                 try {
                     stream = new FileInputStream(inputFiles.get(i));
                     WorkWithStream.readerFromStream(inputLines, stream);
+                    Closers.closeStream(stream);
                 } catch (Exception e) {
                     Closers.printErrAndExit(e.getMessage());
                 } finally {
