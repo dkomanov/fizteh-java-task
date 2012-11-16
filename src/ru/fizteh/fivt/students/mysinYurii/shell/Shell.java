@@ -29,7 +29,7 @@ public class Shell {
             StringBuilder newComand = new StringBuilder();
             for (int i = 0; i < args.length; ++i) {
                 newComand.append(args[i]);
-                newComand.append(" ; ");
+                newComand.append(" ");
             }
             try {
                 runner.parseAndExec(newComand.toString());
