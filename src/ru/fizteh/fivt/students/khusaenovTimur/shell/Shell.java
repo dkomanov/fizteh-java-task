@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.khusaenovTimur.shell;
 
 import java.io.*;
 import java.util.*;
+import java.lang.Character;
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,10 +14,9 @@ public class Shell {
     public static String currentPath;
     public static boolean isInteractiveMode = false;
 
-    public static boolean checkCommandFormat(ArrayList<String> parsedCommand, int numOfParts)
-    {
-        if(parsedCommand.size() != numOfParts){
-            errorProcessing(parsedCommand.get(0) + " : wrong \""+parsedCommand.get(0)+"\" format", 1);
+    public static boolean checkCommandFormat(ArrayList<String> parsedCommand, int numOfParts) {
+        if (parsedCommand.size() != numOfParts) {
+            errorProcessing(parsedCommand.get(0) + " : wrong \"" + parsedCommand.get(0) + "\" format", 1);
             return false;
         }
         return true;
@@ -27,56 +27,54 @@ public class Shell {
         boolean isInQuotationMarks = false;
         int startOfNewPart = 0;
         for (int i = 0; i < command.length(); ++i) {
-            switch (command.charAt(i)) {
-                case ' ':
-                    if(!isInQuotationMarks) {
-                        if(!command.substring(startOfNewPart, i).isEmpty()) {
-                            String string = command.substring(startOfNewPart, i);
-                            if(!string.replaceAll("\\s", "").isEmpty())
-                                parsedCommand.add(string);
-                            startOfNewPart = i + 1;
+            if (Character.isWhitespace(command.charAt(i))) {
+                if (!isInQuotationMarks) {
+                    if (!command.substring(startOfNewPart, i).isEmpty()) {
+                        String string = command.substring(startOfNewPart, i);
+                        if (!string.replaceAll("\\s", "").isEmpty()) {
+                            parsedCommand.add(string);
                         }
-                    }
-                    break;
-                case '\"':
-                    if(!isInQuotationMarks) {
-                        startOfNewPart = i + 1;
-                        isInQuotationMarks = true;
-                    }
-                    else {
-                        parsedCommand.add(command.substring(startOfNewPart, i));
-                        isInQuotationMarks = false;
                         startOfNewPart = i + 1;
                     }
-                    break;
+                }
+            } else if (command.charAt(i) == '\"') {
+                if (!isInQuotationMarks) {
+                    startOfNewPart = i + 1;
+                    isInQuotationMarks = true;
+                } else {
+                    parsedCommand.add(command.substring(startOfNewPart, i));
+                    isInQuotationMarks = false;
+                    startOfNewPart = i + 1;
+                }
+                break;
             }
         }
         String string = command.substring(startOfNewPart, command.length());
-        if(!string.replaceAll("\\s", "").isEmpty())
+        if (!string.replaceAll("\\s", "").isEmpty()) {
             parsedCommand.add(string);
+        }
         return parsedCommand;
     }
 
     public static void errorProcessing(String message, int errorCode) {
         System.err.println(message);
         System.err.flush();
-        if(isInteractiveMode)
+        if (isInteractiveMode) {
             return;
+        }
         System.exit(errorCode);
     }
 
-    public static void exit(ArrayList<String> parsedCommand)
-    {
-        if(checkCommandFormat(parsedCommand, 1)) {
+    public static void exit(ArrayList<String> parsedCommand) {
+        if (checkCommandFormat(parsedCommand, 1)) {
             System.exit(0);
-        }
-        else {
+        } else {
             return;
         }
     }
 
     public static void printWorkingDirectory(ArrayList<String> parsedCommand) {
-        if(checkCommandFormat(parsedCommand, 1)) {
+        if (checkCommandFormat(parsedCommand, 1)) {
             System.out.println(currentPath);
         } else {
             return;
@@ -84,9 +82,9 @@ public class Shell {
     }
 
     public static void printContentsOfDirectory(ArrayList<String> parsedCommand) {
-        if(checkCommandFormat(parsedCommand, 1)) {
+        if (checkCommandFormat(parsedCommand, 1)) {
             File currentDirectory = new File(currentPath);
-            for(String fileName : currentDirectory.list()){
+            for (String fileName : currentDirectory.list()) {
                 System.out.println(fileName);
             }
         } else {
@@ -96,20 +94,20 @@ public class Shell {
 
     public static File getAbsolutePathsFile(String path) {
         File file = new File(path);
-        if(!file.isAbsolute()) {
+        if (!file.isAbsolute()) {
             file = new File(currentPath + File.separator + path);
         }
         return file;
     }
 
     public static void makeDirectory(ArrayList<String> parsedCommand) {
-        if(checkCommandFormat(parsedCommand, 2)) {
+        if (checkCommandFormat(parsedCommand, 2)) {
             File directory = getAbsolutePathsFile(parsedCommand.get(1));
-            try{
-                if(!directory.mkdirs()) {
+            try {
+                if (!directory.mkdirs()) {
                     errorProcessing("mkdir: cannot make \'" + directory.getAbsolutePath() + "\'", 9);
                 }
-            } catch (Exception exception){
+            } catch (Exception exception) {
                 errorProcessing("mkdir: " + exception.getMessage(), 10);
             }
         } else {
@@ -118,7 +116,7 @@ public class Shell {
     }
 
     public static void changeDirectory(ArrayList<String> parsedCommand) {
-        if(checkCommandFormat(parsedCommand, 2)) {
+        if (checkCommandFormat(parsedCommand, 2)) {
             String s = parsedCommand.get(1);
             if (s.equals(".")) {
             } else if (s.equals("..")) {
@@ -130,7 +128,7 @@ public class Shell {
 
             } else {
                 File newDirectory = getAbsolutePathsFile(parsedCommand.get(1));
-                if(newDirectory.exists()) {
+                if (newDirectory.exists()) {
                     try {
                         currentPath = newDirectory.getAbsolutePath();
                     } catch (Exception exception) {
@@ -147,10 +145,10 @@ public class Shell {
 
     public static boolean deleteFile(File file) {
         try {
-            if(file.isDirectory()) {
-                for(String fileName : file.list() ) {
+            if (file.isDirectory()) {
+                for (String fileName : file.list()) {
                     File subFile = new File(file, fileName);
-                    if(!deleteFile(subFile)) {
+                    if (!deleteFile(subFile)) {
                         return false;
                     }
                 }
@@ -165,57 +163,69 @@ public class Shell {
     }
 
     public static void remove(ArrayList<String> parsedCommand) {
-        if(checkCommandFormat(parsedCommand, 2)) {
+        if (checkCommandFormat(parsedCommand, 2)) {
             File file = getAbsolutePathsFile(parsedCommand.get(1));
-            if(!deleteFile(file)) {
+            if (!deleteFile(file)) {
                 errorProcessing("rm: cannot delete \'" + file.getAbsolutePath() + "\'", 14);
             }
         } else {
             return;
         }
     }
-    public static boolean copyFile(File from, File to) throws FileNotFoundException{
+
+    public static boolean copyFile(File from, File to) throws FileNotFoundException {
+        FileInputStream fileInputStream = null;
+        FileOutputStream fileOutputStream = null;
         try {
-            FileInputStream fileInputStream = new FileInputStream(from);
-            FileOutputStream fileOutputStream = new FileOutputStream(to);
+            fileInputStream = new FileInputStream(from);
+            fileOutputStream = new FileOutputStream(to);
             byte[] buffer = new byte[2048];
             int bufferLength;
-            while((bufferLength = fileInputStream.read(buffer)) >= 0) {
+            while ((bufferLength = fileInputStream.read(buffer)) >= 0) {
                 fileOutputStream.write(buffer, 0, bufferLength);
             }
-            fileInputStream.close();
-            fileOutputStream.close();
             return true;
         } catch (Exception exception) {
             errorProcessing(exception.toString(), 2);
+        } finally {
+            try {
+                if (fileInputStream != null) {
+                    fileInputStream.close();
+                }
+                if (fileOutputStream != null) {
+                    fileOutputStream.close();
+                }
+            } catch (Exception ex) {
+                System.err.println(ex.getMessage());
+            }
         }
         return false;
     }
-    public static void copy (ArrayList<String> parsedCommand) throws FileNotFoundException{
-        if(checkCommandFormat(parsedCommand, 3))
-        {
+
+    public static void copy(ArrayList<String> parsedCommand) throws FileNotFoundException {
+        if (checkCommandFormat(parsedCommand, 3)) {
             File from = getAbsolutePathsFile(parsedCommand.get(1));
-            if(!from.exists()) {
+            if (!from.exists()) {
                 errorProcessing(parsedCommand.get(0) + ": file \'" + from.getAbsolutePath() + "\' does not exist", 3);
                 return;
             }
             File to = getAbsolutePathsFile(parsedCommand.get(2));
             File finalTo = to;
-            if(from.isFile()) {
-                if(to.isDirectory() && to.exists()) {
-                    finalTo = new File(to.getAbsolutePath()+ File.separator + from.getName());
+            if (from.isFile()) {
+                if (to.isDirectory() && to.exists()) {
+                    finalTo = new File(to.getAbsolutePath() + File.separator + from.getName());
                 }
-                if(!copyFile(from, to)) {
+                if (!copyFile(from, to)) {
                     errorProcessing(parsedCommand.get(0) + ": cannot copy file \'" + from.getAbsolutePath() + "\' to \'" + to.getAbsolutePath() + "\'", 4);
                     return;
                 }
             } else {
-                finalTo = new File(to.getAbsolutePath()+ File.separator + from.getName());
-                if(!finalTo.exists() && !finalTo.mkdirs()) {
+                finalTo = new File(to.getAbsolutePath() + File.separator + from.getName());
+                if (!finalTo.exists() && !finalTo.mkdirs()) {
                     errorProcessing(parsedCommand.get(0) + ": cannot copy file \'" + from.getAbsolutePath() + "\' to \'" + to.getAbsolutePath() + "\'", 5);
                     return;
                 }
-                for(String fileName : from.list()) {
+                for (String fileName : from.list()) {
                     ArrayList<String> arrayList = new ArrayList<String>(3);
                     arrayList.add(parsedCommand.get(0));
                     arrayList.add(new File(from.getAbsolutePath() + File.separator + fileName).getAbsolutePath());
@@ -228,16 +238,16 @@ public class Shell {
         }
     }
 
-    public static void move (ArrayList<String> parsedCommand) {
-        if(checkCommandFormat(parsedCommand, 3)) {
+    public static void move(ArrayList<String> parsedCommand) {
+        if (checkCommandFormat(parsedCommand, 3)) {
             File from = getAbsolutePathsFile(parsedCommand.get(1));
             File to = getAbsolutePathsFile(parsedCommand.get(2));
-            if(!from.exists()) {
+            if (!from.exists()) {
                 errorProcessing("mv: \'" + parsedCommand.get(1) + "\': No such file or directory", 6);
             }
-            try{
+            try {
                 if (from.getParentFile().equals(to.getParentFile())) {
-                    if(!from.renameTo(to)) {
+                    if (!from.renameTo(to)) {
                         copyFile(from, to);
                         deleteFile(from);
                     }
@@ -247,7 +257,7 @@ public class Shell {
                     newCommands.add(from.getAbsolutePath());
                     newCommands.add(to.getAbsolutePath());
                     copy(newCommands);
-                    if(deleteFile(from)) {
+                    if (deleteFile(from)) {
                         errorProcessing("mv: unsuccessful deleting of " + from.getAbsolutePath(), 7);
                     }
 
@@ -294,15 +304,16 @@ public class Shell {
     }
 
 
-    public static void main(String[] args)  throws Exception {
-        if(args.length == 0)
+    public static void main(String[] args) throws Exception {
+        if (args.length == 0) {
             isInteractiveMode = true;
+        }
         currentPath = new File("").getAbsolutePath();
         System.out.print(currentPath);
         try {
-            if(!isInteractiveMode) {
+            if (!isInteractiveMode) {
                 StringBuilder stringBuilder = new StringBuilder();
-                for(int i = 0; i < args.length; ++i) {
+                for (int i = 0; i < args.length; ++i) {
                     stringBuilder.append(args[i]).append(" ");
                 }
                 stringBuilder.append("; ");
@@ -314,13 +325,19 @@ public class Shell {
 
                 InputStreamReader inputStreamReader = new InputStreamReader(System.in);
                 BufferedReader input = new BufferedReader(inputStreamReader);
-                while(true) {
-                    System.out.print(currentPath+"& ");
+                while (true) {
+                    System.out.print(currentPath + "& ");
                     StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.append(input.readLine()).append(" ; ");
-                    String commandsList[] = stringBuilder.toString().split("\\s*;\\s*");
-                    for (String command : commandsList) {
-                        executeCommand(command);
+                    String incomingCommands = input.readLine();
+                    if (incomingCommands != null) {
+                        stringBuilder.append(incomingCommands).append(" ; ");
+                        String commandsList[] = stringBuilder.toString().split("\\s*;\\s*");
+                        for (String command : commandsList) {
+                            executeCommand(command);
+                        }
+                    }
+                    else {
+                        System.exit(0);
                     }
                 }
 
