@@ -137,7 +137,7 @@ public class CommandWorker {
             if (fileOut.isDirectory()) {
                 success = fileIn.renameTo(new File(fileOut, fileIn.getName()));
             } else {
-                // System.out.println(fileOut.getAbsolutePath());
+                System.out.println(fileOut.getAbsolutePath());
                 success = fileIn.renameTo(fileOut);
             }
             if (!success) {
@@ -229,7 +229,12 @@ public class CommandWorker {
             if (mPath.getName().equals(".")) {
                 mPath = new File(mPath.getCanonicalPath());
             }
+            if (mPath.getCanonicalFile().getCanonicalPath().equals(File.separator)) {
+                return mPath;
+            }
+            
             try {
+                //System.out.println(mPath.getAbsoluteFile().getCanonicalPath());
                 File newFile = new File(mPath.getAbsoluteFile().getParent());
             } catch (Exception e) {
                 return mPath;
@@ -241,16 +246,12 @@ public class CommandWorker {
             name = name.substring(0, name.length() - 1);
         }
 
-        String fName;
-        if (File.separator.equals("\\")) {
-            fName = name.replaceAll("\\\\", "");
-        } else {
-            fName = name.replaceAll(File.separator, "");
-        }
-        if (fName.equals(mfile.getName())) {
-            return new File(mPath, name);
-        } else {
+        
+        //System.out.println(name+" || "+mfile.getCanonicalFile().getCanonicalPath());
+        if (name.equals(mfile.getCanonicalPath()) || mfile.getName().equals("..")) {
             return mfile;
+        } else {
+            return new File(mPath, name);
         }
     }
 }
