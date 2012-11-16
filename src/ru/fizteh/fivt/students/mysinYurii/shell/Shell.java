@@ -31,12 +31,12 @@ public class Shell {
                 newCommand.append(args[i]);
                 newCommand.append(" ");
             }
-            String[] commandArray = newCommand.toString().split(";");
-            for (int i = 0; i < commandArray.length; ++i) {
-                commandArray[i].trim();
-                try {
-                    runner.parseAndExec(commandArray[i]);
-                } catch (ShellException e) {
+            try {
+                runner.parseAndExec(newCommand.toString());
+            } catch (ShellException e) {
+                if (e.getMessage().equals("exit")) {
+                    System.exit(0);
+                } else {
                     System.out.println(e.getMessage());
                     System.exit(1);
                 }
