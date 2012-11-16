@@ -64,7 +64,7 @@ public class StringFormatterTester{
         public int b;
     }
 
-        @Test
+    @Test
     public void tripleSingleOpenBracket() {
         thrown.expect(FormatterException.class);
         thrown.expectMessage("Incorrect bracket sequence");
