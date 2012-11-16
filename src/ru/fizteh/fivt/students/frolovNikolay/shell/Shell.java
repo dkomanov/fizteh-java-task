@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
  */
 public class Shell {
     public static void main(String[] args) {
-        String currentDir = System.getProperty("user.dir").toString();
+        String currentDir = System.getProperty("user.dir");
         if (args.length == 0) {
             BufferedReader reader = null;
             try {
