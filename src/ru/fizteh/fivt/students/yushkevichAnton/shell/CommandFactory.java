@@ -32,11 +32,11 @@ public class CommandFactory {
         arguments = Arrays.copyOfRange(arguments, 1, arguments.length);
 
         if (command.equals("exit")) {
-            return new Exit();
+            return new Exit(arguments);
         }
 
         if (command.equals("dir")) {
-            return new Dir(position);
+            return new Dir(arguments, position);
         }
 
         if (command.equals("cd")) {

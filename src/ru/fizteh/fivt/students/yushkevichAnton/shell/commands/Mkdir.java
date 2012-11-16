@@ -12,7 +12,7 @@ public class Mkdir extends IOCommand {
 
     @Override
     public boolean execute() {
-        if (arguments.length == 0) {
+        if (arguments.length != 1) {
             System.out.println("Incorrect syntax. You should use it like:");
             System.out.println("mkdir <directory name>");
             return false;
