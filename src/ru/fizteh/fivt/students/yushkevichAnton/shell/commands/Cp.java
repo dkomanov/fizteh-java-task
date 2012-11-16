@@ -12,7 +12,7 @@ public class Cp extends IOCommand {
 
     @Override
     public boolean execute() {
-        if (arguments.length < 2) {
+        if (arguments.length != 2) {
             System.err.println("Incorrect syntax. You should use it like:");
             System.err.println("cp <from> <to>");
             return false;
@@ -27,6 +27,25 @@ public class Cp extends IOCommand {
         if (!to.isAbsolute()) {
             to = new File(position.getFile().getPath() + File.separator + arguments[1]);
         }
+
+        try {
+            to = to.getCanonicalFile();
+        } catch (IOException e) {
+            System.err.println("Error resolving " + to.getPath() + ".");
+            return false;
+        }
+        try {
+            from = from.getCanonicalFile();
+        } catch (IOException e) {
+            System.err.println("Error resolving " + from.getPath() + ".");
+            return false;
+        }
+
+        if (to.getPath().equals(from.getPath())) {
+            System.err.println("Cannot copy file into itself.");
+            return false;
+        }
+
 
         return copy(from, to);
     }
