@@ -112,25 +112,19 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter{
 
     private Object getFieldFromName (Object arg, String fieldName) throws FormatterException {
         try {
-            return arg.getClass().getField(fieldName).get(arg);
-        } catch (NoSuchFieldException noPublicField) {
-            try {
-                Class parent = arg.getClass();
-                while (parent != null) {
-                    try {
-                        Field field = parent.getDeclaredField(fieldName);
-                        field.setAccessible(true);
-                        return field.get(arg);
-                    } catch (NoSuchFieldException againNoField) {
-                        parent = parent.getSuperclass();
-                    }
+            Class parent = arg.getClass();
+            while (parent != null) {
+                try {
+                    Field field = parent.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    return field.get(arg);
+                } catch (NoSuchFieldException againNoField) {
+                    parent = parent.getSuperclass();
                 }
-                throw new NoSuchFieldException();
-            } catch (NoSuchFieldException noField) {
-                return null;
-            } catch (Exception ex) {
-                throw new FormatterException("Cannot get field " + fieldName);
             }
+            throw new NoSuchFieldException();
+        } catch (NoSuchFieldException noField) {
+            return null;
         } catch (Exception ex) {
             throw new FormatterException("Cannot get field " + fieldName);
         }
