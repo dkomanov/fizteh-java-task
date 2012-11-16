@@ -3,6 +3,7 @@ package ru.fizteh.fivt.students.dmitriyBelyakov.stringFormatter;
 import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
@@ -19,7 +20,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         try {
             extensions.add(extension);
         } catch (Throwable t) {
-            throw new FormatterException(t.getMessage());
+            throw new FormatterException(t.getMessage(), t);
         }
     }
 
@@ -38,14 +39,13 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 return extension;
             }
         }
-        throw new FormatterException("Extension not find.");
+        throw new FormatterException("Extension not found.");
     }
 
     private void formatWithArray(StringBuilder buffer, String format, Object[] args) throws FormatterException {
         if (args == null) {
             throw new FormatterException("Args is null.");
         }
-        StringBuilder builder = new StringBuilder();
         try {
             boolean isArgument = false;
             boolean objectGet = false;
@@ -60,7 +60,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 if (!isArgument) {
                     if (c == '{') {
                         if (format.charAt(i + 1) == '{') {
-                            builder.append('{');
+                            buffer.append('{');
                             ++i;
                         } else {
                             isArgument = true;
@@ -68,13 +68,13 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                         }
                     } else if (c == '}') {
                         if (format.charAt(i + 1) == '}') {
-                            builder.append('}');
+                            buffer.append('}');
                             ++i;
                         } else {
                             throw new FormatterException("Incorrect format.");
                         }
                     } else {
-                        builder.append(c);
+                        buffer.append(c);
                     }
                 } else {
                     if (!objectGet) {
@@ -90,9 +90,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                 numOfPatternPosition = i + 1;
                             } else {
                                 if (object == null) {
-                                    return;
+                                    buffer.append("");
                                 } else {
-                                    builder.append(object.toString());
+                                    buffer.append(object.toString());
                                 }
                                 isArgument = false;
                                 objectGet = false;
@@ -105,9 +105,31 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                     } else {
                         if (field) {
                             if (c == '.' || c == ':' || c == '}') {
-                                object = object.getClass().getDeclaredField(format.substring(numOfFieldPosition, i)).get(object);
-                                if (object == null) {
-                                    throw new FormatterException("Null pointer field.");
+                                boolean notFound;
+                                Field fieldObject;
+                                if (object != null) {
+                                    Class clazz = object.getClass();
+                                    String nameOfField = format.substring(numOfFieldPosition, i);
+                                    do {
+                                        notFound = false;
+                                        try {
+                                            fieldObject = clazz.getDeclaredField(nameOfField);
+                                        } catch (NoSuchFieldException e) {
+                                            notFound = true;
+                                            fieldObject = null;
+                                            clazz = clazz.getSuperclass();
+                                            if (clazz == null) { // Hasn't superclass
+                                                buffer.append("");
+                                                break;
+                                            }
+                                        }
+                                    } while (notFound);
+                                    if (fieldObject != null) {
+                                        fieldObject.setAccessible(true);
+                                        object = fieldObject.get(object);
+                                    } else {
+                                        object = null;
+                                    }
                                 }
                                 if (c == ':') {
                                     field = false;
@@ -115,9 +137,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                                     numOfPatternPosition = i + 1;
                                 } else if (c == '}') {
                                     if (object == null) {
-                                        return;
+                                        buffer.append("");
                                     } else {
-                                        builder.append(object.toString());
+                                        buffer.append(object.toString());
                                     }
                                     isArgument = false;
                                     objectGet = false;
@@ -130,12 +152,12 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                         } else if (pattern) {
                             if (c == '}') {
                                 if (object == null) {
-                                    return;
+                                    buffer.append("");
                                 } else {
                                     if (!supported(object.getClass())) {
                                         throw new FormatterException("Type doesn't supported.");
                                     }
-                                    getExtension(object).format(builder, object, format.substring(numOfPatternPosition, i));
+                                    getExtension(object).format(buffer, object, format.substring(numOfPatternPosition, i));
                                 }
                                 isArgument = false;
                                 objectGet = false;
@@ -147,9 +169,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 }
             }
         } catch (Throwable t) {
-            throw new FormatterException(t.getMessage());
+            throw new FormatterException(t.getMessage(), t);
         }
-        buffer.append(builder.toString());
     }
 
     @Override

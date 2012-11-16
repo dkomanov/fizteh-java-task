@@ -6,23 +6,6 @@ import ru.fizteh.fivt.format.FormatterException;
 
 import java.util.Calendar;
 
-class ClassEleven {
-    public int intField = 11;
-    public String stringField = "eleven";
-}
-
-class ClassTwelve {
-    ClassEleven eleven = new ClassEleven();
-}
-
-class ClassWithCalendar {
-    Calendar calendar;
-
-    ClassWithCalendar(Calendar calendar) {
-        this.calendar = calendar;
-    }
-}
-
 public class UnitTests extends Assert {
 
     // Tests for class CalendarFormat
@@ -47,6 +30,11 @@ public class UnitTests extends Assert {
         new CalendarFormat().format(null, Calendar.getInstance(), "yyyy");
     }
 
+    @Test(expected = FormatterException.class)
+    public void testCalendarFormatEmptyPattern() {
+        new CalendarFormat().format(new StringBuilder(), Calendar.getInstance(), "");
+    }
+
     @Test
     public void testCalendarFormat() {
         StringBuilder builder = new StringBuilder();
@@ -67,8 +55,6 @@ public class UnitTests extends Assert {
         formatter.format(builder, calendar, "HH.mm dd.MM.yyyy");
         assertEquals("16.50 11.12.1993", builder.toString());
         builder = new StringBuilder();
-        formatter.format(builder, calendar, "");
-        assertEquals("", builder.toString());
     }
 
     @Test(expected = FormatterException.class)
@@ -112,7 +98,6 @@ public class UnitTests extends Assert {
         builder = new StringBuilder();
         formatter.format(builder, new Long(11), "5x");
         assertEquals("    b", builder.toString());
-        builder = new StringBuilder();
     }
 
     // Tests for StringFormatter
@@ -120,6 +105,26 @@ public class UnitTests extends Assert {
     @Test(expected = FormatterException.class)
     public void testStringFormatterNullPointerExtension() {
         new StringFormatter().addExtension(null);
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterUnsupportedExtension() {
+        new StringFormatter().getExtension("java.util.Calendar");
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterIncorrectPatternFormat() {
+        new StringFormatter().format("something0}");
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterNotDigit() {
+        new StringFormatter().format("{a0:d}", new Long(11));
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterUnsupportedExtensionInPattern() {
+        new StringFormatter().format("{0:d} something", new Long(11));
     }
 
     @Test
@@ -145,6 +150,16 @@ public class UnitTests extends Assert {
         new StringFormatter().format("{0:yyyy.MM.dd}", Calendar.getInstance());
     }
 
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterIncorrectFormatWithField() {
+        new StringFormatter().format("{.field} something", new ClassEleven());
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testStringFormatterIncorrectFormatWithFormat() {
+        new StringFormatter().format("{:2d} something", new Long(11));
+    }
+
     @Test
     public void testStringFormatter() {
         StringFormatter formatter = new StringFormatter();
@@ -156,6 +171,9 @@ public class UnitTests extends Assert {
         assertEquals("Class class java.util.Calendar", formatter.format("Class {0}", Calendar.class));
         assertEquals("eleven is 11", formatter.format("{0.stringField} is {0.intField}", new ClassEleven()));
         assertEquals("eleven", formatter.format("{0.eleven.stringField}", new ClassTwelve()));
+        assertEquals("eleven", formatter.format("{0.stringField}", new ClassTwelve()));
+        assertEquals(" something", formatter.format("{0.nullField} something", new ClassEleven()));
+        assertEquals("", formatter.format("{0.notExistField}", new ClassTwelve()));
         formatter.addExtension(new CalendarFormat());
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 16);
@@ -169,7 +187,7 @@ public class UnitTests extends Assert {
                 calendar, new ClassWithCalendar(calendar)));
         formatter.addExtension(new LongFormat());
         assertEquals("11 is eleven. b in hex.", formatter.format("{0:d} is eleven. {0:x} in hex.", new Long(11)));
-        assertEquals("", formatter.format("{0} is null.", null));
+        assertEquals(" is null.", formatter.format("{0} is null.", null));
         assertEquals("Without arguments.", formatter.format("Without arguments."));
     }
 

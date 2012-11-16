@@ -50,43 +50,40 @@ public class Shell {
     }
 
     static boolean execCd(String destinedPath) {
-        File parentFile = new File(curPath).getParentFile();
-        File absoluteDestinedFile = new File(destinedPath).getAbsoluteFile();
-        File destinedFile = new File(curPath + File.separatorChar
-                                     + destinedPath);
+        File destinedFile = new File(destinedPath);
+        if (!destinedFile.isAbsolute()) {
+            destinedFile = new File(curPath + File.separatorChar
+                                    + destinedPath);
+        }
 
-        if (destinedPath.equals("..")) {
-            if (parentFile == null) {
-                System.err.println("Unable to cd ..");
-                if (isPackageMode) {
-                    System.exit(1);
-                }
-                return false;
-            }
-            String parentPath = parentFile.toString();
-            if (parentFile.exists()) {
-                curPath = parentPath;
-            } else {
-                reportError("No such directory.");
-                return false;
-            }
-        } else if (!destinedPath.equals(".")) {
-            if (absoluteDestinedFile.exists()) {
-                curPath = absoluteDestinedFile.toString();
-            } else if (destinedFile.exists()) {
-                curPath = destinedFile.toString();
-            } else {
-                reportError("Cd: " + destinedPath
-                            + " - no such directory");
-                return false;
-            }
+        if (!destinedFile.isDirectory()) {
+            reportError("Cd: No such directory " + destinedFile);
+            return false;
+        }
+
+        if(!destinedFile.exists()) {
+            reportError("Cd: " + destinedPath + " - doesn't exist.");
+            return false;
+        }
+
+        try {
+            curPath = destinedFile.getCanonicalPath();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
         }
         return true;
     }
 
     static boolean execMkdir(String dirName) {
-        File desiredFile = new File(curPath + File.separatorChar
-                                    + dirName);
+        File desiredFile = null;
+        try {
+            desiredFile = new File(curPath + File.separatorChar
+                                   + dirName).getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
+        }
 
         if (desiredFile.exists()) {
              reportError("mkdir: " + dirName
@@ -111,15 +108,19 @@ public class Shell {
 
     static boolean execRm(String fileName) {
         if (fileName.equals("..") || fileName.equals(".")) {
-            if (isPackageMode) {
-                System.exit(1);
-            }
+            reportError("Unable to remove " + fileName);
             return false;
         }
         File fileToDelete = new File(fileName);
         if (!fileToDelete.isAbsolute()) {
             fileToDelete = new File(curPath + File.separatorChar
                                     + fileName);
+        }
+        try {
+            fileToDelete = fileToDelete.getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
         }
         if (fileToDelete.isDirectory()) {
             File[] files = fileToDelete.listFiles();
@@ -129,16 +130,16 @@ public class Shell {
                         return false;
                     }
                 } else if (!files[i].delete()) {
-                    reportError("Can't delete " + fileName);
+                    reportError("Unable to remove " + fileName);
                     return false;
                 }
             }
             if (!fileToDelete.delete()) {
-                reportError("Can't delete " + fileName);
+                reportError("Unable to remove " + fileName);
                 return false;
             }
         } else if (!fileToDelete.delete()) {
-            reportError("Can't delete " + fileName);
+            reportError("Unable to remove " + fileName);
             return false;
         }
         return true;
@@ -147,7 +148,6 @@ public class Shell {
     static boolean execCp(String source, String destination) {
         File from = new File(source);
         File to = new File(destination);
-
         if (!from.isAbsolute()) {
             from = new File(curPath + File.separatorChar + source);
         }
@@ -158,9 +158,17 @@ public class Shell {
             reportError("cp: " + from + " doesn't exist");
             return false;
         }
-        if (!to.exists()) {
-            reportError("cp: " + to + " doesn't exist.");
-            return false;
+        try {
+            from = from.getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
+        }
+        try {
+            to = to.getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
         }
 
         String fromStr = from.toString();
@@ -173,14 +181,17 @@ public class Shell {
                         + " to it's subdirectory " + to);
             return false;
         }
-
         String relativeSourceFile = fromStr.substring(fromStr.lastIndexOf(File.separatorChar) + 1);
         if (from.isDirectory()) {
-            File directoryCopy = new File(to.toString()
-                                          + File.separatorChar
+            File directoryCopy = new File(toStr + File.separatorChar
                                           + relativeSourceFile);
-            if (!directoryCopy.exists()) {
-                if (!directoryCopy.mkdir()) {
+            if (directoryCopy.exists() && !directoryCopy.isDirectory()) {
+                reportError("Cp: Unable to copy non file - " + fromStr
+                            + "to file - " + toStr);
+                return false;
+            } else if (!directoryCopy.exists()) {
+                if (!directoryCopy.mkdirs()) {
+                    reportError("Cp: unable to create " + directoryCopy);
                     return false;
                 }
             }
@@ -192,11 +203,15 @@ public class Shell {
                 }
             }
         } else {
-            File fileToCopy = new File(to.toString()
-                                       + File.separatorChar
-                                       + relativeSourceFile);
+            File fileWhereToCopy = new File(toStr);
+            if (to.isDirectory()) {
+                fileWhereToCopy = new File(toStr + File.separatorChar
+                                           + relativeSourceFile);
+            }
             try {
-                fileToCopy.createNewFile();
+                if (!fileWhereToCopy.exists()) {
+                    fileWhereToCopy.createNewFile();
+                }
             } catch (Exception ex) {
                 System.err.println(ex.getMessage());
                 System.exit(1);
@@ -204,11 +219,8 @@ public class Shell {
             FileInputStream fis = null;
             FileOutputStream fos = null;
             try {
-                File fromFile = new File(to.toString()
-                                         + File.separatorChar
-                                         + relativeSourceFile);
-                fis = new FileInputStream(fromFile);
-                fos = new FileOutputStream(fileToCopy);
+                fis = new FileInputStream(from);
+                fos = new FileOutputStream(fileWhereToCopy);
                 byte[] buffer = new byte[1024];
                 int dataSize;
                 while ((dataSize = fis.read(buffer)) >= 0) {
@@ -218,8 +230,8 @@ public class Shell {
                 System.err.println(ex.getMessage());
                 System.exit(1);
             } finally {
-                IOUtils.closeFile(from.toString(), fis);
-                IOUtils.closeFile(to.toString(), fos);
+                IOUtils.closeFile(fromStr, fis);
+                IOUtils.closeFile(toStr, fos);
             }
         }
         return true;
@@ -239,9 +251,17 @@ public class Shell {
             reportError("cp: " + from + " doesn't exist");
             return false;
         }
-        if (!to.exists()) {
-            reportError("cp: " + to + " doesn't exist.");
-            return false;
+        try {
+            from = from.getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
+        }
+        try {
+            to = to.getCanonicalFile();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
         }
 
         if (from.equals(to)) {
@@ -254,9 +274,12 @@ public class Shell {
             from.renameTo(renamedFile);
         } else {
             if (!execCp(source, destination)) {
+                reportError("Mv: unable to execute cp "
+                            + source + " " + destination);
                 return false;
             }
             if (!execRm(from.toString())) {
+                reportError("Mv: unable to execute rm " + from.toString());
                 return false;
             }
         }
