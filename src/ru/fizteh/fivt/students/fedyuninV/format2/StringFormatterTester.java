@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.fedyuninV.format;
+package ru.fizteh.fivt.students.fedyuninV.format2;
 
 
 import org.junit.Assert;
