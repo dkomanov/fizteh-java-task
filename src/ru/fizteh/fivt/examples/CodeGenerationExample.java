@@ -39,10 +39,6 @@ public class CodeGenerationExample {
 
     private static Class<?> loadClass(byte[] bytes) {
         class LocalClassLoader extends ClassLoader {
-            LocalClassLoader() {
-                super(ClassLoader.getSystemClassLoader());
-            }
-
             public Class<?> defineClass(byte[] bytes) {
                 return super.defineClass(null, bytes, 0, bytes.length);
             }
