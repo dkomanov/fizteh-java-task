@@ -48,7 +48,7 @@ public class CommandFactory {
         }
 
         if (command.equals("pwd")) {
-            return new Pwd(position);
+            return new Pwd(arguments, position);
         }
 
         if (command.equals("rm")) {
