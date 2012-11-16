@@ -1,5 +1,5 @@
 /*V 1.1, to understand that all is right*/
-package misc.shell;
+package ru.fizteh.fivt.students.yushkevichAnton.shell;
 
 import java.io.*;
 import java.util.*;

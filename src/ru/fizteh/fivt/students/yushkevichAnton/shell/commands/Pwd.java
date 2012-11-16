@@ -1,7 +1,7 @@
-package misc.shell.commands;
+package ru.fizteh.fivt.students.yushkevichAnton.shell.commands;
 
-import misc.shell.IOCommand;
-import misc.shell.MovableFile;
+import ru.fizteh.fivt.students.yushkevichAnton.shell.IOCommand;
+import ru.fizteh.fivt.students.yushkevichAnton.shell.MovableFile;
 
 public class Pwd extends IOCommand {
     public Pwd(MovableFile position) {

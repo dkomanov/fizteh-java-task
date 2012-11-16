@@ -1,4 +1,4 @@
-package misc.shell;
+package ru.fizteh.fivt.students.yushkevichAnton.shell;
 
 public abstract class IOCommand extends Command {
     private IOCommand(String[] arguments) {

@@ -1,7 +1,7 @@
 /*V 1.1, to understand that all is right*/
-package misc.shell;
+package ru.fizteh.fivt.students.yushkevichAnton.shell;
 
-import misc.shell.commands.*;
+import ru.fizteh.fivt.students.yushkevichAnton.shell.commands.*;
 
 import java.io.*;
 import java.util.*;

@@ -1,6 +1,6 @@
-package misc.shell.commands;
+package ru.fizteh.fivt.students.yushkevichAnton.shell.commands;
 
-import misc.shell.Command;
+import ru.fizteh.fivt.students.yushkevichAnton.shell.Command;
 
 import java.io.*;
 
