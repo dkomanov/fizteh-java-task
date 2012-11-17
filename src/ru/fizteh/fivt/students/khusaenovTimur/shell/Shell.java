@@ -97,7 +97,7 @@ public class Shell {
         if (!file.isAbsolute()) {
             file = new File(currentPath, path);
         }
-        throw new RuntimeException("incorrect command.");
+        return file;
     }
 
     public static void makeDirectory(ArrayList<String> parsedCommand) {
@@ -117,25 +117,15 @@ public class Shell {
 
     public static void changeDirectory(ArrayList<String> parsedCommand) {
         if (checkCommandFormat(parsedCommand, 2)) {
-            String s = parsedCommand.get(1);
-            if (s.equals(".")) {
-            } else if (s.equals("..")) {
-                try {
-                    currentPath = new File(currentPath).getParentFile().getAbsolutePath();
-                } catch (Exception exception) {
-                    System.err.println("cd: current directory is a root");
-                }
-
+            String newPath = parsedCommand.get(1);
+            File newFile = getAbsolutePathsFile(newPath);
+            if (!newFile.exists()) {
+                errorProcessing("cd: '" + newFile.getName() + "': No such file or directory");
             } else {
-                File newDirectory = getAbsolutePathsFile(parsedCommand.get(1));
-                if (newDirectory.exists()) {
-                    try {
-                        currentPath = newDirectory.getAbsolutePath();
-                    } catch (Exception exception) {
-                        errorProcessing("cd: " + exception.getMessage());
-                    }
-                } else {
-                    errorProcessing("cd: \'" + parsedCommand.get(1) + "\': No such file or directory");
+                try {
+                currentPath = newFile.getCanonicalPath();
+                } catch (Exception exception) {
+                    errorProcessing("cd: " + exception.getMessage());
                 }
             }
         } else {
