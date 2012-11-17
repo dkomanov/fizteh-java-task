@@ -16,7 +16,7 @@ public class Shell {
 
     public static boolean checkCommandFormat(ArrayList<String> parsedCommand, int numOfParts) {
         if (parsedCommand.size() != numOfParts) {
-            errorProcessing(parsedCommand.get(0) + " : wrong \"" + parsedCommand.get(0) + "\" format", 1);
+            errorProcessing(parsedCommand.get(0) + " : wrong \"" + parsedCommand.get(0) + "\" format");
             return false;
         }
         return true;
@@ -56,20 +56,19 @@ public class Shell {
         return parsedCommand;
     }
 
-    public static void errorProcessing(String message, int errorCode) {
+    public static void errorProcessing(String message) {
         System.err.println(message);
-        System.err.flush();
         if (isInteractiveMode) {
             return;
         }
-        System.exit(errorCode);
+        System.exit(1);
     }
 
     public static void exit(ArrayList<String> parsedCommand) {
         if (checkCommandFormat(parsedCommand, 1)) {
             System.exit(0);
         } else {
-            return;
+            throw new RuntimeException("incorrect command.");
         }
     }
 
@@ -77,7 +76,7 @@ public class Shell {
         if (checkCommandFormat(parsedCommand, 1)) {
             System.out.println(currentPath);
         } else {
-            return;
+            throw new RuntimeException("incorrect command.");
         }
     }
 
@@ -88,16 +87,16 @@ public class Shell {
                 System.out.println(fileName);
             }
         } else {
-            return;
+            throw new RuntimeException("incorrect command.");
         }
     }
 
     public static File getAbsolutePathsFile(String path) {
         File file = new File(path);
         if (!file.isAbsolute()) {
-            file = new File(currentPath + File.separator + path);
+            file = new File(currentPath, path);
         }
-        return file;
+        throw new RuntimeException("incorrect command.");
     }
 
     public static void makeDirectory(ArrayList<String> parsedCommand) {
@@ -105,13 +104,13 @@ public class Shell {
             File directory = getAbsolutePathsFile(parsedCommand.get(1));
             try {
                 if (!directory.mkdirs()) {
-                    errorProcessing("mkdir: cannot make \'" + directory.getAbsolutePath() + "\'", 9);
+                    errorProcessing("mkdir: cannot make \'" + directory.getAbsolutePath() + "\'");
                 }
             } catch (Exception exception) {
-                errorProcessing("mkdir: " + exception.getMessage(), 10);
+                errorProcessing("mkdir: " + exception.getMessage());
             }
         } else {
-            return;
+            throw new RuntimeException("incorrect command.");
         }
     }
 
@@ -132,14 +131,14 @@ public class Shell {
                     try {
                         currentPath = newDirectory.getAbsolutePath();
                     } catch (Exception exception) {
-                        errorProcessing("cd: " + exception.getMessage(), 11);
+                        errorProcessing("cd: " + exception.getMessage());
                     }
                 } else {
-                    errorProcessing("cd: \'" + parsedCommand.get(1) + "\': No such file or directory", 12);
+                    errorProcessing("cd: \'" + parsedCommand.get(1) + "\': No such file or directory");
                 }
             }
         } else {
-            return;
+            throw new RuntimeException("incorrect command.");
         }
     }
 
@@ -157,7 +156,7 @@ public class Shell {
                 return file.delete();
             }
         } catch (Exception exception) {
-            errorProcessing("rm: " + exception.getMessage(), 13);
+            errorProcessing("rm: " + exception.getMessage());
         }
         return false;
     }
@@ -166,10 +165,10 @@ public class Shell {
         if (checkCommandFormat(parsedCommand, 2)) {
             File file = getAbsolutePathsFile(parsedCommand.get(1));
             if (!deleteFile(file)) {
-                errorProcessing("rm: cannot delete \'" + file.getAbsolutePath() + "\'", 14);
+                errorProcessing("rm: cannot delete \'" + file.getAbsolutePath() + "\'");
             }
         } else {
-            return;
+            throw new RuntimeException("incorrect command.");
         }
     }
 
@@ -186,12 +185,16 @@ public class Shell {
             }
             return true;
         } catch (Exception exception) {
-            errorProcessing(exception.toString(), 2);
+            errorProcessing(exception.toString());
         } finally {
             try {
                 if (fileInputStream != null) {
                     fileInputStream.close();
                 }
+            } catch (Exception ex) {
+                System.err.println(ex.getMessage());
+            }
+            try {
                 if (fileOutputStream != null) {
                     fileOutputStream.close();
                 }
@@ -206,8 +209,8 @@ public class Shell {
         if (checkCommandFormat(parsedCommand, 3)) {
             File from = getAbsolutePathsFile(parsedCommand.get(1));
             if (!from.exists()) {
-                errorProcessing(parsedCommand.get(0) + ": file \'" + from.getAbsolutePath() + "\' does not exist", 3);
-                return;
+                errorProcessing(parsedCommand.get(0) + ": file \'" + from.getAbsolutePath() + "\' does not exist");
+                throw new RuntimeException("incorrect command.");
             }
             File to = getAbsolutePathsFile(parsedCommand.get(2));
             File finalTo = to;
@@ -216,14 +219,14 @@ public class Shell {
                     finalTo = new File(to.getAbsolutePath() + File.separator + from.getName());
                 }
                 if (!copyFile(from, to)) {
-                    errorProcessing(parsedCommand.get(0) + ": cannot copy file \'" + from.getAbsolutePath() + "\' to \'" + to.getAbsolutePath() + "\'", 4);
-                    return;
+                    errorProcessing(parsedCommand.get(0) + ": cannot copy file \'" + from.getAbsolutePath() + "\' to \'" + to.getAbsolutePath() + "\'");
+                    throw new RuntimeException("incorrect command.");
                 }
             } else {
                 finalTo = new File(to.getAbsolutePath() + File.separator + from.getName());
                 if (!finalTo.exists() && !finalTo.mkdirs()) {
-                    errorProcessing(parsedCommand.get(0) + ": cannot copy file \'" + from.getAbsolutePath() + "\' to \'" + to.getAbsolutePath() + "\'", 5);
-                    return;
+                    errorProcessing(parsedCommand.get(0) + ": cannot copy file \'" + from.getAbsolutePath() + "\' to \'" + to.getAbsolutePath() + "\'");
+                    throw new RuntimeException("incorrect command.");
                 }
                 for (String fileName : from.list()) {
                     ArrayList<String> arrayList = new ArrayList<String>(3);
@@ -234,7 +237,7 @@ public class Shell {
                 }
             }
         } else {
-            return;
+            throw new RuntimeException("incorrect command.");
         }
     }
 
@@ -243,7 +246,7 @@ public class Shell {
             File from = getAbsolutePathsFile(parsedCommand.get(1));
             File to = getAbsolutePathsFile(parsedCommand.get(2));
             if (!from.exists()) {
-                errorProcessing("mv: \'" + parsedCommand.get(1) + "\': No such file or directory", 6);
+                errorProcessing("mv: \'" + parsedCommand.get(1) + "\': No such file or directory");
             }
             try {
                 if (from.getParentFile().equals(to.getParentFile())) {
@@ -258,17 +261,16 @@ public class Shell {
                     newCommands.add(to.getAbsolutePath());
                     copy(newCommands);
                     if (deleteFile(from)) {
-                        errorProcessing("mv: unsuccessful deleting of " + from.getAbsolutePath(), 7);
+                        errorProcessing("mv: unsuccessful deleting of " + from.getAbsolutePath());
                     }
 
                 }
             } catch (Exception exception) {
-                errorProcessing("mv: " + exception.getMessage(), 8);
+                errorProcessing("mv: " + exception.getMessage());
             }
         } else {
-            return;
+            throw new RuntimeException("incorrect command.");
         }
-
     }
 
     public static void executeCommand(String command) throws FileNotFoundException {
@@ -299,7 +301,8 @@ public class Shell {
             exit(parsedCommand);
 
         } else {
-            errorProcessing("Unknown command", 2);
+            errorProcessing("Unknown command");
+            throw new RuntimeException();
         }
     }
 
@@ -309,42 +312,46 @@ public class Shell {
             isInteractiveMode = true;
         }
         currentPath = new File("").getAbsolutePath();
-        System.out.print(currentPath);
-        try {
-            if (!isInteractiveMode) {
-                StringBuilder stringBuilder = new StringBuilder();
-                for (int i = 0; i < args.length; ++i) {
-                    stringBuilder.append(args[i]).append(" ");
-                }
-                stringBuilder.append("; ");
-                String commandsList[] = stringBuilder.toString().split("\\s*;\\s*");
+      /*  if (isInteractiveMode) {
+            System.out.print(currentPath);
+        }*/
+        if (!isInteractiveMode) {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < args.length; ++i) {
+                stringBuilder.append(args[i]).append(" ");
+            }
+            stringBuilder.append(";");
+            String commandsList[] = stringBuilder.toString().split("\\s*;\\s*");
+            try {
                 for (String command : commandsList) {
-                    executeCommand(command);
+                    if (command.length() > 0) {
+                        executeCommand(command);
+                    }
                 }
-            } else {
-
-                InputStreamReader inputStreamReader = new InputStreamReader(System.in);
-                BufferedReader input = new BufferedReader(inputStreamReader);
-                while (true) {
-                    System.out.print(currentPath + "& ");
-                    StringBuilder stringBuilder = new StringBuilder();
-                    String incomingCommands = input.readLine();
-                    if (incomingCommands != null) {
-                        stringBuilder.append(incomingCommands).append(" ; ");
-                        String commandsList[] = stringBuilder.toString().split("\\s*;\\s*");
+            } catch (Throwable t) {
+                //t.printStackTrace();
+                System.exit(1);
+            }
+        } else {
+            InputStreamReader inputStreamReader = new InputStreamReader(System.in);
+            BufferedReader input = new BufferedReader(inputStreamReader);
+            while (true) {
+                System.out.print(currentPath + "& ");
+                StringBuilder stringBuilder = new StringBuilder();
+                String incomingCommands = input.readLine();
+                if (incomingCommands != null) {
+                    stringBuilder.append(incomingCommands).append(" ; ");
+                    String commandsList[] = stringBuilder.toString().split("\\s*;\\s*");
+                    try {
                         for (String command : commandsList) {
                             executeCommand(command);
                         }
+                    } catch (Throwable t) {
                     }
-                    else {
-                        System.exit(0);
-                    }
+                } else {
+                    System.exit(0);
                 }
-
             }
-        } catch (Exception exception) {
-            System.err.println("Error: " + exception);
         }
-
     }
 }
