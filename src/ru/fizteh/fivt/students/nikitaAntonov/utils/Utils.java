@@ -9,6 +9,7 @@ public class Utils {
 
         for (String s : list) {
             result.append(s);
+            result.append(" ");
         }
 
         return result.toString();

@@ -114,7 +114,7 @@ class Shell extends ConsoleApp {
 
     private void checkForParams(String params[], String usage, int needed)
             throws ConsoleAppException {
-        if (params.length > needed) {
+        if (params.length != needed) {
             throw new IncorrectUsageException(usage);
         }
     }
