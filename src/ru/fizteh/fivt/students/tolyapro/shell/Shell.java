@@ -5,7 +5,8 @@ import java.util.Scanner;
 public class Shell {
 
     public static String execute(String[] arguments,
-            ShellCommandsExecutor shell, String currPath) {
+            ShellCommandsExecutor shell, String currPath,
+            boolean isModeInteractive) {
         for (String arg : arguments) {
             try {
                 if (!arg.isEmpty()) {
@@ -15,6 +16,10 @@ public class Shell {
                 }
             } catch (Exception e) {
                 System.err.println(e.getMessage());
+                if (!isModeInteractive) {
+                    System.exit(1);
+                }
+
             }
         }
         return currPath;
@@ -30,7 +35,7 @@ public class Shell {
                 argumentsBuilder.append(" ");
             }
             String[] arguments = argumentsBuilder.toString().split(";");
-            currPath = execute(arguments, shell, currPath);
+            currPath = execute(arguments, shell, currPath, false);
         } else {
             Scanner scanner = new Scanner(System.in);
             while (true) {
@@ -39,7 +44,7 @@ public class Shell {
                     String input = scanner.nextLine();
                     if (input != null) {
                         String[] arguments = input.split(";");
-                        currPath = execute(arguments, shell, currPath);
+                        currPath = execute(arguments, shell, currPath, true);
                     } else {
                         System.exit(0);
                     }

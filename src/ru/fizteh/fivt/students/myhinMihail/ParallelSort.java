@@ -186,7 +186,7 @@ public class ParallelSort {
                             break;
                         
                         default:
-                            System.err.println("Unknown parametr: \'" + args[i].charAt(j) + "\'");
+                            Utils.printErrorAndExit("Unknown parametr: \'" + args[i].charAt(j) + "\'");
                             break;
                     }
                     if (toBreak) {
@@ -250,8 +250,7 @@ public class ParallelSort {
         
     public static void main(String[] args) {
         BufferedWriter out = null;
-        FileOutputStream fos = null;
-        OutputStreamWriter osw = null;
+        FileWriter fw = null;
         
         try {
             String separator = System.getProperty("line.separator");
@@ -265,9 +264,8 @@ public class ParallelSort {
         
             if (!output.isEmpty()) {
                 try {
-                    fos = new FileOutputStream(output);
-                    osw = new OutputStreamWriter(fos);
-                    out = new BufferedWriter(osw);
+                    fw = new FileWriter(output);
+                    out = new BufferedWriter(fw);
                 } catch (Exception e) {
                     Utils.tryClose(out);
                     System.err.println("Can not write to " + output + "\n" + e.getMessage());
@@ -292,11 +290,12 @@ public class ParallelSort {
                 }
             }
             
+            int realTreadsCount = 0;
+            
             if (threadsCount > 1) {
                 Vector<Integer> mergeRange = new Vector<Integer>();
                 int curFrom = 0;
                 int curTo = 0;
-                int realTreadsCount = 0;
                 Object synchronizer = new Object();
                 
                 LinkedBlockingQueue<SortPiece> queue = new LinkedBlockingQueue<SortPiece>(threadsCount);
@@ -331,38 +330,38 @@ public class ParallelSort {
                         synchronizer.wait();
                     }
                 }
-                
                 Comparator<String> comp = new StringComp();
                 
                 if (notCaseSensitive) {
                     comp = String.CASE_INSENSITIVE_ORDER;
                 }
-                
-                boolean lastMerge = false;
-                int mult = 1;
-                int i = 0;
-                while (2 * mult < mergeRange.size()) {
-                    i = 0;
-                    while (i < mergeRange.size() - 1) {
-                        if (i + 2 * mult < mergeRange.size()) {
-                            if (mergeRange.get(i) == 0 && mergeRange.get(i + 2 * mult) == list.size()) {
-                                lastMerge = true;
+                if (realTreadsCount > 1) {
+                    boolean lastMerge = false;
+                    int mult = 1;
+                    int i = 0;
+                    while (2 * mult < mergeRange.size()) {
+                        i = 0;
+                        while (i < mergeRange.size() - 1) {
+                            if (i + 2 * mult < mergeRange.size()) {
+                                if (mergeRange.get(i) == 0 && mergeRange.get(i + 2 * mult) == list.size()) {
+                                    lastMerge = true;
+                                } else {
+                                    lastMerge = false;
+                                }
+                                merge(list, mergeRange.get(i), mergeRange.get(i + mult), mergeRange.get(i + 2 * mult), lastMerge, comp);
+                                i += 2 * mult;
                             } else {
-                                lastMerge = false;
+                                if (mergeRange.get(i - 2 * mult) == 0 && mergeRange.get(i + mult) == list.size()) {
+                                    lastMerge = true;
+                                } else {
+                                    lastMerge = false;
+                                }
+                                merge(list, mergeRange.get(i - 2 * mult), mergeRange.get(i), mergeRange.get(i + mult), lastMerge, comp);
+                                break;
                             }
-                            merge(list, mergeRange.get(i), mergeRange.get(i + mult), mergeRange.get(i + 2 * mult), lastMerge, comp);
-                            i += 2 * mult;
-                        } else {
-                            if (mergeRange.get(i - 2 * mult) == 0 && mergeRange.get(i + mult) == list.size()) {
-                                lastMerge = true;
-                            } else {
-                                lastMerge = false;
-                            }
-                            merge(list, mergeRange.get(i - 2 * mult), mergeRange.get(i), mergeRange.get(i + mult), lastMerge, comp);
-                            break;
                         }
+                        mult *= 2;
                     }
-                    mult *= 2;
                 }
                 
             } else {
@@ -375,7 +374,7 @@ public class ParallelSort {
             
             out.write(list.get(0) + separator);
             for (int i = 1; i < list.size(); ++i) {
-                if (onlyUnique && threadsCount == 1) {
+                if (onlyUnique && realTreadsCount <= 1) {
                     if (notCaseSensitive) {
                         if (String.CASE_INSENSITIVE_ORDER.compare(list.get(i), list.get(i - 1)) != 0) {
                             out.write(list.get(i) + separator);
@@ -403,8 +402,7 @@ public class ParallelSort {
                 }
             }
             
-            Utils.tryClose(osw);
-            Utils.tryClose(fos);
+            Utils.tryClose(fw);
         }
         
     }

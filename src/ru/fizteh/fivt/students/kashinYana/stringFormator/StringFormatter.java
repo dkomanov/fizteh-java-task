@@ -3,6 +3,7 @@ package ru.fizteh.fivt.students.kashinYana.stringFormator;
 import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -109,7 +110,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         while (tokenRead.hasMoreTokens()) {
             String token = tokenRead.nextToken();
             try {
-                object = object.getClass().getField(token).get(object);
+                Field privateStringField = object.getClass().getDeclaredField(token);
+                privateStringField.setAccessible(true);
+                object = privateStringField.get(object);
             } catch (Exception e) {
                 //throw new FormatterException("Unknown field");
                 object = null;
