@@ -76,21 +76,24 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             throws FormatterException {
 
         int endName = token.indexOf(":");
+
         if (endName == -1) {
             endName = token.length();
         }
 
         String name = token.substring(0, endName);
-        Object obj = null;
-        obj = getField(name, args);
+        Object object = null;
+        object = getField(name, args);
 
         if (endName == token.length()) {
-            if (obj != null) {
-                buffer.append(obj.toString());
+            if (object != null) {
+                buffer.append(object.toString());
             }
         } else {
-            String pattern = token.substring(endName + 1);
-            useExtension(buffer, pattern, obj);
+            if (object != null) {
+                String pattern = token.substring(endName + 1);
+                useExtension(buffer, pattern, object);
+            }
         }
     }
 
@@ -105,17 +108,26 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             index = Integer.parseInt(indexInString);
             object = args[index];
         } catch (Exception notNum) {
-            throw new FormatterException("Found error number ot type of argv.");
+            throw new FormatterException("Found error number or type of argvs.");
         }
         while (tokenRead.hasMoreTokens()) {
             String token = tokenRead.nextToken();
-            try {
-                Field privateStringField = object.getClass().getDeclaredField(token);
-                privateStringField.setAccessible(true);
-                object = privateStringField.get(object);
-            } catch (Exception e) {
-                //throw new FormatterException("Unknown field");
+            Class parent = object.getClass();
+            boolean isFind = false;
+            while(parent != null) {
+                try {
+                    Field privateStringField = parent.getDeclaredField(token);
+                    privateStringField.setAccessible(true);
+                    object = privateStringField.get(object);
+                    isFind = true;
+                    break;
+                } catch (Exception e) {
+                    parent = parent.getSuperclass();
+                }
+            }
+            if (!isFind) {
                 object = null;
+                return object;
             }
         }
         return object;

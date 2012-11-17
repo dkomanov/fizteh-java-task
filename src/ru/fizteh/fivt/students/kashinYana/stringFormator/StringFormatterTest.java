@@ -10,14 +10,32 @@ public class StringFormatterTest {
 
     public static void main(String[] args) throws Exception {
         try {
+            testSuperClass();
             testWithString();
             testWithInteger();
-            testWithDate();
+            //testWithDate();
             testWrong();
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
+    }
+
+    static void testSuperClass() throws Exception {
+
+        class A {
+            public int a;
+        }
+        class B  extends A {
+            private int b;
+            B(int aa, int bb) {
+                b = bb;
+                a = aa;
+            }
+        }
+        B testB = new B(1, 2);
+        StringFormatter basic = factory.create();
+        check("1 2 ", basic.format("{0.a} {0.b} {0.c}", testB));
     }
 
     static void testWithString() throws Exception {
@@ -44,6 +62,10 @@ public class StringFormatterTest {
         check("Int = 0012 00010", basic.format("Int = {0:04d} {1:05d}", 12, 10));
         check("Int = {   7}", basic.format("Int = {{{0:4d}}}", 7));
         check("Int = {10}", basic.format("Int = {{{0:o}}}", 8));
+        Integer numberNull = null;
+        check("Int null = ", basic.format("Int null = {0:o}", numberNull));
+        check("Int null = ", basic.format("Int null = {0:out}", numberNull));
+        check("Int null = ", basic.format("Int null = {0:out}", 100500));
     }
 
     static void testWithDate() throws Exception {
@@ -70,7 +92,8 @@ public class StringFormatterTest {
         checkWrong("Strange {", "{");
         checkWrong("Strange }", "}");
         checkWrong("Extention not found.", "{0:int}", 567);
-        checkWrong("Found error number ot type of argv.", "number {6}", 1, 2);
+        checkWrong("Found error number or type of argvs.", "number {6}", 1, 2);
+        checkWrong("Found error number or type of argvs.", "number {-5}", 1, 2);
     }
 
     static void checkWrong(String correct, String input, Object... argv) {
