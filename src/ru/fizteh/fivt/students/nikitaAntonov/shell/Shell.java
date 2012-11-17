@@ -18,17 +18,26 @@ class Shell extends ConsoleApp {
 
     private File workingDir;
     
-    public Shell() {
-        workingDir = (new File(".")).getAbsoluteFile();
+    public Shell() throws IOException {
+        workingDir = new File(".").getCanonicalFile();
     }
     
     public static void main(String args[]) {
-        Shell shell = new Shell();
-
-        shell.run(args);
+        Shell shell = null;
+        
+        try {
+            shell = new Shell();
+        } catch (IOException e) {
+            System.err.println("Can't get canonical path of working dir");
+            System.exit(1);
+        }
+        
+        if (shell != null)
+            shell.run(args);
     }
 
     public boolean execute(String str) throws ConsoleAppException, IOException {
+        str = str.trim();
         String parts[] = str.split("\\s+");
 
         if (parts.length == 0)
@@ -65,14 +74,14 @@ class Shell extends ConsoleApp {
         return false;
     }
     
-    private File getFileByName(String filename) {
+    private File getFileByName(String filename) throws IOException {
         File result = new File(filename);
         
         if (!result.isAbsolute()) {
             result = new File(workingDir, filename);
         }
         
-        return result.getAbsoluteFile();
+        return result.getCanonicalFile();
     }
     
     private void checkForParams(String params[], String usage, int needed) throws ConsoleAppException {
@@ -81,10 +90,10 @@ class Shell extends ConsoleApp {
         }
     }
     
-    private void deleteFile (File subject, String producer) throws ConsoleAppException {
+    private void deleteFile (File subject, String producer) throws ConsoleAppException, IOException {
         if (subject.isDirectory()) {
             for (String filename : subject.list()) {
-                deleteFile (new File(subject.getAbsolutePath() + File.separator + filename).getAbsoluteFile(), producer);
+                deleteFile (new File(subject, filename).getCanonicalFile(), producer);
             }
         }
         
@@ -93,12 +102,12 @@ class Shell extends ConsoleApp {
         }
     }
      
-    private void startCopying (String producer, String source, String destination) throws ConsoleAppException {
+    private void startCopying (String producer, String source, String destination) throws ConsoleAppException, IOException {
         destination = transformCopyDst(source, destination);
         copy(producer, source, destination);
     }
     
-    private String transformCopyDst(String source, String destination) {
+    private String transformCopyDst(String source, String destination) throws IOException {
         File src = getFileByName(source);
         File dst = getFileByName(destination);
         
@@ -113,7 +122,7 @@ class Shell extends ConsoleApp {
         return destination;
     }
     
-    private void copy(String producer, String srcFilename, String dstFilename) throws ConsoleAppException {
+    private void copy(String producer, String srcFilename, String dstFilename) throws ConsoleAppException, IOException {
         File source = getFileByName(srcFilename);
         File destination = getFileByName(dstFilename);
         
@@ -128,13 +137,17 @@ class Shell extends ConsoleApp {
         }
     }
     
-    private void copyDirs(String producer, File source, File destination) throws ConsoleAppException {
-        if (!destination.mkdir() && !destination.exists()) {
-            throw new ConsoleAppException(producer + ": cannot create directory " + destination.getAbsolutePath() + ": No such file or directory");
+    private void copyDirs(String producer, File source, File destination) throws ConsoleAppException, IOException {
+        if (!destination.mkdir()) {
+            if (!destination.exists()) {
+                throw new ConsoleAppException(producer + ": cannot create directory " + destination.getAbsolutePath() + ": No such file or directory");
+            } else if (source.isDirectory()) {
+                System.err.println("Warning! Directories " + source.getName() + " and " + destination.getName() + " will be merged");
+            }
         }
         
         for (String filename : source.list()) {
-            copy(producer, source.getAbsolutePath() + File.separator + filename, destination.getAbsolutePath() + File.separator + filename);
+            copy(producer, new File(source, filename).getCanonicalPath(), new File(source, filename).getCanonicalPath());
         }
     }
     
@@ -169,7 +182,7 @@ class Shell extends ConsoleApp {
         }
     }
     
-    private void doCd(String parts[]) throws ConsoleAppException {
+    private void doCd(String parts[]) throws ConsoleAppException, IOException {
         String usage = "cd <absolute path|relative path>";
         
         checkForParams(parts, usage, 2);
@@ -221,14 +234,14 @@ class Shell extends ConsoleApp {
         deleteFile(subject, "rm");
     }
 
-    private void doCp(String parts[]) throws ConsoleAppException {
+    private void doCp(String parts[]) throws ConsoleAppException, IOException {
         String usage = "cp <source> <destination>";
         checkForParams(parts, usage, 3);
         
         startCopying("cp", parts[1], parts[2]);
     }
 
-    private void doMv(String parts[]) throws ConsoleAppException {
+    private void doMv(String parts[]) throws ConsoleAppException, IOException {
         String usage = "mv <source> <destination>";
         checkForParams(parts, usage, 3);
         
