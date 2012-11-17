@@ -11,7 +11,23 @@ public class PerformanceTest {
         this.runnable = runnable;
     }
 
-    public void runTest(final int n) {
+    public RunResult runTestAndPrint(int n) {
+        RunResult result = runTest(n);
+
+        print("Total", result.getTotal());
+        print("Single", result.getSingle());
+
+        return result;
+    }
+
+    private static void print(String name, RunTimes times) {
+        System.err.println(name + " (nanos):    " + times.getNanos());
+        System.err.println(name + " (msecs):    " + times.getMsecs());
+        System.err.println(name + " (millis):   " + times.getMillis());
+        System.err.println(name + " (seconds):  " + times.getSeconds());
+    }
+
+    public RunResult runTest(final int n) {
         if (n <= 1000) {
             throw new IllegalArgumentException("n should be greater than 1000. Actual: " + n);
         }
@@ -32,15 +48,10 @@ public class PerformanceTest {
         long msecs = nanos / 1000;
         long millis = msecs / 1000;
 
-        System.err.println("Total (nanos):    " + nanos);
-        System.err.println("Total (msecs):    " + msecs);
-        System.err.println("Total (millis):   " + millis);
-        System.err.println("Total (seconds):  " + (millis / 1000));
-
-        System.err.println("Single (nanos):   " + (nanos / n));
-        System.err.println("Single (msecs):   " + (msecs / n));
-        System.err.println("Single (millis):  " + (millis / n));
-        System.err.println("Single (seconds): " + (millis / 1000 / n));
+        return new RunResult(
+                new RunTimes(nanos, msecs, millis, millis / 1000),
+                new RunTimes(nanos / n, msecs / n, millis / n, millis / 1000 / n)
+        );
     }
 
     public static void main(String[] args) {
@@ -50,6 +61,54 @@ public class PerformanceTest {
                 String.format("%d %d", 1, 1);
             }
         });
-        test.runTest(100000);
+        test.runTestAndPrint(100000);
+    }
+
+    public static class RunResult {
+        private final RunTimes total;
+        private final RunTimes single;
+
+        public RunResult(RunTimes total, RunTimes single) {
+            this.total = total;
+            this.single = single;
+        }
+
+        public RunTimes getTotal() {
+            return total;
+        }
+
+        public RunTimes getSingle() {
+            return single;
+        }
+    }
+
+    public static class RunTimes {
+        private final long nanos;
+        private final long msecs;
+        private final long millis;
+        private final long seconds;
+
+        public RunTimes(long nanos, long msecs, long millis, long seconds) {
+            this.nanos = nanos;
+            this.msecs = msecs;
+            this.millis = millis;
+            this.seconds = seconds;
+        }
+
+        public long getNanos() {
+            return nanos;
+        }
+
+        public long getMsecs() {
+            return msecs;
+        }
+
+        public long getMillis() {
+            return millis;
+        }
+
+        public long getSeconds() {
+            return seconds;
+        }
     }
 }

@@ -27,6 +27,15 @@ public class StringFormatterTest {
         check("}} little {{", basic.format("}}}} little {{{{", "papa"));
         check("}} little {{papa}}", basic.format("}}}} little {{{{{0}}}}}", "papa"));
         check("}} little ", basic.format("}}}} little {0.int}", "papa"));
+        class Pair {
+            int x, y;
+            Pair(int xx, int yy){
+                x = xx;
+                y = yy;
+            }
+        }
+        Pair pair = new Pair(3, 4);
+        check("Pair 3 4 ", basic.format("Pair {0.x} {0.y} {0.z}", pair));
     }
 
     static void testWithInteger() throws Exception {
@@ -47,7 +56,7 @@ public class StringFormatterTest {
         calendar.set(GregorianCalendar.MINUTE, 30);
         calendar.set(GregorianCalendar.SECOND, 07);
 
-        check("Date = 05:30:07", basic.format("Date = {0:HH:mm:ss}", calendar.getTime()));
+        check("Date = 17:30:07", basic.format("Date = {0:HH:mm:ss}", calendar.getTime()));
     }
 
     static void check(String correct, String answer) {
