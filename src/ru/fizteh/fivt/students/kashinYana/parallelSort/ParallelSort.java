@@ -11,16 +11,15 @@ public class ParallelSort {
 
     static public class Pair {
         String string;
-        int idFile, idWord;
+        int idWord;
 
-        Pair(String stringNew, int idFileNew, int idWordNew) {
+        Pair(String stringNew, int idWordNew) {
             string = stringNew;
-            idFile = idFileNew;
             idWord = idWordNew;
         }
 
         public String merge() {
-            return string + " " + idFile + " " + idWord;
+            return string + " " + idWord;
         }
 
         public String toString() {
@@ -28,6 +27,7 @@ public class ParallelSort {
         }
     }
 
+    static int numberWord = 0;
     static final int size = 1024 * 1024;
     static LinkedBlockingQueue queue;
     static ExecutorService service;
@@ -47,8 +47,8 @@ public class ParallelSort {
     public static void main(String[] args) throws Exception {
         Date date = new Date();
         inputString = new ArrayList<String>();
-        ans = new ArrayList();
-        ans2 = new ArrayList();
+        ans = new ArrayList<Pair>();
+        ans2 = new ArrayList<Pair>();
         if (args.length == 0) {
             System.err.println("[-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
             System.exit(1);
@@ -142,12 +142,11 @@ public class ParallelSort {
         try {
             if (isInput) {
                 for (int j = 0; j < nameFile.size(); j++) {     // read from files
-                    int numberWord = 0;
                     file = new FileReader(nameFile.get(j));
                     in = new BufferedReader(file);
                     while (in.ready()) {
                         String currentLine = in.readLine();
-                        queue.put(new Pair(currentLine, j, numberWord));
+                        queue.put(new Pair(currentLine, numberWord));
                         numberWord++;
                     }
                     in.close();
@@ -156,9 +155,8 @@ public class ParallelSort {
             } else {                                           // read from stdin
                 in = new BufferedReader(new InputStreamReader(System.in));
                 String currentLine;
-                int numberWord = 0;
                 while ((currentLine = in.readLine()) != null) {
-                    queue.put(new Pair(currentLine, 1, numberWord));
+                    queue.put(new Pair(currentLine, numberWord));
                     numberWord++;
                 }
                 in.close();
@@ -311,19 +309,7 @@ public class ParallelSort {
             if (ans < 0) {
                 return -1;
             } else if (ans == 0) {
-                if(string1.idFile < string2.idFile) {
-                    return -1;
-                } else if (string1.idFile > string2.idFile) {
-                    return 1;
-                } else {
-                    if(string1.idWord < string2.idWord) {
-                        return -1;
-                    } else if (string1.idWord > string2.idWord) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                }
+                return string1.idWord - string2.idWord;
             } else {
                 return 1;
             }
@@ -336,19 +322,7 @@ public class ParallelSort {
             if (ans < 0) {
                 return -1;
             } else if (ans == 0) {
-                if(string1.idFile < string2.idFile) {
-                    return -1;
-                } else if (string1.idFile > string2.idFile) {
-                    return 1;
-                } else {
-                    if(string1.idWord < string2.idWord) {
-                        return -1;
-                    } else if (string1.idWord > string2.idWord) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                }
+                return string1.idWord - string2.idWord;
             } else {
                 return 1;
             }
