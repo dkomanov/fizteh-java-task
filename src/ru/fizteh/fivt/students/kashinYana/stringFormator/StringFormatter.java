@@ -108,6 +108,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         Object object;
         try {
             index = Integer.parseInt(indexInString);
+            if(indexInString.equals("-0")) {
+                throw new FormatterException("-0 not good");
+            }
             object = args[index];
         } catch (Exception notNum) {
             throw new FormatterException("Found error number or type of argvs.");
