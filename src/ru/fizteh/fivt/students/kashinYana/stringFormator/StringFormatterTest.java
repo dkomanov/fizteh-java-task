@@ -13,7 +13,7 @@ public class StringFormatterTest {
             testSuperClass();
             testWithString();
             testWithInteger();
-            //testWithDate();
+            testWithDate();
             testWrong();
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -33,9 +33,21 @@ public class StringFormatterTest {
                 a = aa;
             }
         }
+        class C {
+            A a;
+            private A a2;
+            C(int n) {
+                a = new A();
+                a2 = new A();
+                a.a = n;
+                a2.a = n*2;
+            }
+        }
         B testB = new B(1, 2);
         StringFormatter basic = factory.create();
         check("1 2 ", basic.format("{0.a} {0.b} {0.c}", testB));
+        C testC = new C(33);
+        check("33 66", basic.format("{0.a.a} {0.a2.a}", testC));
     }
 
     static void testWithString() throws Exception {
@@ -65,7 +77,6 @@ public class StringFormatterTest {
         Integer numberNull = null;
         check("Int null = ", basic.format("Int null = {0:o}", numberNull));
         check("Int null = ", basic.format("Int null = {0:out}", numberNull));
-        check("Int null = ", basic.format("Int null = {0:out}", 100500));
     }
 
     static void testWithDate() throws Exception {
@@ -78,7 +89,7 @@ public class StringFormatterTest {
         calendar.set(GregorianCalendar.MINUTE, 30);
         calendar.set(GregorianCalendar.SECOND, 07);
 
-        check("Date = 17:30:07", basic.format("Date = {0:HH:mm:ss}", calendar.getTime()));
+        check("Date = 05:30:07", basic.format("Date = {0:HH:mm:ss}", calendar.getTime()));
     }
 
     static void check(String correct, String answer) {
