@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.nikitaAntonov.shell;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -13,13 +14,19 @@ import ru.fizteh.fivt.students.nikitaAntonov.utils.Utils;
  */
 class Shell extends ConsoleApp {
 
+    private File workingDir;
+    
+    public Shell() {
+        workingDir = (new File(".")).getAbsoluteFile();
+    }
+    
     public static void main(String args[]) {
         Shell shell = new Shell();
 
         shell.run(args);
     }
 
-    public boolean execute(String str) throws Exception {
+    public boolean execute(String str) throws ConsoleAppException, IOException {
         String parts[] = str.split("\\s+");
 
         if (parts.length == 0)
@@ -33,7 +40,7 @@ class Shell extends ConsoleApp {
             doMkdir(parts);
             break;
         case "pwd":
-            doPwd();
+            doPwd(parts);
             break;
         case "rm":
             doRm(parts);
@@ -48,41 +55,108 @@ class Shell extends ConsoleApp {
             doDir(parts);
             break;
         case "exit":
-            System.exit(0);
-            // Arrays.sor`
-            break;
+            return true;
         default:
-            throw new Exception("Unknown command " + parts[0]);
+            throw new ConsoleAppException("Unknown command " + parts[0]);
         }
 
         return false;
     }
+    
+    private File getFileByName(String filename) {
+        File result = new File(filename);
+        
+        if (!result.isAbsolute()) {
+            result = new File(workingDir.getAbsolutePath() + File.separator + filename);
+        }
+        
+        return result.getAbsoluteFile();
+    }
+    
+    private void checkForParams(String params[], String usage, int needed) throws ConsoleAppException {
+        if (params.length > needed) {
+            throw new IncorrectUsageException(usage);
+        }
+    }
+    
+    private void deleteFile (File subject) throws ConsoleAppException {
+        if (subject.isDirectory()) {
+            for (String filename : subject.list()) {
+                deleteFile (new File(subject.getAbsolutePath() + File.separator + filename).getAbsoluteFile());
+            }
+        }
+        
+        if (!subject.delete()) {
+            throw new ConsoleAppException("rm: cannot remove " + subject.getPath() + ": Unknown error");
+        }
+    }
+     
+    private void doCd(String parts[]) throws ConsoleAppException {
+        String usage = "cd <absolute path|relative path>";
+        
+        checkForParams(parts, usage, 2);
+        
+        File newDir = getFileByName(parts[1]);
+        
+        if (!newDir.exists()) {
+            throw new ConsoleAppException("cd: " + parts[1] + ": No such file or directory");
+        }
+        
+        if (!newDir.isDirectory()) {
+            throw new ConsoleAppException("cd: " + parts[1] + ": Not a directory");
+        }
+        
+        workingDir = newDir;
+    }
 
-    private static void doCd(String parts[]) {
+    private void doMkdir(String parts[]) throws ConsoleAppException, IOException{
+        String usage = "mkdir <dirname>";
+        checkForParams(parts, usage, 2);
+        
+        File newDir = getFileByName(parts[1]);
+        
+        if (newDir.exists()) {
+            throw new ConsoleAppException("mkdir: cannot create directory " + parts[1] + ": File exists");
+        }
+        
+        if (!newDir.mkdir()) {
+            throw new ConsoleAppException("mkdir: cannot create directory " + parts[1] + ": No such file or directory");
+        }
+    }
+
+    private void doPwd(String parts[]) throws ConsoleAppException, IOException {
+        String usage = "pwd (without any params)";
+        checkForParams(parts, usage, 1);
+        
+        System.out.println(workingDir.getCanonicalPath());
+    }
+
+    private void doRm(String parts[]) throws ConsoleAppException, IOException {
+        String usage = "rm <file|dir>";
+        checkForParams(parts, usage, 2);
+        
+        File subject = getFileByName(parts[1]);
+        if (!subject.exists()) {
+            throw new ConsoleAppException("rm: cannot remove " + parts[1] + ": No such file or directory");
+        }
+        
+        deleteFile(subject);
+    }
+
+    private void doCp(String parts[]) {
+    }
+
+    private void doMv(String parts[]) {
 
     }
 
-    private static void doMkdir(String parts[]) {
-
-    }
-
-    private static void doPwd() {
-        System.out.println(System.getProperty("user.dir"));
-    }
-
-    private static void doRm(String parts[]) {
-
-    }
-
-    private static void doCp(String parts[]) {
-    }
-
-    private static void doMv(String parts[]) {
-
-    }
-
-    private static void doDir(String parts[]) {
-
+    private void doDir(String parts[]) throws ConsoleAppException {
+        String usage = "dir";
+        checkForParams(parts, usage, 1);
+        
+        for (String filename : workingDir.list()) {
+            System.out.println(filename);
+        }
     }
 
     @Override
@@ -90,8 +164,16 @@ class Shell extends ConsoleApp {
         String expressions[] = s.split("\\s*;\\s*");
 
         for (String expr : expressions) {
-            if (execute(expr)) {
-                return true;
+            try {
+                if (execute(expr)) {
+                    return true;
+                }
+            } catch (ConsoleAppException e) {
+                System.err.println(e.getMessage());
+                throw e;
+            } catch (IOException e) {
+                System.err.println("IO Error: " + e.getMessage());
+                throw new ConsoleAppException(e);
             }
         }
 
@@ -160,8 +242,10 @@ abstract class ConsoleApp {
                 isComplete = processLine(s);
             } catch (ConsoleAppException e) {
             }
-
-            s = getLine(in);
+            
+            if (!isComplete) {
+                s = getLine(in);
+            }
         }
 
         Utils.closeResource(in);
@@ -174,7 +258,6 @@ abstract class ConsoleApp {
 
     /* Должен вернуть true в случае необходимости завершить работу */
     protected abstract boolean processLine(String s) throws ConsoleAppException;
-
     protected abstract void printPrompt();
 
 }
@@ -185,5 +268,24 @@ class ConsoleAppException extends Exception {
 
     public ConsoleAppException(String message) {
         super(message);
+    }
+    
+    public ConsoleAppException(Throwable cause) {
+        super(cause);
+    }
+    
+    public ConsoleAppException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+class IncorrectUsageException extends ConsoleAppException {
+
+    private static final long serialVersionUID = 3825224109701172462L;
+    private static final String prefix = "Incorrect number of parameters\n" +
+                                  "Usage: ";
+
+    public IncorrectUsageException(String message) {
+        super(prefix + message);
     }
 }
