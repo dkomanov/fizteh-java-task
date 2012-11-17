@@ -33,6 +33,10 @@ class Stuff extends Dummy {
     private long z = -9;
 }
 
+class OneMore extends Stuff {
+    String hello = "goodbye";
+}
+
 /*
  * Several correctness tests for StringFormatter
  */
@@ -40,6 +44,7 @@ public abstract class StringFormatterTest {
     private static StringFormatterFactory factory = new StringFormatterFactory();
     private static Dummy d = new Dummy();
     private static Stuff st = new Stuff();
+    private static OneMore om = new OneMore();
 
     /* Do the tests */
     public static void main(String[] args) {
@@ -69,6 +74,7 @@ public abstract class StringFormatterTest {
         check(basic, "-9", "{0.z}", st);
         check(basic, "32", "{0.zz}", st);
         check(basic, "7.5", "{0.y}", st);
+        check(basic, "32", "{0.zz}", om);
     }
 
     /* Basic tests of formatting double */

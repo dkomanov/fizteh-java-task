@@ -17,7 +17,7 @@ import java.util.Formatter;
 public class StringFormatterBigIntegerExtension
     extends StringFormatterExtension {
 
-    private Formatter formatter = new Formatter();
+    private Formatter formatter;
     private final String conv = "bBhHsSdoxX";
 
     /* Constructor */

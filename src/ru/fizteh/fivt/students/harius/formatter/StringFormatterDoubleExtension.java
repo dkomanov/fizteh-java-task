@@ -16,7 +16,7 @@ import java.util.Formatter;
 public class StringFormatterDoubleExtension
     extends StringFormatterExtension {
 
-    private Formatter formatter = new Formatter();
+    private Formatter formatter;
     private final String conv = "bBhHsSeEfgGaA";
 
     /* Constructor */
