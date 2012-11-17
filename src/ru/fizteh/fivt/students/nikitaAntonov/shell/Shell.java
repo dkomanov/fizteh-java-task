@@ -38,7 +38,6 @@ class Shell extends ConsoleApp {
     }
 
     public boolean execute(String str) throws ConsoleAppException, IOException {
-        str = str.trim();
         String parts[] = str.split("\\s+");
 
         if (parts.length == 0)
@@ -284,6 +283,7 @@ class Shell extends ConsoleApp {
 
     @Override
     protected boolean processLine(String s) throws ConsoleAppException {
+        s = s.trim();
         String expressions[] = s.split("\\s*;\\s*");
 
         for (String expr : expressions) {
