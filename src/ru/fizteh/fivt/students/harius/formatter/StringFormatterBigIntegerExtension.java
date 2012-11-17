@@ -28,6 +28,7 @@ public class StringFormatterBigIntegerExtension
     /* Format the given BigInteger */
     @Override
     public void format(StringBuilder buffer, Object o, String pattern) {
+        formatter = new Formatter();
         if (pattern == null) {
             throw new FormatterException("Null pattern string");
         }

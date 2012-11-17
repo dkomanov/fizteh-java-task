@@ -27,6 +27,7 @@ public class StringFormatterDoubleExtension
     /* Format the given Double */
     @Override
     public void format(StringBuilder buffer, Object o, String pattern) {
+        formatter = new Formatter();
         if (pattern == null) {
             throw new FormatterException("Null pattern string");
         }

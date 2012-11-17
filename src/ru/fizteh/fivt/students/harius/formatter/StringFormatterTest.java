@@ -60,6 +60,7 @@ public abstract class StringFormatterTest {
         check(basic, "one one one", "{0} {0} {0}", "one");
         check(basic, d.x + " " + d.y, "{0.x} {0.y}", d);
         check(basic, "", "{0}", (Object)null);
+        check(basic, "", "{0:d}", (Object)null);
         check(basic, "", "{0.obj}", d);
         check(basic, "{hello}", "{{{0}}}", "hello");
         check(basic, "{0}", "{{0}}", "hello");
@@ -76,6 +77,8 @@ public abstract class StringFormatterTest {
             StringFormatterDoubleExtension.class.getName());
         check(dbasic, "hello", "hello");
         check(dbasic, "3.14", "{0:.2f}", 3.1415926);
+        check(dbasic, "pi=3!", "pi={0:.0f}!", Math.PI);
+        check(dbasic, "", "{0:E}", (Object)null);
     }
 
     /* Basic tests of crashing double formatting */
@@ -91,6 +94,7 @@ public abstract class StringFormatterTest {
             StringFormatterBigIntegerExtension.class.getName());
         check(ibasic, "hello", "hello");
         check(ibasic, "1234321", "{0:d}", BigInteger.valueOf(1111 * 1111));
+        check(ibasic, "ab 1 cd", "ab {0:X} cd", BigInteger.valueOf(1));
     }
 
     /* Basic crash tests */
