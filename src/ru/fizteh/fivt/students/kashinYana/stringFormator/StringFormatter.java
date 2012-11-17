@@ -111,6 +111,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             throw new FormatterException("Found error number or type of argvs.");
         }
         while (tokenRead.hasMoreTokens()) {
+            if (object == null) {
+                return object;
+            }
             String token = tokenRead.nextToken();
             Class parent = object.getClass();
             boolean isFind = false;

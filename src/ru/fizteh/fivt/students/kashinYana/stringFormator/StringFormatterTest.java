@@ -3,6 +3,7 @@ package ru.fizteh.fivt.students.kashinYana.stringFormator;
 import ru.fizteh.fivt.format.FormatterException;
 
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 
 public class StringFormatterTest {
 
@@ -22,9 +23,8 @@ public class StringFormatterTest {
     }
 
     static void testSuperClass() throws Exception {
-
         class A {
-            public int a;
+            public Integer a;
         }
         class B  extends A {
             private int b;
@@ -43,11 +43,21 @@ public class StringFormatterTest {
                 a2.a = n*2;
             }
         }
+        class CWithNull {
+            private A a;
+            CWithNull(int n) {
+                a = null;
+            }
+        }
         B testB = new B(1, 2);
         StringFormatter basic = factory.create();
         check("1 2 ", basic.format("{0.a} {0.b} {0.c}", testB));
         C testC = new C(33);
         check("33 66", basic.format("{0.a.a} {0.a2.a}", testC));
+        CWithNull cWithNull = new CWithNull(20);
+        check("", basic.format("{0.a.a}", cWithNull));
+        CWithNull cWithNull2 = null;
+        check("", basic.format("{0.a.a}", cWithNull2));
     }
 
     static void testWithString() throws Exception {
@@ -69,18 +79,19 @@ public class StringFormatterTest {
     }
 
     static void testWithInteger() throws Exception {
-        StringFormatter basic = factory.create(StringFormatterIntegerExtension.class.getName());
+        StringFormatter basic = factory.create(StringFormatterDateExtension.class.getName(),
+                StringFormatterIntegerExtension.class.getName());
         check("Int = 12", basic.format("Int = {0}", 12));
         check("Int = 0012 00010", basic.format("Int = {0:04d} {1:05d}", 12, 10));
         check("Int = {   7}", basic.format("Int = {{{0:4d}}}", 7));
         check("Int = {10}", basic.format("Int = {{{0:o}}}", 8));
         Integer numberNull = null;
         check("Int null = ", basic.format("Int null = {0:o}", numberNull));
-        check("Int null = ", basic.format("Int null = {0:out}", numberNull));
     }
 
     static void testWithDate() throws Exception {
-        StringFormatter basic = factory.create(StringFormatterDateExtension.class.getName());
+        StringFormatter basic = factory.create(StringFormatterDateExtension.class.getName(),
+                StringFormatterIntegerExtension.class.getName());
         check("Date = 2009.11.01", basic.format("Date = {0:yyyy.MM.dd}", new GregorianCalendar(2009, 10, 1).getTime()));
         check("Date = 2009-11-01", basic.format("Date = {0:yyyy-MM-dd}", new GregorianCalendar(2009, 10, 1).getTime()));
 
@@ -102,13 +113,15 @@ public class StringFormatterTest {
     static void testWrong() {
         checkWrong("Strange {", "{");
         checkWrong("Strange }", "}");
-        checkWrong("Extention not found.", "{0:int}", 567);
+        checkWrong("Extention not found.", "{0:int}", new HashMap());
         checkWrong("Found error number or type of argvs.", "number {6}", 1, 2);
         checkWrong("Found error number or type of argvs.", "number {-5}", 1, 2);
+        checkWrong("Error in format extend", "Int null = {0:ut}", 20);
     }
 
     static void checkWrong(String correct, String input, Object... argv) {
-        StringFormatter basic = factory.create();
+        StringFormatter basic = factory.create(StringFormatterDateExtension.class.getName(),
+                StringFormatterIntegerExtension.class.getName());
         try {
             basic.format(input, argv);
         } catch (FormatterException e) {
