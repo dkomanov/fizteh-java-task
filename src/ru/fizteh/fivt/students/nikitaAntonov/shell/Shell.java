@@ -2,6 +2,8 @@ package ru.fizteh.fivt.students.nikitaAntonov.shell;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -79,18 +81,74 @@ class Shell extends ConsoleApp {
         }
     }
     
-    private void deleteFile (File subject) throws ConsoleAppException {
+    private void deleteFile (File subject, String producer) throws ConsoleAppException {
         if (subject.isDirectory()) {
             for (String filename : subject.list()) {
-                deleteFile (new File(subject.getAbsolutePath() + File.separator + filename).getAbsoluteFile());
+                deleteFile (new File(subject.getAbsolutePath() + File.separator + filename).getAbsoluteFile(), producer);
             }
         }
         
         if (!subject.delete()) {
-            throw new ConsoleAppException("rm: cannot remove " + subject.getPath() + ": Unknown error");
+            throw new ConsoleAppException(producer + ": cannot remove " + subject.getPath() + ": Unknown error");
         }
     }
      
+    private void copy(String producer, String srcFilename, String dstFilename) throws ConsoleAppException {
+        File source = getFileByName(srcFilename);
+        File destination = getFileByName(dstFilename);
+        
+        if (!source.exists()) {
+            throw new ConsoleAppException(producer + ": cannot stat " + srcFilename + ": No such file or directory");
+        }
+        
+        if (source.isDirectory()) {
+            copyDirs(producer, source, destination);
+        } else {
+            copyFiles(producer, source, destination);
+        }
+    }
+    
+    private void copyDirs(String producer, File source, File destination) throws ConsoleAppException {
+        if (!destination.mkdir() && !destination.exists()) {
+            throw new ConsoleAppException(producer + ": cannot create directory " + destination.getAbsolutePath() + ": No such file or directory");
+        }
+        
+        for (String filename : source.list()) {
+            copy(producer, source.getAbsolutePath() + File.separator + filename, destination.getAbsolutePath() + File.separator + filename);
+        }
+    }
+    
+    private void copyFiles(String producer, File source, File destination) throws ConsoleAppException {
+        if (source.equals(destination)) {
+            throw new ConsoleAppException(producer + ": source and destinaction are the same file");
+        }
+        
+        FileInputStream in = null;
+        FileOutputStream out = null;
+        
+        try {
+            in = new FileInputStream(source);
+            out = new FileOutputStream(destination);
+
+            int bytesCopied;
+            byte[] buf = new byte[8192];
+            
+            while (true) {
+                bytesCopied = in.read(buf);
+                if (bytesCopied < 0) {
+                    break;
+                }
+                out.write(buf, 0, bytesCopied);
+            }
+            
+        } catch (IOException e) {
+            throw new ConsoleAppException(producer + ": io-error occured: " + e.getMessage());
+        } finally {
+            Utils.closeResource(in);
+            Utils.closeResource(out);
+        }
+    }
+    
     private void doCd(String parts[]) throws ConsoleAppException {
         String usage = "cd <absolute path|relative path>";
         
@@ -140,14 +198,22 @@ class Shell extends ConsoleApp {
             throw new ConsoleAppException("rm: cannot remove " + parts[1] + ": No such file or directory");
         }
         
-        deleteFile(subject);
+        deleteFile(subject, "rm");
     }
 
-    private void doCp(String parts[]) {
+    private void doCp(String parts[]) throws ConsoleAppException {
+        String usage = "cp <source> <destination>";
+        checkForParams(parts, usage, 3);
+        
+        copy("cp", parts[1], parts[2]);
     }
 
-    private void doMv(String parts[]) {
-
+    private void doMv(String parts[]) throws ConsoleAppException {
+        String usage = "mv <source> <destination>";
+        checkForParams(parts, usage, 3);
+        
+        copy("mv", parts[1], parts[2]);
+        deleteFile(getFileByName(parts[1]), "mv");
     }
 
     private void doDir(String parts[]) throws ConsoleAppException {
