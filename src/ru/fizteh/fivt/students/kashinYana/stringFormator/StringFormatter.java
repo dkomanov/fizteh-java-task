@@ -100,20 +100,24 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             throws FormatterException {
 
         StringTokenizer tokenRead = new StringTokenizer(string, ".");
-        if(!tokenRead.hasMoreTokens()) {
-            return null;
+        if (!tokenRead.hasMoreTokens()) {
+            throw new FormatterException("I forget smth. Don't use {}.");
         }
         String indexInString = tokenRead.nextToken();
         int index = 0;
         Object object;
+        if (indexInString.equals("-0")) {
+            throw new FormatterException("-0 not good");
+        }
         try {
             index = Integer.parseInt(indexInString);
-            if(indexInString.equals("-0")) {
-                throw new FormatterException("-0 not good");
-            }
-            object = args[index];
         } catch (Exception notNum) {
-            throw new FormatterException("Found error number or type of argvs.");
+            throw new FormatterException("Found error type of argvs.");
+        }
+        try {
+            object = args[index];
+        } catch (Exception outRange) {
+            throw new FormatterException("index of argv ouf of range.");
         }
         while (tokenRead.hasMoreTokens()) {
             if (object == null) {
@@ -144,6 +148,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     private void useExtension(StringBuilder buffer, String pattern, Object arg)
             throws FormatterException {
 
+        if (pattern.length() == 0) {
+            throw new FormatterException("I forget smth. Don't use \"*:\"");
+        }
         for (StringFormatterExtension extend : template) {
             if (extend.supports(arg.getClass())) {
                 try {

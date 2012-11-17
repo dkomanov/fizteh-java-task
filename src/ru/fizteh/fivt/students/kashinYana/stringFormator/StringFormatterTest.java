@@ -118,9 +118,14 @@ public class StringFormatterTest {
         checkWrong("Strange {", "{");
         checkWrong("Strange }", "}");
         checkWrong("Extention not found.", "{0:int}", new HashMap());
-        checkWrong("Found error number or type of argvs.", "number {6}", 1, 2);
-        checkWrong("Found error number or type of argvs.", "number {-5}", 1, 2);
+        checkWrong("index of argv ouf of range.", "number {6}", 1, 2);
+        checkWrong("index of argv ouf of range.", "number {-5}", 1, 2);
+        checkWrong("Found error type of argvs.", "number {int}", 1, 2);
         checkWrong("Error in format extend", "Int null = {0:ut}", 20);
+        checkWrong("I forget smth. Don't use \"*:\"", "{0:}", 4);
+        checkWrong("I forget smth. Don't use {}.", "{}", 4);
+        checkWrong("-0 not good", "... {-0} ... ", 98);
+
     }
 
     static void checkWrong(String correct, String input, Object... argv) {
