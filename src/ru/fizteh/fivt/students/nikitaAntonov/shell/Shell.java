@@ -69,7 +69,7 @@ class Shell extends ConsoleApp {
         File result = new File(filename);
         
         if (!result.isAbsolute()) {
-            result = new File(workingDir.getAbsolutePath() + File.separator + filename);
+            result = new File(workingDir, filename);
         }
         
         return result.getAbsoluteFile();
@@ -93,6 +93,26 @@ class Shell extends ConsoleApp {
         }
     }
      
+    private void startCopying (String producer, String source, String destination) throws ConsoleAppException {
+        destination = transformCopyDst(source, destination);
+        copy(producer, source, destination);
+    }
+    
+    private String transformCopyDst(String source, String destination) {
+        File src = getFileByName(source);
+        File dst = getFileByName(destination);
+        
+        if (src.equals(dst)) {
+            return destination;
+        }
+        
+        if (dst.exists() && dst.isDirectory()) {
+            return dst.getAbsolutePath() + File.separator + src.getName();
+        }
+        
+        return destination;
+    }
+    
     private void copy(String producer, String srcFilename, String dstFilename) throws ConsoleAppException {
         File source = getFileByName(srcFilename);
         File destination = getFileByName(dstFilename);
@@ -205,14 +225,14 @@ class Shell extends ConsoleApp {
         String usage = "cp <source> <destination>";
         checkForParams(parts, usage, 3);
         
-        copy("cp", parts[1], parts[2]);
+        startCopying("cp", parts[1], parts[2]);
     }
 
     private void doMv(String parts[]) throws ConsoleAppException {
         String usage = "mv <source> <destination>";
         checkForParams(parts, usage, 3);
         
-        copy("mv", parts[1], parts[2]);
+        startCopying("mv", parts[1], parts[2]);
         deleteFile(getFileByName(parts[1]), "mv");
     }
 
