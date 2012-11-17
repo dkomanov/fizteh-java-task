@@ -33,8 +33,7 @@ class Shell extends ConsoleApp {
             System.exit(1);
         }
 
-        if (shell != null)
-        {
+        if (shell != null) {
             try {
                 shell.run(args);
             } catch (Exception e) {
