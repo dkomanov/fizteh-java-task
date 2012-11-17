@@ -34,7 +34,14 @@ class Shell extends ConsoleApp {
         }
 
         if (shell != null)
-            shell.run(args);
+        {
+            try {
+                shell.run(args);
+            } catch (Exception e) {
+                System.err.println("something terrible happened");
+                System.err.println(e.getMessage());
+            }
+        }
     }
 
     @Override
