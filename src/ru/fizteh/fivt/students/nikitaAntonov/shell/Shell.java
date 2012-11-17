@@ -37,6 +37,33 @@ class Shell extends ConsoleApp {
             shell.run(args);
     }
 
+    @Override
+    protected void printPrompt() {
+        System.out.print("$ ");
+    }
+
+    @Override
+    protected boolean processLine(String s) throws ConsoleAppException {
+        s = s.trim();
+        String expressions[] = s.split("\\s*;\\s*");
+
+        for (String expr : expressions) {
+            try {
+                if (execute(expr)) {
+                    return true;
+                }
+            } catch (ConsoleAppException e) {
+                System.err.println(e.getMessage());
+                throw e;
+            } catch (IOException e) {
+                System.err.println("IO Error: " + e.getMessage());
+                throw new ConsoleAppException(e);
+            }
+        }
+
+        return false;
+    }
+
     public boolean execute(String str) throws ConsoleAppException, IOException {
         String parts[] = str.split("\\s+");
 
@@ -91,6 +118,64 @@ class Shell extends ConsoleApp {
         }
     }
 
+    private void doCd(String parts[]) throws ConsoleAppException, IOException {
+        String usage = "cd <absolute path|relative path>";
+
+        checkForParams(parts, usage, 2);
+
+        File newDir = getFileByName(parts[1]);
+
+        if (!newDir.exists()) {
+            throw new ConsoleAppException("cd: " + parts[1]
+                    + ": No such file or directory");
+        }
+
+        if (!newDir.isDirectory()) {
+            throw new ConsoleAppException("cd: " + parts[1]
+                    + ": Not a directory");
+        }
+
+        workingDir = newDir;
+    }
+
+    private void doMkdir(String parts[]) throws ConsoleAppException,
+            IOException {
+        String usage = "mkdir <dirname>";
+        checkForParams(parts, usage, 2);
+
+        File newDir = getFileByName(parts[1]);
+
+        if (newDir.exists()) {
+            throw new ConsoleAppException("mkdir: cannot create directory "
+                    + parts[1] + ": File exists");
+        }
+
+        if (!newDir.mkdir()) {
+            throw new ConsoleAppException("mkdir: cannot create directory "
+                    + parts[1] + ": No such file or directory");
+        }
+    }
+
+    private void doPwd(String parts[]) throws ConsoleAppException, IOException {
+        String usage = "pwd (without any params)";
+        checkForParams(parts, usage, 1);
+
+        System.out.println(workingDir.getCanonicalPath());
+    }
+
+    private void doRm(String parts[]) throws ConsoleAppException, IOException {
+        String usage = "rm <file|dir>";
+        checkForParams(parts, usage, 2);
+
+        File subject = getFileByName(parts[1]);
+        if (!subject.exists()) {
+            throw new ConsoleAppException("rm: cannot remove " + parts[1]
+                    + ": No such file or directory");
+        }
+
+        deleteFile(subject, "rm");
+    }
+
     private void deleteFile(File subject, String producer)
             throws ConsoleAppException, IOException {
         if (subject.isDirectory()) {
@@ -104,6 +189,21 @@ class Shell extends ConsoleApp {
             throw new ConsoleAppException(producer + ": cannot remove "
                     + subject.getPath() + ": Unknown error");
         }
+    }
+
+    private void doCp(String parts[]) throws ConsoleAppException, IOException {
+        String usage = "cp <source> <destination>";
+        checkForParams(parts, usage, 3);
+
+        startCopying("cp", parts[1], parts[2]);
+    }
+
+    private void doMv(String parts[]) throws ConsoleAppException, IOException {
+        String usage = "mv <source> <destination>";
+        checkForParams(parts, usage, 3);
+
+        startCopying("mv", parts[1], parts[2]);
+        deleteFile(getFileByName(parts[1]), "mv");
     }
 
     private void startCopying(String producer, String source, String destination)
@@ -199,79 +299,6 @@ class Shell extends ConsoleApp {
         }
     }
 
-    private void doCd(String parts[]) throws ConsoleAppException, IOException {
-        String usage = "cd <absolute path|relative path>";
-
-        checkForParams(parts, usage, 2);
-
-        File newDir = getFileByName(parts[1]);
-
-        if (!newDir.exists()) {
-            throw new ConsoleAppException("cd: " + parts[1]
-                    + ": No such file or directory");
-        }
-
-        if (!newDir.isDirectory()) {
-            throw new ConsoleAppException("cd: " + parts[1]
-                    + ": Not a directory");
-        }
-
-        workingDir = newDir;
-    }
-
-    private void doMkdir(String parts[]) throws ConsoleAppException,
-            IOException {
-        String usage = "mkdir <dirname>";
-        checkForParams(parts, usage, 2);
-
-        File newDir = getFileByName(parts[1]);
-
-        if (newDir.exists()) {
-            throw new ConsoleAppException("mkdir: cannot create directory "
-                    + parts[1] + ": File exists");
-        }
-
-        if (!newDir.mkdir()) {
-            throw new ConsoleAppException("mkdir: cannot create directory "
-                    + parts[1] + ": No such file or directory");
-        }
-    }
-
-    private void doPwd(String parts[]) throws ConsoleAppException, IOException {
-        String usage = "pwd (without any params)";
-        checkForParams(parts, usage, 1);
-
-        System.out.println(workingDir.getCanonicalPath());
-    }
-
-    private void doRm(String parts[]) throws ConsoleAppException, IOException {
-        String usage = "rm <file|dir>";
-        checkForParams(parts, usage, 2);
-
-        File subject = getFileByName(parts[1]);
-        if (!subject.exists()) {
-            throw new ConsoleAppException("rm: cannot remove " + parts[1]
-                    + ": No such file or directory");
-        }
-
-        deleteFile(subject, "rm");
-    }
-
-    private void doCp(String parts[]) throws ConsoleAppException, IOException {
-        String usage = "cp <source> <destination>";
-        checkForParams(parts, usage, 3);
-
-        startCopying("cp", parts[1], parts[2]);
-    }
-
-    private void doMv(String parts[]) throws ConsoleAppException, IOException {
-        String usage = "mv <source> <destination>";
-        checkForParams(parts, usage, 3);
-
-        startCopying("mv", parts[1], parts[2]);
-        deleteFile(getFileByName(parts[1]), "mv");
-    }
-
     private void doDir(String parts[]) throws ConsoleAppException {
         String usage = "dir";
         checkForParams(parts, usage, 1);
@@ -279,33 +306,6 @@ class Shell extends ConsoleApp {
         for (String filename : workingDir.list()) {
             System.out.println(filename);
         }
-    }
-
-    @Override
-    protected boolean processLine(String s) throws ConsoleAppException {
-        s = s.trim();
-        String expressions[] = s.split("\\s*;\\s*");
-
-        for (String expr : expressions) {
-            try {
-                if (execute(expr)) {
-                    return true;
-                }
-            } catch (ConsoleAppException e) {
-                System.err.println(e.getMessage());
-                throw e;
-            } catch (IOException e) {
-                System.err.println("IO Error: " + e.getMessage());
-                throw new ConsoleAppException(e);
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    protected void printPrompt() {
-        System.out.print("$ ");
     }
 
 }
