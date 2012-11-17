@@ -123,7 +123,7 @@ public class Shell {
                 errorProcessing("cd: '" + newFile.getName() + "': No such file or directory");
             } else {
                 try {
-                currentPath = newFile.getCanonicalPath();
+                    currentPath = newFile.getCanonicalPath();
                 } catch (Exception exception) {
                     errorProcessing("cd: " + exception.getMessage());
                 }
@@ -166,32 +166,36 @@ public class Shell {
     public static boolean copyFile(File from, File to) throws FileNotFoundException {
         FileInputStream fileInputStream = null;
         FileOutputStream fileOutputStream = null;
-        try {
-            fileInputStream = new FileInputStream(from);
-            fileOutputStream = new FileOutputStream(to);
-            byte[] buffer = new byte[2048];
-            int bufferLength;
-            while ((bufferLength = fileInputStream.read(buffer)) >= 0) {
-                fileOutputStream.write(buffer, 0, bufferLength);
-            }
-            return true;
-        } catch (Exception exception) {
-            errorProcessing(exception.toString());
-        } finally {
+        if (!from.equals(to)) {
             try {
-                if (fileInputStream != null) {
-                    fileInputStream.close();
+                fileInputStream = new FileInputStream(from);
+                fileOutputStream = new FileOutputStream(to);
+                byte[] buffer = new byte[2048];
+                int bufferLength;
+                while ((bufferLength = fileInputStream.read(buffer)) >= 0) {
+                    fileOutputStream.write(buffer, 0, bufferLength);
                 }
-            } catch (Exception ex) {
-                System.err.println(ex.getMessage());
-            }
-            try {
-                if (fileOutputStream != null) {
-                    fileOutputStream.close();
+                return true;
+            } catch (Exception exception) {
+                errorProcessing(exception.toString());
+            } finally {
+                try {
+                    if (fileInputStream != null) {
+                        fileInputStream.close();
+                    }
+                } catch (Exception ex) {
+                    System.err.println(ex.getMessage());
                 }
-            } catch (Exception ex) {
-                System.err.println(ex.getMessage());
+                try {
+                    if (fileOutputStream != null) {
+                        fileOutputStream.close();
+                    }
+                } catch (Exception ex) {
+                    System.err.println(ex.getMessage());
+                }
             }
+        } else {
+            errorProcessing("cannot copy.");
         }
         return false;
     }
@@ -303,7 +307,7 @@ public class Shell {
             isInteractiveMode = true;
         }
         currentPath = new File("").getAbsolutePath();
-      /*  if (isInteractiveMode) {
+        /*  if (isInteractiveMode) {
             System.out.print(currentPath);
         }*/
         if (!isInteractiveMode) {
