@@ -4,10 +4,6 @@ import java.util.ArrayList;
 
 public class ParallelSort {
     public static void main(String[] args) {
-        if (args.length == 0) {
-            help();
-        }
-
         boolean ignoreCase = false;
         boolean unique = false;
         int numthreads = 0;
@@ -53,31 +49,27 @@ public class ParallelSort {
                     exitError("wrong number of threads");
                 }
             } else {
-                //System.out.println("new filename");
+                // System.out.println("new filename");
                 fileNames.add(args[i]);
             }
-
         }
-        
 
         ControlSorter mSorter = new ControlSorter(ignoreCase, unique, numthreads, outputFileName, fileNames);
         try {
             mSorter.sort();
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-           System.out.println(e.getMessage());
-           System.exit(1);
+            exitError(e.getMessage());
         }
     }
 
-    private static void help() {
-        System.out.println("Usage: " + "ParallelSort [-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
-        System.out.println("Keys:");
-        System.out.println("-i - ignore case");
-        System.out.println("-u - unique only");
-        System.exit(1);
-    }
-
+    /* private static void help() {
+     * System.out.println("Usage: " +
+     * "ParallelSort [-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
+     * System.out.println("Keys:");
+     * System.out.println("-i - ignore case");
+     * System.out.println("-u - unique only");
+     * System.exit(1);
+     * } */
     static private void exitError(String message) {
         System.err.println(message);
         System.exit(1);
