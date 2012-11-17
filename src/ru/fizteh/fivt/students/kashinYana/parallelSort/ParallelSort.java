@@ -307,7 +307,7 @@ public class ParallelSort {
 
     static class ComparatorLower implements Comparator<Pair> {
         public int compare(Pair string1, Pair string2) {
-            int ans = string1.toString().toLowerCase().compareTo(string2.toString().toLowerCase());
+            int ans = String.CASE_INSENSITIVE_ORDER.compare(string1.toString(), string2.toString());
             if (ans < 0) {
                 return -1;
             } else if (ans == 0) {
