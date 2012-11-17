@@ -65,6 +65,7 @@ class Shell extends ConsoleApp {
     }
 
     public boolean execute(String str) throws ConsoleAppException, IOException {
+        str = str.trim();
         String parts[] = str.split("\\s+");
 
         if (parts.length == 0)
