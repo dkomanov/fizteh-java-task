@@ -39,6 +39,7 @@ class Shell extends ConsoleApp {
             } catch (Exception e) {
                 System.err.println("something terrible happened");
                 System.err.println(e.getMessage());
+                System.exit(1);
             }
         }
     }
