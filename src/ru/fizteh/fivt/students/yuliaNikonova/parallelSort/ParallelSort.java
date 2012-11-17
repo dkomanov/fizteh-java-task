@@ -53,12 +53,21 @@ public class ParallelSort {
                     exitError("wrong number of threads");
                 }
             } else {
+                //System.out.println("new filename");
                 fileNames.add(args[i]);
             }
 
         }
+        
 
         ControlSorter mSorter = new ControlSorter(ignoreCase, unique, numthreads, outputFileName, fileNames);
+        try {
+            mSorter.sort();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+           System.out.println(e.getMessage());
+           System.exit(1);
+        }
     }
 
     private static void help() {

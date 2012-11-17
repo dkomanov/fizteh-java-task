@@ -1,12 +1,14 @@
 package ru.fizteh.fivt.students.yuliaNikonova.parallelSort;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ControlSorter {
@@ -16,7 +18,7 @@ public class ControlSorter {
     private String outputFileName;
     private int numthreads;
     private volatile ArrayList<String> str;
-    private volatile ArrayList<List<String>> results = new ArrayList<List<String>>();
+    private volatile ArrayList<List<String>> results;
     private ArrayList<Sorter> sorters;
     private ArrayList<Merger> mergers;
 
@@ -27,18 +29,21 @@ public class ControlSorter {
         this.fileNames = fileNames;
         this.outputFileName = outputFileName;
         this.numthreads = numthreads;
+        this.str=new ArrayList<String>();
+        this.results = new ArrayList<List<String>>();
+        this.sorters=new ArrayList<Sorter>();
+        this.mergers=new ArrayList<Merger>();
     }
 
     public void readStrings() {
         InputStream in = null;
-        if (outputFileName.isEmpty()) {
+        if (fileNames.isEmpty()) {
             readFromSource(System.in);
         } else {
             for (String fileName : fileNames) {
                 try {
-                    in = new FileInputStream(fileName);
-                    readFromSource(in);
-                } catch (FileNotFoundException e) {
+                    //System.out.println("Filename: "+fileName);
+                    readFromFile(fileName);
                 } finally {
                     if (in != null) {
                         try {
@@ -50,15 +55,71 @@ public class ControlSorter {
             }
         }
     }
-
-    private void readFromSource(InputStream in) {
-        InputStreamReader input = null; // new InputStreamReader(fstream);
+    
+    private void readFromFile(String fileName) {
+        FileInputStream fstream = null;
+        DataInputStream in = null;
         BufferedReader br = null;
         try {
-            input = new InputStreamReader(in);
-            br = new BufferedReader(input);
+            fstream = new FileInputStream(fileName);
+            in = new DataInputStream(fstream);
+            br = new BufferedReader(new InputStreamReader(in));
+            String strLine;
+            
+            while ((strLine = br.readLine()) != null) {
+               //System.out.println(strLine);
+                if (unique) {
+                    if (!str.contains(strLine)) {
+                        str.add(strLine);
+                        
+                    } 
+                } else {
+                    str.add(strLine);
+                    
+                }
+                
+                }
+            
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    //e.printStackTrace();
+                }
+            }
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    //e.printStackTrace();
+                }
+            }
+            if (fstream != null) {
+                try {
+                    fstream.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                   // e.printStackTrace();
+                }
+            }
+        }
+        
+    }
+
+    private void readFromSource(InputStream in) {
+        DataInputStream input = null; // new InputStreamReader(fstream);
+        BufferedReader br = null;
+        try {
+            input = new DataInputStream(in);
+            br = new BufferedReader(new InputStreamReader(input));
             String strLine;
             while ((strLine = br.readLine()) != null) {
+                System.out.println(strLine);
                 if (unique) {
                     if (!str.contains(strLine)) {
                         str.add(strLine);
@@ -67,8 +128,13 @@ public class ControlSorter {
                     str.add(strLine);
                 }
             }
+            
+            
+            for (String strLi:str) {
+                System.out.println(strLi);
+            }
         } catch (Exception e) {
-
+            System.out.println(e.getMessage());
         } finally {
             if (input != null) {
                 try {
@@ -88,6 +154,11 @@ public class ControlSorter {
     }
 
     public void pSort() throws Exception {
+        /*for (String strLine:str) {
+            System.out.println(strLine);
+        }
+        System.out.println("PSort");
+        System.out.println("Size: "+str.size());*/
         if (str.size() == 0) {
             throw new Exception("nothing to sort");
         }
@@ -99,14 +170,18 @@ public class ControlSorter {
             numthreads = str.size();
         }
 
-        int length = str.size() / numthreads;
+        int length = (int)Math.ceil(str.size() / numthreads);
+        System.out.println("Length: "+length);
 
-        for (int i = 0; i <= numthreads; i++) {
+        for (int i = 0; i < numthreads; i++) {
             Sorter sort;
-            if (i == numthreads) {
+            System.out.println("Count of threads: "+numthreads);
+            if (i != numthreads-1) {
+                System.out.println(i * length+" "+(i + 1) * length);
                 sort = new Sorter(str.subList(i * length, (i + 1) * length), ignoreCase);
             } else {
                 sort = new Sorter(str.subList(i * length, str.size()), ignoreCase);
+                System.out.println(i * length+" "+str.size());
             }
             sorters.add(sort);
             sort.start();
@@ -115,13 +190,14 @@ public class ControlSorter {
         for (Sorter sorter : sorters) {
             sorter.join();
         }
+        /*for (Sorter sorter: sorters) {
+            sorter.showResults();
+        }*/
 
     }
 
     public void mergeResults() throws InterruptedException {
-        for (Sorter sorter : sorters) {
-            results.add(sorter.getResult());
-        }
+        System.out.println("Merge");
 
         while (results.size() != 1) {
             mergers.clear();
@@ -154,8 +230,17 @@ public class ControlSorter {
 
         List<String> result = results.get(0);
 
-        for (String strAns : result) {
-            System.out.println(strAns);
+    }
+    
+    public void sort() throws Exception {
+        this.readStrings();
+        System.out.println("read");
+        try {
+        this.pSort();
         }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        //this.mergeResults();
     }
 }

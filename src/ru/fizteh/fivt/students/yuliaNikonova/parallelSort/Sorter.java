@@ -14,6 +14,7 @@ public class Sorter extends Thread {
 
     @Override
     public void run() {
+        System.out.println("Size of sublist: "+strList.size());
         if (ignoreCase) {
             Collections.sort(strList, String.CASE_INSENSITIVE_ORDER);
         } else {
@@ -24,5 +25,11 @@ public class Sorter extends Thread {
 
     public List<String> getResult() {
         return strList;
+    }
+    
+    public void showResults() {
+        for (String str:strList) {
+            System.out.println(str);
+        }
     }
 }
