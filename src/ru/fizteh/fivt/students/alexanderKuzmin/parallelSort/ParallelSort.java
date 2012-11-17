@@ -59,10 +59,12 @@ public class ParallelSort {
         try {
             pStream = outputToFile ? new PrintStream(output) : System.out;
             WorkWithStream.printToStream(result.get(0), pStream);
+            Comparator<String> cmp = insensitive ? String.CASE_INSENSITIVE_ORDER
+                    : new MyComparator();
             for (int i = 1; i < result.size(); ++i) {
                 if (unique) {
-                    compareAndPrintToStreamWithInsensitive(insensitive,
-                            result.get(i), result.get(i - 1), pStream);
+                    compareAndPrintToStream(result.get(i), result.get(i - 1),
+                            cmp, pStream);
                 } else {
                     WorkWithStream.printToStream(result.get(i), pStream);
                 }
@@ -76,16 +78,9 @@ public class ParallelSort {
         }
     }
 
-    private static void compareAndPrintToStreamWithInsensitive(
-            boolean insensitive, String string, String string2,
-            PrintStream pStream) {
-        Comparator<String> cmp = (insensitive) ? String.CASE_INSENSITIVE_ORDER : new MyComparator();
-        compareAndPrintToStream(string, string2, pStream, cmp);
-    }
-
     private static void compareAndPrintToStream(String string, String string2,
-            PrintStream pStream, Comparator<String> caseInsensitiveOrder) {
-        if (caseInsensitiveOrder.compare(string, string2) != 0) {
+            Comparator<String> cmp, PrintStream pStream) {
+        if (cmp.compare(string, string2) != 0) {
             WorkWithStream.printToStream(string, pStream);
         }
     }
