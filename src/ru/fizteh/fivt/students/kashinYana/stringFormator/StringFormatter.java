@@ -117,7 +117,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             String token = tokenRead.nextToken();
             Class parent = object.getClass();
             boolean isFind = false;
-            while(parent != null) {
+            while (parent != null) {
                 try {
                     Field privateStringField = parent.getDeclaredField(token);
                     privateStringField.setAccessible(true);

@@ -26,8 +26,9 @@ public class StringFormatterTest {
         class A {
             public Integer a;
         }
-        class B  extends A {
+        class B extends A {
             private int b;
+
             B(int aa, int bb) {
                 b = bb;
                 a = aa;
@@ -36,15 +37,17 @@ public class StringFormatterTest {
         class C {
             A a;
             private A a2;
+
             C(int n) {
                 a = new A();
                 a2 = new A();
                 a.a = n;
-                a2.a = n*2;
+                a2.a = n * 2;
             }
         }
         class CWithNull {
             private A a;
+
             CWithNull(int n) {
                 a = null;
             }
@@ -69,7 +72,8 @@ public class StringFormatterTest {
         check("}} little ", basic.format("}}}} little {0.int}", "papa"));
         class Pair {
             int x, y;
-            Pair(int xx, int yy){
+
+            Pair(int xx, int yy) {
                 x = xx;
                 y = yy;
             }
