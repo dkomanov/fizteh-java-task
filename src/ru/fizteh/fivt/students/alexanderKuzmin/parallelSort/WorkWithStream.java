@@ -29,8 +29,6 @@ public class WorkWithStream {
             }
         } catch (Exception e) {
             Closers.printErrAndExit(e.getMessage());
-        } finally {
-            Closers.closeStream(bufReader);
         }
     }
 
