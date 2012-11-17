@@ -75,8 +75,9 @@ class Shell extends ConsoleApp {
         str = str.trim();
         String parts[] = str.split("\\s+");
 
-        if (parts.length == 0)
+        if (parts.length == 0) {
             return false;
+        }
 
         switch (parts[0].toLowerCase()) {
         case "cd":
