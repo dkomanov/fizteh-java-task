@@ -33,8 +33,14 @@ class Shell extends ConsoleApp {
             System.exit(1);
         }
 
-        if (shell != null)
-            shell.run(args);
+        if (shell != null) {
+            try {
+                shell.run(args);
+            } catch (Exception e) {
+                System.err.println("something terrible happened");
+                System.err.println(e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -68,8 +74,9 @@ class Shell extends ConsoleApp {
         str = str.trim();
         String parts[] = str.split("\\s+");
 
-        if (parts.length == 0)
+        if (parts.length == 0) {
             return false;
+        }
 
         switch (parts[0].toLowerCase()) {
         case "cd":
@@ -114,7 +121,7 @@ class Shell extends ConsoleApp {
 
     private void checkForParams(String params[], String usage, int needed)
             throws ConsoleAppException {
-        if (params.length > needed) {
+        if (params.length != needed) {
             throw new IncorrectUsageException(usage);
         }
     }
