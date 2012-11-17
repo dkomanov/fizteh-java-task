@@ -59,7 +59,7 @@ public abstract class ConsoleApp {
                 isComplete = processLine(s);
             } catch (ConsoleAppException e) {
             }
-            
+
             if (!isComplete) {
                 s = getLine(in);
             }
@@ -75,6 +75,7 @@ public abstract class ConsoleApp {
 
     /* Должен вернуть true в случае необходимости завершить работу */
     protected abstract boolean processLine(String s) throws ConsoleAppException;
+
     protected abstract void printPrompt();
 
 }

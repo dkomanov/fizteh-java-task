@@ -7,11 +7,11 @@ public class ConsoleAppException extends Exception {
     public ConsoleAppException(String message) {
         super(message);
     }
-    
+
     public ConsoleAppException(Throwable cause) {
         super(cause);
     }
-    
+
     public ConsoleAppException(String message, Throwable cause) {
         super(message, cause);
     }
