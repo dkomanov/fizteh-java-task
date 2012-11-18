@@ -128,7 +128,7 @@ public class Shell {
 
             if (source.isDirectory()) {
                 if (!destination.isDirectory()) {
-                    mkdir(destination.getCanonicalPath());    
+                    destination.mkdir();    
                 }
                            
                 File newDestination = new File(destination + File.separator + source.getName());
@@ -148,13 +148,23 @@ public class Shell {
                 FileInputStream input = null;
                 FileOutputStream output = null;
                 try {
-                    input = new FileInputStream(source);
-                    if (destination.isDirectory()) {
-                        output = new FileOutputStream(destination + File.separator + source.getName());
-                    } else {
-                        output = new FileOutputStream(destination);
+                    try {
+                        input = new FileInputStream(source);
+                    } catch (Exception e) {
+                        System.err.println("Error: couldn't open the source file.");
+                        return false;
                     }
-                    
+                    try {
+                        if (destination.isDirectory()) {
+                            output = new FileOutputStream(destination + File.separator + source.getName());
+                        } else {
+                            output = new FileOutputStream(destination);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error: couldn't open the destination file.");
+                        input.close();
+                        return false;
+                    }    
                     int count;
                     byte[] buf = new byte[16];  
                     while (true) {
@@ -165,12 +175,14 @@ public class Shell {
                         output.write(buf, 0, count);
                     }
                 } finally {
-                    input.close();
-                    output.close();
+                    try {
+                        input.close();
+                    } finally {
+                        output.close();
+                    }
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Couldn't copy the file.");
             return false;
         }
