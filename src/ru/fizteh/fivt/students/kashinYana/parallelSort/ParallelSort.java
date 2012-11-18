@@ -18,10 +18,6 @@ public class ParallelSort {
             idWord = idWordNew;
         }
 
-        public String merge() {
-            return string + " " + idWord;
-        }
-
         public String toString() {
             return string;
         }
@@ -29,9 +25,9 @@ public class ParallelSort {
 
     static int numberWord = 0;
     static final int size = 1024 * 1024;
-    static LinkedBlockingQueue queue;
+    static LinkedBlockingQueue<Pair> queue;
     static ExecutorService service;
-    static String STOP = "stop";
+    static Pair STOP = new Pair("stop", -1);
     static int numberThreads;
     static ArrayList<Pair> ans;
     static ArrayList<Pair> ans2;
@@ -61,7 +57,7 @@ public class ParallelSort {
             System.exit(1);
         }
 
-        queue = new LinkedBlockingQueue();
+        queue = new LinkedBlockingQueue<Pair>();
         service = Executors.newFixedThreadPool(numberThreads);
         Sorter sorter[] = new Sorter[numberThreads];
 
@@ -83,10 +79,6 @@ public class ParallelSort {
 
         service.shutdown();
         service.awaitTermination(1, TimeUnit.DAYS);
-
-        Merge merge = new Merge(ans2, 0);
-        merge.run();
-        merge.join();
 
         service.shutdown();
         service.awaitTermination(1, TimeUnit.DAYS);
@@ -175,12 +167,12 @@ public class ParallelSort {
     }
 
     static class Sorter extends Thread {
-        ArrayList array;
+        ArrayList<Pair> array;
         int name;
 
         Sorter(int nameNew) {
             name = nameNew;
-            array = new ArrayList();
+            array = new ArrayList<Pair>();
         }
 
         public void run() {
@@ -200,7 +192,7 @@ public class ParallelSort {
                 }
                 if (array.size() >= size || isStop) {
                     service.submit(new Merge(array, name));
-                    array = new ArrayList();
+                    array = new ArrayList<Pair>();
                     if (isStop) {
                         return;
                     }
@@ -225,12 +217,8 @@ public class ParallelSort {
 
         public void run() {
             ArrayList<Pair> mergeArray;
-            if (id % 2 == 0) {
-                mergeArray = ans;
-            } else {
-                mergeArray = ans2;
-            }
-            synchronized (mergeArray) {
+            mergeArray = ans;
+            synchronized (ans) {
                 ArrayList<Pair> tempArray = new ArrayList<Pair>();
                 int idArray = 0;
                 int indexAns = 0;
