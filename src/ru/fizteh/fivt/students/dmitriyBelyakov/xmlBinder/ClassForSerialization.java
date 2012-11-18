@@ -25,4 +25,12 @@ public class ClassForSerialization {
     private int getIntField() {
         return intField;
     }
+
+    int getIntField(int i) {
+        return 0;
+    }
+
+    boolean setIntField() {
+        return false;
+    }
 }

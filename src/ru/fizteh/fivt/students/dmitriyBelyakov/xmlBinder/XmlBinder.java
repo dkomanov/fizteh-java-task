@@ -23,6 +23,74 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
     }
 
+    private ArrayList<Field> getFields(Class clazz) {
+        ArrayList<Field> fields = new ArrayList<>();
+        while (clazz != null) {
+            Field[] tmpFields = clazz.getDeclaredFields();
+            fields.addAll(Arrays.asList(tmpFields));
+            clazz = clazz.getSuperclass();
+        }
+        return fields;
+    }
+
+    private ArrayList<Method> getMethods(Class clazz) {
+        ArrayList<Method> methods = new ArrayList<>();
+        while (clazz != null) {
+            Method[] tmpMethods = clazz.getDeclaredMethods();
+            HashMap<String, Method> methodsNames = new HashMap<>();
+            for (Method method : tmpMethods) {
+                if (method.getName().matches("get.+")) {
+                    if(method.getParameterTypes().length != 0) {
+                        continue;
+                    }
+                    String name = method.getName().replaceFirst("get", "set");
+                    if (methodsNames.containsKey(name)) {
+                        if(!method.getReturnType().equals(methodsNames.get(name).getParameterTypes()[0])) {
+                            continue;
+                        }
+                        methods.add(method);
+                    } else {
+                        methodsNames.put(method.getName(), method);
+                    }
+                } else if (method.getName().matches("is.+")) {
+                    if(method.getParameterTypes().length != 0 || !method.getReturnType().equals(boolean.class)) {
+                        continue;
+                    }
+                    String name = method.getName().replaceFirst("is", "set");
+                    if (methodsNames.containsKey(name)) {
+                        if(!methodsNames.get(name).getParameterTypes()[0].equals(boolean.class)) {
+                            continue;
+                        }
+                        methods.add(method);
+                    } else {
+                        methodsNames.put(method.getName(), method);
+                    }
+                } else if (method.getName().matches("set.+")) {
+                    if(!method.getReturnType().equals(void.class) || method.getParameterTypes().length != 1) {
+                        continue;
+                    }
+                    String nameGet = method.getName().replaceFirst("set", "get");
+                    String nameIs = method.getName().replaceFirst("set", "is");
+                    if (methodsNames.containsKey(nameGet)) {
+                        if(!method.getParameterTypes()[0].equals(methodsNames.get(nameGet).getReturnType())) {
+                            continue;
+                        }
+                        methods.add(methodsNames.get(nameGet));
+                    } else if (methodsNames.containsKey(nameIs)) {
+                        if(!method.getParameterTypes()[0].equals(methodsNames.get(nameIs).getReturnType())) {
+                            continue;
+                        }
+                        methods.add(methodsNames.get(nameIs));
+                    } else {
+                        methodsNames.put(method.getName(), method);
+                    }
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return methods;
+    }
+
     private void serializeObjectToWriter(Object value, XMLStreamWriter xmlWriter, int deep) {
         if (deep >= 100) {
             throw new RuntimeException("Cannot serialize.");
@@ -46,12 +114,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 allFields = false;
             }
             if (allFields) {
-                ArrayList<Field> fields = new ArrayList<>();
-                while (clazz != null) {
-                    Field[] tmpFields = clazz.getDeclaredFields();
-                    fields.addAll(Arrays.asList(tmpFields));
-                    clazz = clazz.getSuperclass();
-                }
+                ArrayList<Field> fields = getFields(clazz);
                 for (Field field : fields) {
                     field.setAccessible(true);
                     if (field.get(value) != null) {
@@ -61,39 +124,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     }
                 }
             } else {
-                ArrayList<Method> methods = new ArrayList<>();
-                while (clazz != null) {
-                    Method[] tmpMethods = clazz.getDeclaredMethods();
-                    HashMap<String, Method> methodsNames = new HashMap<>();
-                    for (Method method : tmpMethods) {
-                        if (method.getName().matches("get.+")) {
-                            String name = method.getName().replaceFirst("get", "set");
-                            if (methodsNames.containsKey(name)) {
-                                methods.add(method);
-                            } else {
-                                methodsNames.put(method.getName(), method);
-                            }
-                        } else if (method.getName().matches("is.+")) {
-                            String name = method.getName().replaceFirst("is", "set");
-                            if (methodsNames.containsKey(name)) {
-                                methods.add(method);
-                            } else {
-                                methodsNames.put(method.getName(), method);
-                            }
-                        } else if (method.getName().matches("set.+")) {
-                            String nameGet = method.getName().replaceFirst("set", "get");
-                            String nameIs = method.getName().replaceFirst("set", "is");
-                            if (methodsNames.containsKey(nameGet)) {
-                                methods.add(methodsNames.get(nameGet));
-                            } else if (methodsNames.containsKey(nameIs)) {
-                                methods.add(methodsNames.get(nameIs));
-                            } else {
-                                methodsNames.put(method.getName(), method);
-                            }
-                        }
-                    }
-                    clazz = clazz.getSuperclass();
-                }
+                ArrayList<Method> methods = getMethods(clazz);
                 for (Method method : methods) {
                     method.setAccessible(true);
                     Object val = method.invoke(value);
