@@ -30,7 +30,9 @@ public class ParallelSort {
     static Pair STOP = new Pair("stop", -1);
     static int numberThreads;
     static ArrayList<Pair> ans;
-    static ArrayList<Pair> ans2;
+    static ComparatorLower comparatorLower = new ComparatorLower();
+    static ComparatorNotLower comparatorNotLower = new ComparatorNotLower();
+
 
     static String outputFile = null;
     static ArrayList<String> inputString;
@@ -44,7 +46,6 @@ public class ParallelSort {
         Date date = new Date();
         inputString = new ArrayList<String>();
         ans = new ArrayList<Pair>();
-        ans2 = new ArrayList<Pair>();
         if (args.length == 0) {
             System.err.println("[-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
             System.exit(1);
@@ -73,12 +74,9 @@ public class ParallelSort {
             sorter[i].start();
         }
 
-         for (int i = 0; i < numberThreads; i++) {
+        for (int i = 0; i < numberThreads; i++) {
             sorter[i].join();
-         }
-
-        service.shutdown();
-        service.awaitTermination(1, TimeUnit.DAYS);
+        }
 
         service.shutdown();
         service.awaitTermination(1, TimeUnit.DAYS);
@@ -95,23 +93,23 @@ public class ParallelSort {
 
     static void readKeys(String[] args) throws Exception {
         for (int i = 0; i < args.length; i++) {
-            if(!isInput && args[i].charAt(0) == '-') {
-                if(args[i].equals("-i")) {
+            if (!isInput && args[i].charAt(0) == '-') {
+                if (args[i].equals("-i")) {
                     isI = true;
-                } else if(args[i].equals("-u")) {
+                } else if (args[i].equals("-u")) {
                     isU = true;
-                } else if(args[i].equals("-iu") || args[i].equals("-ui")) {
+                } else if (args[i].equals("-iu") || args[i].equals("-ui")) {
                     isI = true;
                     isU = true;
-                } else if(args[i].equals("-o")) {
+                } else if (args[i].equals("-o")) {
                     outputFile = args[i + 1];
                     i++;
                     isO = true;
-                } else if(args[i].equals("-t")) {
+                } else if (args[i].equals("-t")) {
                     numberThreads = Integer.parseInt(args[i + 1]);
                     i++;
                     isT = true;
-                    if(numberThreads < 1) {
+                    if (numberThreads < 1) {
                         throw new Exception("Error in number thread");
                     }
                 } else {
@@ -136,8 +134,8 @@ public class ParallelSort {
                 for (int j = 0; j < nameFile.size(); j++) {     // read from files
                     file = new FileReader(nameFile.get(j));
                     in = new BufferedReader(file);
-                    while (in.ready()) {
-                        String currentLine = in.readLine();
+                    String currentLine;
+                    while ((currentLine = in.readLine()) != null) {
                         queue.put(new Pair(currentLine, numberWord));
                         numberWord++;
                     }
@@ -151,10 +149,9 @@ public class ParallelSort {
                     queue.put(new Pair(currentLine, numberWord));
                     numberWord++;
                 }
-                in.close();
             }
         } finally {
-            if (in != null) {
+            if (in != null && isInput) {
                 in.close();
             }
             if (file != null) {
@@ -172,7 +169,7 @@ public class ParallelSort {
 
         Sorter(int nameNew) {
             name = nameNew;
-            array = new ArrayList<Pair>();
+            array = new ArrayList<Pair>(size);
         }
 
         public void run() {
@@ -209,9 +206,9 @@ public class ParallelSort {
             id = idNew;
             array = arrayNew;
             if (isI) {
-                Collections.sort(array, new ComparatorLower());
+                Collections.sort(array, comparatorLower);
             } else {
-                Collections.sort(array, new ComparatorNotLower());
+                Collections.sort(array, comparatorNotLower);
             }
         }
 
@@ -223,22 +220,18 @@ public class ParallelSort {
                 int idArray = 0;
                 int indexAns = 0;
                 while (idArray < array.size() && indexAns < mergeArray.size()) {
-                    if (isI) {
-                        if (new ComparatorLower().compare(array.get(idArray), mergeArray.get(indexAns)) < 0) {
-                            tempArray.add(array.get(idArray));
-                            idArray++;
-                        } else {
-                            tempArray.add(mergeArray.get(indexAns));
-                            indexAns++;
-                        }
+                    int resultComparator = 0;
+                    if(isI) {
+                        resultComparator = comparatorLower.compare(array.get(idArray), mergeArray.get(indexAns));
                     } else {
-                        if (new ComparatorNotLower().compare(array.get(idArray), mergeArray.get(indexAns)) < 0) {
-                            tempArray.add(array.get(idArray));
-                            idArray++;
-                        } else {
-                            tempArray.add(mergeArray.get(indexAns));
-                            indexAns++;
-                        }
+                        resultComparator = comparatorNotLower.compare(array.get(idArray), mergeArray.get(indexAns));
+                    }
+                    if (resultComparator < 0) {
+                        tempArray.add(array.get(idArray));
+                        idArray++;
+                    } else {
+                        tempArray.add(mergeArray.get(indexAns));
+                        indexAns++;
                     }
                 }
                 while (idArray < array.size()) {
@@ -257,6 +250,23 @@ public class ParallelSort {
         }
     }
 
+    static boolean isUnique(int id) {
+        if (!isU || id == 0) {
+            return true;
+        } else {
+            int resultComparator = 0;
+            if(isI) {
+                resultComparator = comparatorLower.compare(ans.get(id - 1), ans.get(id));
+            } else {
+                resultComparator = comparatorNotLower.compare(ans.get(id - 1), ans.get(id));
+            }
+            if (resultComparator != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     static void printAnswer(String nameFile) throws Exception {
         FileWriter out = null;
         File file = null;
@@ -265,23 +275,15 @@ public class ParallelSort {
                 file = new File(nameFile);
                 out = new FileWriter(file);
                 for (int i = 0; i < ans.size(); i++) {
-                    if (!isU || i == 0) {
+                     if(isUnique(i)) {
                         out.write(ans.get(i).toString() + "\n");
-                    } else {
-                        String last = ans.get(i - 1).toString();
-                        String now = ans.get(i).toString();
-                        if (isI) {
-                            last = last.toLowerCase();
-                            now = now.toLowerCase();
-                        }
-                        if (!last.equals(now)) {
-                            out.write(ans.get(i).toString() + "\n");
-                        }
-                    }
+                     }
                 }
             } else {
                 for (int i = 0; i < ans.size(); i++) {
-                    System.out.println(ans.get(i).toString());
+                    if(isUnique(i)) {
+                        System.out.println(ans.get(i).toString());
+                    }
                 }
             }
         } finally {
@@ -294,12 +296,10 @@ public class ParallelSort {
     static class ComparatorLower implements Comparator<Pair> {
         public int compare(Pair string1, Pair string2) {
             int ans = String.CASE_INSENSITIVE_ORDER.compare(string1.toString(), string2.toString());
-            if (ans < 0) {
-                return -1;
-            } else if (ans == 0) {
+            if (ans == 0) {
                 return string1.idWord - string2.idWord;
             } else {
-                return 1;
+                return ans;
             }
         }
     }
@@ -307,12 +307,10 @@ public class ParallelSort {
     static class ComparatorNotLower implements Comparator<Pair> {
         public int compare(Pair string1, Pair string2) {
             int ans = string1.toString().compareTo(string2.toString());
-            if (ans < 0) {
-                return -1;
-            } else if (ans == 0) {
+            if (ans == 0) {
                 return string1.idWord - string2.idWord;
             } else {
-                return 1;
+                return ans;
             }
         }
     }
