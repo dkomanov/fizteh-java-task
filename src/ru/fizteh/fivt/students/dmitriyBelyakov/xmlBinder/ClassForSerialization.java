@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder;
 
+import ru.fizteh.fivt.bind.AsXmlCdata;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.chat.MessageType;
@@ -18,10 +19,12 @@ public class ClassForSerialization {
         return;
     }
 
+    @AsXmlCdata
     void setIntField(int i) {
         intField = i;
     }
 
+    @AsXmlCdata
     private int getIntField() {
         return intField;
     }
@@ -32,5 +35,13 @@ public class ClassForSerialization {
 
     boolean setIntField() {
         return false;
+    }
+
+    public void setDouble(float f) {
+        return;
+    }
+
+    public double getDouble() {
+        return doubleField;
     }
 }

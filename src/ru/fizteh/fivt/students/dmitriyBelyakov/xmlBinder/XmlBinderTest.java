@@ -24,13 +24,14 @@ public class XmlBinderTest extends Assert {
     }
 
     @Test
-    public void test() {
+    public void testXmlBuilder() {
         XmlBinder binder = new XmlBinder(User.class);
         Permissions permissions = new Permissions();
         permissions.setQuota(100500);
         User user = new User(1, UserType.USER, new UserName("first", "last"), permissions);
         byte[] bytes = binder.serialize(user);
-        /*assertEquals("<ru.fizteh.fivt.bind.test.User>" + "<id>1</id>"
+        /*assertEquals("<ru.fizteh.fivt.bind.test.User>"
+                + "<id>1</id>"
                 + "<userType>USER</userType>"
                 + "<name><firstName>first</firstName><lastName>last</lastName></name>"
                 + "<permissions><quota>100500</quota><root>false</root></permissions>"
@@ -38,8 +39,9 @@ public class XmlBinderTest extends Assert {
         */
         XmlBinder anotherBinder = new XmlBinder(ClassForSerialization.class);
         assertEquals("<ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerialization>"
-                + "<intField>11</intField>"
+                + "<intField><![CDATA[11]]></intField>"
                 + "</ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerialization>",
                 new String(anotherBinder.serialize(new ClassForSerialization())));
+        binder.deserialize(binder.serialize(user));
     }
 }
