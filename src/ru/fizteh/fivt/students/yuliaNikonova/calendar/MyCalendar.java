@@ -92,13 +92,11 @@ public class MyCalendar {
         }
         for (int i = 2; i < weekDays.length; i++) {
             week.append(weekDays[i]);
-            // System.out.println(weekDays[i]);
             week.append(" ");
         }
         week.append(weekDays[1]);
         System.out.println(week);
         int length = weekDays[1].length();
-        // System.out.println(length);
         int firstDay = mCalendar.getActualMinimum(Calendar.DAY_OF_MONTH);
         int lastDay = mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
         mCalendar.set(Calendar.DAY_OF_MONTH, firstDay);
