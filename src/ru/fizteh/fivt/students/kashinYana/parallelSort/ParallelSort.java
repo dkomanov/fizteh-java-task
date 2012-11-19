@@ -221,7 +221,7 @@ public class ParallelSort {
                 int indexAns = 0;
                 while (idArray < array.size() && indexAns < mergeArray.size()) {
                     int resultComparator = 0;
-                    if(isI) {
+                    if (isI) {
                         resultComparator = comparatorLower.compare(array.get(idArray), mergeArray.get(indexAns));
                     } else {
                         resultComparator = comparatorNotLower.compare(array.get(idArray), mergeArray.get(indexAns));
@@ -255,7 +255,7 @@ public class ParallelSort {
             return true;
         } else {
             int resultComparator = 0;
-            if(isI) {
+            if (isI) {
                 resultComparator = comparatorLower.compare(ans.get(id - 1), ans.get(id));
             } else {
                 resultComparator = comparatorNotLower.compare(ans.get(id - 1), ans.get(id));
@@ -275,13 +275,13 @@ public class ParallelSort {
                 file = new File(nameFile);
                 out = new FileWriter(file);
                 for (int i = 0; i < ans.size(); i++) {
-                     if(isUnique(i)) {
+                    if (isUnique(i)) {
                         out.write(ans.get(i).toString() + "\n");
-                     }
+                    }
                 }
             } else {
                 for (int i = 0; i < ans.size(); i++) {
-                    if(isUnique(i)) {
+                    if (isUnique(i)) {
                         System.out.println(ans.get(i).toString());
                     }
                 }
