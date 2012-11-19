@@ -244,23 +244,42 @@ public class Main {
             List<List<String> > res;
 
             while (size > 1) {
-                List<Thread> threads = new ArrayList<Thread>(size / 2);
-                res = new ArrayList<List<String> >(size / 2);
-                for (int i = 0; i < size / 2; ++i) {
+                int curSize = (size + 1) / 2;
+                List<Thread> threads = new ArrayList<Thread>(curSize);
+                res = new ArrayList<List<String> >(curSize);
+                for (int i = 0; i < curSize; ++i) {
                     res.add(new ArrayList<String>());
                 }
                 int start = 0;
                 int end = 1;
 
-                for (int i = 0; i < size / 2; ++i) {
-                    Merger m = new Merger(res.get(i), result, start, end, withoutReg);
+                for (int i = 0; i < curSize; ++i) {
+                    Merger m;
+                    if (i == 0 && size % 2 != 0) {
+                        m = new Merger(res.get(i), result, start, end, 0,
+                                result.get(start).size() - 1, 0,
+                                result.get(end).size() / 2, withoutReg);
+                        start += 1;
+                        end += 1;
+                    } else if (i == 1 && size % 2 != 0) {
+                        m = new Merger(res.get(i), result, start, end,
+                                result.get(start).size() / 2 + 1,
+                                result.get(start).size() - 1, 0,
+                                result.get(end).size() - 1, withoutReg);
+                        start += 2;
+                        end += 2;
+                    } else {
+                        m = new Merger(res.get(i), result, start, end, 0,
+                                result.get(start).size() - 1, 0,
+                                result.get(end).size() - 1, withoutReg);
+                        start += 2;
+                        end += 2;
+                    }
                     threads.add(new Thread(m));
                     threads.get(i).start();
-                    start += 2;
-                    end += 2;
                 }
 
-                for (int i = 0; i < size / 2; ++i) {
+                for (int i = 0; i < curSize; ++i) {
                     try {
                         threads.get(i).join();
                     } catch (Exception e) {
