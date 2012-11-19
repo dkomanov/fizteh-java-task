@@ -256,9 +256,9 @@ public class ParallelSort {
         } else {
             int resultComparator = 0;
             if (isI) {
-                resultComparator = comparatorLower.compare(ans.get(id - 1), ans.get(id));
+                resultComparator = String.CASE_INSENSITIVE_ORDER.compare(ans.get(id - 1).toString(), ans.get(id).toString());
             } else {
-                resultComparator = comparatorNotLower.compare(ans.get(id - 1), ans.get(id));
+                resultComparator = ans.get(id - 1).toString().compareTo(ans.get(id).toString());
             }
             if (resultComparator != 0) {
                 return true;
