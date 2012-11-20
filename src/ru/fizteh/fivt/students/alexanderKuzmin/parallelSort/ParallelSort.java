@@ -58,16 +58,17 @@ public class ParallelSort {
         PrintStream pStream = null;
         try {
             pStream = outputToFile ? new PrintStream(output) : System.out;
-            WorkWithStream.printToStream(result.get(0), pStream);
+            String tmp = result.get(0);
+            WorkWithStream.printToStream(tmp, pStream);
             Comparator<String> cmp = insensitive ? String.CASE_INSENSITIVE_ORDER
                     : new MyComparator();
             for (int i = 1; i < result.size(); ++i) {
                 if (unique) {
-                    compareAndPrintToStream(result.get(i), result.get(i - 1),
-                            cmp, pStream);
+                    compareAndPrintToStream(result.get(i), tmp, cmp, pStream);
                 } else {
                     WorkWithStream.printToStream(result.get(i), pStream);
                 }
+                tmp = result.get(i);
             }
         } catch (Throwable e) {
             Closers.printErrAndExit(e.getMessage());
