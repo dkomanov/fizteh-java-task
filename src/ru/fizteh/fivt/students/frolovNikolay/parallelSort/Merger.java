@@ -22,22 +22,22 @@ public class Merger {
         while (notFinish) {
             if (firstIdx < firstSize && secondIdx < secondSize) {
                 if (withoutReg) {
-                    if (sortedLists.get(0).get(firstIdx).compareToIgnoreCase(sortedLists.get(1).get(secondIdx)) > 1) {
-                        mergedLists.push(sortedLists.get(0).get(firstIdx++));
+                    if (sortedLists.get(0).get(firstIdx).compareToIgnoreCase(sortedLists.get(1).get(secondIdx)) < 0) {
+                        mergedLists.add(sortedLists.get(0).get(firstIdx++));
                     } else {
-                        mergedLists.push(sortedLists.get(1).get(secondIdx++));
+                        mergedLists.add(sortedLists.get(1).get(secondIdx++));
                     }
                 } else {
-                    if (sortedLists.get(0).get(firstIdx).compareTo(sortedLists.get(1).get(secondIdx)) > 0) {
-                        mergedLists.push(sortedLists.get(0).get(firstIdx++));
+                    if (sortedLists.get(0).get(firstIdx).compareTo(sortedLists.get(1).get(secondIdx)) < 0) {
+                        mergedLists.add(sortedLists.get(0).get(firstIdx++));
                     } else {
-                        mergedLists.push(sortedLists.get(1).get(secondIdx++));
+                        mergedLists.add(sortedLists.get(1).get(secondIdx++));
                     }
                 }
             } else if (firstIdx < firstSize) {
-                mergedLists.push(sortedLists.get(0).get(firstIdx++));
+                mergedLists.add(sortedLists.get(0).get(firstIdx++));
             } else if (secondIdx < secondSize) {
-                mergedLists.push(sortedLists.get(1).get(secondIdx++));
+                mergedLists.add(sortedLists.get(1).get(secondIdx++));
             } else {
                 notFinish = false;
             }
@@ -46,5 +46,4 @@ public class Merger {
         sortedLists.remove(0);
         sortedLists.add(mergedLists);
     }
-
 }
