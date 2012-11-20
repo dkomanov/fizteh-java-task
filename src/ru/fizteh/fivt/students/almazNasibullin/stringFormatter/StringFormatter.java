@@ -90,6 +90,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     private void makeChange(StringBuilder buffer, String format, Object... args)
             throws FormatterException {
+        if (args == null) {
+            return;
+        }
         Object o = null;
         int pattern = format.indexOf(":");
         if (pattern == -1) {
