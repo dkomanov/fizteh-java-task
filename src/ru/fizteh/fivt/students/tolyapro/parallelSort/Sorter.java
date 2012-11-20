@@ -15,13 +15,10 @@ public class Sorter implements Runnable {
         this.strings = strings;
         this.queue = queue;
         caseSensitive = sensitive;
-        System.out.println("");
     }
 
     @Override
     public void run() {
-        System.out.println("Started sorting");
-        // synchronized (queue) {
         if (caseSensitive) {
             Collections.sort(strings);
             queue.add(strings);
@@ -29,7 +26,5 @@ public class Sorter implements Runnable {
             Collections.sort(strings, String.CASE_INSENSITIVE_ORDER);
             queue.add(strings);
         }
-        System.out.println("Finished sorting");
-        // }
     }
 }

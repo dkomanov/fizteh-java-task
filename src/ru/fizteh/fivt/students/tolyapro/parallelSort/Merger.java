@@ -6,7 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Merger implements Runnable {
     LinkedBlockingQueue<ArrayList<String>> queue;
     boolean caseSensitive;
-    
+
     public Merger(boolean sensitive,
             LinkedBlockingQueue<ArrayList<String>> queue) {
         this.queue = queue;
@@ -25,11 +25,9 @@ public class Merger implements Runnable {
                     secondList = queue.poll();
                 }
             }
-            // MERGE11
             if (firstList != null && secondList != null) {
                 doneNothing = false;
                 ArrayList<String> resultList = new ArrayList<String>();
-                System.out.println("Merging!");
                 int i = 0, j = 0;
                 int m = firstList.size();
                 int n = secondList.size();
@@ -53,11 +51,10 @@ public class Merger implements Runnable {
                     resultList.add(secondList.get(j++));
                 }
                 queue.add(resultList);
-                // System.out.println("Merged");
             }
 
         }
-        System.out.println("Merged");
+
     }
 
 }

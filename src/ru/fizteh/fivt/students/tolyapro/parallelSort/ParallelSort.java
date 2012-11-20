@@ -111,7 +111,6 @@ public class ParallelSort {
             System.err.println("Bad threads number");
             System.exit(1);
         }
-        long startTime = System.currentTimeMillis();
         Reader reader = new Reader(files);
         ArrayList<String> allStrings = null;
         try {
@@ -133,7 +132,6 @@ public class ParallelSort {
         LinkedBlockingQueue<ArrayList<String>> result = new LinkedBlockingQueue<ArrayList<String>>();
         ExecutorService sorters = Executors.newFixedThreadPool(numTreads);
         int blockSize = allStrings.size() / numTreads;
-        System.out.println(blockSize);
         for (int i = 0; i < numTreads; ++i) {
             if (i != numTreads - 1) {
                 List<String> tmp = allStrings.subList(i * blockSize, (i + 1)
@@ -160,7 +158,5 @@ public class ParallelSort {
         }
         printFromDiffSources(output, result.take(), onlyUnique);
         sorters.shutdownNow();
-        long time = System.currentTimeMillis();
-        System.out.println(time - startTime);
     }
 }
