@@ -10,8 +10,8 @@ import java.util.TimeZone;
 
 public class MyCalendar {
 
-    static boolean flagW = false;
-    static boolean flagT = false;
+    static boolean flagPrintWeeksNumbers = false;
+    static boolean flagTimeZone = false;
     static TimeZone timeZone = TimeZone.getDefault();
     static Calendar calendar = Calendar.getInstance();
 
@@ -23,7 +23,8 @@ public class MyCalendar {
     public static void setFlags(String[] args) {
         for (int i = 0; i < args.length; ++i) {
             if (args[i].charAt(0) == '-') {
-                if (args[i].charAt(1) != 'w' && args.length == i + 1) {
+                if (args[i].length() == 1
+                        || (args[i].charAt(1) != 'w' && args.length == i + 1)) {
                     System.err
                             .println("Error: incorrect input"
                                     + System.lineSeparator()
@@ -33,9 +34,14 @@ public class MyCalendar {
 
                 switch (args[i]) {
                 case "-m":
-                    int month = Integer.parseInt(args[++i]) - 1;
-                    if (calendar.getActualMinimum(Calendar.MONTH) > month
-                            || calendar.getActualMaximum(Calendar.MONTH) < month) {
+                    int month = calendar.get(Calendar.MONTH);
+                    try {
+                        month = Integer.parseInt(args[++i]) - 1;
+                        if (calendar.getActualMinimum(Calendar.MONTH) > month
+                                || calendar.getActualMaximum(Calendar.MONTH) < month) {
+                            throw new Exception();
+                        }
+                    } catch (Exception e) {
                         System.err
                                 .println("Error: incorrect input"
                                         + System.lineSeparator()
@@ -47,9 +53,14 @@ public class MyCalendar {
 
                 case "-y":
                     i++;
-                    int year = Integer.parseInt(args[i]);
-                    if (calendar.getActualMinimum(Calendar.YEAR) > year
-                            || calendar.getActualMaximum(Calendar.YEAR) < year) {
+                    int year = calendar.get(Calendar.YEAR);
+                    try {
+                        year = Integer.parseInt(args[i]);
+                        if (calendar.getActualMinimum(Calendar.YEAR) > year
+                                || calendar.getActualMaximum(Calendar.YEAR) < year) {
+                            throw new Exception();
+                        }
+                    } catch (Exception e) {
                         System.err
                                 .println("Error: incorrect input"
                                         + System.lineSeparator()
@@ -60,12 +71,19 @@ public class MyCalendar {
                     break;
 
                 case "-w":
-                    flagW = true;
+                    flagPrintWeeksNumbers = true;
                     break;
 
                 case "-t":
                     timeZone = TimeZone.getTimeZone(args[++i]);
-                    if (timeZone.getID().equals("GMT")) {
+                    boolean isCorrectTimeZone = false;
+                    for (int j = 0; j < TimeZone.getAvailableIDs().length; ++j) {
+                        if (args[i].equals(TimeZone.getAvailableIDs()[j])) {
+                            isCorrectTimeZone = true;
+                            break;
+                        }
+                    }
+                    if (!isCorrectTimeZone) {
                         System.err
                                 .println("Error: incorrect input"
                                         + System.lineSeparator()
@@ -73,7 +91,7 @@ public class MyCalendar {
                         System.exit(1);
                     }
                     calendar.setTimeZone(timeZone);
-                    flagT = true;
+                    flagTimeZone = true;
                     break;
 
                 default:
@@ -95,7 +113,7 @@ public class MyCalendar {
 
     public static void printMyCalendar() {
         // printing header
-        if (flagW) {
+        if (flagPrintWeeksNumbers) {
             System.out.print("\t\t\t");
         } else {
             System.out.print("\t\t");
@@ -107,7 +125,7 @@ public class MyCalendar {
 
         // printing days of week
         String[] daysOfWeek = new DateFormatSymbols().getShortWeekdays();
-        if (flagW) {
+        if (flagPrintWeeksNumbers) {
             System.out.print("\t");
         }
         for (int i = 2; i < 8; ++i) {
@@ -122,7 +140,7 @@ public class MyCalendar {
         if (firstDay == 0) {
             firstDay = 7;
         }
-        if (flagW) {
+        if (flagPrintWeeksNumbers) {
             System.out.print(calendar.get(Calendar.WEEK_OF_YEAR));
             System.out.print("\t");
         }
@@ -134,7 +152,8 @@ public class MyCalendar {
         while (calendar.get(Calendar.MONTH) == ourMonth) {
             for (int i = firstDay; i <= 7
                     && ourMonth == calendar.get(Calendar.MONTH); ++i) {
-                if (flagW && i == 1 && Calendar.WEEK_OF_MONTH != 1) {
+                if (flagPrintWeeksNumbers && i == 1
+                        && Calendar.WEEK_OF_MONTH != 1) {
                     System.out
                             .print(calendar.get(Calendar.WEEK_OF_YEAR) + "\t");
                 }
@@ -150,7 +169,7 @@ public class MyCalendar {
         }
 
         // printing current time in our timezone
-        if (flagT) {
+        if (flagTimeZone) {
             Date date = new Date();
             DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             dateFormat.setTimeZone(timeZone);
