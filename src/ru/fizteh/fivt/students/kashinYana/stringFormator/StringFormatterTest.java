@@ -100,7 +100,8 @@ public class StringFormatterTest {
         check("Date = 2009-11-01", basic.format("Date = {0:yyyy-MM-dd}", new GregorianCalendar(2009, 10, 1).getTime()));
 
         GregorianCalendar calendar = new GregorianCalendar();
-        calendar.set(GregorianCalendar.HOUR, 17);
+        calendar.set(GregorianCalendar.AM_PM, GregorianCalendar.AM);
+        calendar.set(GregorianCalendar.HOUR, 5);
         calendar.set(GregorianCalendar.MINUTE, 30);
         calendar.set(GregorianCalendar.SECOND, 07);
 
