@@ -121,13 +121,13 @@ public class UnitTests {
     @Test
     public void tests() {
         testString = formatter.format("start {{1}} {{{0:.2f}}} end", 1.2345678);
-        Assert.assertEquals("start {1} {1,23} end", testString);
+        Assert.assertEquals("start {1} {1.23} end", testString);
 
         testString = formatter.format("start }}{{ {0:.3f} end", 1.2345678);
-        Assert.assertEquals("start }{ 1,235 end", testString);
+        Assert.assertEquals("start }{ 1.235 end", testString);
 
         testString = formatter.format("start {{1}} {2:.6f} end", 1.2345678, 1.234, 1.0);
-        Assert.assertEquals("start {1} 1,000000 end", testString);
+        Assert.assertEquals("start {1} 1.000000 end", testString);
 
         testString = formatter.format("start {{1}} {0} end {0}{{", 1.2345678);
         Assert.assertEquals("start {1} 1.2345678 end 1.2345678{", testString);
@@ -140,6 +140,6 @@ public class UnitTests {
         Assert.assertEquals("start - 123456789987654321123456789 end", testString);
         
         testString = formatter.format("start {0} {1:.6f} {2} {1} end", 1.0, 2.0, 3.0);
-        Assert.assertEquals("start 1.0 2,000000 3.0 2.0 end", testString);
+        Assert.assertEquals("start 1.0 2.000000 3.0 2.0 end", testString);
     }
 }
