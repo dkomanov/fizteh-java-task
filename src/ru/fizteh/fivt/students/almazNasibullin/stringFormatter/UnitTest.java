@@ -149,13 +149,13 @@ public class UnitTest {
     }
 
     class ParentTest {
-        Long a = new Long(111);
-        private Long b = new Long(222);
-        protected long c = new Long(333);
+        Long a = 111L;
+        private Long b = 222L;
+        protected long c = 333L;
     }
 
     class ChildTest extends ParentTest {
-        Long d = new Long(65);
+        Long d = 65L;
     }
 
     @Test
@@ -170,6 +170,18 @@ public class UnitTest {
                 "something{0.a}here", new ChildTest()));
     }
 
+    @Test
+    public void FormatterParentPrivateField() {
+        Assert.assertEquals("something 222 here", new StringFormatter().format(
+                "something {0.b} here", new ChildTest()));
+    }
+
+    @Test
+    public void FormatterParentProtectedField() {
+        Assert.assertEquals("something 333 here", new StringFormatter().format(
+                "something {0.c} here", new ChildTest()));
+    }
+
     
     private StringFormatter formatter;
 
@@ -180,25 +192,13 @@ public class UnitTest {
     }
 
     @Test
-    public void AdditionalTest1() {
+    public void AdditionalTests() {
         Assert.assertEquals("something 101 here", formatter.format(
                 "something {0.d:3o} here", new ChildTest()));
-    }
-
-    @Test
-    public void AdditionalTest2() {
         Assert.assertEquals("{0}", formatter.format(
                 "{{0}}", new ChildTest()));
-    }
-
-    @Test
-    public void AdditionalTest3() {
         Assert.assertEquals("{111}", formatter.format(
                 "{{{0.a}}}", new ChildTest()));
-    }
-
-    @Test
-    public void AdditionalTest4() {
         DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd");
         Assert.assertEquals(dateFormat.format(new Date()), formatter.format(
                 "{0:yyyy.MM.dd}", Calendar.getInstance()));
