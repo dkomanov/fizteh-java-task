@@ -61,7 +61,7 @@ public class ParallelSort {
             System.exit(1);
         }
 
-        if(isI) {
+        if (isI) {
             comparator = new ComparatorLower();
             comparatorString = new ComparatorLowerString();
         } else {
@@ -255,7 +255,7 @@ public class ParallelSort {
     static void printAnswer(String nameFile) throws Exception {
         BufferedWriter log = null;
         try {
-            if(isO) {
+            if (isO) {
                 log = new BufferedWriter(new PrintWriter(nameFile));
             } else {
                 log = new BufferedWriter(new OutputStreamWriter(System.out));
