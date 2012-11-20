@@ -30,6 +30,9 @@ public class ParallelSort {
     static Pair STOP = new Pair("stop", -1);
     static int numberThreads;
     static ArrayList<Pair> ans;
+    static Comparator<Pair> comparator;
+    static Comparator<String> comparatorString;
+
     static ComparatorLower comparatorLower = new ComparatorLower();
     static ComparatorNotLower comparatorNotLower = new ComparatorNotLower();
 
@@ -56,6 +59,14 @@ public class ParallelSort {
         } catch (Exception e) {
             System.err.println("Error in set keys :" + e.getMessage());
             System.exit(1);
+        }
+
+        if(isI) {
+            comparator = new ComparatorLower();
+            comparatorString = new ComparatorLowerString();
+        } else {
+            comparator = new ComparatorNotLower();
+            comparatorString = new ComparatorNotLowerString();
         }
 
         queue = new LinkedBlockingQueue<Pair>();
@@ -205,11 +216,7 @@ public class ParallelSort {
         public Merge(ArrayList<Pair> arrayNew, int idNew) {
             id = idNew;
             array = arrayNew;
-            if (isI) {
-                Collections.sort(array, comparatorLower);
-            } else {
-                Collections.sort(array, comparatorNotLower);
-            }
+            Collections.sort(array, comparator);
         }
 
         public void run() {
@@ -220,12 +227,7 @@ public class ParallelSort {
                 int idArray = 0;
                 int indexAns = 0;
                 while (idArray < array.size() && indexAns < mergeArray.size()) {
-                    int resultComparator = 0;
-                    if (isI) {
-                        resultComparator = comparatorLower.compare(array.get(idArray), mergeArray.get(indexAns));
-                    } else {
-                        resultComparator = comparatorNotLower.compare(array.get(idArray), mergeArray.get(indexAns));
-                    }
+                    int resultComparator = comparator.compare(array.get(idArray), mergeArray.get(indexAns));
                     if (resultComparator < 0) {
                         tempArray.add(array.get(idArray));
                         idArray++;
@@ -250,46 +252,27 @@ public class ParallelSort {
         }
     }
 
-    static boolean isUnique(int id) {
-        if (!isU || id == 0) {
-            return true;
-        } else {
-            int resultComparator = 0;
-            if (isI) {
-                resultComparator = String.CASE_INSENSITIVE_ORDER.compare(ans.get(id - 1).toString(),
-                        ans.get(id).toString());
-            } else {
-                resultComparator = ans.get(id - 1).toString().compareTo(ans.get(id).toString());
-            }
-            if (resultComparator != 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     static void printAnswer(String nameFile) throws Exception {
-        FileWriter out = null;
-        File file = null;
+        BufferedWriter log = null;
         try {
-            if (isO) {
-                file = new File(nameFile);
-                out = new FileWriter(file);
-                for (int i = 0; i < ans.size(); i++) {
-                    if (isUnique(i)) {
-                        out.write(ans.get(i).toString() + "\n");
-                    }
-                }
+            if(isO) {
+                log = new BufferedWriter(new PrintWriter(nameFile));
             } else {
-                for (int i = 0; i < ans.size(); i++) {
-                    if (isUnique(i)) {
-                        System.out.println(ans.get(i).toString());
-                    }
+                log = new BufferedWriter(new OutputStreamWriter(System.out));
+            }
+            Pair last = new Pair("", 0);
+            for (int i = 0; i < ans.size(); i++) {
+                Pair now = ans.get(i);
+                if (i == 0 || !isU || comparatorString.compare(last.toString(), now.toString()) != 0) {
+                    log.write(now.toString() + "\n");
+                    last = now;
                 }
             }
+        } catch (Exception e) {
+            throw new Exception("Error in writting result.");
         } finally {
-            if (out != null) {
-                out.close();
+            if (log != null && isO) {
+                log.close();
             }
         }
     }
@@ -305,6 +288,12 @@ public class ParallelSort {
         }
     }
 
+    static class ComparatorLowerString implements Comparator<String> {
+        public int compare(String string1, String string2) {
+            return String.CASE_INSENSITIVE_ORDER.compare(string1, string2);
+        }
+    }
+
     static class ComparatorNotLower implements Comparator<Pair> {
         public int compare(Pair string1, Pair string2) {
             int ans = string1.toString().compareTo(string2.toString());
@@ -313,6 +302,12 @@ public class ParallelSort {
             } else {
                 return ans;
             }
+        }
+    }
+
+    static class ComparatorNotLowerString implements Comparator<String> {
+        public int compare(String string1, String string2) {
+            return string1.compareTo(string2);
         }
     }
 }
