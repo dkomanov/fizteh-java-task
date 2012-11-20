@@ -77,8 +77,8 @@ public class MyCalendar {
                 case "-t":
                     timeZone = TimeZone.getTimeZone(args[++i]);
                     boolean isCorrectTimeZone = false;
-                    for (int j = 0; j < TimeZone.getAvailableIDs().length; ++j) {
-                        if (args[i].equals(TimeZone.getAvailableIDs()[j])) {
+                    for (String availableTimeZone : TimeZone.getAvailableIDs()) {
+                        if (args[i].equals(availableTimeZone)) {
                             isCorrectTimeZone = true;
                             break;
                         }
@@ -149,6 +149,7 @@ public class MyCalendar {
         }
         int ourMonth = calendar.get(Calendar.MONTH);
         int currentDay = 1;
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
         while (calendar.get(Calendar.MONTH) == ourMonth) {
             for (int i = firstDay; i <= 7
                     && ourMonth == calendar.get(Calendar.MONTH); ++i) {
