@@ -1,9 +1,6 @@
 package ru.fizteh.fivt.students.almazNasibullin.stringFormatter;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import org.junit.Test;
 import org.junit.Assert;
 import org.junit.Before;
@@ -192,15 +189,36 @@ public class UnitTest {
     }
 
     @Test
-    public void AdditionalTests() {
+    public void FormatterGoodFormatForLong() {
         Assert.assertEquals("something 101 here", formatter.format(
                 "something {0.d:3o} here", new ChildTest()));
+    }
+
+    @Test
+    public void FormatterDoubleBrackets() {
         Assert.assertEquals("{0}", formatter.format(
                 "{{0}}", new ChildTest()));
+    }
+
+    @Test
+    public void FormatterTripleBrackets() {
         Assert.assertEquals("{111}", formatter.format(
                 "{{{0.a}}}", new ChildTest()));
-        DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd");
-        Assert.assertEquals(dateFormat.format(new Date()), formatter.format(
+    }
+    
+    @Test
+    public void FormatterNullPointerArgument() {
+        Assert.assertEquals("ab", formatter.format(
+                "a{0}b", null));
+    }
+    
+    @Test
+    public void FormatterGoodFormatForCalendar() {
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.DAY_OF_MONTH, 20);
+        c.set(Calendar.MONTH, Calendar.NOVEMBER);
+        c.set(Calendar.YEAR, 2012);
+        Assert.assertEquals("2012.11.20", formatter.format(
                 "{0:yyyy.MM.dd}", Calendar.getInstance()));
     }
 }
