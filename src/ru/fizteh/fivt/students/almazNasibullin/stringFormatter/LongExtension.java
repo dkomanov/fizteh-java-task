@@ -33,7 +33,7 @@ public class LongExtension extends StringFormatterExtension {
 
         try {
             Formatter f = new Formatter();
-            buffer.append(f.format("%" + pattern, o).toString());
+            buffer.append(f.format("%" + pattern, o));
         } catch (Exception e) {
             throw new FormatterException("Bad pattern");
         }

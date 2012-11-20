@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.almazNasibullin.parallelsort;
 
 import java.util.Comparator;
 import java.util.List;
+
 /**
  * 11.11.12
  * @author almaz
@@ -19,7 +20,7 @@ public class Merger implements Runnable {
     Comparator<String> com;
     
     public Merger (List<String> res, List<List<String> > result, int start, int end,
-            int from1, int to1, int from2, int to2, boolean withoutReg){
+            int from1, int to1, int from2, int to2, Comparator<String> com){
         this.res = res;
         this.result = result;
         this.start = start;
@@ -28,15 +29,7 @@ public class Merger implements Runnable {
         this.to1 = to1;
         this.from2 = from2;
         this.to2 = to2;
-        if (withoutReg) {
-            com = String.CASE_INSENSITIVE_ORDER;
-        } else {
-            com = new Comparator<String> () {
-                public int compare(String s1, String s2) {
-                    return s1.compareTo(s2);
-                }
-            };
-        }
+        this.com = com;
     }
 
     @Override
