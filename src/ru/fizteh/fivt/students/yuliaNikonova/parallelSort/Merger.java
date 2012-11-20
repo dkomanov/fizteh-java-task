@@ -3,60 +3,74 @@ package ru.fizteh.fivt.students.yuliaNikonova.parallelSort;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Merger extends Thread {
-    private CopyOnWriteArrayList<String> List1;
-    private CopyOnWriteArrayList<String> List2;
-    private CopyOnWriteArrayList<String> ResultList;
+    private LinkedBlockingQueue<String> list1;
+    private LinkedBlockingQueue<String> list2;
+    private LinkedBlockingQueue<String> resultList;
     private boolean ignoreCase;
+    private int num;
 
-    public Merger(CopyOnWriteArrayList<String> List1, CopyOnWriteArrayList<String> List2, boolean ignoreCase) {
-        this.List1 = List1;
-        this.List2 = List2;
+    public Merger(LinkedBlockingQueue<String> List1, LinkedBlockingQueue<String> List2, boolean ignoreCase, int n) {
+        this.list1 = List1;
+        this.list2 = List2;
         this.ignoreCase = ignoreCase;
-        this.ResultList = new CopyOnWriteArrayList<String>();
+        this.resultList = new LinkedBlockingQueue<String>();
+        this.num = n;
     }
 
     public void run() {
-        while (!List1.isEmpty() && !List2.isEmpty()) {
-            String val1 = List1.get(0);
-            String val2 = List2.get(0);
+        // System.out.println("Size of first is " + list1.size());
+        // System.out.println("Size of second is " + list2.size());
+        while (!list1.isEmpty() && !list2.isEmpty()) {
+            // System.out.println(num + "   " + list1.size() + "  " +
+            // list2.size());
+            // System.out.println("Size of second is " + list2.size());
+            String val1 = list1.element();
+            String val2 = list2.element();
             if (!ignoreCase) {
                 if (val1.compareTo(val2) < 0) {
-                    ResultList.add(val1);
-                    List1.remove(0);
+                    resultList.add(val1);
+                    list1.poll();
                 } else {
-                    ResultList.add(val2);
-                    List2.remove(0);
+                    resultList.add(val2);
+                    list2.poll();
                 }
             } else {
                 if (val1.compareToIgnoreCase(val2) < 0) {
-                    ResultList.add(val1);
-                    List1.remove(0);
+                    resultList.add(val1);
+                    list1.poll();
                 } else {
-                    ResultList.add(val2);
-                    List2.remove(0);
+                    resultList.add(val2);
+                    list2.poll();
                 }
             }
         }
-        if (!List1.isEmpty()) {
-            ResultList.addAll(List1);
-        }
-        if (!List2.isEmpty()) {
-            ResultList.addAll(List2);
-        }
-    }
 
-    CopyOnWriteArrayList<String> getResult() {
-        return ResultList;
-    }
-
-    public void showResults() {
-        System.out.println("==============");
-        for (String strLine : ResultList) {
-            System.out.println(strLine);
+        // System.out.println("Something empty: " + list1.size() + " " +
+        // list2.size());
+        if (!list1.isEmpty()) {
+            resultList.addAll(list1);
+            // System.out.println("I added list1");
+        }
+        if (!list2.isEmpty()) {
+            resultList.addAll(list2);
         }
 
-        System.out.println("==============");
+        // System.out.println("I've done");
     }
+
+    LinkedBlockingQueue<String> getResult() {
+        return resultList;
+    }
+
+    /* public void showResults() {
+     * System.out.println("==============");
+     * for (String strLine : resultList) {
+     * System.out.println(strLine);
+     * }
+     * 
+     * System.out.println("==============");
+     * } */
 }

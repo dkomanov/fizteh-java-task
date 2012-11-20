@@ -14,7 +14,9 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import ru.fizteh.fivt.students.yuliaNikonova.common.Utils;
 
@@ -25,10 +27,10 @@ public class ControlSorter {
     private String outputFileName;
     private int numthreads;
     private volatile ArrayList<String> str;
-    private volatile ArrayList<CopyOnWriteArrayList<String>> results;
+    private volatile ArrayList<LinkedBlockingQueue<String>> results;
     private ArrayList<Sorter> sorters;
     private ArrayList<Merger> mergers;
-    private List<String> result;
+    private LinkedBlockingQueue<String> result;
 
     public ControlSorter(boolean ignoreCase, boolean unique, int numthreads, String outputFileName, ArrayList<String> fileNames) {
 
@@ -38,7 +40,7 @@ public class ControlSorter {
         this.outputFileName = outputFileName;
         this.numthreads = numthreads;
         this.str = new ArrayList<String>();
-        this.results = new ArrayList<CopyOnWriteArrayList<String>>();
+        this.results = new ArrayList<LinkedBlockingQueue<String>>();
         this.sorters = new ArrayList<Sorter>();
         this.mergers = new ArrayList<Merger>();
     }
@@ -75,7 +77,7 @@ public class ControlSorter {
             br = new BufferedReader(inReader);
             String strLine;
 
-            while ((strLine = br.readLine()) != null && !strLine.equals("STOP")) {
+            while ((strLine = br.readLine()) != null) {
                 if (unique) {
                     if (!str.contains(strLine)) {
                         str.add(strLine);
@@ -86,8 +88,11 @@ public class ControlSorter {
             }
         } catch (Exception e) {
         } finally {
-            Utils.close(br);
-            Utils.close(inReader);
+            if (!in.equals(System.in)) {
+                Utils.close(br);
+                Utils.close(inReader);
+            }
+
         }
     }
 
@@ -122,23 +127,24 @@ public class ControlSorter {
 
     private void mergeResults() throws InterruptedException {
         for (Sorter sorter : sorters) {
-            CopyOnWriteArrayList<String> mList = new CopyOnWriteArrayList<String>();
+            LinkedBlockingQueue<String> mList = new LinkedBlockingQueue<String>();
             mList.addAll(sorter.getResult());
             results.add(mList);
         }
 
         while (results.size() != 1) {
+            // System.out.println("Size is " + results.size());
             mergers.clear();
             Merger mMerger;
             for (int i = 0; i < results.size(); i += 2) {
                 // System.out.println("Thread: " + i / 2);
                 if (i + 1 == results.size()) {
                     synchronized (results) {
-                        results.add(new CopyOnWriteArrayList<String>());
+                        results.add(new LinkedBlockingQueue<String>());
                     }
                 }
                 synchronized (results) {
-                    mMerger = new Merger(results.get(i), results.get(i + 1), ignoreCase);
+                    mMerger = new Merger(results.get(i), results.get(i + 1), ignoreCase, i / 2);
                 }
 
                 mergers.add(mMerger);
@@ -185,15 +191,20 @@ public class ControlSorter {
         for (String strLine : result) {
             pw.println(strLine);
         }
-        pw.flush();
-        pw.close();
+        if (!out.equals(System.out)) {
+            pw.flush();
+            pw.close();
+        }
 
     }
 
     public void sort() throws Exception {
         this.readStrings();
+        // System.out.println("I read");
         this.pSort();
+        // System.out.println("I sort");
         this.mergeResults();
+        // System.out.println("I merge");
         this.printResults();
     }
 }

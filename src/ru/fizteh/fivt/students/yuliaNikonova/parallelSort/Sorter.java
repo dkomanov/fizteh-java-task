@@ -27,11 +27,9 @@ public class Sorter extends Thread {
         return strList;
     }
 
-    public void showResults() {
-        System.out.println("============");
-        for (String str : strList) {
-            System.out.println(str);
-        }
-        System.out.println("============");
-    }
+    /* public void showResults() {
+     * for (String str : strList) {
+     * System.out.println(str);
+     * }
+     * } */
 }
