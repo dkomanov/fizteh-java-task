@@ -119,7 +119,7 @@ public class UnitTests {
     }
 
     @Test
-    public void Tests() {
+    public void tests() {
         testString = formatter.format("start {{1}} {{{0:.2f}}} end", 1.2345678);
         Assert.assertEquals("start {1} {1,23} end", testString);
 
