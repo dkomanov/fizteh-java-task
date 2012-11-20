@@ -33,7 +33,7 @@ public class UnitTests {
 
     @Test
     public void noExtension() {
-    	expt.expectMessage("No extension for class java.lang.Integer");
+        expt.expectMessage("No extension for class java.lang.Integer");
         formatter.format("start {0.fieldPublicInt:d} end", new ChildClass());
     }
 
@@ -138,5 +138,8 @@ public class UnitTests {
         
         testString = formatter.format("start -{0:28d} end", new BigInteger("123456789987654321123456789"));
         Assert.assertEquals("start - 123456789987654321123456789 end", testString);
+        
+        testString = formatter.format("start {0} {1:.6f} {2} {1} end", 1.0, 2.0, 3.0);
+        Assert.assertEquals("start 1.0 2,000000 3.0 2.0 end", testString);
     }
 }
