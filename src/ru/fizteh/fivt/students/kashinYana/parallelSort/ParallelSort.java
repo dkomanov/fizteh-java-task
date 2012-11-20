@@ -33,9 +33,6 @@ public class ParallelSort {
     static Comparator<Pair> comparator;
     static Comparator<String> comparatorString;
 
-    static ComparatorLower comparatorLower = new ComparatorLower();
-    static ComparatorNotLower comparatorNotLower = new ComparatorNotLower();
-
 
     static String outputFile = null;
     static ArrayList<String> inputString;
@@ -210,7 +207,7 @@ public class ParallelSort {
     }
 
     static class Merge extends Thread {
-        ArrayList<Pair> array = new ArrayList<Pair>();
+        ArrayList<Pair> array;
         int id;
 
         public Merge(ArrayList<Pair> arrayNew, int idNew) {
@@ -223,7 +220,7 @@ public class ParallelSort {
             ArrayList<Pair> mergeArray;
             mergeArray = ans;
             synchronized (ans) {
-                ArrayList<Pair> tempArray = new ArrayList<Pair>();
+                ArrayList<Pair> tempArray = new ArrayList<Pair>(ans.size() + array.size());
                 int idArray = 0;
                 int indexAns = 0;
                 while (idArray < array.size() && indexAns < mergeArray.size()) {
