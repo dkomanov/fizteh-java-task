@@ -9,14 +9,12 @@ public class Sorter extends Thread {
 
     public Sorter(List<String> subList, StringComparator strComp) {
         strList = subList;
-               stringComp=strComp;
+        stringComp = strComp;
     }
 
     public void run() {
         // System.out.println("Size of sublist: " + strList.size());
-                    Collections.sort(strList, stringComp);
-        
-
+        Collections.sort(strList, stringComp);
     }
 
     public List<String> getResult() {

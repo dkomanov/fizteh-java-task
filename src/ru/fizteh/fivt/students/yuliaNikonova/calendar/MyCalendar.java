@@ -35,7 +35,7 @@ public class MyCalendar {
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-m")) {
                 if (i == args.length - 1) {
-                    exitError("wring use of -m");
+                    exitError("wrong use of -m");
                 }
                 month = Integer.parseInt(args[++i]) - 1;
                 if (month > mCalendar.getActualMaximum(Calendar.MONTH) || month < mCalendar.getActualMinimum(Calendar.MONTH)) {
@@ -46,7 +46,7 @@ public class MyCalendar {
                 printWeek = true;
             } else if (args[i].equals("-y")) {
                 if (i == args.length - 1) {
-                    exitError("wring use of -y");
+                    exitError("wrong use of -y");
                 }
                 year = Integer.parseInt(args[++i]);
                 if (year > mCalendar.getActualMaximum(Calendar.YEAR) || year < mCalendar.getActualMinimum(Calendar.YEAR)) {
@@ -56,7 +56,7 @@ public class MyCalendar {
 
             } else if (args[i].equals("-t")) {
                 if (i == args.length - 1) {
-                    exitError("wring use of -t");
+                    exitError("wrong use of -t");
                 }
                 String timeZ = args[++i];
                 timeZone = TimeZone.getTimeZone(timeZ);
