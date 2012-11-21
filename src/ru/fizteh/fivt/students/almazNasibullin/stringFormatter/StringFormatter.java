@@ -16,7 +16,7 @@ import ru.fizteh.fivt.format.StringFormatterExtension;
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     private List<StringFormatterExtension> extensions = Collections.synchronizedList(
             new ArrayList<StringFormatterExtension>());
-
+            
     public void addExtension(StringFormatterExtension sfe) throws FormatterException {
         if (sfe == null) {
             throw new FormatterException("NullPointer extension");

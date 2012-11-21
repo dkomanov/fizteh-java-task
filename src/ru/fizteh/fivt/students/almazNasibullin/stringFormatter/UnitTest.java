@@ -12,7 +12,6 @@ import ru.fizteh.fivt.format.FormatterException;
  */
 
 public class UnitTest {
-
     //Tests for CalendarExtension
 
     @Test(expected = FormatterException.class)
