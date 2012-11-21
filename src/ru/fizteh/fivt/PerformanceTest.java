@@ -64,7 +64,7 @@ public class PerformanceTest {
         test.runTestAndPrint(100000);
     }
 
-    public static class RunResult {
+    public static class RunResult implements Comparable<RunResult> {
         private final RunTimes total;
         private final RunTimes single;
 
@@ -80,9 +80,27 @@ public class PerformanceTest {
         public RunTimes getSingle() {
             return single;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return !(o == null || getClass() != o.getClass()) && compareTo((RunResult) o) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return total.hashCode();
+        }
+
+        @Override
+        public int compareTo(RunResult o) {
+            if (o == null) {
+                throw new IllegalArgumentException("other is null");
+            }
+            return total.compareTo(o.total);
+        }
     }
 
-    public static class RunTimes {
+    public static class RunTimes implements Comparable<RunTimes> {
         private final long nanos;
         private final long msecs;
         private final long millis;
@@ -109,6 +127,24 @@ public class PerformanceTest {
 
         public long getSeconds() {
             return seconds;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return !(o == null || getClass() != o.getClass()) && compareTo((RunTimes) o) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return (int) (nanos ^ (nanos >>> 32));
+        }
+
+        @Override
+        public int compareTo(RunTimes o) {
+            if (o == null) {
+                throw new IllegalArgumentException("other is null");
+            }
+            return Long.compare(nanos, o.nanos);
         }
     }
 }
