@@ -207,19 +207,19 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     private void iterate(Document document) {
         Element element = document.getDocumentElement();
         NodeList children = element.getChildNodes();
-        for(int i = 0; i < children.getLength(); ++i) {
+        for (int i = 0; i < children.getLength(); ++i) {
             Node node = children.item(i);
             switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE :
+                case Node.ELEMENT_NODE:
                     // TODO
                     break;
-                case Node.TEXT_NODE :
+                case Node.TEXT_NODE:
                     // TODO
                     break;
-                case Node.CDATA_SECTION_NODE :
+                case Node.CDATA_SECTION_NODE:
                     // TODO
                     break;
-                case Node.COMMENT_NODE :
+                case Node.COMMENT_NODE:
                     // Nothing
                     break;
                 default:
