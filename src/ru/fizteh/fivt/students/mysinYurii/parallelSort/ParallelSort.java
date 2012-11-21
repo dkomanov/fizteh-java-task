@@ -46,9 +46,7 @@ public class ParallelSort {
             String newString = inputStream.readLine();
             int counter = 0;
             while (newString != null) {
-                if (!newString.equals("")) {
-                    inputStrings.get(counter).add(newString);
-                }
+                inputStrings.get(counter).add(newString + '\n');
                 ++counter;
                 counter %= inputStrings.size();
                 newString = inputStream.readLine();
@@ -145,7 +143,14 @@ public class ParallelSort {
                     closeStream(inputStream);
                     System.exit(1);
                 }
-                readFrom(inputStream, inputStrings);
+                try {
+                    readFrom(inputStream, inputStrings);
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                    threads.shutdown();
+                    closeStream(inputStream);
+                    System.exit(1);
+                }
                 closeStream(inputStream);
             }
         }
