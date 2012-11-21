@@ -21,7 +21,7 @@ public class StringFormatterByteArrayExtension extends StringFormatterExtension{
             if (pattern.length() != 0) {
                 throw new FormatterException("Incorrect pattern");
             }
-            buffer.append(String.format("%" + pattern + "s", Arrays.toString((byte[]) o)));
+            buffer.append(Arrays.toString((byte[]) o));
         } catch (Exception ex) {
             throw new FormatterException("Incorrect pattern");
         }
