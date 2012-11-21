@@ -1,13 +1,13 @@
-package ru.fizteh.fivt.students.verytable.sort;
+package ru.fizteh.fivt.students.verytable.ParallelSort;
 
 public class Pair {
 
     String value;
-    int Id;
+    int id;
 
     Pair(String string, int stringId) {
         this.value = string;
-        this.Id = stringId;
+        this.id = stringId;
     }
 
     public String getValue() {

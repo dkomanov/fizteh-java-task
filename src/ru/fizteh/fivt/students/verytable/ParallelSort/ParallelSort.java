@@ -1,14 +1,16 @@
-package ru.fizteh.fivt.students.verytable.sort;
+package ru.fizteh.fivt.students.verytable.ParallelSort;
 
 import ru.fizteh.fivt.students.verytable.IOUtils;
+
 import java.io.*;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class ParallelSort {
 
@@ -17,7 +19,7 @@ public class ParallelSort {
         int stringsNumber = 0;
         if (fileNames.isEmpty()) {
             try {
-                InputStreamReader isr = new InputStreamReader(System.in, "Unicode");
+                InputStreamReader isr = new InputStreamReader(System.in);
                 BufferedReader br = new BufferedReader(isr);
                 String curString;
                 while ((curString = br.readLine()) != null) {
@@ -36,11 +38,9 @@ public class ParallelSort {
             for (int i = 0; i < fileNames.size(); ++i) {
                 try {
                     curFileStream = new FileInputStream(fileNames.get(i));
-                    isr = new InputStreamReader(curFileStream, "Unicode");
+                    isr = new InputStreamReader(curFileStream);
                     br = new BufferedReader(isr);
                     while ((curString = br.readLine()) != null) {
-                        if (stringsNumber == 0) {
-                        }
                         ++stringsNumber;
                         stringsToSort.add(new Pair(curString, stringsNumber));
                     }
@@ -48,16 +48,28 @@ public class ParallelSort {
                     System.err.println(ex.getMessage());
                     System.exit(1);
                 } finally {
-                    IOUtils.closeFile("System.in", br);
+                    IOUtils.closeFile(fileNames.get(i), br);
                 }
             }
         }
         return stringsNumber;
     }
 
+    static class SensitiveComparator implements Comparator<Pair> {
+        public int compare(Pair pair1, Pair pair2) {
+            return pair1.getValue().compareTo(pair2.getValue());
+        }
+    }
+
+    static class InsensitiveComparator implements Comparator<Pair> {
+        public int compare(Pair pair1, Pair pair2) {
+            return pair1.getValue().compareToIgnoreCase(pair2.getValue());
+        }
+    }
+
     static void writeStrings(ArrayList<Pair> stringsToSort, String output,
                              int stringsNumber, boolean isUniqueKey,
-                             boolean isSensitiveKey) {
+                             Comparator comparator) {
         Writer writer = null;
         FileOutputStream fos;
 
@@ -66,39 +78,25 @@ public class ParallelSort {
                 writer = new OutputStreamWriter(System.out);
             } else {
                 fos = new FileOutputStream(output);
-                writer = new OutputStreamWriter(fos, "Unicode");
+                writer = new OutputStreamWriter(fos);
             }
 
             String lineSeparator = System.lineSeparator();
             writer.write(stringsToSort.get(0).getValue() + lineSeparator);
             for (int i = 1; i < stringsNumber - 1; ++i) {
                 if (isUniqueKey) {
-                    if (!isSensitiveKey) {
-                        if (stringsToSort.get(i).getValue()
-                            .compareToIgnoreCase(stringsToSort.get(i - 1).getValue()) != 0) {
-                            writer.write(stringsToSort.get(i).getValue() + lineSeparator);
-                        }
-                    } else {
-                        if (stringsToSort.get(i).getValue()
-                            .compareTo(stringsToSort.get(i - 1).getValue()) != 0) {
-                            writer.write(stringsToSort.get(i).getValue() + lineSeparator);
-                        }
+                    if (comparator.compare(stringsToSort.get(i),
+                                           stringsToSort.get(i - 1)) != 0) {
+                        writer.write(stringsToSort.get(i).getValue() + lineSeparator);
                     }
                 } else {
                     writer.write(stringsToSort.get(i).getValue() + lineSeparator);
                 }
             }
             if (isUniqueKey) {
-                if (!isSensitiveKey) {
-                    if (stringsToSort.get(stringsNumber - 1).getValue()
-                        .compareToIgnoreCase(stringsToSort.get(stringsNumber - 2).getValue()) != 0) {
-                        writer.write(stringsToSort.get(stringsNumber - 1).getValue());
-                    }
-                } else {
-                    if (stringsToSort.get(stringsNumber - 1).getValue()
-                        .compareTo(stringsToSort.get(stringsNumber - 2).getValue()) != 0) {
-                        writer.write(stringsToSort.get(stringsNumber - 1).getValue());
-                    }
+                if (comparator.compare(stringsToSort.get(stringsNumber - 1),
+                                       stringsToSort.get(stringsNumber - 2)) != 0) {
+                    writer.write(stringsToSort.get(stringsNumber - 1).getValue());
                 }
             } else {
                 writer.write(stringsToSort.get(stringsNumber - 1).getValue());
@@ -111,7 +109,7 @@ public class ParallelSort {
         }
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         String output = "";
         boolean isUniqueKey = false;
@@ -171,30 +169,32 @@ public class ParallelSort {
 
         final ExecutorService executor = Executors.newFixedThreadPool(threadsNumber);
         List<Future> futures = new Vector<>();
-        SortTask rootTask = new SortTask (executor, futures, stringsToSort,
-                                          0, stringsNumber - 1,
-                                          isSensitiveKey);
+        SortTask rootTask = new SortTask(executor, futures, stringsToSort, 0,
+                                         stringsNumber - 1, isSensitiveKey);
         futures.add(executor.submit(rootTask));
-        while(!futures.isEmpty()){
+        while (!futures.isEmpty()) {
             Future topFeature = futures.remove(0);
-            try{
-                if(topFeature != null) {
+            try {
+                if (topFeature != null) {
                     topFeature.get();
                 }
-            }catch(InterruptedException ie){
+            } catch (InterruptedException ie) {
                 System.err.println(ie.getMessage());
-                ie.printStackTrace();
                 System.exit(1);
-            }catch(ExecutionException ee){
+            } catch (ExecutionException ee) {
                 System.err.println(ee.getMessage());
-                ee.printStackTrace();
                 System.exit(1);
             }
         }
 
         executor.shutdown();
 
-        writeStrings(stringsToSort, output, stringsNumber, isUniqueKey, isSensitiveKey);
+        Comparator<Pair> comparator = new SensitiveComparator();
+        if (!isSensitiveKey) {
+            comparator = new InsensitiveComparator();
+        }
+
+        writeStrings(stringsToSort, output, stringsNumber, isUniqueKey, comparator);
     }
 
 }
