@@ -6,14 +6,16 @@ public class ParallelSort {
     public static void main(String[] args) {
         IOHandler io = new IOHandler();
 
+        System.out.println();
+
         Comparator<String> comparator = new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
                 return o1.compareTo(o2);
             }
         };
-
         boolean uniqueMode = false;
+        boolean ignoringCase = false;
 
         int threadCount = Runtime.getRuntime().availableProcessors();
 
@@ -24,6 +26,7 @@ public class ParallelSort {
                 switch (c) {
                     case 'i':
                         comparator = String.CASE_INSENSITIVE_ORDER;
+                        ignoringCase = true;
                         break;
                     case 'u':
                         uniqueMode = true;
@@ -68,27 +71,30 @@ public class ParallelSort {
                 break;
             }
             if (uniqueMode) {
-                uniqueStrings.add(s);
+                if (ignoringCase) { // gvnkd!!
+                    String lowerCase = s.toLowerCase();
+                    if (!uniqueStrings.contains(lowerCase)) {
+                        uniqueStrings.add(lowerCase);
+                        strings.add(s);
+                    }
+                } else {
+                    if (!uniqueStrings.contains(s)) {
+                        uniqueStrings.add(s);
+                        strings.add(s);
+                    }
+                }
             } else {
                 strings.add(s);
             }
         }
-        if (uniqueMode) {
-            strings.addAll(uniqueStrings);
-        }
 
-        System.out.println("Finished reading");
+        String[] stringArray = strings.toArray(new String[strings.size()]);
 
-        long startTime = System.nanoTime();
-        new MasterSorter().sort(strings, comparator, threadCount);
-        long executionTime = System.nanoTime() - startTime;
+        new MasterSorter().sort(stringArray, comparator, threadCount);
 
-        for (String s : strings) {
+        for (String s : stringArray) {
             io.println(s);
         }
-
-        System.out.println("Execution time");
-        System.out.printf("%.2f seconds \n", executionTime / 1e9);
 
         io.close();
     }

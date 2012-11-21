@@ -7,8 +7,8 @@ public class IOHandler {
     private BufferedReader bufferedReader;
     private PrintWriter    out;
 
-    boolean     fileInput  = false;
-    Queue<File> inputQueue = new LinkedList<File>();
+    private boolean     fileInput  = false;
+    private Queue<File> inputQueue = new LinkedList<File>();
 
     public IOHandler() {
         bufferedReader = new BufferedReader(new InputStreamReader(System.in));
@@ -42,11 +42,9 @@ public class IOHandler {
     }
 
     public void close() {
-        try {
-            bufferedReader.close();
-        } catch (Exception e) {
-
-        }
+        // bufferedReader
+        // if fileInput then is already closed
+        // else no need to close cin
         out.flush();
         out.close();
     }
@@ -67,13 +65,20 @@ public class IOHandler {
                 }
                 if (s != null) {
                     return s;
-                } else {
-                    inputQueue.poll();
-                    if (inputQueue.isEmpty()) {
-                        return null;
-                    }
-                    openReader();
                 }
+                inputQueue.poll();
+                if (bufferedReader != null) {
+                    try {
+                        bufferedReader.close();
+                    } catch (IOException e) {
+                        System.err.println("Could not close file.");
+                        System.exit(1);
+                    }
+                }
+                if (inputQueue.isEmpty()) {
+                    return null;
+                }
+                openReader();
             }
         } else {
             try {
