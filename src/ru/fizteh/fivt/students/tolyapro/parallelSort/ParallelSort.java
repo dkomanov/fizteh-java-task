@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,9 +15,16 @@ import ru.fizteh.fivt.students.tolyapro.wordCounter.BufferCloser;
 
 public class ParallelSort {
 
-    public static void printResult(ArrayList<String> result,
-            PrintStream output, boolean onlyUnique) throws Exception {
+    static class NormalComparator implements Comparator<String> {
+        @Override
+        public int compare(String string1, String string2) {
+            return string1.compareTo(string2);
+        }
+    }
 
+    public static void printResult(ArrayList<String> result,
+            PrintStream output, boolean onlyUnique, boolean caseSensitive)
+            throws Exception {
         if (!onlyUnique) {
             for (int i = 0; i < result.size(); ++i) {
                 output.println(result.get(i));
@@ -25,32 +33,36 @@ public class ParallelSort {
             String prevString = "";
             for (int i = 0; i < result.size(); ++i) {
                 String tmp = result.get(i);
-                if (!prevString.equals(tmp)) {
+                if ((!prevString.equals(tmp) && caseSensitive)
+                        || (!prevString.equalsIgnoreCase(tmp) && !caseSensitive)) {
                     output.println(result.get(i));
                     prevString = tmp;
                 }
 
             }
         }
-        BufferCloser.close(output);
     }
 
     public static void printFromDiffSources(String output,
-            ArrayList<String> result, boolean onlyUnique) {
+            ArrayList<String> result, boolean onlyUnique, boolean caseSensitive) {
         PrintStream stream = null;
+        boolean needToClose = true;
         try {
             if (output.equals("")) {
-                printResult(result, System.out, onlyUnique);
+                printResult(result, System.out, onlyUnique, caseSensitive);
+                needToClose = false;
             } else {
                 File file = new File(output);
                 stream = new PrintStream(file);
-                printResult(result, stream, onlyUnique);
+                printResult(result, stream, onlyUnique, caseSensitive);
             }
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.exit(1);
         } finally {
-            BufferCloser.close(stream);
+            if (needToClose) {
+                BufferCloser.close(stream);
+            }
         }
     }
 
@@ -122,14 +134,16 @@ public class ParallelSort {
             System.err.println(e.getMessage());
             System.exit(1);
         }
+        Comparator<String> comparator;
+        if (!caseSensitive) {
+            comparator = String.CASE_INSENSITIVE_ORDER;
+        } else {
+            comparator = new NormalComparator();
+        }
+
         if (allStrings.size() <= numTreads) {
-            if (caseSensitive) {
-                Collections.sort(allStrings);
-                printFromDiffSources(output, allStrings, onlyUnique);
-            } else {
-                Collections.sort(allStrings, String.CASE_INSENSITIVE_ORDER);
-                printFromDiffSources(output, allStrings, onlyUnique);
-            }
+            Collections.sort(allStrings, comparator);
+            printFromDiffSources(output, allStrings, onlyUnique, caseSensitive);
             System.exit(0);
         }
         LinkedBlockingQueue<ArrayList<String>> result = new LinkedBlockingQueue<ArrayList<String>>();
@@ -140,12 +154,12 @@ public class ParallelSort {
                 List<String> tmp = allStrings.subList(i * blockSize, (i + 1)
                         * blockSize);
                 ArrayList<String> someStrings = new ArrayList<String>(tmp);
-                Sorter sorter = new Sorter(someStrings, caseSensitive, result);
+                Sorter sorter = new Sorter(someStrings, comparator, result);
                 sorters.execute(sorter);
             } else {
                 ArrayList<String> someStrings = new ArrayList<String>(
                         allStrings.subList(i * blockSize, allStrings.size()));
-                Sorter sorter = new Sorter(someStrings, caseSensitive, result);
+                Sorter sorter = new Sorter(someStrings, comparator, result);
                 sorters.execute(sorter);
             }
         }
@@ -159,7 +173,7 @@ public class ParallelSort {
             mergers.shutdown();
             mergers.awaitTermination(100500, TimeUnit.MINUTES);
         }
-        printFromDiffSources(output, result.take(), onlyUnique);
+        printFromDiffSources(output, result.take(), onlyUnique, caseSensitive);
         sorters.shutdownNow();
     }
 }

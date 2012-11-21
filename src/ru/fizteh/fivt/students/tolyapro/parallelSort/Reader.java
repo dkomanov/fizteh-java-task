@@ -19,15 +19,11 @@ public class Reader {
         ArrayList<String> result = new ArrayList<String>();
         if (files.size() == 0) {
             BufferedReader reader = null;
-            try {
-                InputStreamReader in = new InputStreamReader(System.in);
-                reader = new BufferedReader(in);
-                String tmp;
-                while ((tmp = reader.readLine()) != null) {
-                    result.add(tmp);
-                }
-            } finally {
-                BufferCloser.close(reader);
+            InputStreamReader in = new InputStreamReader(System.in);
+            reader = new BufferedReader(in);
+            String tmp;
+            while ((tmp = reader.readLine()) != null) {
+                result.add(tmp);
             }
         } else {
             for (int i = 0; i < files.size(); ++i) {
