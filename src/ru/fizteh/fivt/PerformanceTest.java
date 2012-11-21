@@ -28,8 +28,8 @@ public class PerformanceTest {
     }
 
     public RunResult runTest(final int n) {
-        if (n <= 1000) {
-            throw new IllegalArgumentException("n should be greater than 1000. Actual: " + n);
+        if (n <= 1) {
+            throw new IllegalArgumentException("n should be greater than 1. Actual: " + n);
         }
 
         // warm up
