@@ -5,21 +5,17 @@ import java.util.List;
 
 public class Sorter extends Thread {
     private List<String> strList;
-    private boolean ignoreCase;
+    private StringComparator stringComp;
 
-    public Sorter(List<String> subList, boolean ignoreCase) {
+    public Sorter(List<String> subList, StringComparator strComp) {
         strList = subList;
-        this.ignoreCase = ignoreCase;
+               stringComp=strComp;
     }
 
-    @Override
     public void run() {
         // System.out.println("Size of sublist: " + strList.size());
-        if (ignoreCase) {
-            Collections.sort(strList, String.CASE_INSENSITIVE_ORDER);
-        } else {
-            Collections.sort(strList);
-        }
+                    Collections.sort(strList, stringComp);
+        
 
     }
 

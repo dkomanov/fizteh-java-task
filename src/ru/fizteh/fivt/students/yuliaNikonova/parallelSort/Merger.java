@@ -9,15 +9,15 @@ public class Merger extends Thread {
     private LinkedBlockingQueue<String> list1;
     private LinkedBlockingQueue<String> list2;
     private LinkedBlockingQueue<String> resultList;
-    private boolean ignoreCase;
+    private StringComparator stringComp;
     private int num;
 
-    public Merger(LinkedBlockingQueue<String> List1, LinkedBlockingQueue<String> List2, boolean ignoreCase, int n) {
+    public Merger(LinkedBlockingQueue<String> List1, LinkedBlockingQueue<String> List2, StringComparator stringComp) {
         this.list1 = List1;
         this.list2 = List2;
-        this.ignoreCase = ignoreCase;
+        this.stringComp = stringComp;
         this.resultList = new LinkedBlockingQueue<String>();
-        this.num = n;
+        //this.num = n;
     }
 
     public void run() {
@@ -29,23 +29,17 @@ public class Merger extends Thread {
             // System.out.println("Size of second is " + list2.size());
             String val1 = list1.element();
             String val2 = list2.element();
-            if (!ignoreCase) {
-                if (val1.compareTo(val2) < 0) {
+            if (stringComp.compare(val1, val2)<=0) {
+                
                     resultList.add(val1);
                     list1.poll();
                 } else {
                     resultList.add(val2);
                     list2.poll();
                 }
-            } else {
-                if (val1.compareToIgnoreCase(val2) < 0) {
-                    resultList.add(val1);
-                    list1.poll();
-                } else {
-                    resultList.add(val2);
-                    list2.poll();
-                }
-            }
+            
+                
+         
         }
 
         // System.out.println("Something empty: " + list1.size() + " " +

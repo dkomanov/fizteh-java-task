@@ -30,7 +30,8 @@ public class ControlSorter {
     private volatile ArrayList<LinkedBlockingQueue<String>> results;
     private ArrayList<Sorter> sorters;
     private ArrayList<Merger> mergers;
-    private LinkedBlockingQueue<String> result;
+    private ArrayList<String> result;
+    private StringComparator stringComp;
 
     public ControlSorter(boolean ignoreCase, boolean unique, int numthreads, String outputFileName, ArrayList<String> fileNames) {
 
@@ -43,6 +44,8 @@ public class ControlSorter {
         this.results = new ArrayList<LinkedBlockingQueue<String>>();
         this.sorters = new ArrayList<Sorter>();
         this.mergers = new ArrayList<Merger>();
+        this.result=new ArrayList<String>();
+        this.stringComp=new StringComparator(ignoreCase);
     }
 
     public void readStrings() {
@@ -78,13 +81,8 @@ public class ControlSorter {
             String strLine;
 
             while ((strLine = br.readLine()) != null) {
-                if (unique) {
-                    if (!str.contains(strLine)) {
-                        str.add(strLine);
-                    }
-                } else {
                     str.add(strLine);
-                }
+                
             }
         } catch (Exception e) {
         } finally {
@@ -112,9 +110,9 @@ public class ControlSorter {
         for (int i = 0; i < numthreads; i++) {
             Sorter sort;
             if (i != numthreads - 1) {
-                sort = new Sorter(str.subList(i * length, (i + 1) * length), ignoreCase);
+                sort = new Sorter(str.subList(i * length, (i + 1) * length), stringComp);
             } else {
-                sort = new Sorter(str.subList(i * length, str.size()), ignoreCase);
+                sort = new Sorter(str.subList(i * length, str.size()), stringComp);
             }
             sorters.add(sort);
             sort.start();
@@ -144,7 +142,7 @@ public class ControlSorter {
                     }
                 }
                 synchronized (results) {
-                    mMerger = new Merger(results.get(i), results.get(i + 1), ignoreCase, i / 2);
+                    mMerger = new Merger(results.get(i), results.get(i + 1), stringComp);
                 }
 
                 mergers.add(mMerger);
@@ -161,7 +159,7 @@ public class ControlSorter {
                 results.add(merger.getResult());
             }
         }
-        this.result = results.get(0);
+        this.result.addAll(results.get(0));
     }
 
     private void printResults() throws FileNotFoundException {
@@ -171,12 +169,15 @@ public class ControlSorter {
         } else {
             try {
                 fileout = new FileOutputStream(new File(outputFileName));
+                printToDestination(fileout);
             } catch (FileNotFoundException e) {
                 throw e;
+            } finally {
+                Utils.close(fileout);
             }
-            printToDestination(fileout);
+            
         }
-        Utils.close(fileout);
+       
     }
 
     private void printToDestination(OutputStream out) {
@@ -187,12 +188,27 @@ public class ControlSorter {
             System.err.println(e.getMessage());
             System.exit(1);
         }
+        int size=result.size();
 
-        for (String strLine : result) {
-            pw.println(strLine);
+        for (int i=0; i<size; i++) {
+            if (unique) {
+                if (ignoreCase) {
+                    if ((i==0) || (i>0 && String.CASE_INSENSITIVE_ORDER.compare(result.get(i), result.get(i-1) )!=0)) {
+                        pw.println(result.get(i));
+                    }
+                    
+                } else {
+                    if ( (i==0) || (i>0 && !result.get(i).equals(result.get(i-1)))) {
+                        pw.println(result.get(i));
+                    }
+                }
+            } else {
+            pw.println(result.get(i));
+            }
         }
+        pw.flush();
         if (!out.equals(System.out)) {
-            pw.flush();
+            
             pw.close();
         }
 
@@ -200,11 +216,11 @@ public class ControlSorter {
 
     public void sort() throws Exception {
         this.readStrings();
-        // System.out.println("I read");
+        System.out.println("I read");
         this.pSort();
-        // System.out.println("I sort");
+        System.out.println("I sort");
         this.mergeResults();
-        // System.out.println("I merge");
+        System.out.println("I merge");
         this.printResults();
     }
 }
