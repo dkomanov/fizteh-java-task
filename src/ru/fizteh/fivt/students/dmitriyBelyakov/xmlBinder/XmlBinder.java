@@ -238,8 +238,19 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     private Object deserializeToValue(Element element) {
         if(getClazz().getAnnotation(BindingType.class) == null
                 || getClazz().getAnnotation(BindingType.class).value() == MembersToBind.FIELDS) {
+            Class clazz = getClazz();
             if(isPrimitive(clazz)) {
                 return getValue(element.getTextContent(), clazz);
+            } else {
+                NodeList children = element.getChildNodes();
+                for(int i = 0; i < children.getLength(); ++i) {
+                    Node node = children.item(i);
+                    if(node.getNodeType() == Node.ELEMENT_NODE) {
+                        // TODO
+                    } else {
+                        throw new RuntimeException("Incorrect bytes.");
+                    }
+                }
             }
         } else {
             // TODO
