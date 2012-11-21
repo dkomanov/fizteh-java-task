@@ -218,6 +218,6 @@ public class UnitTest {
         c.set(Calendar.MONTH, Calendar.NOVEMBER);
         c.set(Calendar.YEAR, 2012);
         Assert.assertEquals("2012.11.20", formatter.format(
-                "{0:yyyy.MM.dd}", c);
+                "{0:yyyy.MM.dd}", c));
     }
 }
