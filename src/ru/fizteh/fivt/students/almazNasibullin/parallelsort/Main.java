@@ -163,8 +163,8 @@ public class Main {
         } finally {
             if (!fromConsole) {
                 IOUtils.closeOrExit(fr);
+                IOUtils.closeOrExit(br);
             }
-            IOUtils.closeOrExit(br);
         }
     }
 
