@@ -1,18 +1,12 @@
 package ru.fizteh.fivt.students.frolovNikolay.parallelSort;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /*
@@ -124,16 +118,16 @@ public class ParallelSortMain {
             Runtime info = Runtime.getRuntime();
             processorsNumber = info.availableProcessors();
         }
-        if (processorsNumber < 1 || processorsNumber > 100) {
+        if (processorsNumber < 1) {
             System.err.println("Error! Incorrect number of threads.");
             System.exit(1);
         }
-        PrintWriter output = null;
+        PrintStream output = null;
         try {
             if (outputFileName != null) {
-                output = new PrintWriter(new BufferedWriter(new FileWriter(outputFileName)));
+                output = new PrintStream(outputFileName);
             } else {
-                output = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+                output = new PrintStream(System.out);
             }
         } catch (Exception crush) {
             System.err.println(crush.getMessage());
@@ -141,29 +135,28 @@ public class ParallelSortMain {
         }
 
         // Считывание и раздача потокам информации.
-        String EOF = new String();
-        LinkedBlockingQueue<String> threadStringsStream = new LinkedBlockingQueue<String>();
-        List< LinkedList<String> > result = Collections.synchronizedList(new LinkedList< LinkedList<String> >());
-        ExecutorService sorters = Executors.newFixedThreadPool(processorsNumber);
+        int lineNumb = 0;
+        ArrayList< ArrayList<String> > result = new ArrayList< ArrayList<String> >();
         for (int j = 0; j < processorsNumber; ++j) {
-            sorters.execute(new StringSorter(EOF, threadStringsStream, withoutReg, result));
+            result.add(new ArrayList<String>());
         }
         if (i == args.length) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             String current = null;
             try {
                 while ((current = reader.readLine()) != null) {
-                    threadStringsStream.add(current);
+                    result.get(lineNumb++).add(current);
+                    if (lineNumb == processorsNumber) {
+                        lineNumb = 0;
+                    }
                 }
             } catch(Exception crush) {               
-                sorters.shutdown();
                 if (outputFileName != null) {
                     Closer.close(output);
                 }
                 System.err.println(crush.getMessage());
                 System.exit(1);
             } finally {
-                sorters.shutdown();
                 if (outputFileName != null) {
                     Closer.close(output);
                 }
@@ -175,29 +168,32 @@ public class ParallelSortMain {
                     reader = new BufferedReader(new FileReader(args[i]));
                     String current = null;
                     while ((current = reader.readLine()) != null) {
-                        threadStringsStream.add(current);
+                        result.get(lineNumb++).add(current);
+                        if (lineNumb == processorsNumber) {
+                            lineNumb = 0;
+                        }
                     }
                 } catch(Exception crush) {
                     if (outputFileName != null) {
                         Closer.close(output);
                     }
-                    sorters.shutdown();
                     Closer.close(reader);
                     System.err.println(crush.getMessage());
                     System.exit(1);
                 } finally {
-                    sorters.shutdown();
                     Closer.close(reader);
                 }
             }
         }
+        ExecutorService sorters = Executors.newFixedThreadPool(processorsNumber);
+        for (int j = 0; j < processorsNumber; ++j) {
+            sorters.execute(new StringSorter(result.get(j), withoutReg));
+        }
 
         // Завершаем потоки.
-        for (int j = 0; j < processorsNumber; ++j) {
-            threadStringsStream.add(EOF);
-        }
         try {
-            sorters.awaitTermination(1, TimeUnit.MINUTES);
+            sorters.shutdown();
+            sorters.awaitTermination(1, TimeUnit.DAYS);
         } catch (Exception crush) {
             if (outputFileName != null) {
                 Closer.close(output);
@@ -207,42 +203,19 @@ public class ParallelSortMain {
         }
         
         // Слияния + вывод результатов.
-        try {
-            Merger.merge(result, withoutReg);
-        } catch (Exception crush) {
-            if (outputFileName != null) {
-                Closer.close(output);
+        Merger merger = new Merger(result, withoutReg);
+        String last = null;
+        String current = null;
+        while ((current = merger.getNext()) != null) {
+            if (!uniqLines || last == null 
+                || (withoutReg && !last.equalsIgnoreCase(current))
+                || (!withoutReg && !last.equals(current))) {
+                output.println(current);
             }
-            System.err.println(crush.getMessage());
-            System.exit(1);
+            last = current;
         }
-        try {
-            if (uniqLines) {
-                if (withoutReg) {
-                    for (int j = 0; j < result.get(0).size(); ++j) {
-                        if (j + 1 == result.get(0).size() || !result.get(0).get(j).equalsIgnoreCase(result.get(0).get(j + 1))) {
-                            output.println(result.get(0).get(j));
-                        }
-                    } 
-                } else {
-                    for (int j = 0; j < result.get(0).size(); ++j) {
-                        if (j + 1 == result.get(0).size() || !result.get(0).get(j).equals(result.get(0).get(j + 1))) {
-                            output.println(result.get(0).get(j));
-                        }
-                    }
-                }
-            } else {
-                for (int j = 0; j < result.get(0).size(); ++j) {
-                    output.println(result.get(0).get(j));
-                }
-            }
-        } catch (Exception crush) {
-            if (outputFileName != null) {
-                Closer.close(output);
-            }
-            System.err.println(crush.getMessage());
-            System.exit(1);
+        if (outputFileName != null) {
+            Closer.close(output);
         }
-        Closer.close(output);
     }
 }
