@@ -105,7 +105,9 @@ public class ParallelSort {
             System.err.println(ex.getMessage());
             System.exit(1);
         } finally {
-            IOUtils.closeFile(output, writer);
+            if (!output.isEmpty()) {
+                IOUtils.closeFile(output, writer);
+            }
         }
     }
 
