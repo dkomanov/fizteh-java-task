@@ -43,7 +43,6 @@ public class ParallelSort {
     static boolean isInput = false;
 
     public static void main(String[] args) throws Exception {
-        Date date = new Date();
         inputString = new ArrayList<String>();
         ans = new ArrayList<Pair>();
         if (args.length == 0) {
@@ -95,8 +94,6 @@ public class ParallelSort {
             System.err.println("Error in print answer");
             System.exit(1);
         }
-        Date date2 = new Date();
-        System.out.println(date2.getTime() - date.getTime());
     }
 
     static void readKeys(String[] args) throws Exception {
@@ -268,6 +265,9 @@ public class ParallelSort {
         } catch (Exception e) {
             throw new Exception("Error in writting result.");
         } finally {
+            if (log != null) {
+                log.flush();
+            }
             if (log != null && isO) {
                 log.close();
             }
