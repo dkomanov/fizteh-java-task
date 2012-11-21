@@ -60,7 +60,7 @@ public class ParallelSort {
 
         if (isI) {
             comparator = new ComparatorLower();
-            comparatorString = new ComparatorLowerString();
+            comparatorString = String.CASE_INSENSITIVE_ORDER;
         } else {
             comparator = new ComparatorNotLower();
             comparatorString = new ComparatorNotLowerString();
@@ -282,12 +282,6 @@ public class ParallelSort {
             } else {
                 return ans;
             }
-        }
-    }
-
-    static class ComparatorLowerString implements Comparator<String> {
-        public int compare(String string1, String string2) {
-            return String.CASE_INSENSITIVE_ORDER.compare(string1, string2);
         }
     }
 
