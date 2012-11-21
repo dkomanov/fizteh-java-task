@@ -204,6 +204,48 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         return null;
     }
 
+    private Object getValue(String val, Class clazz) {
+        if(!isPrimitive(clazz)) {
+            throw new RuntimeException("Not primitive type.");
+        }
+        if(clazz.equals(Boolean.class) || clazz.equals(boolean.class)) {
+            return Boolean.parseBoolean(val);
+        } else if(clazz.equals(Byte.class) || clazz.equals(byte.class)) {
+            return Byte.parseByte(val);
+        } else if(clazz.equals(Character.class) || clazz.equals(char.class)) {
+            if(val.length() != 1) {
+                throw new RuntimeException("Incorrect value.");
+            }
+            return val.charAt(0);
+        } else if(clazz.equals(Short.class) || clazz.equals(short.class)) {
+            return Short.parseShort(val);
+        } else if(clazz.equals(Integer.class) || clazz.equals(int.class)) {
+            return Integer.parseInt(val);
+        } else if(clazz.equals(Long.class) || clazz.equals(long.class)) {
+            return Long.parseLong(val);
+        } else if(clazz.equals(Float.class) || clazz.equals(float.class)) {
+            return Float.parseFloat(val);
+        } else if(clazz.equals(Double.class) || clazz.equals(double.class)) {
+            return Double.parseDouble(val);
+        } else if (clazz.isEnum()) {
+            return Enum.valueOf(clazz, val);
+        } else if(clazz.equals(String.class)) {
+            return val;
+        }
+        return null;
+    }
+
+    private Object deserializeToValue(Element element) {
+        if(getClazz().getAnnotation(BindingType.class) == null
+                || getClazz().getAnnotation(BindingType.class).value() == MembersToBind.FIELDS) {
+            if(isPrimitive(clazz)) {
+                return getValue(element.getTextContent(), clazz);
+            }
+        } else {
+            // TODO
+        }
+    }
+
     private void iterate(Document document) {
         Element element = document.getDocumentElement();
         NodeList children = element.getChildNodes();
@@ -211,9 +253,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             Node node = children.item(i);
             switch (node.getNodeType()) {
                 case Node.ELEMENT_NODE:
-                    // TODO
-                    break;
-                case Node.TEXT_NODE:
                     // TODO
                     break;
                 case Node.CDATA_SECTION_NODE:
