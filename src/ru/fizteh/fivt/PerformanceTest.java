@@ -33,7 +33,8 @@ public class PerformanceTest {
         }
 
         // warm up
-        for (int i = 0; i < 1000; i++) {
+        int warmUpTimes = n <= 1000 ? Math.min(10, n - 1) : 1000;
+        for (int i = 0; i < warmUpTimes; i++) {
             runnable.run();
         }
 
