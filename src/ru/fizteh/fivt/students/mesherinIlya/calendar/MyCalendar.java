@@ -114,7 +114,8 @@ public class MyCalendar {
             System.out.print("   ");
         }
         
-        calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+        //calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+        calendar.set(Calendar.DAY_OF_WEEK, calendar.MONDAY);
         for (int i = 0; i < 7; i++) {
             System.out.print(calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()));
             System.out.print(" "); 
@@ -128,14 +129,16 @@ public class MyCalendar {
             calendar.add(Calendar.DAY_OF_MONTH, -1);
         }
 
-        while (calendar.get(Calendar.DAY_OF_WEEK) != calendar.getFirstDayOfWeek()) {
+        //while (calendar.get(Calendar.DAY_OF_WEEK) != calendar.getFirstDayOfWeek()) {
+        while (calendar.get(Calendar.DAY_OF_WEEK) != calendar.MONDAY) {
             calendar.add(Calendar.DAY_OF_MONTH, -1);
         }
             
-        while (calendar.get(Calendar.MONTH) != currentMonth ||
-                calendar.get(Calendar.DAY_OF_MONTH) != calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
+        while (calendar.get(Calendar.MONTH) == currentMonth ||
+                calendar.get(Calendar.DAY_OF_MONTH) != calendar.getActualMinimum(Calendar.DAY_OF_MONTH)) {
             
-            if (calendar.get(Calendar.DAY_OF_WEEK) == calendar.getFirstDayOfWeek()) {
+            //if (calendar.get(Calendar.DAY_OF_WEEK) == calendar.getFirstDayOfWeek()) {
+            if (calendar.get(Calendar.DAY_OF_WEEK) == calendar.MONDAY) {
                 System.out.print('\n');
                         
                 if (printWeeks) {
@@ -149,9 +152,17 @@ public class MyCalendar {
             }
                 
             if (calendar.get(Calendar.MONTH) != currentMonth) {
-                System.out.print("   ");
-            } else {
-                if (calendar.get(Calendar.DAY_OF_MONTH) < 10) {
+                for (int i = 0; 
+                        i < calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()).length() + 1;
+                        i++) {
+                    System.out.print(" ");        
+                }
+                
+                } else {
+                for (int i = 0; 
+                        i < calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()).length()
+                        - (calendar.get(Calendar.DAY_OF_MONTH) < 10 ? 1 : 2);
+                        i++) {
                     System.out.print(" ");
                 }
                 System.out.print(calendar.get(Calendar.DAY_OF_MONTH));
@@ -169,7 +180,7 @@ public class MyCalendar {
         if (printTime) {
             System.out.print("\nNow: ");
             
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss ");
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss ");
             simpleDateFormat.setTimeZone(timeZone);
              
             System.out.print(simpleDateFormat.format(current.getTime()));

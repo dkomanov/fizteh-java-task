@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.almazNasibullin.stringFormatter;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import ru.fizteh.fivt.format.FormatterException;
@@ -13,9 +14,9 @@ import ru.fizteh.fivt.format.StringFormatterExtension;
  */
 
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
-    private List<StringFormatterExtension> extensions = new ArrayList<StringFormatterExtension>();;
-    private int index = 0;
-
+    private List<StringFormatterExtension> extensions = Collections.synchronizedList(
+            new ArrayList<StringFormatterExtension>());
+            
     public void addExtension(StringFormatterExtension sfe) throws FormatterException {
         if (sfe == null) {
             throw new FormatterException("NullPointer extension");
@@ -30,13 +31,16 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     @Override
     public String format(String format, Object... args) throws FormatterException {
         StringBuilder sb = new StringBuilder();
-        index = 0;
         format(sb, format, args);
         return sb.toString();
     }
 
     @Override
-    public void format(StringBuilder buffer, String format, Object... args) 
+    public void format(StringBuilder buffer, String format, Object... args) throws FormatterException {
+        myFormat(buffer, format, 0, args);
+    }
+
+    public void myFormat(StringBuilder buffer, String format, int index, Object... args)
             throws FormatterException {
         if (index >= format.length()) {
             return;
@@ -61,13 +65,13 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         if (open + 1 < format.length() && open < close && format.charAt(open + 1) == '{') {
             buffer.append(format.substring(index, open + 1));
             index = open + 2;
-            format(buffer, format, args);
+            myFormat(buffer, format, index, args);
             return;
         }
         if (close + 1 < format.length() && close < open && format.charAt(close + 1) == '}') {
             buffer.append(format.substring(index, close + 1));
             index = close + 2;
-            format(buffer, format, args);
+            myFormat(buffer, format, index, args);
             return;
         }
 
@@ -82,7 +86,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             buffer.append(format.substring(index, open));
             makeChange(buffer, format.substring(open + 1, close), args);
             index = close + 1;
-            format(buffer, format, args);
+            myFormat(buffer, format, index, args);
         } else {
             throw new FormatterException("Incorrect arrangement of the brackets");
         }
