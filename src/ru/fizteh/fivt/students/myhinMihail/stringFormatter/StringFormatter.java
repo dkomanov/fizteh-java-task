@@ -8,7 +8,6 @@ import java.util.*;
 
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     public List<StringFormatterExtension> extensions = new ArrayList<StringFormatterExtension>();
-    public int position = 0;
 
     public void addToExtensions(StringFormatterExtension ext) throws FormatterException {
         if (ext == null) {
@@ -24,57 +23,57 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     public String format(String format, Object... args) throws FormatterException {
         StringBuilder buffer = new StringBuilder();
-        position = 0;
         format(buffer, format, args);
         
         return buffer.toString();
     }
 
     public void format(StringBuilder buffer, String format, Object... args) throws FormatterException {
-          int start = format.indexOf('{', position);
-          int stop = format.indexOf('}', position);
+        nextFormat(buffer, 0, format, args);
+    }
+    
+    public void nextFormat(StringBuilder buffer, int position, String format, Object... args) throws FormatterException {
+        int start = format.indexOf('{', position);
+        int stop = format.indexOf('}', position);
           
-          if (stop == -1  &&  start == -1) {
-              buffer.append(format.substring(position));
-              return;
-          }
+        if (stop == -1  &&  start == -1) {
+            buffer.append(format.substring(position));
+            return;
+        }
           
-          if (start == -1) {
-              start = format.length();
-          }
+        if (start == -1) {
+            start = format.length();
+        }
           
-          if (stop == -1) {
-              stop = format.length();
-          }
+        if (stop == -1) {
+            stop = format.length();
+        }
           
-          if (stop > start) {
-              if (start != format.length()  &&  format.charAt(start + 1) == '{') {
-                  buffer.append(format.substring(position, start + 1));
-                  position = start + 2;
-                  format(buffer, format, args);
-              } else {
-                  if (stop == format.length()) {
-                      throw new FormatterException("Brackets don't coincide");
-                  }
+        if (stop > start) {
+            if (start != format.length()  &&  format.charAt(start + 1) == '{') {
+                buffer.append(format.substring(position, start + 1));
+                nextFormat(buffer, start + 2, format, args);
+            } else {
+                if (stop == format.length()) {
+                    throw new FormatterException("Brackets don't coincide");
+                }
                   
-                  if (stop == start + 1) {
-                      throw new FormatterException("No index");
-                  }
+                if (stop == start + 1) {
+                    throw new FormatterException("No index");
+                }
                   
-                  buffer.append(format.substring(position, start));
-                  getField(buffer, format.substring(start + 1, stop), args);
-                  position = stop + 1;
-                  format(buffer, format, args);
-              }
-          } else {
-              if (stop != format.length()  &&  format.charAt(stop + 1) == '}') {
-                  buffer.append(format.substring(position, stop + 1));
-                  position = stop + 2;
-                  format(buffer, format, args);
-              } else {
-                  throw new FormatterException("Brackets don't coincide");
-              }
-          }
+                buffer.append(format.substring(position, start));
+                getField(buffer, format.substring(start + 1, stop), args);
+                nextFormat(buffer, stop + 1, format, args);
+            }
+        } else {
+            if (stop != format.length()  &&  format.charAt(stop + 1) == '}') {
+                buffer.append(format.substring(position, stop + 1));
+                nextFormat(buffer, stop + 2, format, args);
+            } else {
+                throw new FormatterException("Brackets don't coincide");
+            }
+        }
     }
 
     public void getField(StringBuilder buffer, String format, Object... args) throws FormatterException {
