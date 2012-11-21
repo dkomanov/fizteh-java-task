@@ -7,9 +7,9 @@ public class Merger {
     boolean withoutReg;
     private int [] currentPtr;
     
-    Merger(ArrayList< ArrayList<String> > inputData, boolean inputWithoutReg) {
-        data = inputData;
-        withoutReg = inputWithoutReg;
+    Merger(ArrayList< ArrayList<String> > data, boolean withoutReg) {
+        this.data = data;
+        this.withoutReg = withoutReg;
         currentPtr = new int[data.size()];
     }
 
@@ -21,10 +21,10 @@ public class Merger {
                 if (min == null) {
                     min = data.get(i).get(currentPtr[i]);
                     numberOfMin = i;
-                } else if (withoutReg && min.compareToIgnoreCase(data.get(i).get(currentPtr[i])) < 0) {
+                } else if (withoutReg && min.compareToIgnoreCase(data.get(i).get(currentPtr[i])) > 0) {
                     min = data.get(i).get(currentPtr[i]);
                     numberOfMin = i;
-                } else if (!withoutReg && min.compareTo(data.get(i).get(currentPtr[i])) < 0) {
+                } else if (!withoutReg && min.compareTo(data.get(i).get(currentPtr[i])) > 0) {
                     min = data.get(i).get(currentPtr[i]);
                     numberOfMin = i;
                 }

@@ -9,9 +9,9 @@ import java.util.Collections;
 public class StringSorter implements Runnable {
     private ArrayList<String> sortStation;
     private boolean withoutReg;
-    StringSorter(ArrayList<String> ctorResourses, boolean ctorWithoutReg) {
-        sortStation = ctorResourses;
-        withoutReg = ctorWithoutReg;
+    StringSorter(ArrayList<String> sortStation, boolean withoutReg) {
+        this.sortStation = sortStation;
+        this.withoutReg = withoutReg;
     }
 
     // Супер примитив - собираем данные и сортируем на выходе.

@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.frolovNikolay.parallelSort;
+package ru.fizteh.fivt.students.frolovNikolay;
 
 import java.io.Closeable;
 

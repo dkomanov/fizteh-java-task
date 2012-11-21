@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.frolovNikolay.parallelSort;
 
 import java.io.BufferedReader;
+import ru.fizteh.fivt.students.frolovNikolay.Closer;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -135,87 +136,74 @@ public class ParallelSortMain {
         }
 
         // Считывание и раздача потокам информации.
-        int lineNumb = 0;
-        ArrayList< ArrayList<String> > result = new ArrayList< ArrayList<String> >();
-        for (int j = 0; j < processorsNumber; ++j) {
-            result.add(new ArrayList<String>());
-        }
-        if (i == args.length) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            String current = null;
-            try {
+        try {
+            int lineNumb = 0;
+            ArrayList< ArrayList<String> > result = new ArrayList< ArrayList<String> >();
+            for (int j = 0; j < processorsNumber; ++j) {
+                result.add(new ArrayList<String>());
+            }
+            if (i == args.length) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                String current = null;
                 while ((current = reader.readLine()) != null) {
                     result.get(lineNumb++).add(current);
                     if (lineNumb == processorsNumber) {
                         lineNumb = 0;
                     }
                 }
-            } catch(Exception crush) {               
-                if (outputFileName != null) {
-                    Closer.close(output);
-                }
-                System.err.println(crush.getMessage());
-                System.exit(1);
-            } finally {
-                if (outputFileName != null) {
-                    Closer.close(output);
-                }
-            }
-        } else {
-            for (; i < args.length; ++i) {
+            } else {
+                FileReader fReader = null;
                 BufferedReader reader = null;
                 try {
-                    reader = new BufferedReader(new FileReader(args[i]));
-                    String current = null;
-                    while ((current = reader.readLine()) != null) {
-                        result.get(lineNumb++).add(current);
-                        if (lineNumb == processorsNumber) {
-                            lineNumb = 0;
+                    for (; i < args.length; ++i) {
+                        fReader = new FileReader(args[i]);
+                        reader = new BufferedReader(fReader);
+                        String current = null;
+                        while ((current = reader.readLine()) != null) {
+                            result.get(lineNumb++).add(current);
+                            if (lineNumb == processorsNumber) {
+                                lineNumb = 0;
+                            }
                         }
+                        Closer.close(fReader);
+                        Closer.close(reader);
                     }
-                } catch(Exception crush) {
-                    if (outputFileName != null) {
-                        Closer.close(output);
-                    }
-                    Closer.close(reader);
-                    System.err.println(crush.getMessage());
-                    System.exit(1);
                 } finally {
+                    Closer.close(fReader);
                     Closer.close(reader);
                 }
             }
-        }
-        ExecutorService sorters = Executors.newFixedThreadPool(processorsNumber);
-        for (int j = 0; j < processorsNumber; ++j) {
-            sorters.execute(new StringSorter(result.get(j), withoutReg));
-        }
-
-        // Завершаем потоки.
-        try {
+            ExecutorService sorters = Executors.newFixedThreadPool(processorsNumber);
+            for (int j = 0; j < processorsNumber; ++j) {
+                sorters.execute(new StringSorter(result.get(j), withoutReg));
+            }
+    
+            // Завершаем потоки.
             sorters.shutdown();
             sorters.awaitTermination(1, TimeUnit.DAYS);
+            
+            // Слияния + вывод результатов.
+            Merger merger = new Merger(result, withoutReg);
+            String last = null;
+            String current = null;
+            while ((current = merger.getNext()) != null) {
+                if (!uniqLines || last == null 
+                    || (withoutReg && !last.equalsIgnoreCase(current))
+                    || (!withoutReg && !last.equals(current))) {
+                    output.println(current);
+                }
+                last = current;
+            }
         } catch (Exception crush) {
             if (outputFileName != null) {
                 Closer.close(output);
             }
             System.err.println(crush.getMessage());
             System.exit(1);
-        }
-        
-        // Слияния + вывод результатов.
-        Merger merger = new Merger(result, withoutReg);
-        String last = null;
-        String current = null;
-        while ((current = merger.getNext()) != null) {
-            if (!uniqLines || last == null 
-                || (withoutReg && !last.equalsIgnoreCase(current))
-                || (!withoutReg && !last.equals(current))) {
-                output.println(current);
+        } finally {
+            if (outputFileName != null) {
+                Closer.close(output);
             }
-            last = current;
-        }
-        if (outputFileName != null) {
-            Closer.close(output);
         }
     }
 }
