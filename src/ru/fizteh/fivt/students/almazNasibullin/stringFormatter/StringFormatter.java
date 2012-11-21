@@ -105,7 +105,11 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         StringTokenizer st = new StringTokenizer(format.substring( 0, pattern), ".");
 
         try {
-            o = args[Integer.parseInt(st.nextToken())];
+            String ind = st.nextToken();
+            if (ind.charAt(0) == '-') {
+                throw new FormatterException("Incorrect index");
+            }
+            o = args[Integer.parseInt(ind)];
         } catch (Exception e) {
             throw new FormatterException("Incorrect index");
         }
