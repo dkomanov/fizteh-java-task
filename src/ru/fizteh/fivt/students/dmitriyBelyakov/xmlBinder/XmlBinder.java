@@ -211,7 +211,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             Node node = children.item(i);
             switch (node.getNodeType()) {
                 case Node.ELEMENT_NODE :
-                    System.out.println("*" + ((Element) node).getTagName() + ": " + node.getTextContent());
                     // TODO
                     break;
                 case Node.TEXT_NODE :
