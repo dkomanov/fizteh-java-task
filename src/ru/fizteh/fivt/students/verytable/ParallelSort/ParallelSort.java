@@ -13,36 +13,36 @@ import java.util.Vector;
 public class ParallelSort {
 
     static int addStrings(ArrayList<String> fileNames,
-                          String[] stringsToSort) {
+                          ArrayList<Pair> stringsToSort) {
         int stringsNumber = 0;
         if (fileNames.isEmpty()) {
-            InputStreamReader isr = new InputStreamReader(System.in);
-            BufferedReader br = new BufferedReader(isr);
-            String curString;
             try {
+                InputStreamReader isr = new InputStreamReader(System.in, "Unicode");
+                BufferedReader br = new BufferedReader(isr);
+                String curString;
                 while ((curString = br.readLine()) != null) {
-                    stringsToSort[stringsNumber] = curString;
                     ++stringsNumber;
+                    stringsToSort.add(new Pair(curString, stringsNumber));
                 }
             } catch (Exception ex) {
                 System.err.println(ex.getMessage());
                 System.exit(1);
-            } finally {
-                IOUtils.closeFile(isr.toString(), br);
             }
         } else {
-            File curFile;
-            FileReader fr;
+            FileInputStream curFileStream;
+            InputStreamReader isr;
             BufferedReader br = null;
             String curString;
             for (int i = 0; i < fileNames.size(); ++i) {
                 try {
-                    curFile = new File(fileNames.get(i));
-                    fr = new FileReader(curFile);
-                    br = new BufferedReader(fr);
+                    curFileStream = new FileInputStream(fileNames.get(i));
+                    isr = new InputStreamReader(curFileStream, "Unicode");
+                    br = new BufferedReader(isr);
                     while ((curString = br.readLine()) != null) {
-                        stringsToSort[stringsNumber] = curString;
+                        if (stringsNumber == 0) {
+                        }
                         ++stringsNumber;
+                        stringsToSort.add(new Pair(curString, stringsNumber));
                     }
                 } catch (Exception ex) {
                     System.err.println(ex.getMessage());
@@ -55,8 +55,63 @@ public class ParallelSort {
         return stringsNumber;
     }
 
+    static void writeStrings(ArrayList<Pair> stringsToSort, String output,
+                             int stringsNumber, boolean isUniqueKey,
+                             boolean isSensitiveKey) {
+        Writer writer = null;
+        FileOutputStream fos;
 
-    public static void main(String [] args){
+        try {
+            if (output.isEmpty()) {
+                writer = new OutputStreamWriter(System.out);
+            } else {
+                fos = new FileOutputStream(output);
+                writer = new OutputStreamWriter(fos, "Unicode");
+            }
+
+            String lineSeparator = System.lineSeparator();
+            writer.write(stringsToSort.get(0).getValue() + lineSeparator);
+            for (int i = 1; i < stringsNumber - 1; ++i) {
+                if (isUniqueKey) {
+                    if (!isSensitiveKey) {
+                        if (stringsToSort.get(i).getValue()
+                            .compareToIgnoreCase(stringsToSort.get(i - 1).getValue()) != 0) {
+                            writer.write(stringsToSort.get(i).getValue() + lineSeparator);
+                        }
+                    } else {
+                        if (stringsToSort.get(i).getValue()
+                            .compareTo(stringsToSort.get(i - 1).getValue()) != 0) {
+                            writer.write(stringsToSort.get(i).getValue() + lineSeparator);
+                        }
+                    }
+                } else {
+                    writer.write(stringsToSort.get(i).getValue() + lineSeparator);
+                }
+            }
+            if (isUniqueKey) {
+                if (!isSensitiveKey) {
+                    if (stringsToSort.get(stringsNumber - 1).getValue()
+                        .compareToIgnoreCase(stringsToSort.get(stringsNumber - 2).getValue()) != 0) {
+                        writer.write(stringsToSort.get(stringsNumber - 1).getValue());
+                    }
+                } else {
+                    if (stringsToSort.get(stringsNumber - 1).getValue()
+                        .compareTo(stringsToSort.get(stringsNumber - 2).getValue()) != 0) {
+                        writer.write(stringsToSort.get(stringsNumber - 1).getValue());
+                    }
+                }
+            } else {
+                writer.write(stringsToSort.get(stringsNumber - 1).getValue());
+            }
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            System.exit(1);
+        } finally {
+            IOUtils.closeFile(output, writer);
+        }
+    }
+
+    public static void main(String[] args){
 
         String output = "";
         boolean isUniqueKey = false;
@@ -110,7 +165,8 @@ public class ParallelSort {
             }
         }
 
-        String[] stringsToSort = new String[100000000];
+        ArrayList<Pair> stringsToSort = new ArrayList<>();
+
         int stringsNumber = addStrings(files, stringsToSort);
 
         final ExecutorService executor = Executors.newFixedThreadPool(threadsNumber);
@@ -136,48 +192,9 @@ public class ParallelSort {
             }
         }
 
-        FileOutputStream fos;
-        OutputStreamWriter osw;
-        BufferedWriter bw = null;
-        if (output.isEmpty()) {
-            bw = new BufferedWriter(new OutputStreamWriter(System.out));
-        } else {
-            try {
-                fos = new FileOutputStream(output);
-                osw = new OutputStreamWriter(fos);
-                bw = new BufferedWriter(osw);
-            } catch (Exception ex) {
-                System.err.println(ex.getMessage());
-                IOUtils.closeFile(output, bw);
-                System.exit(1);
-            }
-        }
-
-        String lineSeparator = System.lineSeparator();
-        try {
-            bw.write(stringsToSort[0] + lineSeparator);
-            for (int i = 1; i < stringsNumber; ++i) {
-                if (isUniqueKey) {
-                    if (!isSensitiveKey) {
-                        if (stringsToSort[i].compareToIgnoreCase(stringsToSort[i - 1]) != 0) {
-                            bw.write(stringsToSort[i] + lineSeparator);
-                        }
-                    } else {
-                        if (stringsToSort[i].compareTo(stringsToSort[i - 1]) != 0) {
-                            bw.write(stringsToSort[i] + lineSeparator);
-                        }
-                    }
-                } else {
-                    bw.write(stringsToSort[i] + lineSeparator);
-                }
-            }
-        } catch (Exception ex) {
-            System.err.println(ex.getMessage());
-            System.exit(1);
-        } finally {
-            IOUtils.closeFile(output, bw);
-        }
         executor.shutdown();
+
+        writeStrings(stringsToSort, output, stringsNumber, isUniqueKey, isSensitiveKey);
     }
 
 }
