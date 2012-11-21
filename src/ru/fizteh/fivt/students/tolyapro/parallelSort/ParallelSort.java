@@ -37,17 +37,20 @@ public class ParallelSort {
 
     public static void printFromDiffSources(String output,
             ArrayList<String> result, boolean onlyUnique) {
+        PrintStream stream = null;
         try {
             if (output.equals("")) {
                 printResult(result, System.out, onlyUnique);
             } else {
                 File file = new File(output);
-                PrintStream stream = new PrintStream(file);
+                stream = new PrintStream(file);
                 printResult(result, stream, onlyUnique);
             }
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.exit(1);
+        } finally {
+            BufferCloser.close(stream);
         }
     }
 

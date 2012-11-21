@@ -17,17 +17,38 @@ public class Reader {
 
     public ArrayList<String> getStrings() throws Exception {
         ArrayList<String> result = new ArrayList<String>();
-        for (int i = 0; i < files.size(); ++i) {
-            FileInputStream in = new FileInputStream(files.get(i));
-            InputStreamReader stream = new InputStreamReader(in);
-            BufferedReader reader = new BufferedReader(stream);
-            String tmp;
-            while ((tmp = reader.readLine()) != null) {
-                result.add(tmp);
+        if (files.size() == 0) {
+            BufferedReader reader = null;
+            try {
+                InputStreamReader in = new InputStreamReader(System.in);
+                reader = new BufferedReader(in);
+                String tmp;
+                while ((tmp = reader.readLine()) != null) {
+                    result.add(tmp);
+                }
+            } finally {
+                BufferCloser.close(reader);
             }
-            BufferCloser.close(reader);
+        } else {
+            for (int i = 0; i < files.size(); ++i) {
+                FileInputStream in = null;
+                InputStreamReader stream = null;
+                BufferedReader reader = null;
+                try {
+                    in = new FileInputStream(files.get(i));
+                    stream = new InputStreamReader(in);
+                    reader = new BufferedReader(stream);
+                    String tmp;
+                    while ((tmp = reader.readLine()) != null) {
+                        result.add(tmp);
+                    }
+                } finally {
+                    BufferCloser.close(reader);
+                    BufferCloser.close(stream);
+                    BufferCloser.close(in);
+                }
+            }
         }
         return result;
     }
-
 }
