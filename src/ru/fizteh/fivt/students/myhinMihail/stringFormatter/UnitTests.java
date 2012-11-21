@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.myhinMihail.stringFormatter;
 
 import java.math.BigInteger;
+import java.util.Formatter;
 
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -120,18 +121,21 @@ public class UnitTests {
 
     @Test
     public void tests() {
+        Formatter format = new Formatter();
         testString = formatter.format("start {{1}} {{{0:.2f}}} end", 1.2345678);
-        Assert.assertEquals("start {1} {1.23} end", testString);
-
+        Assert.assertEquals("start {1} {" + format.format("%.2f", 1.2345678) + "} end", testString);
+        format.close();
+        
+        format = new Formatter();
         testString = formatter.format("start }}{{ {0:.3f} end", 1.2345678);
-        Assert.assertEquals("start }{ 1.235 end", testString);
-
+        Assert.assertEquals("start }{ " + format.format("%.3f", 1.2345678) + " end", testString);
+        format.close();
+        
+        format = new Formatter();
         testString = formatter.format("start {{1}} {2:.6f} end", 1.2345678, 1.234, 1.0);
-        Assert.assertEquals("start {1} 1.000000 end", testString);
-
-        testString = formatter.format("start {{1}} {0} end {0}{{", 1.2345678);
-        Assert.assertEquals("start {1} 1.2345678 end 1.2345678{", testString);
-
+        Assert.assertEquals("start {1} " + format.format("%.6f", 1.0) + " end", testString);
+        format.close();
+        
         String testString2 = null;
         testString = formatter.format("start {{{{1}}0{{0}}0{{{0}}}}} end", testString2);
         Assert.assertEquals("start {{1}0{0}0{}} end", testString);
@@ -139,7 +143,9 @@ public class UnitTests {
         testString = formatter.format("start -{0:28d} end", new BigInteger("123456789987654321123456789"));
         Assert.assertEquals("start - 123456789987654321123456789 end", testString);
         
+        format = new Formatter();
         testString = formatter.format("start {0} {1:.6f} {2} {1} end", 1.0, 2.0, 3.0);
-        Assert.assertEquals("start 1.0 2.000000 3.0 2.0 end", testString);
+        Assert.assertEquals("start 1.0 " + format.format("%.6f", 2.0) + " 3.0 2.0 end", testString);
+        format.close();
     }
 }
