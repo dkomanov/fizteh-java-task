@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.almazNasibullin.parallelsort;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -14,15 +15,15 @@ public class Sorter implements Runnable {
     int start; // индекс начала сортировки
     int end; // индекс конца сортировки
     List<String> result; // отсортированный массив строк
-    boolean withoutReg;
+    Comparator<String> com;
 
     public Sorter(List<String> lines, int start, int end, List<String> result,
-            boolean withoutReg) {
+            Comparator<String> com) {
         this.lines = lines;
         this.start = start;
         this.end = end;
         this.result = result;
-        this.withoutReg = withoutReg;
+        this.com = com;
     }
 
     @Override
@@ -30,11 +31,6 @@ public class Sorter implements Runnable {
         for (int i = start; i <= end; ++i) {
             result.add(lines.get(i));
         }
-        if (withoutReg) {
-            Collections.sort(result, String.CASE_INSENSITIVE_ORDER);
-        } else {
-            Collections.sort(result);
-        }
+        Collections.sort(result, com);
     }
-
 }

@@ -22,8 +22,7 @@ public class Shell {
             
             currentDir = newDir;
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("cd: couldn't change current directory to \'" + directory + "\'.");
             return false;
         }
@@ -48,8 +47,7 @@ public class Shell {
             }
             
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("mkdir: couldn't create the directory \'" + directory + "\'.");
             return false;
         }
@@ -59,8 +57,7 @@ public class Shell {
         try {
             System.out.println(currentDir.getCanonicalPath());
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("pwd: couldn't print the current work directory.");
             return false;
         }
@@ -99,8 +96,7 @@ public class Shell {
                 throw new Exception();
             }
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.print("rm: couldn't remove \'" + filename + "\'.");
             return false;
         }
@@ -125,9 +121,14 @@ public class Shell {
                 destination = new File(currentDir.getPath() + File.separator + location);
             }
 
+            if (source.equals(destination)) {
+                System.err.println("Error: cannot copy file to itself");
+                return false;
+            }
+
             if (source.isDirectory()) {
                 if (!destination.isDirectory()) {
-                    mkdir(destination.getCanonicalPath());    
+                    destination.mkdir();    
                 }
                            
                 File newDestination = new File(destination + File.separator + source.getName());
@@ -147,13 +148,23 @@ public class Shell {
                 FileInputStream input = null;
                 FileOutputStream output = null;
                 try {
-                    input = new FileInputStream(source);
-                    if (destination.isDirectory()) {
-                        output = new FileOutputStream(destination + File.separator + source.getName());
-                    } else {
-                        output = new FileOutputStream(destination);
+                    try {
+                        input = new FileInputStream(source);
+                    } catch (Exception e) {
+                        System.err.println("Error: couldn't open the source file.");
+                        return false;
                     }
-                    
+                    try {
+                        if (destination.isDirectory()) {
+                            output = new FileOutputStream(destination + File.separator + source.getName());
+                        } else {
+                            output = new FileOutputStream(destination);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error: couldn't open the destination file.");
+                        input.close();
+                        return false;
+                    }    
                     int count;
                     byte[] buf = new byte[16];  
                     while (true) {
@@ -163,14 +174,15 @@ public class Shell {
                         }
                         output.write(buf, 0, count);
                     }
-                }
-                finally {
-                    input.close();
-                    output.close();
+                } finally {
+                    try {
+                        input.close();
+                    } finally {
+                        output.close();
+                    }
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Couldn't copy the file.");
             return false;
         }
@@ -215,65 +227,56 @@ public class Shell {
         if (tokens[i].equals("cd")) {
             if (tokens.length == i + 2) {
                 return cd(tokens[i + 1]);
-            }
-            else {
+            } else {
                 System.err.println("Error: cd: wrong count of arguments");
                 return false;
             }
-        }
-        else if (tokens[i].equals("pwd")) {
+        } else if (tokens[i].equals("pwd")) {
             if (tokens.length == i + 1) {
                 return pwd();
-            }
-            else {
+            } else {
                 System.err.println("Error: pwd: wrong count of arguments");
                 return false;
             }
         } else if (tokens[i].equals("cp")) {
             if (tokens.length == i + 3) {
                 return copy(tokens[i + 1], tokens[i + 2]);
-            }
-            else {
+            } else {
                 System.err.println("Error: cp: wrong count of arguments");
                 return false;
             }
         } else if (tokens[i].equals("mv")) {
             if (tokens.length == i + 3) {
                 return move(tokens[i + 1], tokens[i + 2]);
-            }
-            else {
+            } else {
                 System.err.println("Error: mv: wrong count of arguments");
                 return false;
             }
         } else if (tokens[i].equals("rm")) {
             if (tokens.length == i + 2) {
                 return remove(tokens[i + 1]);
-            }
-            else {
+            } else {
                 System.err.println("Error: rm: wrong count of arguments");
                 return false;
             }
         } else if (tokens[i].equals("dir")) {
             if (tokens.length == i + 1) {
                 return dir();
-            }
-            else {
+            } else {
                 System.err.println("Error: dir: wrong count of arguments");
                 return false;
             }
         } else if (tokens[i].equals("mkdir")) {
             if (tokens.length == i + 2) {
                 return mkdir(tokens[i + 1]);
-            }
-            else {
+            } else {
                 System.err.println("Error: mkdir: wrong count of arguments");
                 return false;
             }
         } else if (tokens[i].equals("exit")) {
             if (tokens.length == i + 1) {
                 System.exit(0);
-            }
-            else {
+            } else {
                 System.err.println("Error: exit: wrong count of arguments");
                 return false;
             }
@@ -305,8 +308,7 @@ public class Shell {
                         break;
                     }
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.err.println("Fatal error. Program has been interrupted.");
                 System.exit(1);
             }        
@@ -318,8 +320,7 @@ public class Shell {
         
         if (args.length == 0) {
             interactive();
-        }
-        else {
+        } else {
             StringBuilder builder = new StringBuilder();
             for (String s : args) {
                 builder.append(s).append(" ");

@@ -1,6 +1,6 @@
 package ru.fizteh.fivt.students.almazNasibullin.parallelsort;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -13,47 +13,41 @@ public class Merger implements Runnable {
     List<List<String> > result;
     int start;
     int end;
-    boolean withoutReg;
+    int from1;
+    int from2;
+    int to1;
+    int to2;
+    Comparator<String> com;
     
-    public Merger (List<String> res, List<List<String> > result,int start, int end,
-            boolean withoutReg){
+    public Merger (List<String> res, List<List<String> > result, int start, int end,
+            int from1, int to1, int from2, int to2, Comparator<String> com){
         this.res = res;
         this.result = result;
         this.start = start;
         this.end = end;
-        this.withoutReg = withoutReg;
+        this.from1 = from1;
+        this.to1 = to1;
+        this.from2 = from2;
+        this.to2 = to2;
+        this.com = com;
     }
 
+    @Override
     public void run() {
-        int left = 0;
-        int right = 0;
-
-        while (left < result.get(start).size() && right < result.get(end).size()) {
-            if (withoutReg) {
-                if (result.get(start).get(left).compareToIgnoreCase(
-                        result.get(end).get(right)) <= 0) {
-                    res.add(result.get(start).get(left));
-                    ++left;
-                } else {
-                    res.add(result.get(end).get(right));
-                    ++right;
-                }
+        while (from1 <= to1 && from2 <= to2) {
+            if (com.compare(result.get(start).get(from1), result.get(end).get(from2)) <= 0) {
+                res.add(result.get(start).get(from1));
+                ++from1;
             } else {
-                if (result.get(start).get(left).compareTo(
-                        result.get(end).get(right)) <= 0) {
-                    res.add(result.get(start).get(left));
-                    ++left;
-                } else {
-                    res.add(result.get(end).get(right));
-                    ++right;
-                }
+                res.add(result.get(end).get(from2));
+                ++from2;
             }
         }
 
-        for (int i = left; i < result.get(start).size(); ++i) {
+        for (int i = from1; i <= to1; ++i) {
             res.add(result.get(start).get(i));
         }
-        for (int i = right; i < result.get(end).size(); ++i) {
+        for (int i = from2; i <= to2; ++i) {
             res.add(result.get(end).get(i));
         }
     }

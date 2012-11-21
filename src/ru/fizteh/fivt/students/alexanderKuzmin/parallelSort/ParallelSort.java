@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import ru.fizteh.fivt.students.alexanderKuzmin.Closers;
 import ru.fizteh.fivt.students.alexanderKuzmin.parallelSort.ParallelMergeSort;
 import ru.fizteh.fivt.students.alexanderKuzmin.parallelSort.WorkWithStream;
@@ -15,9 +16,16 @@ import ru.fizteh.fivt.students.alexanderKuzmin.parallelSort.WorkWithStream;
 
 public class ParallelSort {
 
-    private static void readAndSort(ArrayList<String> inputFiles, boolean insensitive,
-            boolean unique, int threadCount, boolean outputToFile,
-            String output, boolean inputFromFile) {
+    public static class MyComparator implements Comparator<String> {
+        @Override
+        public int compare(String arg0, String arg1) {
+            return arg0.compareTo(arg1);
+        }
+    }
+
+    private static void readAndSort(ArrayList<String> inputFiles,
+            boolean insensitive, boolean unique, int threadCount,
+            boolean outputToFile, String output) {
         InputStream stream = null;
         ArrayList<String> inputLines = new ArrayList<String>();
         if (!inputFiles.isEmpty()) {
@@ -25,7 +33,6 @@ public class ParallelSort {
                 try {
                     stream = new FileInputStream(inputFiles.get(i));
                     WorkWithStream.readerFromStream(inputLines, stream);
-                    Closers.closeStream(stream);
                 } catch (Exception e) {
                     Closers.printErrAndExit(e.getMessage());
                 } finally {
@@ -40,8 +47,8 @@ public class ParallelSort {
             }
         }
         ParallelMergeSort mySort = new ParallelMergeSort(inputLines, 0,
-                inputLines.size(), threadCount, inputLines.size() / threadCount,
-                insensitive);
+                inputLines.size(), threadCount,
+                inputLines.size() / threadCount, insensitive);
         mySort.run();
         printOutput(mySort.result, outputToFile, output, unique, insensitive);
     }
@@ -49,33 +56,34 @@ public class ParallelSort {
     static void printOutput(ArrayList<String> result, boolean outputToFile,
             String output, boolean unique, boolean insensitive) {
         PrintStream pStream = null;
-        if (outputToFile) {
-            try {
-                pStream = new PrintStream(output);
-            } catch (Exception e) {
-                WorkWithStream.closeStream(pStream);
-                Closers.printErrAndExit(e.getMessage());
-            }
-        } else {
-            pStream = System.out;
-        }
-        WorkWithStream.printToStream(result.get(0), pStream);
-        for (int i = 1; i < result.size(); ++i) {
-            if (unique) {
-                if (insensitive) {
-                    if (result.get(i).compareToIgnoreCase(result.get(i - 1)) != 0) {
-                        WorkWithStream.printToStream(result.get(i), pStream);
-                    }
+        try {
+            pStream = outputToFile ? new PrintStream(output) : System.out;
+            String tmp = result.get(0);
+            WorkWithStream.printToStream(tmp, pStream);
+            Comparator<String> cmp = insensitive ? String.CASE_INSENSITIVE_ORDER
+                    : new MyComparator();
+            for (int i = 1; i < result.size(); ++i) {
+                if (unique) {
+                    compareAndPrintToStream(result.get(i), tmp, cmp, pStream);
                 } else {
-                    if (result.get(i).compareTo(result.get(i - 1)) != 0) {
-                        WorkWithStream.printToStream(result.get(i), pStream);
-                    }
+                    WorkWithStream.printToStream(result.get(i), pStream);
                 }
-            } else {
-                WorkWithStream.printToStream(result.get(i), pStream);
+                tmp = result.get(i);
+            }
+        } catch (Throwable e) {
+            Closers.printErrAndExit(e.getMessage());
+        } finally {
+            if (outputToFile) {
+                WorkWithStream.closeStream(pStream);
             }
         }
-        WorkWithStream.closeStream(pStream);
+    }
+
+    private static void compareAndPrintToStream(String string, String string2,
+            Comparator<String> cmp, PrintStream pStream) {
+        if (cmp.compare(string, string2) != 0) {
+            WorkWithStream.printToStream(string, pStream);
+        }
     }
 
     /**
@@ -95,7 +103,6 @@ public class ParallelSort {
         boolean unique = false; // key -u
         int threadCount = Runtime.getRuntime().availableProcessors();
         boolean outputToFile = false; // key -o
-        boolean inputFromFile = false;
         String output = null;
         ArrayList<String> inputFiles = new ArrayList<String>();
         int i = 0;
@@ -129,6 +136,6 @@ public class ParallelSort {
             }
         }
         readAndSort(inputFiles, insensitive, unique, threadCount, outputToFile,
-                output, inputFromFile);
+                output);
     }
 }
