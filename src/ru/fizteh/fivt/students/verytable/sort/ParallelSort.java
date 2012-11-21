@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.verytable.ParallelSort;
+package ru.fizteh.fivt.students.verytable.sort;
 
 import ru.fizteh.fivt.students.verytable.IOUtils;
 
@@ -82,20 +82,20 @@ public class ParallelSort {
             }
 
             String lineSeparator = System.lineSeparator();
-            writer.write(stringsToSort.get(0).getValue() + lineSeparator);
+            String last = stringsToSort.get(0).getValue();
+            writer.write(last + lineSeparator);
             for (int i = 1; i < stringsNumber - 1; ++i) {
                 if (isUniqueKey) {
-                    if (comparator.compare(stringsToSort.get(i),
-                                           stringsToSort.get(i - 1)) != 0) {
-                        writer.write(stringsToSort.get(i).getValue() + lineSeparator);
+                    if (comparator.compare(stringsToSort.get(i), last) != 0) {
+                        last = stringsToSort.get(i).getValue();
+                        writer.write(last + lineSeparator);
                     }
                 } else {
                     writer.write(stringsToSort.get(i).getValue() + lineSeparator);
                 }
             }
             if (isUniqueKey) {
-                if (comparator.compare(stringsToSort.get(stringsNumber - 1),
-                                       stringsToSort.get(stringsNumber - 2)) != 0) {
+                if (comparator.compare(stringsToSort.get(stringsNumber - 1), last) != 0) {
                     writer.write(stringsToSort.get(stringsNumber - 1).getValue());
                 }
             } else {

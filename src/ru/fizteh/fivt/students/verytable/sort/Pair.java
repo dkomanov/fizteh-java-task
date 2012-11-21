@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.verytable.ParallelSort;
+package ru.fizteh.fivt.students.verytable.sort;
 
 public class Pair {
 
