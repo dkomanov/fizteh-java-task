@@ -10,7 +10,7 @@ public class Tester {
             @Override
             public void run() {
                 ParallelSort.preFiltering = true;
-                new ParallelSort().main(new String[]{"-u", "-o", "output.txt", "-t", "1", "input.txt"});
+                new ParallelSort().main(new String[]{"-iu", "-o", "output.txt", "-t", "1", "input.txt"});
             }
         };
 
@@ -20,7 +20,7 @@ public class Tester {
             @Override
             public void run() {
                 ParallelSort.preFiltering = false;
-                new ParallelSort().main(new String[]{"-u", "-o", "output.txt", "-t", "1", "input.txt"});
+                new ParallelSort().main(new String[]{"-iu", "-o", "output.txt", "-t", "1", "input.txt"});
             }
         };
 
