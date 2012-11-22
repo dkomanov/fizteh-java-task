@@ -15,18 +15,22 @@ public class StringFormatterFactory
             throws FormatterException {
 
         ArrayList<StringFormatterExtension> extension = new ArrayList<StringFormatterExtension>();
-        Collections.sort(Arrays.asList(classNames));
+        try {
+            Collections.sort(Arrays.asList(classNames));
+        } catch (Exception e) {
+            throw new FormatterException("classNames don't be null");
+        }
         for (int i = 0; i < classNames.length; i++) {
             String currentClassName = classNames[i];
-            if (i != 0  &&  classNames[i - 1].equals(currentClassName)) {
+            if (i != 0 && classNames[i - 1].equals(currentClassName)) {
                 throw new FormatterException("I found 2 equals files.");
             }
             try {
-                extension.add((StringFormatterExtension)Class.forName(currentClassName).newInstance());
+                extension.add((StringFormatterExtension) Class.forName(currentClassName).newInstance());
             } catch (Exception ex) {
                 throw new FormatterException("I don't work with this class.");
             }
         }
         return new StringFormatter(extension);
-   }
+    }
 }
