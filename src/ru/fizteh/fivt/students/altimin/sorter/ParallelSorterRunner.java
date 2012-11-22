@@ -33,10 +33,12 @@ public class ParallelSorterRunner {
             System.exit(1);
         }
         PrintWriter printer;
+        boolean hasOpenedFile = false;
         if (!parsedArgs.hasProperty("o")) {
             printer = new PrintWriter(System.out);
         } else {
             printer = new PrintWriter(new FileWriter(parsedArgs.getProperty("o")));
+            hasOpenedFile = true;
         }
         List<String> array = new ArrayList<String>();
         if (parsedArgs.other.length == 0) {
@@ -83,6 +85,8 @@ public class ParallelSorterRunner {
                 printer.println(result[i]);
             }
         }
-        printer.close();
+        if (hasOpenedFile) {
+            printer.close();
+        }
     }
 }
