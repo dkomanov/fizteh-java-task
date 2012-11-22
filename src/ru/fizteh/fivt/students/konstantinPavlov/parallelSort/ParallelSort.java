@@ -130,8 +130,6 @@ public class ParallelSort {
             } catch (Exception e) {
                 System.err.println(e.getMessage());
                 System.exit(1);
-            } finally {
-                closer(bufferedReader);
             }
         }
 
