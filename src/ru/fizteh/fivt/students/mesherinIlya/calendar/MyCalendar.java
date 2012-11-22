@@ -154,7 +154,7 @@ public class MyCalendar {
                     .getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()).length();
                 
             if (calendar.get(Calendar.MONTH) != currentMonth) {
-                for (int i = 0; i < fieldWidth + 1 || i < 2; i++) {
+                for (int i = 0; i < fieldWidth + 1 || i < 3; i++) {
                     System.out.print(" ");        
                 }
             } else {
