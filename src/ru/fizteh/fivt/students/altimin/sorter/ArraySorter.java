@@ -23,10 +23,6 @@ public class ArraySorter<T> implements Runnable {
 
     @Override
     public void run() {
-        if (comparator == null) {
-            Arrays.sort(array);
-        } else {
-            Arrays.sort(array, comparator);
-        }
+        Arrays.sort(array, comparator);
     }
 }

@@ -17,13 +17,21 @@ import java.util.Scanner;
 
 public class ParallelSorterRunner {
 
-    public static void main(String[] args) throws KeyException, IOException {
+    private static final int MAX_THREADS = 1000;
+
+    public static void main(String[] args) throws IOException {
         ArgumentsParser argumentsParser = new ArgumentsParser();
         argumentsParser.addKey("i");
         argumentsParser.addKey("u");
         argumentsParser.addKey("t", true);
         argumentsParser.addKey("o", true);
-        ArgumentsParser.ParseResult parsedArgs = argumentsParser.parse(args);
+        ArgumentsParser.ParseResult parsedArgs = null;
+        try {
+            parsedArgs = argumentsParser.parse(args);
+        } catch (KeyException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
         PrintWriter printer;
         if (!parsedArgs.hasProperty("o")) {
             printer = new PrintWriter(System.out);
@@ -42,6 +50,7 @@ public class ParallelSorterRunner {
                 while (scanner.hasNext()) {
                     array.add(scanner.next());
                 }
+                scanner.close();
             }
         }
         Comparator<String> comparator;
@@ -58,7 +67,15 @@ public class ParallelSorterRunner {
 
         ParallelSorter<String> parallelSorter = new ParallelSorter<String>(comparator);
         String[] _array = array.toArray(new String[1]);
-        int value = parsedArgs.hasProperty("t") ? Integer.parseInt(parsedArgs.getProperty("t")) : 2;
+        int value = MAX_THREADS;
+        if (parsedArgs.hasProperty("t")) {
+            try {
+                value = Integer.parseInt(parsedArgs.getProperty("t"));
+            } catch (NumberFormatException e) {
+                System.err.println(e.toString());
+                System.exit(1);
+            }
+        }
         Object[] result = parallelSorter.sort(_array, value);
         boolean printUnique = parsedArgs.hasProperty("u");
         for (int i = 0; i < result.length; i ++) {
