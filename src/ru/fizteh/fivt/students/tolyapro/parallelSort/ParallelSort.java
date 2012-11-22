@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.tolyapro.ParallelSort;
+package ru.fizteh.fivt.students.tolyapro.parallelSort;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -23,8 +23,8 @@ public class ParallelSort {
     }
 
     public static void printResult(ArrayList<String> result,
-            PrintStream output, boolean onlyUnique, boolean caseSensitive)
-            throws Exception {
+            PrintStream output, boolean onlyUnique,
+            Comparator<String> comparator) throws Exception {
         if (!onlyUnique) {
             for (int i = 0; i < result.size(); ++i) {
                 output.println(result.get(i));
@@ -33,8 +33,7 @@ public class ParallelSort {
             String prevString = "";
             for (int i = 0; i < result.size(); ++i) {
                 String tmp = result.get(i);
-                if ((!prevString.equals(tmp) && caseSensitive)
-                        || (!prevString.equalsIgnoreCase(tmp) && !caseSensitive)) {
+                if (comparator.compare(tmp, prevString) != 0) {
                     output.println(result.get(i));
                     prevString = tmp;
                 }
@@ -44,17 +43,18 @@ public class ParallelSort {
     }
 
     public static void printFromDiffSources(String output,
-            ArrayList<String> result, boolean onlyUnique, boolean caseSensitive) {
+            ArrayList<String> result, boolean onlyUnique,
+            Comparator<String> comparator) {
         PrintStream stream = null;
         boolean needToClose = true;
         try {
             if (output.equals("")) {
-                printResult(result, System.out, onlyUnique, caseSensitive);
+                printResult(result, System.out, onlyUnique, comparator);
                 needToClose = false;
             } else {
                 File file = new File(output);
                 stream = new PrintStream(file);
-                printResult(result, stream, onlyUnique, caseSensitive);
+                printResult(result, stream, onlyUnique, comparator);
             }
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -143,7 +143,7 @@ public class ParallelSort {
 
         if (allStrings.size() <= numTreads) {
             Collections.sort(allStrings, comparator);
-            printFromDiffSources(output, allStrings, onlyUnique, caseSensitive);
+            printFromDiffSources(output, allStrings, onlyUnique, comparator);
             System.exit(0);
         }
         LinkedBlockingQueue<ArrayList<String>> result = new LinkedBlockingQueue<ArrayList<String>>();
@@ -167,13 +167,13 @@ public class ParallelSort {
             ExecutorService mergers = Executors
                     .newFixedThreadPool(numTreads - 1);
             for (int i = 0; i < numTreads - 1; ++i) {
-                Merger merger = new Merger(caseSensitive, result);
+                Merger merger = new Merger(comparator, result);
                 mergers.execute(merger);
             }
             mergers.shutdown();
             mergers.awaitTermination(100500, TimeUnit.MINUTES);
         }
-        printFromDiffSources(output, result.take(), onlyUnique, caseSensitive);
+        printFromDiffSources(output, result.take(), onlyUnique, comparator);
         sorters.shutdownNow();
     }
 }

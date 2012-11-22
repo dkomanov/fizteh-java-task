@@ -1,16 +1,17 @@
-package ru.fizteh.fivt.students.tolyapro.ParallelSort;
+package ru.fizteh.fivt.students.tolyapro.parallelSort;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Merger implements Runnable {
     LinkedBlockingQueue<ArrayList<String>> queue;
-    boolean caseSensitive;
+    Comparator<String> comparator;
 
-    public Merger(boolean sensitive,
+    public Merger(Comparator<String> comparator,
             LinkedBlockingQueue<ArrayList<String>> queue) {
         this.queue = queue;
-        caseSensitive = sensitive;
+        this.comparator = comparator;
     }
 
     @Override
@@ -31,19 +32,12 @@ public class Merger implements Runnable {
                 int i = 0, j = 0;
                 int m = firstList.size();
                 int n = secondList.size();
-                if (caseSensitive) {
-                    while (i < m && j < n) {
-                        resultList.add(firstList.get(i).compareTo(
-                                secondList.get(j)) <= 0 ? firstList.get(i++)
-                                : secondList.get(j++));
-                    }
-                } else {
-                    while (i < m && j < n) {
-                        resultList.add(firstList.get(i).compareToIgnoreCase(
-                                secondList.get(j)) <= 0 ? firstList.get(i++)
-                                : secondList.get(j++));
-                    }
+                while (i < m && j < n) {
+                    resultList.add(comparator.compare(firstList.get(i),
+                            (secondList.get(j))) <= 0 ? firstList.get(i++)
+                            : secondList.get(j++));
                 }
+
                 while (i < m) {
                     resultList.add(firstList.get(i++));
                 }

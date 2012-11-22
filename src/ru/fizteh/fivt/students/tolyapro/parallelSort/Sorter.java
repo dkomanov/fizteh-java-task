@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.tolyapro.ParallelSort;
+package ru.fizteh.fivt.students.tolyapro.parallelSort;
 
 import java.util.ArrayList;
 import java.util.Collections;

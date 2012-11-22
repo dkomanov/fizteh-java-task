@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.tolyapro.ParallelSort;
+package ru.fizteh.fivt.students.tolyapro.parallelSort;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
