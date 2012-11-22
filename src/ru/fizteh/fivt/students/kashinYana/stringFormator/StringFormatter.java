@@ -109,6 +109,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         if (indexInString.equals("-0")) {
             throw new FormatterException("-0 not good");
         }
+        if (indexInString.startsWith("+")) {
+            throw new FormatterException("start on + not good");
+        }
         try {
             index = Integer.parseInt(indexInString);
         } catch (Exception notNum) {

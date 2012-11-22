@@ -126,6 +126,7 @@ public class StringFormatterTest {
         checkWrong("I forget smth. Don't use \"*:\"", "{0:}", 4);
         checkWrong("I forget smth. Don't use {}.", "{}", 4);
         checkWrong("-0 not good", "... {-0} ... ", 98);
+        checkWrong("start on + not good", "... {+0} ... ", 98);
 
     }
 
