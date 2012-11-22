@@ -50,7 +50,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         }
           
         if (stop > start) {
-            if (start != format.length()  &&  format.charAt(start + 1) == '{') {
+            if (start < format.length() - 1  &&  format.charAt(start + 1) == '{') {
                 buffer.append(format.substring(position, start + 1));
                 nextFormat(buffer, start + 2, format, args);
             } else {
@@ -67,7 +67,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 nextFormat(buffer, stop + 1, format, args);
             }
         } else {
-            if (stop != format.length()  &&  format.charAt(stop + 1) == '}') {
+            if (stop < format.length() - 1 &&  format.charAt(stop + 1) == '}') {
                 buffer.append(format.substring(position, stop + 1));
                 nextFormat(buffer, stop + 2, format, args);
             } else {
@@ -85,7 +85,12 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         
         StringTokenizer field = new StringTokenizer(format.substring(0, pattern), ".");
         try {
-            result = args[Integer.parseInt(field.nextToken())];
+            String pos = field.nextToken();
+            if (pos.charAt(0) == '-' || (pos.charAt(0) == '+' && pos.equals("+0"))) {
+                throw new FormatterException("Bad index");
+            }
+                
+            result = args[Integer.parseInt(pos)];
             while (field.hasMoreTokens()) {
                 result = getFieldFromObject(result, field.nextToken());
             }
