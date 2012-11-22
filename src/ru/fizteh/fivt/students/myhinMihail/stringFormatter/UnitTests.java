@@ -61,6 +61,18 @@ public class UnitTests {
         expt.expectMessage("Brackets don't coincide");
         formatter.format("start {{1}}} {0:.1f} end", 1.23);
     }
+    
+    @Test
+    public void wrongBrackets5() {
+        expt.expectMessage("Brackets don't coincide");
+        formatter.format("{", 1.23);
+    }
+    
+    @Test
+    public void wrongBrackets6() {
+        expt.expectMessage("Brackets don't coincide");
+        formatter.format("}", 1.23);
+    }
  
     @Test
     public void badPattern() {
@@ -96,6 +108,12 @@ public class UnitTests {
     public void badIndex3() {
         expt.expectMessage("Bad index");
         formatter.format("{-1}", new TestClass(), 1.23);
+    }
+    
+    @Test
+    public void badIndex4() {
+        expt.expectMessage("Bad index");
+        formatter.format("{-0}", new TestClass(), 2.0);
     }
 
     @Test
@@ -147,5 +165,6 @@ public class UnitTests {
         testString = formatter.format("start {0} {1:.6f} {2} {1} end", 1.0, 2.0, 3.0);
         Assert.assertEquals("start 1.0 " + format.format("%.6f", 2.0) + " 3.0 2.0 end", testString);
         format.close();
+        
     }
 }
