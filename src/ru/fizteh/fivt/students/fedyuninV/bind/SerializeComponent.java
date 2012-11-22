@@ -49,4 +49,5 @@ class SerializeComponent {
     public String getName() {
         return name;
     }
+
 }
