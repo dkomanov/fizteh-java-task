@@ -3,22 +3,26 @@ package ru.fizteh.fivt.students.yushkevichAnton.parallelsort;
 import java.util.*;
 
 public class ParallelSort {
+    static boolean preFiltering = true;
+
+    private IOHandler io = new IOHandler();
+    private boolean uniqueMode = false;
+    private boolean ignoringCase = false;
+
+    private int threadCount = Runtime.getRuntime().availableProcessors();
+
+    private Comparator<String> comparator = new Comparator<String>() {
+        @Override
+        public int compare(String o1, String o2) {
+            return o1.compareTo(o2);
+        }
+    };
+
     public static void main(String[] args) {
-        IOHandler io = new IOHandler();
+        new ParallelSort().run(args);
+    }
 
-        System.out.println();
-
-        Comparator<String> comparator = new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                return o1.compareTo(o2);
-            }
-        };
-        boolean uniqueMode = false;
-        boolean ignoringCase = false;
-
-        int threadCount = Runtime.getRuntime().availableProcessors();
-
+    private void processArguments(String[] args) {
         int start = 0;
         for (; start < args.length && args[start].charAt(0) == '-'; start++) {
             for (int i = 1; i < args[start].length(); i++) {
@@ -62,6 +66,10 @@ public class ParallelSort {
         for (; start < args.length; start++) {
             io.addInputFile(args[start]);
         }
+    }
+
+    private void run(String[] args) {
+        processArguments(args);
 
         ArrayList<String> strings = new ArrayList<String>();
         HashSet<String> uniqueStrings = new HashSet<String>();
@@ -70,8 +78,8 @@ public class ParallelSort {
             if (s == null) {
                 break;
             }
-            if (uniqueMode) {
-                if (ignoringCase) { // gvnkd!!
+            if (uniqueMode && preFiltering) {
+                if (ignoringCase) {
                     String lowerCase = s.toLowerCase();
                     if (!uniqueStrings.contains(lowerCase)) {
                         uniqueStrings.add(lowerCase);
@@ -88,11 +96,28 @@ public class ParallelSort {
             }
         }
 
-        String[] stringArray = strings.toArray(new String[strings.size()]);
+        new MasterSorter().sort(strings, comparator, threadCount);
 
-        new MasterSorter().sort(stringArray, comparator, threadCount);
+        if (uniqueMode && !preFiltering) {
+            ArrayList<String> newStrings = new ArrayList<String>();
+            for (String s : strings) {
+                if (ignoringCase) {
+                    String lowerCase = s.toLowerCase();
+                    if (!uniqueStrings.contains(lowerCase)) {
+                        uniqueStrings.add(lowerCase);
+                        newStrings.add(s);
+                    }
+                } else {
+                    if (!uniqueStrings.contains(s)) {
+                        uniqueStrings.add(s);
+                        newStrings.add(s);
+                    }
+                }
+            }
+            strings = newStrings;
+        }
 
-        for (String s : stringArray) {
+        for (String s : strings) {
             io.println(s);
         }
 
