@@ -11,7 +11,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -41,7 +40,7 @@ public class ParallelSort {
         }
     }
     
-    static void readFrom(BufferedReader inputStream, Vector< LinkedBlockingQueue<String> > inputStrings) {
+    static void readFrom(BufferedReader inputStream, ArrayList<LinkedBlockingQueue<String>> inputStrings) {
         try {
             String newString = inputStream.readLine();
             int counter = 0;
@@ -65,7 +64,7 @@ public class ParallelSort {
         fileName = null;
         onlyUnique = false;
         caseSense = true;
-        Vector< LinkedBlockingQueue<String> > inputStrings = new Vector< LinkedBlockingQueue<String> >();
+        ArrayList< LinkedBlockingQueue<String> > inputStrings = new ArrayList< LinkedBlockingQueue<String> >();
         while (i < args.length) {
             if (args[i].equals("-o")) {
                 ++i;
@@ -115,7 +114,7 @@ public class ParallelSort {
                 inputFiles.add(args[j]);
             }
         }
-        Vector< List<String> > toMerge = new Vector< List<String> >();
+        ArrayList< List<String> > toMerge = new ArrayList< List<String> >();
         for (int i1 = 0; i1 < threadNum; ++i1) {
             toMerge.add(Collections.synchronizedList(new ArrayList<String>()));
         }
