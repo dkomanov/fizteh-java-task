@@ -48,11 +48,16 @@ public class ParallelSorterRunner {
             }
         } else {
             for (String fileName: parsedArgs.other) {
-                Scanner scanner = new Scanner(new BufferedReader(new FileReader(new File(fileName))));
-                while (scanner.hasNext()) {
-                    array.add(scanner.next());
+                try {
+                    Scanner scanner = new Scanner(new BufferedReader(new FileReader(new File(fileName))));
+                    while (scanner.hasNext()) {
+                        array.add(scanner.next());
+                    }
+                    scanner.close();
+                } catch (FileNotFoundException e){
+                    System.err.println(e.toString());
+                    System.exit(1);
                 }
-                scanner.close();
             }
         }
         Comparator<String> comparator;
@@ -81,7 +86,7 @@ public class ParallelSorterRunner {
         Object[] result = parallelSorter.sort(_array, value);
         boolean printUnique = parsedArgs.hasProperty("u");
         for (int i = 0; i < result.length; i ++) {
-            if (i == 0 || (!result[i].equals(result[i - 1]) || !printUnique)) {
+            if (i == 0 || (comparator.compare((String)result[i], (String)result[i - 1]) != 0 || !printUnique)) {
                 printer.println(result[i]);
             }
         }
