@@ -280,7 +280,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
 
     @Override
     public T deserialize(byte[] bytes) {
-        if (bytes == null || bytes.length == 0) {
+        /*if (bytes == null || bytes.length == 0) {
             throw new RuntimeException("Nothing found.");
         }
         StringReader reader = null;
@@ -294,7 +294,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             throw new RuntimeException(t.getMessage(), t);
         } finally {
             IoUtils.close(reader);
-        }
+        }*/
         return null;
     }
 }
