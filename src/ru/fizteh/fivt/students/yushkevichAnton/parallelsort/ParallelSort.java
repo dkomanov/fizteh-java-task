@@ -5,9 +5,9 @@ import java.util.*;
 public class ParallelSort {
     static boolean preFiltering = true;
 
-    private IOHandler io = new IOHandler();
-    private boolean uniqueMode = false;
-    private boolean ignoringCase = false;
+    private IOHandler io           = new IOHandler();
+    private boolean   uniqueMode   = false;
+    private boolean   ignoringCase = false;
 
     private int threadCount = Runtime.getRuntime().availableProcessors();
 
@@ -100,19 +100,11 @@ public class ParallelSort {
 
         if (uniqueMode && !preFiltering) {
             ArrayList<String> newStrings = new ArrayList<String>();
-            for (String s : strings) {
-                if (ignoringCase) {
-                    String lowerCase = s.toLowerCase();
-                    if (!uniqueStrings.contains(lowerCase)) {
-                        uniqueStrings.add(lowerCase);
-                        newStrings.add(s);
-                    }
-                } else {
-                    if (!uniqueStrings.contains(s)) {
-                        uniqueStrings.add(s);
-                        newStrings.add(s);
-                    }
+            for (int i = 0; i < strings.size(); i++) {
+                if (i > 0 && comparator.compare(strings.get(i), strings.get(i - 1)) == 0) {
+                    continue;
                 }
+                newStrings.add(strings.get(i));
             }
             strings = newStrings;
         }
