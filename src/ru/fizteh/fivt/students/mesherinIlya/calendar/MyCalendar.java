@@ -92,6 +92,8 @@ public class MyCalendar {
         GregorianCalendar calendar = new GregorianCalendar(specifiedYear, specifiedMonth,
                 current.get(Calendar.DAY_OF_MONTH));
         
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        
         long offset = timeZone.getOffset(current.getTimeInMillis()) - 
                 TimeZone.getDefault().getOffset(current.getTimeInMillis());
         
@@ -132,8 +134,8 @@ public class MyCalendar {
             calendar.add(Calendar.DAY_OF_MONTH, -1);
         }
             
-        while (calendar.get(Calendar.MONTH) != currentMonth ||
-                calendar.get(Calendar.DAY_OF_MONTH) != calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
+        while (calendar.get(Calendar.MONTH) == currentMonth ||
+                calendar.get(Calendar.DAY_OF_MONTH) != calendar.getActualMinimum(Calendar.DAY_OF_MONTH)) {
             
             if (calendar.get(Calendar.DAY_OF_WEEK) == calendar.getFirstDayOfWeek()) {
                 System.out.print('\n');
@@ -147,11 +149,18 @@ public class MyCalendar {
                 }
             
             }
+            
+            int fieldWidth = calendar
+                    .getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()).length();
                 
             if (calendar.get(Calendar.MONTH) != currentMonth) {
-                System.out.print("   ");
+                for (int i = 0; i < fieldWidth + 1 || i < 2; i++) {
+                    System.out.print(" ");        
+                }
             } else {
-                if (calendar.get(Calendar.DAY_OF_MONTH) < 10) {
+                for (int i = 0; 
+                        i < (fieldWidth < 2 ? 2: fieldWidth) - (calendar.get(Calendar.DAY_OF_MONTH) < 10 ? 1 : 2);
+                        i++) {
                     System.out.print(" ");
                 }
                 System.out.print(calendar.get(Calendar.DAY_OF_MONTH));
@@ -169,7 +178,7 @@ public class MyCalendar {
         if (printTime) {
             System.out.print("\nNow: ");
             
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss ");
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss ");
             simpleDateFormat.setTimeZone(timeZone);
              
             System.out.print(simpleDateFormat.format(current.getTime()));
