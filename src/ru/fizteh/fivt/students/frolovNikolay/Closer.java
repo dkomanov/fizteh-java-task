@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.frolovNikolay.shell;
+package ru.fizteh.fivt.students.frolovNikolay;
 
 import java.io.Closeable;
 
