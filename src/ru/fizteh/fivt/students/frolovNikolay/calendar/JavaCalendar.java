@@ -1,4 +1,4 @@
-﻿package ru.fizteh.fivt.students.frolovNikolay.calendar;
+package ru.fizteh.fivt.students.frolovNikolay.calendar;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
