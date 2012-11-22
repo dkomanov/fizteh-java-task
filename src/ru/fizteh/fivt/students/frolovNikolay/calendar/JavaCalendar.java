@@ -71,7 +71,18 @@ public class JavaCalendar {
                     incorrectArgumentHandler("Error. Incorrect argument.");
                 } else {
                     writeTimeInTimeZone = true;
-                    timeZone = TimeZone.getTimeZone(args[++i]);
+                    boolean hasCorrectTimeZone = false;
+                    String[] timeZones = TimeZone.getAvailableIDs();
+                    for (String iter : timeZones) {
+                        if (iter.equals(args[i + 1])) {
+                            timeZone = TimeZone.getTimeZone(args[++i]);
+                            hasCorrectTimeZone = true;
+                            break;
+                        }
+                    }
+                    if (!hasCorrectTimeZone) {
+                        incorrectArgumentHandler("Error. Incorrect time zone.");
+                    }
                 }
                 break;
             default:
@@ -123,7 +134,7 @@ public class JavaCalendar {
             System.out.println('\n');
             SimpleDateFormat timeOutput = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             timeOutput.setTimeZone(timeZone);
-            System.out.print("Now: " + timeOutput.format(new Date().getTime())
+            System.out.println("Now: " + timeOutput.format(new Date().getTime())
                              + " " + timeZone.getDisplayName());
         }
     }
