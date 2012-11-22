@@ -92,6 +92,8 @@ public class MyCalendar {
         GregorianCalendar calendar = new GregorianCalendar(specifiedYear, specifiedMonth,
                 current.get(Calendar.DAY_OF_MONTH));
         
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        
         long offset = timeZone.getOffset(current.getTimeInMillis()) - 
                 TimeZone.getDefault().getOffset(current.getTimeInMillis());
         
@@ -114,8 +116,7 @@ public class MyCalendar {
             System.out.print("   ");
         }
         
-        //calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
-        calendar.set(Calendar.DAY_OF_WEEK, calendar.MONDAY);
+        calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
         for (int i = 0; i < 7; i++) {
             System.out.print(calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()));
             System.out.print(" "); 
@@ -129,16 +130,14 @@ public class MyCalendar {
             calendar.add(Calendar.DAY_OF_MONTH, -1);
         }
 
-        //while (calendar.get(Calendar.DAY_OF_WEEK) != calendar.getFirstDayOfWeek()) {
-        while (calendar.get(Calendar.DAY_OF_WEEK) != calendar.MONDAY) {
+        while (calendar.get(Calendar.DAY_OF_WEEK) != calendar.getFirstDayOfWeek()) {
             calendar.add(Calendar.DAY_OF_MONTH, -1);
         }
             
         while (calendar.get(Calendar.MONTH) == currentMonth ||
                 calendar.get(Calendar.DAY_OF_MONTH) != calendar.getActualMinimum(Calendar.DAY_OF_MONTH)) {
             
-            //if (calendar.get(Calendar.DAY_OF_WEEK) == calendar.getFirstDayOfWeek()) {
-            if (calendar.get(Calendar.DAY_OF_WEEK) == calendar.MONDAY) {
+            if (calendar.get(Calendar.DAY_OF_WEEK) == calendar.getFirstDayOfWeek()) {
                 System.out.print('\n');
                         
                 if (printWeeks) {
@@ -150,18 +149,17 @@ public class MyCalendar {
                 }
             
             }
+            
+            int fieldWidth = calendar
+                    .getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()).length();
                 
             if (calendar.get(Calendar.MONTH) != currentMonth) {
-                for (int i = 0; 
-                        i < calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()).length() + 1;
-                        i++) {
+                for (int i = 0; i < fieldWidth + 1 || i < 2; i++) {
                     System.out.print(" ");        
                 }
-                
-                } else {
+            } else {
                 for (int i = 0; 
-                        i < calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()).length()
-                        - (calendar.get(Calendar.DAY_OF_MONTH) < 10 ? 1 : 2);
+                        i < (fieldWidth < 2 ? 2: fieldWidth) - (calendar.get(Calendar.DAY_OF_MONTH) < 10 ? 1 : 2);
                         i++) {
                     System.out.print(" ");
                 }
