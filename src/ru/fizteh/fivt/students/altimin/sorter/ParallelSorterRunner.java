@@ -73,7 +73,6 @@ public class ParallelSorterRunner {
         }
 
         ParallelSorter<String> parallelSorter = new ParallelSorter<String>(comparator);
-        String[] _array = array.toArray(new String[1]);
         int value = MAX_THREADS;
         if (parsedArgs.hasProperty("t")) {
             try {
@@ -83,7 +82,7 @@ public class ParallelSorterRunner {
                 System.exit(1);
             }
         }
-        Object[] result = parallelSorter.sort(_array, value);
+        Object[] result = parallelSorter.sort(array.toArray(new String[0]), value);
         boolean printUnique = parsedArgs.hasProperty("u");
         for (int i = 0; i < result.length; i ++) {
             if (i == 0 || (comparator.compare((String)result[i], (String)result[i - 1]) != 0 || !printUnique)) {
