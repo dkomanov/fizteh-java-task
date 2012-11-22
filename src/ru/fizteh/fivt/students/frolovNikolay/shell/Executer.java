@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.frolovNikolay.shell;
 
+import ru.fizteh.fivt.students.frolovNikolay.Closer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
