@@ -126,6 +126,7 @@ public class ParallelSort {
             System.err.println("Bad threads number");
             System.exit(1);
         }
+        long time = System.currentTimeMillis();
         Reader reader = new Reader(files);
         ArrayList<String> allStrings = null;
         try {
@@ -154,26 +155,30 @@ public class ParallelSort {
                 List<String> tmp = allStrings.subList(i * blockSize, (i + 1)
                         * blockSize);
                 ArrayList<String> someStrings = new ArrayList<String>(tmp);
-                Sorter sorter = new Sorter(someStrings, comparator, result);
+                Sorter sorter = new Sorter(someStrings, comparator, result, i);
                 sorters.execute(sorter);
             } else {
                 ArrayList<String> someStrings = new ArrayList<String>(
                         allStrings.subList(i * blockSize, allStrings.size()));
-                Sorter sorter = new Sorter(someStrings, comparator, result);
+                Sorter sorter = new Sorter(someStrings, comparator, result, i);
                 sorters.execute(sorter);
             }
         }
+        sorters.shutdown();
+        sorters.awaitTermination(100500, TimeUnit.MINUTES);
         if (numTreads > 1) {
             ExecutorService mergers = Executors
                     .newFixedThreadPool(numTreads - 1);
             for (int i = 0; i < numTreads - 1; ++i) {
-                Merger merger = new Merger(comparator, result);
+                Merger merger = new Merger(comparator, result, Math.max(
+                        numTreads - 2 * i, 2));
                 mergers.execute(merger);
             }
             mergers.shutdown();
             mergers.awaitTermination(100500, TimeUnit.MINUTES);
         }
         printFromDiffSources(output, result.take(), onlyUnique, comparator);
-        sorters.shutdownNow();
+        System.out.println(System.currentTimeMillis() - time);
+
     }
 }
