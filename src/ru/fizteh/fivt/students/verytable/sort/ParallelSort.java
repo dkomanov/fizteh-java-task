@@ -82,13 +82,13 @@ public class ParallelSort {
             }
 
             String lineSeparator = System.lineSeparator();
-            String last = stringsToSort.get(0).getValue();
-            writer.write(last + lineSeparator);
+            Pair last = stringsToSort.get(0);
+            writer.write(last.getValue() + lineSeparator);
             for (int i = 1; i < stringsNumber - 1; ++i) {
                 if (isUniqueKey) {
                     if (comparator.compare(stringsToSort.get(i), last) != 0) {
-                        last = stringsToSort.get(i).getValue();
-                        writer.write(last + lineSeparator);
+                        last = stringsToSort.get(i);
+                        writer.write(last.getValue() + lineSeparator);
                     }
                 } else {
                     writer.write(stringsToSort.get(i).getValue() + lineSeparator);
