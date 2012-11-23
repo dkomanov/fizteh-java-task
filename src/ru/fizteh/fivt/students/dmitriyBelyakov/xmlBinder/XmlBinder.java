@@ -10,6 +10,7 @@ import ru.fizteh.fivt.bind.AsXmlCdata;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.students.dmitriyBelyakov.shell.IoUtils;
+import sun.misc.Unsafe;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -265,7 +266,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 allFields = false;
             }
             if (allFields) {
-                Object returnObject = clazz.newInstance(); // TODO does not always work
+                Field f = Unsafe.class.getDeclaredField("theUnsafe");
+                f.setAccessible(true);
+                Unsafe unsafe = (Unsafe) f.get(Unsafe.class);
+                Object returnObject = unsafe.allocateInstance(clazz);
                 NodeList children = element.getChildNodes();
                 HashMap<String, Field> serializedFields = fieldsForClasses.get(clazz);
                 if (serializedFields == null) {

@@ -26,14 +26,15 @@ public class XmlBinderTest extends Assert {
 
     @Test
     public void testXmlBuilder() {
-        /*XmlBinder binder = new XmlBinder(User.class);
+        XmlBinder binder = new XmlBinder(User.class);
         Permissions permissions = new Permissions();
         permissions.setQuota(100500);
         User user = new User(1, UserType.USER, new UserName("first", "last"), permissions);
         byte[] btes = binder.serialize(user);
         User anotherUser = (User) binder.deserialize(btes);
-        assertFalse(user == anotherUser);
-        assertEquals(user, anotherUser);*/
+        //assertEquals(new String(binder.serialize(user)), new String(binder.serialize(anotherUser)));
+        //assertFalse(user == anotherUser);
+        assertEquals(user, anotherUser);
         XmlBinder anotherBinder = new XmlBinder(ClassForSerializationFields.class);
         byte[] bytes = anotherBinder.serialize(new ClassForSerializationFields());
         ClassForSerializationFields cl = (ClassForSerializationFields) anotherBinder.deserialize(bytes);
