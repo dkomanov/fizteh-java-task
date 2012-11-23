@@ -16,6 +16,7 @@ public class Argparser {
             List<String> tail = new ArrayList<>();
             boolean[] used = new boolean[args.length];
             for (Field field : settings.getClass().getFields()) {
+                field.setAccessible(true);
                 for (Annotation annot : field.getAnnotations()) {
                     String name = null;
                     if (annot instanceof Flag) {
@@ -54,7 +55,7 @@ public class Argparser {
                 }
             }
         } catch (IllegalAccessException illeg) {
-            throw new ArgparseException("Illegal reflection access");
+            throw new ArgparseException("Illegal reflection access: " + illeg.getMessage());
         } catch (ArrayIndexOutOfBoundsException out) {
             throw new ArgparseException("No value found after option");
         } catch (NumberFormatException notNum) {

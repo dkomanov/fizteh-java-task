@@ -2,24 +2,30 @@ package ru.fizteh.fivt.students.harius.sort;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.Comparator;
 
-public class LinesMerge implements Callable<List<String>> {
+public class LinesMerge implements Runnable {
     private List<String> li1;
     private List<String> li2;
+    private Queue<List<String>> q;
+    private Comparator<String> comp;
 
-    public LinesMerge(List<String> li1, List<String> li2) {
+    public LinesMerge(List<String> li1, List<String> li2, Queue<List<String>> q, Comparator<String> comp) {
         this.li1 = li1;
         this.li2 = li2;
+        this.q = q;
+        this.comp = comp;
     }
 
     @Override
-    public List<String> call() {
+    public void run() {
         List<String> result = new ArrayList<String>();
         int i1 = 0;
         int i2 = 0;
         while(i1 < li1.size() && i2 < li2.size()) {
-            if (li1.get(i1).compareTo(li2.get(i2)) > 0) {
+            if (comp.compare(li1.get(i1), li2.get(i2)) > 0) {
                 result.add(li2.get(i2));
                 ++i2;
             } else {
@@ -33,6 +39,6 @@ public class LinesMerge implements Callable<List<String>> {
         for ( ; i2 < li2.size(); ++i2) {
             result.add(li2.get(i2));
         }
-        return result;
+        q.add(result);
     }
 }
