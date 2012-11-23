@@ -30,8 +30,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
 
     Map<Class, List<SerializeComponent>> methods;
     Map<Class, List<Field>> fields;
+    IdentityHashMap<Object, Object> serialized;
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     TransformerFactory transformerFactory = TransformerFactory.newInstance();
+    Object CONTAINS = new Object();
 
     public XmlBinder(Class<T> clazz) {
         super(clazz);
@@ -140,6 +142,16 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             return asXmlElement.name();
         }
     }
+
+    private String getElementName(Field value) {
+        AsXmlElement asXmlElement = value.getAnnotation(AsXmlElement.class);
+        if (asXmlElement == null) {
+            return firstCharToLowerCase(value.getName());
+        } else {
+            return asXmlElement.name();
+        }
+    }
+
     private boolean possibleToString(Class classExample) {
         return (classExample.isPrimitive()
                 ||  classExample.getName().equals("java.lang.Integer")
@@ -155,17 +167,13 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     }
 
     private void writeToDocumentByFields(Document document, Object value, Element root) throws Exception {
-        Set<String> alreadyWritten = new TreeSet<>();
         for (Field field: fields.get(value.getClass())) {
             field.setAccessible(true);
             Object fieldValue = field.get(value);
-            if (!alreadyWritten.contains(field.getName())) {
-                alreadyWritten.add(field.getName());
-                Element child = document.createElement(field.getName());
+            if (fieldValue != null) {
+                Element child = document.createElement(getElementName(field));
                 root.appendChild(child);
-                if (fieldValue == null) {
-                    child.setTextContent("null");
-                } else if (possibleToString(fieldValue.getClass())) {
+                if (possibleToString(fieldValue.getClass())) {
                     child.setTextContent(fieldValue.toString());
                 } else {
                     writeToDocument(document, fieldValue, child);
@@ -193,6 +201,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
 
     private void writeToDocument(Document document, Object value, Element root) throws Exception{
         BindingType bindingType = value.getClass().getAnnotation(BindingType.class);
+        if (serialized.put(value, CONTAINS) != null) {
+            throw new RuntimeException("Object contains link to itself, cannot serailize");
+        }
         if (bindingType == null  ||  bindingType.value().equals(MembersToBind.FIELDS)) {
             writeToDocumentByFields(document, value, root);
         } else {
@@ -204,16 +215,18 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
 
     @Override
     public byte[] serialize(Object value) {
-        if (!value.getClass().equals(getClazz())) {
+        if (value != null  &&  !value.getClass().equals(getClazz())) {
             throw new RuntimeException("This class is not supported by this binder!");
         }
-
+        serialized = new IdentityHashMap<>();
         //Creating XML
         try {
             Document document = factory.newDocumentBuilder().newDocument();
-            Element root = document.createElement(getElementName(value, value.getClass().getName()));
-            writeToDocument(document, value, root);
-            document.appendChild(root);
+            if (value != null) {
+                Element root = document.createElement(getElementName(value, value.getClass().getName()));
+                writeToDocument(document, value, root);
+                document.appendChild(root);
+            }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             Result result = new StreamResult(out);
             Transformer transformer = transformerFactory.newTransformer();
@@ -247,6 +260,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     @Override
     public T deserialize(byte[] bytes) {
         Document document = bytesToXml(bytes);
+        Element root = document.getDocumentElement();
+
         return null;
     }
 }
