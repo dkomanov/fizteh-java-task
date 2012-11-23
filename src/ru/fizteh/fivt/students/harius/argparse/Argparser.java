@@ -21,8 +21,11 @@ public class Argparser {
                     String name = null;
                     if (annot instanceof Flag) {
                         name = ((Flag)annot).name();
+                        String actualName = name.substring(name.lastIndexOf('-') + 1);
                         for (int i = 0; i < args.length; ++i) {
-                            if (args[i].equals(name)) {
+                            if (args[i].startsWith("-")
+                                    && args[i].indexOf(actualName) != -1) {
+
                                 used[i] = true;
                                 field.set(settings, true);
                             }
