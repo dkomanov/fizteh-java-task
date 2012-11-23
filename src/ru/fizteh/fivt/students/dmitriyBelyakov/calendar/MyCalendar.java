@@ -55,6 +55,7 @@ public class MyCalendar {
                 calendar.set(Calendar.YEAR, year);
             }
             calendar.setTimeZone(timeZone);
+            calendar.setFirstDayOfWeek(Calendar.MONDAY);
             printCalendar(calendar, timeZone, nOfWeek, time);
         } catch (Throwable t) {
             if (t.getLocalizedMessage() != null) {
@@ -62,6 +63,7 @@ public class MyCalendar {
             } else {
                 System.err.println("Error: unknown.");
             }
+            System.exit(1);
         }
     }
 
@@ -90,8 +92,8 @@ public class MyCalendar {
             System.out.print("\t");
         }
         for (int currDayInMonth = calendar.getActualMinimum(Calendar.DAY_OF_MONTH),
-                    lastDayInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH); currDayInMonth <= lastDayInMonth;
-                            ++currDayInMonth) {
+                lastDayInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH); currDayInMonth <= lastDayInMonth;
+                        ++currDayInMonth) {
             if ((currDayInMonth + firstDay - calendar.getFirstDayOfWeek() - 1) % 7 == 0) {
                 System.out.println();
                 if (nOfWeek) {

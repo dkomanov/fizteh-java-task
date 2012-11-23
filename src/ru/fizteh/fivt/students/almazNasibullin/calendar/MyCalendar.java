@@ -7,6 +7,7 @@ import java.util.StringTokenizer;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
 
 /**
  * 30.10.12
@@ -15,49 +16,56 @@ import java.util.TimeZone;
 
 public class MyCalendar {
 
+    // месяц
+    private static int month = -1;
+    // год
+    private static int year = -1;
+    // номера недели
+    private static boolean weak = false;
+    // временная зона
+    private static String timeZone = "";
+    private static Calendar calendar = Calendar.getInstance();
+    private static TimeZone tz = null;
+
     public static void main(String[] args) {
-        // месяц
-        WrapperPrimitive<Integer> month = new WrapperPrimitive<Integer>(-1);
+        
+        readArguments(args);
 
-        // год
-        WrapperPrimitive<Integer> year = new WrapperPrimitive<Integer>(-1);
-
-        // номер недели
-        WrapperPrimitive<Boolean> weak = new WrapperPrimitive<Boolean>(false);
-
-        // временная зона
-        WrapperPrimitive<String> timeZone = new WrapperPrimitive<String>("");
-
-        readArguments(args, month, year, weak, timeZone);
-
-        Calendar calendar = Calendar.getInstance();
-        TimeZone tz = null;
-
-        if (month.t > -1) {
+        if (month > -1) {
             // в этом блоке проверяется, текущий день месяца есть ли в выбранном месяце,
             // если да, то день месяца не меняется, иначе указывается последний день
             // выбранного месяца
             Calendar c = Calendar.getInstance();
             c.set(Calendar.DAY_OF_MONTH, 1);
-            c.set(Calendar.MONTH, month.t -1);
+            c.set(Calendar.MONTH, month -1);
             calendar.set(Calendar.DAY_OF_MONTH, Math.min(calendar.get(Calendar.DAY_OF_MONTH)
                     , c.getActualMaximum(Calendar.DAY_OF_MONTH)));
-            calendar.set(Calendar.MONTH, month.t - 1);
+            calendar.set(Calendar.MONTH, month - 1);
         }
-        if (year.t > -1) {
-            calendar.set(Calendar.YEAR, year.t);
+        if (year > -1) {
+            calendar.set(Calendar.YEAR, year);
         }
-        if (!timeZone.t.equals("")) {
-            tz = TimeZone.getTimeZone(timeZone.t);
+        if (!timeZone.equals("")) {
+            tz = TimeZone.getTimeZone(timeZone);
             calendar.setTimeZone(tz);
+            String[] zones = TimeZone.getAvailableIDs();
+            boolean exist = false;
+            for (int i = 0; i < zones.length; ++i) {
+                if (timeZone.equals(zones[i])) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                IOUtils.printErrorAndExit(timeZone + ": no such time zone");
+            }
         }
 
-        printCalendar(calendar, weak,timeZone, tz);
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        printCalendar();
     }
 
-    public static void readArguments(String[] args, WrapperPrimitive<Integer> month,
-            WrapperPrimitive<Integer> year, WrapperPrimitive<Boolean> weak,
-            WrapperPrimitive<String> timeZone) {
+    public static void readArguments(String[] args) {
         int length = args.length;
 
         if (length > 0) {
@@ -71,57 +79,57 @@ public class MyCalendar {
             while (st.hasMoreTokens()) {
                 String str = st.nextToken();
                 if (str.equals("-m")) {
-                    if (month.t == -1) {
+                    if (month == -1) {
                         if (st.hasMoreTokens()) {
                             try {
-                                month.t = Integer.parseInt(st.nextToken());
-                                if (!(month.t >= 1 && month.t <= 12)) {
-                                    LoUtils.printErrorAndExit("Wrong number of the month");
+                                month = Integer.parseInt(st.nextToken());
+                                if (!(month >= 1 && month <= 12)) {
+                                    IOUtils.printErrorAndExit("Wrong number of the month");
                                 }
                             } catch (Exception e) {
-                                LoUtils.printErrorAndExit("Usage: [-m MONTH]");
+                                IOUtils.printErrorAndExit("Usage: [-m MONTH]");
                             }
                         } else {
-                            LoUtils.printErrorAndExit("Usage: [-m MONTH]");
+                            IOUtils.printErrorAndExit("Usage: [-m MONTH]");
                         }
                     } else {
-                        LoUtils.printErrorAndExit("You put number of the month several times");
+                        IOUtils.printErrorAndExit("You put number of the month several times");
                     }
                 } else if (str.equals("-y")) {
-                    if (year.t == -1) {
+                    if (year == -1) {
                         if (st.hasMoreTokens()) {
                             try {
-                                year.t = Integer.parseInt(st.nextToken());
-                                if (year.t < 0) {
-                                    LoUtils.printErrorAndExit("Wrong year");
+                                year = Integer.parseInt(st.nextToken());
+                                if (year < 0) {
+                                    IOUtils.printErrorAndExit("Wrong year");
                                 }
                             } catch (Exception e) {
-                                LoUtils.printErrorAndExit("Usage: [-y YEAR]");
+                                IOUtils.printErrorAndExit("Usage: [-y YEAR]");
                             }
                         } else {
-                            LoUtils.printErrorAndExit("Usage: [-y YEAR]");
+                            IOUtils.printErrorAndExit("Usage: [-y YEAR]");
                         }
                     } else {
-                        LoUtils.printErrorAndExit("You put year several times");
+                        IOUtils.printErrorAndExit("You put year several times");
                     }
                 } else if (str.equals("-w")) {
-                    if (!weak.t) {
-                        weak.t = true;
+                    if (!weak) {
+                        weak = true;
                     } else {
-                        LoUtils.printErrorAndExit("You put key '-w' several times");
+                        IOUtils.printErrorAndExit("You put key '-w' several times");
                     }
                 } else if (str.equals("-t")) {
-                    if (timeZone.t.equals("")) {
+                    if (timeZone.equals("")) {
                         if (st.hasMoreTokens()) {
-                            timeZone.t = st.nextToken();
+                            timeZone = st.nextToken();
                         } else {
-                            LoUtils.printErrorAndExit("Usage: [-t TIMEZONE]");
+                            IOUtils.printErrorAndExit("Usage: [-t TIMEZONE]");
                         }
                     } else {
-                        LoUtils.printErrorAndExit("You put the time zone several times");
+                        IOUtils.printErrorAndExit("You put the time zone several times");
                     }
                 } else {
-                    LoUtils.printErrorAndExit(str + ": bad command");
+                    IOUtils.printErrorAndExit(str + ": bad command");
                 }
             }
         }
@@ -144,8 +152,7 @@ public class MyCalendar {
         System.out.println();
     }
 
-    public static void printCalendar(Calendar calendar, WrapperPrimitive<Boolean> weak,
-            WrapperPrimitive<String> timeZone, TimeZone tz) {
+    public static void printCalendar() {
         String[] months = new DateFormatSymbols().getMonths();
 
         String[] days = new DateFormatSymbols().getShortWeekdays();
@@ -159,7 +166,7 @@ public class MyCalendar {
             }
         }
 
-        if (weak.t) {
+        if (weak) {
             printSpace(3);
         }
 
@@ -171,7 +178,7 @@ public class MyCalendar {
         System.out.println(months[calendar.get(Calendar.MONTH)] + " "
                 + calendar.get(Calendar.YEAR)); // печатаем месяц и год
 
-        if (weak.t) {
+        if (weak) {
             printSpace(3);
         }
 
@@ -181,12 +188,18 @@ public class MyCalendar {
         if (maxLengthOfday < 2) {
             maxLengthOfday = 2;
         }
-        
-        int weekOfYear = getWeekOfYear(calendar);
-        int dayOfMonth = calendar.getActualMinimum(Calendar.DAY_OF_MONTH);
-        int dayOfWeek = getDayOfWeek(calendar);
 
-        if (weak.t) {
+        int dayOfMonth = calendar.getActualMinimum(Calendar.DAY_OF_MONTH);
+        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+        if (dayOfWeek > 1) {
+            --dayOfWeek;
+        } else {
+            dayOfWeek = 7;
+        }
+
+        if (weak) {
             if (weekOfYear <= 9) {
                 printSpace(1);
             }
@@ -210,7 +223,10 @@ public class MyCalendar {
                 dayOfWeek = 1;
                 System.out.println();
                 ++weekOfYear;
-                if (weak.t) {
+                if (weak) {
+                    if (weekOfYear > calendar.getActualMaximum(Calendar.WEEK_OF_YEAR)) {
+                        weekOfYear = 1;
+                    }
                     if (weekOfYear <= 9) {
                         printSpace(1);
                     }
@@ -230,29 +246,6 @@ public class MyCalendar {
             dateFormat.setTimeZone(tz);
             System.out.print("Now: " + dateFormat.format(new Date()) + " ");
             System.out.println(calendar.getTimeZone().getDisplayName());
-        }
-    }
-
-    public static int getWeekOfYear(Calendar calendar) {
-        // находит номер недели в году первой недели текущего месяца
-        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
-        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        return weekOfYear;
-    }
-
-    public static int getDayOfWeek(Calendar calendar) {
-        // находит номер дня в недели первого дня текущего месяца
-        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(
-                Calendar.DAY_OF_MONTH));
-        int DayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        if (DayOfWeek > 1) {
-            return DayOfWeek - 1;
-        } else {
-            return 7; // sunday
         }
     }
 }
