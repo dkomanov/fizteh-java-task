@@ -137,19 +137,12 @@ public class ParallelSortMain {
 
         // Считывание и раздача потокам информации.
         try {
-            int lineNumb = 0;
-            ArrayList< ArrayList<String> > result = new ArrayList< ArrayList<String> >();
-            for (int j = 0; j < processorsNumber; ++j) {
-                result.add(new ArrayList<String>());
-            }
+            ArrayList<String> result = new ArrayList<String>();
             if (i == args.length) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
                 String current = null;
                 while ((current = reader.readLine()) != null) {
-                    result.get(lineNumb++).add(current);
-                    if (lineNumb == processorsNumber) {
-                        lineNumb = 0;
-                    }
+                    result.add(current);
                 }
             } else {
                 FileReader fReader = null;
@@ -160,10 +153,7 @@ public class ParallelSortMain {
                         reader = new BufferedReader(fReader);
                         String current = null;
                         while ((current = reader.readLine()) != null) {
-                            result.get(lineNumb++).add(current);
-                            if (lineNumb == processorsNumber) {
-                                lineNumb = 0;
-                            }
+                            result.add(current);
                         }
                         Closer.close(fReader);
                         Closer.close(reader);
@@ -174,8 +164,16 @@ public class ParallelSortMain {
                 }
             }
             ExecutorService sorters = Executors.newFixedThreadPool(processorsNumber);
+            int length = result.size() / processorsNumber;
+            ArrayList<StringSorter> stringSorters = new ArrayList<StringSorter>();
             for (int j = 0; j < processorsNumber; ++j) {
-                sorters.execute(new StringSorter(result.get(j), withoutReg));
+                if (j + 1 != processorsNumber) {
+                    stringSorters.add(new StringSorter(result, withoutReg, length * j, length * (j + 1)));
+                    
+                } else {
+                    stringSorters.add(new StringSorter(result, withoutReg, length * j, result.size()));
+                }
+                sorters.execute(stringSorters.get(j));
             }
     
             // Завершаем потоки.
@@ -183,7 +181,7 @@ public class ParallelSortMain {
             sorters.awaitTermination(1, TimeUnit.DAYS);
             
             // Слияния + вывод результатов.
-            Merger merger = new Merger(result, withoutReg);
+            Merger merger = new Merger(stringSorters, withoutReg);
             String last = null;
             String current = null;
             while ((current = merger.getNext()) != null) {
