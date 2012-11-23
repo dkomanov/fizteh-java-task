@@ -8,49 +8,40 @@ public class Merger implements Runnable {
     LinkedBlockingQueue<ArrayList<String>> queue;
     Comparator<String> comparator;
     int number;
+    ArrayList<Sorter> sorters;
 
     public Merger(Comparator<String> comparator,
-            LinkedBlockingQueue<ArrayList<String>> queue, int number) {
+            LinkedBlockingQueue<ArrayList<String>> queue,
+            ArrayList<Sorter> sorters) {
         this.queue = queue;
         this.comparator = comparator;
-        this.number = number;
+        this.sorters = sorters;
+
     }
 
     @Override
     public void run() {
-        boolean doneNothing = true;
-        while (doneNothing) {
-            ArrayList<String> firstList = null;
-            ArrayList<String> secondList = null;
-            synchronized (queue) {
-                if (queue.size() == number) {
-                    firstList = queue.poll();
-                    secondList = queue.poll();
+        ArrayList<String> result = new ArrayList<String>();
+        while (true) {
+            String min = null;
+            Sorter sorter = null;
+            for (int j = 0; j < sorters.size(); ++j) {
+                if (sorters.get(j).hasNext()) {
+                    String tmp = sorters.get(j).get();
+                    if (min == null || comparator.compare(min, tmp) > 0) {
+                        min = tmp;
+                        sorter = sorters.get(j);
+                    }
                 }
             }
-            if (firstList != null && secondList != null) {
-                doneNothing = false;
-                ArrayList<String> resultList = new ArrayList<String>();
-                int i = 0, j = 0;
-                int m = firstList.size();
-                int n = secondList.size();
-                while (i < m && j < n) {
-                    resultList.add(comparator.compare(firstList.get(i),
-                            (secondList.get(j))) <= 0 ? firstList.get(i++)
-                            : secondList.get(j++));
-                }
-
-                while (i < m) {
-                    resultList.add(firstList.get(i++));
-                }
-                while (j < n) {
-                    resultList.add(secondList.get(j++));
-                }
-                queue.add(resultList);
+            if (min == null) {
+                queue.clear();
+                queue.add(result);
+                return;
+            } else {
+                sorter.next();
+                result.add(min);
             }
-
         }
-
     }
-
 }
