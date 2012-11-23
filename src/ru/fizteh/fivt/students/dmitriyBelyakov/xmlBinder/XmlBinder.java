@@ -5,13 +5,16 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import ru.fizteh.fivt.bind.AsXmlCdata;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.students.dmitriyBelyakov.shell.IoUtils;
 
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -29,7 +32,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
 
     private void prepareToSerialization(Class clazz) {
-        if(fieldsForClasses.containsKey(clazz) || methodsForClasses.containsKey(clazz) || isPrimitive(clazz)) {
+        if (fieldsForClasses.containsKey(clazz) || methodsForClasses.containsKey(clazz) || isPrimitive(clazz)) {
             return;
         }
         BindingType annotation = (BindingType) clazz.getAnnotation(BindingType.class);
@@ -171,7 +174,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 }
             }
         } catch (Throwable t) {
-            throw new RuntimeException(t.getMessage(), t);
+            throw new RuntimeException("An exception occurred within serialization of " + value.getClass(), t);
         }
     }
 
@@ -195,7 +198,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             xmlWriter.writeEndElement();
             serialized = writer.getBuffer().toString();
         } catch (Throwable t) {
-            throw new RuntimeException(t.getMessage(), t);
+            throw new RuntimeException("An exception occurred within serialization of " + value.getClass(), t);
         } finally {
             IoUtils.close(writer);
         }
@@ -206,7 +209,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         return null;
     }
 
-    private Object getValue(String val, Class clazz) {
+    private Object getValueForPrimitiveType(String val, Class clazz) {
         if (!isPrimitive(clazz)) {
             throw new RuntimeException("Not primitive type.");
         }
@@ -237,27 +240,36 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         return null;
     }
 
-    private Object deserializeToValue(Element element) {
-        if (getClazz().getAnnotation(BindingType.class) == null
-                || getClazz().getAnnotation(BindingType.class).value() == MembersToBind.FIELDS) {
-            Class clazz = getClazz();
-            if (isPrimitive(clazz)) {
-                return getValue(element.getTextContent(), clazz);
-            } else {
-                NodeList children = element.getChildNodes();
-                for (int i = 0; i < children.getLength(); ++i) {
-                    Node node = children.item(i);
-                    if (node.getNodeType() == Node.ELEMENT_NODE) {
-                        // TODO
-                    } else {
-                        throw new RuntimeException("Incorrect bytes.");
+    private Object deserializeToValue(Element element, Class clazz) {
+        try {
+            boolean allFields = true;
+            if (!(getClazz().getAnnotation(BindingType.class) == null)
+                    && getClazz().getAnnotation(BindingType.class).value() == MembersToBind.GETTERS_AND_SETTERS) {
+                allFields = false;
+            }
+            if (allFields) {
+                Class clazz = getClazz().getField(element.getTagName()).getType();
+                Object returnObject = clazz.newInstance();
+                if (isPrimitive(clazz)) {
+                    return getValueForPrimitiveType(element.getTextContent(), clazz);
+                } else {
+                    NodeList children = element.getChildNodes();
+                    for (int i = 0; i < children.getLength(); ++i) {
+                        Node node = children.item(i);
+                        if (node.getNodeType() == Node.ELEMENT_NODE) {
+                            Field field = clazz.getField(((Element) node).getTagName());
+                            field.setAccessible(true);
+                            field.set(returnObject, deserializeToValue((Element) node));
+                        }
                     }
                 }
+            } else {
+                // TODO
             }
-        } else {
-            // TODO
+            return null;
+        } catch (Throwable t) {
+            throw new RuntimeException("An exception occurred within serialization of " + element.getTagName(), t);
         }
-        return null;
     }
 
     private void iterate(Document document) {
@@ -272,18 +284,13 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 case Node.CDATA_SECTION_NODE:
                     // TODO
                     break;
-                case Node.COMMENT_NODE:
-                    // Nothing
-                    break;
-                default:
-                    throw new RuntimeException("Incorrect document.");
             }
         }
     }
 
     @Override
     public T deserialize(byte[] bytes) {
-        /*if (bytes == null || bytes.length == 0) {
+        if (bytes == null || bytes.length == 0) {
             throw new RuntimeException("Nothing found.");
         }
         StringReader reader = null;
@@ -292,12 +299,12 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             reader = new StringReader(data);
             InputSource source = new InputSource(reader);
             Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(source);
-            iterate(document);
+            //iterate(document);
         } catch (Throwable t) {
             throw new RuntimeException(t.getMessage(), t);
         } finally {
             IoUtils.close(reader);
-        }*/
+        }
         return null;
     }
 }
