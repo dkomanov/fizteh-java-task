@@ -84,7 +84,12 @@ public class ParallelSort {
                     caseSensitive = false;
                     onlyUnique = true;
                 } else if (arg.equals("-o")) {
-                    output = args[++i];
+                    if (args.length > i + 1) {
+                        output = args[++i];
+                    } else {
+                        System.err.println("Incorrect flag");
+                        System.exit(1);
+                    }
                 } else if (arg.equals("-t")) {
                     try {
                         numTreads = Integer.parseInt(args[++i]);
@@ -126,6 +131,7 @@ public class ParallelSort {
             System.err.println("Bad threads number");
             System.exit(1);
         }
+        long time = System.currentTimeMillis();
         Reader reader = new Reader(files);
         ArrayList<String> allStrings = null;
         try {
@@ -170,5 +176,6 @@ public class ParallelSort {
         Merger merger = new Merger(comparator, result, s);
         merger.run();
         printFromDiffSources(output, result.take(), onlyUnique, comparator);
+        System.out.println(System.currentTimeMillis() - time);
     }
 }
