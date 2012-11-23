@@ -10,17 +10,25 @@ public class Sorter implements Runnable {
     ArrayList<String> strings;
     LinkedBlockingQueue<ArrayList<String>> queue;
     Comparator<String> comparator;
+    int number;
 
     Sorter(ArrayList<String> strings, Comparator<String> comparator,
-            LinkedBlockingQueue<ArrayList<String>> queue) {
+            LinkedBlockingQueue<ArrayList<String>> queue, int number) {
         this.strings = strings;
         this.queue = queue;
         this.comparator = comparator;
+        this.number = number;
     }
 
     @Override
     public void run() {
         Collections.sort(strings, comparator);
-        queue.add(strings);
+
+        while (queue.size() != number) {
+            ;
+        }
+        synchronized (queue) {
+            queue.add(strings);
+        }
     }
 }

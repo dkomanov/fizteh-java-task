@@ -7,11 +7,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Merger implements Runnable {
     LinkedBlockingQueue<ArrayList<String>> queue;
     Comparator<String> comparator;
+    int number;
 
     public Merger(Comparator<String> comparator,
-            LinkedBlockingQueue<ArrayList<String>> queue) {
+            LinkedBlockingQueue<ArrayList<String>> queue, int number) {
         this.queue = queue;
         this.comparator = comparator;
+        this.number = number;
     }
 
     @Override
@@ -21,7 +23,7 @@ public class Merger implements Runnable {
             ArrayList<String> firstList = null;
             ArrayList<String> secondList = null;
             synchronized (queue) {
-                if (queue.size() > 1) {
+                if (queue.size() == number) {
                     firstList = queue.poll();
                     secondList = queue.poll();
                 }
