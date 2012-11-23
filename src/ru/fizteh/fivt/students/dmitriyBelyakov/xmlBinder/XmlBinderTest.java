@@ -38,10 +38,14 @@ public class XmlBinderTest extends Assert {
                 + "</ru.fizteh.fivt.bind.test.User>", new String(bytes));
         */
         XmlBinder anotherBinder = new XmlBinder(ClassForSerialization.class);
+        /*assertEquals("<ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerialization>"
+                + "<intField><![CDATA[11]]></intField>"
+                + "</ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerialization>",
+                new String(anotherBinder.serialize(new ClassForSerialization())));*/
+        ClassForSerialization val = (ClassForSerialization) anotherBinder.deserialize(anotherBinder.serialize(new ClassForSerialization()));
         assertEquals("<ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerialization>"
                 + "<intField><![CDATA[11]]></intField>"
                 + "</ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerialization>",
-                new String(anotherBinder.serialize(new ClassForSerialization())));
-        binder.deserialize(binder.serialize(user));
+                new String(anotherBinder.serialize(val)));
     }
 }

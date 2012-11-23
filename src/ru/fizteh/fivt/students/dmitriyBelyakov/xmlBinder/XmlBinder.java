@@ -241,6 +241,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
 
     private Object deserializeToValue(Element element, Class clazz) {
+        if(isPrimitive(clazz)) {
+            return getValueForPrimitiveType(element.getTextContent(), clazz);
+        }
         try {
             boolean allFields = true;
             if (!(getClazz().getAnnotation(BindingType.class) == null)
@@ -248,7 +251,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 allFields = false;
             }
             if (allFields) {
-                Class clazz = getClazz().getField(element.getTagName()).getType();
                 Object returnObject = clazz.newInstance();
                 if (isPrimitive(clazz)) {
                     return getValueForPrimitiveType(element.getTextContent(), clazz);
@@ -257,34 +259,19 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     for (int i = 0; i < children.getLength(); ++i) {
                         Node node = children.item(i);
                         if (node.getNodeType() == Node.ELEMENT_NODE) {
-                            Field field = clazz.getField(((Element) node).getTagName());
+                            Field field = clazz.getDeclaredField(((Element) node).getTagName());
                             field.setAccessible(true);
-                            field.set(returnObject, deserializeToValue((Element) node));
+                            field.set(returnObject, deserializeToValue((Element) node, clazz.getField(((Element) node).getTagName()).getType()));
                         }
                     }
                 }
+                return returnObject;
             } else {
                 // TODO
+                return null;
             }
-            return null;
         } catch (Throwable t) {
             throw new RuntimeException("An exception occurred within serialization of " + element.getTagName(), t);
-        }
-    }
-
-    private void iterate(Document document) {
-        Element element = document.getDocumentElement();
-        NodeList children = element.getChildNodes();
-        for (int i = 0; i < children.getLength(); ++i) {
-            Node node = children.item(i);
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    // TODO
-                    break;
-                case Node.CDATA_SECTION_NODE:
-                    // TODO
-                    break;
-            }
         }
     }
 
@@ -299,12 +286,12 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             reader = new StringReader(data);
             InputSource source = new InputSource(reader);
             Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(source);
-            //iterate(document);
+            return (T) deserializeToValue(document.getDocumentElement(), getClazz());
         } catch (Throwable t) {
             throw new RuntimeException(t.getMessage(), t);
         } finally {
             IoUtils.close(reader);
         }
-        return null;
+        //return null;
     }
 }

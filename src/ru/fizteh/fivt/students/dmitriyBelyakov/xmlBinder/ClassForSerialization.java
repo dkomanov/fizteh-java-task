@@ -5,11 +5,11 @@ import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.chat.MessageType;
 
-@BindingType(value = MembersToBind.GETTERS_AND_SETTERS)
+@BindingType(value = MembersToBind.FIELDS)
 public class ClassForSerialization {
-    private int intField = 11;
-    double doubleField = 1.1;
-    public MessageType enumField;
+    public int intField = 11;
+    public double doubleField = 1.1;
+    public MessageType enumField = MessageType.MESSAGE;
 
     public int get() {
         return 0;
@@ -19,12 +19,12 @@ public class ClassForSerialization {
         return;
     }
 
-    @AsXmlCdata
+    //@AsXmlCdata
     public void setIntField(int i) {
         intField = i;
     }
 
-    @AsXmlCdata
+    //@AsXmlCdata
     public int getIntField() {
         return intField;
     }
