@@ -176,6 +176,7 @@ public class ParallelSort {
         } else {
             outputStream = new PrintWriter(System.out);
         }
+        String prevMin = "\n";
         while (true) {
             String minString = null;
             int minPosition = -1;
@@ -206,25 +207,15 @@ public class ParallelSort {
                 toMerge.get(minPosition).remove(0);
                 if (onlyUnique) {
                     if (caseSense) {
-                        for (int i1 = 0; i1 < toMerge.size(); ++i1) {
-                            while (!toMerge.get(i1).isEmpty()) {
-                                if (toMerge.get(i1).get(0).equals(minString)) {
-                                    toMerge.get(i1).remove(0);
-                                } else {
-                                    break;
-                                }
-                            }
+                        if (!minString.equals(prevMin)) {
+                            write(outputStream, minString);
+                            prevMin = minString;
                         }
-                        write(outputStream, minString);
                     } else {
-                        for (int i1 = 0; i1 < toMerge.size(); ++i1) {
-                            while (!toMerge.get(i1).isEmpty()) {
-                                if (toMerge.get(i1).get(0).compareToIgnoreCase(minString) == 0) {
-                                    toMerge.get(i1).remove(0);
-                                } else break;
-                            }
+                        if (minString.compareToIgnoreCase(minString) != 0) {
+                            write(outputStream, minString);
+                            prevMin = minString;
                         }
-                        write(outputStream, minString);
                     }
                 } else {
                     write(outputStream, minString);
