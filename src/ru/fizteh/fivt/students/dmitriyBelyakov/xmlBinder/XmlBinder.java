@@ -288,7 +288,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 }
                 return returnObject;
             } else {
-                Object returnObject = clazz.newInstance();
+                Field f = Unsafe.class.getDeclaredField("theUnsafe");
+                f.setAccessible(true);
+                Unsafe unsafe = (Unsafe) f.get(Unsafe.class);
+                Object returnObject = unsafe.allocateInstance(clazz);
                 NodeList children = element.getChildNodes();
                 HashMap<String, Pair<Method, Method>> serializedMethods = methodsForClasses.get(clazz);
                 if (serializedMethods == null) {

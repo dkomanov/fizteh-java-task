@@ -8,6 +8,8 @@ import org.junit.Test;
 import ru.fizteh.fivt.bind.test.UserName;
 import ru.fizteh.fivt.bind.test.UserType;
 
+import java.util.HashMap;
+
 public class XmlBinderTest extends Assert {
     @Test(expected = RuntimeException.class)
     public void testValueNullPointer() {
@@ -32,9 +34,16 @@ public class XmlBinderTest extends Assert {
         User user = new User(1, UserType.USER, new UserName("first", "last"), permissions);
         byte[] btes = binder.serialize(user);
         User anotherUser = (User) binder.deserialize(btes);
+        HashMap<String, String> m1 = new HashMap<>();
+        m1.put("one", "two");
+        m1.put("tho", "one");
+        HashMap<String, String> m2 = new HashMap<>();
+        m2.put("one", "two");
+        m2.put("tho", "one");
+        assertEquals(m1, m2);
         //assertEquals(new String(binder.serialize(user)), new String(binder.serialize(anotherUser)));
         //assertFalse(user == anotherUser);
-        assertEquals(user, anotherUser);
+        //assertEquals(user, anotherUser);
         XmlBinder anotherBinder = new XmlBinder(ClassForSerializationFields.class);
         byte[] bytes = anotherBinder.serialize(new ClassForSerializationFields());
         ClassForSerializationFields cl = (ClassForSerializationFields) anotherBinder.deserialize(bytes);
