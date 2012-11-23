@@ -5,26 +5,51 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import ru.fizteh.fivt.bind.AsXmlCdata;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.students.dmitriyBelyakov.shell.IoUtils;
 
-import javax.swing.text.html.parser.DocumentParser;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
-import javax.xml.stream.util.StreamReaderDelegate;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
+    private HashMap<Class, ArrayList<Pair<Method, Method>>> methodsForClasses;
+    private HashMap<Class, ArrayList<Field>> fieldsForClasses;
+
     XmlBinder(Class<T> clazz) {
         super(clazz);
+        methodsForClasses = new HashMap<>();
+        fieldsForClasses = new HashMap<>();
+        prepareToSerialization(clazz);
+    }
+
+    private void prepareToSerialization(Class clazz) {
+        if(fieldsForClasses.containsKey(clazz) || methodsForClasses.containsKey(clazz) || isPrimitive(clazz)) {
+            return;
+        }
+        BindingType annotation = (BindingType) clazz.getAnnotation(BindingType.class);
+        boolean allFields = true;
+        if (annotation != null && annotation.value().equals(MembersToBind.GETTERS_AND_SETTERS)) {
+            allFields = false;
+        }
+        if (allFields) {
+            ArrayList<Field> fields = getFields(clazz);
+            fieldsForClasses.put(clazz, fields);
+            for (Field field : fields) {
+                prepareToSerialization(field.getType());
+            }
+        } else {
+            ArrayList<Pair<Method, Method>> methods = getMethods(clazz);
+            methodsForClasses.put(clazz, methods);
+            for (Pair<Method, Method> pair : methods) {
+                prepareToSerialization(pair.getKey().getReturnType());
+            }
+        }
     }
 
     private String firstCharToLowerCase(String str) {
@@ -100,7 +125,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             throw new RuntimeException("Cannot serialize.");
         }
         if (value == null) {
-            throw new RuntimeException("Null pointer for serialization.");
+            return;
         }
         try {
             Class clazz = value.getClass();
@@ -114,7 +139,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 allFields = false;
             }
             if (allFields) {
-                ArrayList<Field> fields = getFields(clazz);
+                ArrayList<Field> fields = fieldsForClasses.get(clazz);
                 for (Field field : fields) {
                     field.setAccessible(true);
                     if (field.get(value) != null) {
@@ -128,10 +153,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     }
                 }
             } else {
-                ArrayList<Pair<Method, Method>> methods = getMethods(clazz);
+                ArrayList<Pair<Method, Method>> methods = methodsForClasses.get(clazz);
                 for (Pair<Method, Method> pair : methods) {
                     Method method = pair.getKey(); // get getter
-                    method.setAccessible(true);
                     Object val = method.invoke(value);
                     if (val != null) {
                         if (method.getAnnotation(AsXmlCdata.class) == null || !isPrimitive(method.getReturnType())) {
