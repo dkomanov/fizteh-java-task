@@ -48,6 +48,7 @@ public class ControlSorter {
         this.sorters = new ArrayList<Sorter>();
         this.mergers = new ArrayList<Merger>();
         this.result = new ArrayList<String>();
+        //System.out.println(ignoreCase);
         if (ignoreCase) {
             this.stringComp = String.CASE_INSENSITIVE_ORDER;
         } else {
@@ -127,6 +128,7 @@ public class ControlSorter {
             sorter.join();
         }
         for (Sorter sorter : sorters) {
+            //sorter.showResults();
             results.put(new LinkedBlockingQueue<String>(sorter.getResult()));
         }
 
@@ -134,20 +136,26 @@ public class ControlSorter {
 
     private void mergeResults() throws InterruptedException {
         while (results.size() != 1) {
+            //System.out.println("New merge "+results.size());
             mergers.clear();
             Merger mMerger;
-            for (int i = 0; i < results.size(); i += 2) {
-                if (i + 1 == results.size()) {
+            //int rSize=results.size();
+            while (!results.isEmpty()) {
+                //System.out.println(i);
+                if (results.size()==1) {
                     results.put(new LinkedBlockingQueue<String>());
+                   // System.out.println("lalala");
                 }
-                mMerger = new Merger(results.take(), results.take(), stringComp);
+                mMerger = new Merger(results.take(), results.take(), stringComp, 1);
                 mergers.add(mMerger);
                 mMerger.start();
             }
             for (Merger merger : mergers) {
                 merger.join();
             }
+            results.clear();
             for (Merger merger : mergers) {
+               // merger.showResults();
                 results.put(merger.getResult());
             }
         }
@@ -170,6 +178,7 @@ public class ControlSorter {
         }
     }
 
+     
     private void printToDestination(OutputStream out) {
         PrintWriter pw = null;
         try {
@@ -181,16 +190,17 @@ public class ControlSorter {
         int size = result.size();
 
         for (int i = 0; i < size; i++) {
-            String prevValue = "";
             if (unique) {
-                String curValue = result.get(i);
+                if (ignoreCase) {
+                    if ((i == 0) || (i > 0 && String.CASE_INSENSITIVE_ORDER.compare(result.get(i), result.get(i - 1)) != 0)) {
+                        pw.println(result.get(i));
+                    }
 
-                if ((i == 0) || (i > 0 && stringComp.compare(curValue, prevValue) == 0)) {
-                    pw.println(curValue);
+                } else {
+                    if ((i == 0) || (i > 0 && !result.get(i).equals(result.get(i - 1)))) {
+                        pw.println(result.get(i));
+                    }
                 }
-
-                prevValue = curValue;
-
             } else {
                 pw.println(result.get(i));
             }
@@ -199,6 +209,7 @@ public class ControlSorter {
         if (!out.equals(System.out)) {
             pw.close();
         }
+
     }
 
     public void sort() throws Exception {
