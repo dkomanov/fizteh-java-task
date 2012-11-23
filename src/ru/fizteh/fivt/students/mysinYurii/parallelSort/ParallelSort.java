@@ -40,14 +40,11 @@ public class ParallelSort {
         }
     }
     
-    static void readFrom(BufferedReader inputStream, ArrayList<LinkedBlockingQueue<String>> inputStrings) {
+    static void readFrom(BufferedReader inputStream, LinkedBlockingQueue<String> inputStrings) {
         try {
             String newString = inputStream.readLine();
-            int counter = 0;
             while (newString != null) {
-                inputStrings.get(counter).add(newString + '\n');
-                ++counter;
-                counter %= inputStrings.size();
+                inputStrings.add(newString);
                 newString = inputStream.readLine();
             }
         } catch (IOException e) {
@@ -64,7 +61,7 @@ public class ParallelSort {
         fileName = null;
         onlyUnique = false;
         caseSense = true;
-        ArrayList< LinkedBlockingQueue<String> > inputStrings = new ArrayList< LinkedBlockingQueue<String> >();
+        LinkedBlockingQueue<String> inputStrings = new LinkedBlockingQueue<String>();
         while (i < args.length) {
             if (args[i].equals("-o")) {
                 ++i;
@@ -120,8 +117,7 @@ public class ParallelSort {
         }
         threads = Executors.newFixedThreadPool(threadNum);
         for (int i1 = 0; i1 < threadNum; ++i1) {
-            inputStrings.add(new LinkedBlockingQueue<String>());
-            threads.execute(new MyThread(inputStrings.get(i1), toMerge.get(i1), caseSense));
+            threads.execute(new MyThread(inputStrings, toMerge.get(i1), caseSense));
         }
 
         if (inputFiles.size() == 0) {
@@ -156,7 +152,7 @@ public class ParallelSort {
         
         try {
             for (int i1 = 0; i1 < threadNum; ++i1) {
-                inputStrings.get(i1).add("");
+                inputStrings.add("\n");
             }
             threads.shutdown();
             threads.awaitTermination(10, TimeUnit.MINUTES);
@@ -180,7 +176,6 @@ public class ParallelSort {
         } else {
             outputStream = new PrintWriter(System.out);
         }
-        String prevMin = "";
         while (true) {
             String minString = null;
             int minPosition = -1;
@@ -211,15 +206,25 @@ public class ParallelSort {
                 toMerge.get(minPosition).remove(0);
                 if (onlyUnique) {
                     if (caseSense) {
-                        if (prevMin.compareTo(minString) != 0) {
-                            write(outputStream, minString);
-                            prevMin = minString;
+                        for (int i1 = 0; i1 < toMerge.size(); ++i1) {
+                            while (!toMerge.get(i1).isEmpty()) {
+                                if (toMerge.get(i1).get(0).equals(minString)) {
+                                    toMerge.get(i1).remove(0);
+                                } else {
+                                    break;
+                                }
+                            }
                         }
+                        write(outputStream, minString);
                     } else {
-                        if (prevMin.compareToIgnoreCase(minString) != 0) {
-                            write(outputStream, minString);
-                            prevMin = minString;
+                        for (int i1 = 0; i1 < toMerge.size(); ++i1) {
+                            while (!toMerge.get(i1).isEmpty()) {
+                                if (toMerge.get(i1).get(0).compareToIgnoreCase(minString) == 0) {
+                                    toMerge.get(i1).remove(0);
+                                } else break;
+                            }
                         }
+                        write(outputStream, minString);
                     }
                 } else {
                     write(outputStream, minString);
