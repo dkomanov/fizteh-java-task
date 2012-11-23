@@ -36,5 +36,7 @@ public class CalendarExample {
         System.out.println(Arrays.toString(TimeZone.getAvailableIDs()));
 
         System.out.println(tz.getDisplayName());
+
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
     }
 }

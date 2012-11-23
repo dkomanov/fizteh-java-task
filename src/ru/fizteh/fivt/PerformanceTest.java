@@ -11,13 +11,30 @@ public class PerformanceTest {
         this.runnable = runnable;
     }
 
-    public void runTest(final int n) {
-        if (n <= 1000) {
-            throw new IllegalArgumentException("n should be greater than 1000. Actual: " + n);
+    public RunResult runTestAndPrint(int n) {
+        RunResult result = runTest(n);
+
+        print("Total", result.getTotal());
+        print("Single", result.getSingle());
+
+        return result;
+    }
+
+    private static void print(String name, RunTimes times) {
+        System.err.println(name + " (nanos):    " + times.getNanos());
+        System.err.println(name + " (msecs):    " + times.getMsecs());
+        System.err.println(name + " (millis):   " + times.getMillis());
+        System.err.println(name + " (seconds):  " + times.getSeconds());
+    }
+
+    public RunResult runTest(final int n) {
+        if (n <= 1) {
+            throw new IllegalArgumentException("n should be greater than 1. Actual: " + n);
         }
 
         // warm up
-        for (int i = 0; i < 1000; i++) {
+        int warmUpTimes = n <= 1000 ? Math.min(10, n - 1) : 1000;
+        for (int i = 0; i < warmUpTimes; i++) {
             runnable.run();
         }
 
@@ -32,15 +49,10 @@ public class PerformanceTest {
         long msecs = nanos / 1000;
         long millis = msecs / 1000;
 
-        System.out.println("Total (nanos):    " + nanos);
-        System.out.println("Total (msecs):    " + msecs);
-        System.out.println("Total (millis):   " + millis);
-        System.out.println("Total (seconds):  " + (millis / 1000));
-
-        System.out.println("Single (nanos):   " + (nanos / n));
-        System.out.println("Single (msecs):   " + (msecs / n));
-        System.out.println("Single (millis):  " + (millis / n));
-        System.out.println("Single (seconds): " + (millis / 1000 / n));
+        return new RunResult(
+                new RunTimes(nanos, msecs, millis, millis / 1000),
+                new RunTimes(nanos / n, msecs / n, millis / n, millis / 1000 / n)
+        );
     }
 
     public static void main(String[] args) {
@@ -50,6 +62,90 @@ public class PerformanceTest {
                 String.format("%d %d", 1, 1);
             }
         });
-        test.runTest(100000);
+        test.runTestAndPrint(100000);
+    }
+
+    public static class RunResult implements Comparable<RunResult> {
+        private final RunTimes total;
+        private final RunTimes single;
+
+        public RunResult(RunTimes total, RunTimes single) {
+            this.total = total;
+            this.single = single;
+        }
+
+        public RunTimes getTotal() {
+            return total;
+        }
+
+        public RunTimes getSingle() {
+            return single;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return !(o == null || getClass() != o.getClass()) && compareTo((RunResult) o) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return total.hashCode();
+        }
+
+        @Override
+        public int compareTo(RunResult o) {
+            if (o == null) {
+                throw new IllegalArgumentException("other is null");
+            }
+            return total.compareTo(o.total);
+        }
+    }
+
+    public static class RunTimes implements Comparable<RunTimes> {
+        private final long nanos;
+        private final long msecs;
+        private final long millis;
+        private final long seconds;
+
+        public RunTimes(long nanos, long msecs, long millis, long seconds) {
+            this.nanos = nanos;
+            this.msecs = msecs;
+            this.millis = millis;
+            this.seconds = seconds;
+        }
+
+        public long getNanos() {
+            return nanos;
+        }
+
+        public long getMsecs() {
+            return msecs;
+        }
+
+        public long getMillis() {
+            return millis;
+        }
+
+        public long getSeconds() {
+            return seconds;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return !(o == null || getClass() != o.getClass()) && compareTo((RunTimes) o) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return (int) (nanos ^ (nanos >>> 32));
+        }
+
+        @Override
+        public int compareTo(RunTimes o) {
+            if (o == null) {
+                throw new IllegalArgumentException("other is null");
+            }
+            return Long.compare(nanos, o.nanos);
+        }
     }
 }

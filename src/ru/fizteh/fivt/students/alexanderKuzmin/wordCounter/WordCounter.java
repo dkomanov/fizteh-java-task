@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.alexanderKuzmin.wordCounter;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -12,11 +13,11 @@ import java.util.HashMap;
  */
 
 class Mode {
-    boolean w; // key -w
-    boolean l; // key -l
-    boolean u; // key -u
-    boolean U; // key -U
-    boolean a; // key -a
+    boolean words; // key -w
+    boolean lines; // key -l
+    boolean uniqueSensitive; // key -u
+    boolean uniqueInsensitive; // key -U
+    boolean aggregate; // key -a
 };
 
 public class WordCounter {
@@ -26,44 +27,38 @@ public class WordCounter {
         System.exit(1);
     }
 
-    private static void closeAllReaders(FileReader freader,
-            BufferedReader breader) {
-        if (freader != null)
+    private static <T extends Closeable> void closeStream(T stream) {
+        if (stream != null) {
             try {
-                freader.close();
+                stream.close();
             } catch (IOException e) {
-                printErrAndExit(e.getClass().getName());
+                printErrAndExit(e.getMessage());
             }
-        if (breader != null)
-            try {
-                breader.close();
-            } catch (IOException e) {
-                printErrAndExit(e.getClass().getName());
-            }
+        }
     }
 
     void worker(String[] name, int n, Mode mod) {
-        if (mod.w || mod.l || mod.a) {
-            if (mod.l && mod.w) {
+        if (mod.words || mod.lines || mod.aggregate) {
+            if (mod.lines && mod.words) {
                 printErrAndExit("Please, chose only one key: '-w' or '-l'. They are not compatible.");
             }
-            if (mod.a && !mod.U) {
-                mod.u = true;
+            if (mod.aggregate && !mod.uniqueInsensitive) {
+                mod.uniqueSensitive = true;
             }
             Integer count = 0;
             HashMap<String, Integer> hmap = new HashMap<String, Integer>();
             for (int i = n; i < name.length; ++i) {
-                FileReader freader = null;
-                BufferedReader breader = null;
+                FileReader fReader = null;
+                BufferedReader bReader = null;
                 try {
-                    freader = new FileReader(name[i]);
-                    breader = new BufferedReader(freader);
+                    fReader = new FileReader(name[i]);
+                    bReader = new BufferedReader(fReader);
                     String curline;
-                    while ((curline = breader.readLine()) != null) {
-                        if (mod.l) {
+                    while ((curline = bReader.readLine()) != null) {
+                        if (mod.lines) {
                             ++count;
-                            if (mod.U || mod.u) {
-                                if (mod.U) {
+                            if (mod.uniqueInsensitive || mod.uniqueSensitive) {
+                                if (mod.uniqueInsensitive) {
                                     curline = curline.toLowerCase();
                                 }
                                 if (hmap.containsKey(curline)) {
@@ -76,9 +71,9 @@ public class WordCounter {
                             String[] words = curline
                                     .split("[\\s\\.,:;\\\"\\\'\\(\\)\\\\!]+");
                             count += words.length;
-                            if (mod.U || mod.u) {
+                            if (mod.uniqueInsensitive || mod.uniqueSensitive) {
                                 for (String s : words) {
-                                    if (mod.U) {
+                                    if (mod.uniqueInsensitive) {
                                         s = s.toLowerCase();
                                     }
                                     if (hmap.containsKey(s)) {
@@ -91,34 +86,29 @@ public class WordCounter {
                         }
                     }
                 } catch (Exception e) {
-                    printErrAndExit(e.getClass().getName());
+                    printErrAndExit(e.getMessage());
                 } finally {
-                    closeAllReaders(freader, breader);
+                    closeStream(fReader);
+                    closeStream(bReader);
                 }
-                if (!mod.a) {
+                if (!mod.aggregate) {
                     System.out.println(name[i] + ":");
-                    if (!mod.U && !mod.u) {
+                    if (!mod.uniqueInsensitive && !mod.uniqueSensitive) {
                         System.out.println(count);
                         count = 0;
                     } else {
-                        StringBuilder sb = new StringBuilder();
                         for (String str : hmap.keySet()) {
-                            sb.append(str).append(" ").append(hmap.get(str))
-                                    .append("\n");
+                            System.out.println(str + " " + hmap.get(str));
                         }
-                        System.out.println(sb);
                         hmap.clear();
                     }
                 }
             }
-            if (mod.a) {
-                if (mod.U || mod.u) {
-                    StringBuilder sb = new StringBuilder();
+            if (mod.aggregate) {
+                if (mod.uniqueInsensitive || mod.uniqueSensitive) {
                     for (String str : hmap.keySet()) {
-                        sb.append(str).append(" ").append(hmap.get(str))
-                                .append("\n");
+                        System.out.println(str + " " + hmap.get(str));
                     }
-                    System.out.println(sb);
                     hmap.clear();
                 }
             }
@@ -138,7 +128,7 @@ public class WordCounter {
         if (args.length < 1) {
             printErrAndExit("No FILE, please use: 'java WordCounter [keys] FILE1 FILE2 ...'");
         } else if (args.length > 0 && args[0].charAt(0) != '-') {
-            mod.w = true;
+            mod.words = true;
             wc.worker(args, 0, mod);
         } else if (args.length > 1) {
             int i = 0;
@@ -149,19 +139,19 @@ public class WordCounter {
                     for (int j = 1; j < args[i].length(); ++j) {
                         switch (args[i].charAt(j)) {
                         case 'w':
-                            mod.w = true;
+                            mod.words = true;
                             break;
                         case 'l':
-                            mod.l = true;
+                            mod.lines = true;
                             break;
                         case 'u':
-                            mod.u = true;
+                            mod.uniqueSensitive = true;
                             break;
                         case 'U':
-                            mod.U = true;
+                            mod.uniqueInsensitive = true;
                             break;
                         case 'a':
-                            mod.a = true;
+                            mod.aggregate = true;
                             break;
                         default:
                             printErrAndExit("Error with keys. Use only 'w', 'l', 'u', 'U', 'a'");

@@ -7,11 +7,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
+import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
 
 /**
  * 23.10.12
@@ -19,30 +21,30 @@ import java.util.TreeMap;
  */
 
 public class Main {
+    // соответствует ключу -u
+    private static boolean uniqLines = false;
+    // кол-во потоков
+    private static int countThreads = 0;
+    // имя файла, в который необходимо вывести результат
+    private static String outputFile = "";
+    private static Comparator<String> com = new Comparator<String>() {
+        @Override
+        public int compare(String s1, String s2) {
+            return s1.compareTo(s2);
+        }
+    };
 
     public static void main(String[] args) {
-        // соответствует ключу -i
-        WrapperPrimitive<Boolean> withoutReg = new WrapperPrimitive<Boolean>(false);
-
-        // соответствует ключу -u
-        WrapperPrimitive<Boolean> uniqLines = new WrapperPrimitive<Boolean>(false);
-
-        // кол-во потоков
-        WrapperPrimitive<Integer> countThreads = new WrapperPrimitive<Integer>(0);
-
-        // имя файла, в который необходимо вывести результат
-        WrapperPrimitive<String> outputFile = new WrapperPrimitive<String>("");
-
         // файлы для считывания
         List<String> files = new ArrayList<String>();
 
         // строки из входных файлов или из stdin
         List<String> lines;
-        
+
         if (args.length > 0) {
-            readArguments(args, withoutReg, uniqLines, countThreads, outputFile, files);
+            readArguments(args, files);
         }
-        
+
         // считывание строк
         lines = readLines(files);
         
@@ -53,70 +55,52 @@ public class Main {
             System.exit(0);
         }
 
-        int countOfLinesForOneThread = 0;
+        int countOfLinesForOneThread = 40000;
 
-        // эти значения найдены примерно для каждого кол-ва входных строк
-        if (lines.size()  < 10000) {
-            countOfLinesForOneThread = 200;
-        } else if (lines.size()  < 50000) {
-            countOfLinesForOneThread = 290;
-        } else if (lines.size()  < 10000) {
-            countOfLinesForOneThread = 400;
-        } else {
-            countOfLinesForOneThread = 600;
-        }
-
-        if (countThreads.t == 0) {
+        if (countThreads == 0) {
             if (size > countOfLinesForOneThread) {
                 // каждый поток сортирует примерно countOfLinesForOneThread строк
-                countThreads.t = size / countOfLinesForOneThread + 1;
+                countThreads = size / countOfLinesForOneThread + 1;
             }
         } else {
-            if (size / countThreads.t < countOfLinesForOneThread) {
+            if (size / countThreads < countOfLinesForOneThread) {
                 // если заданное число потоков слишком большое, то используем меньшее кол-во
-                countThreads.t = size / countOfLinesForOneThread + 1;
+                countThreads = size / countOfLinesForOneThread + 1;
             }
         }
 
-        if (countThreads.t > 1) {
+        if (countThreads > 1) {
             // каждый поток сортирует свою часть и  записывает результат в result
             List<List<String> > result;
 
-            // работа с потоками: запуск и ожидание завершения их работы
-            result = startingThreads(lines, countThreads, withoutReg);
-
-            // результат слияния полученных результатов всех потоков
-            List<String> res = MergeResult(result);
-            printResult(uniqLines, outputFile, res);
+            // работа с потоками: сортировка
+            result = startingThreadsToSort(lines);
+            
+            // работа с потоками: слияние
+            List<String> res = startingThreadsToMerge(result);
+            
+            printResult(res);
             res.clear();
         } else {
             // работа без запуска дополнительных потоков по причине малого
             // количества входных строчек
-            if (withoutReg.t) {
-                Collections.sort(lines, String.CASE_INSENSITIVE_ORDER);
-            } else {
-                Collections.sort(lines);
-            }
 
-            printResult(uniqLines, outputFile, lines);
+            Collections.sort(lines, com);
+            
+            printResult(lines);
             lines.clear();
         }
     }
-    
-    public static void checkOrderArguments(WrapperPrimitive<Boolean> key,
-            List<String> files) {
-        if (files.isEmpty()) {
-            // предпологается, что все ключи должны стоять перед 
-            // именами файлов, из которых будет считываться информация 
-            key.t = true;
-        } else {
-            LoUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
+
+    public static void checkOrderArguments(List<String> files) {
+        // предпологается, что все ключи должны стоять перед
+        // именами файлов, из которых будет считываться информация
+        if (!files.isEmpty()) {
+            IOUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT] [-o OUTPUT] [FILES...]");
         }
     }
 
-    public static void readArguments(String[] args, WrapperPrimitive<Boolean> withoutReg,
-            WrapperPrimitive<Boolean> uniqLines, WrapperPrimitive<Integer> countThreads,
-            WrapperPrimitive<String> outputFile, List<String> files) {
+    public static void readArguments(String[] args, List<String> files) {
         StringBuilder sb = new StringBuilder(args[0]);
         for (int i = 1; i < args.length; ++i) {
             sb.append(" ");
@@ -126,36 +110,39 @@ public class Main {
         while (st.hasMoreTokens()) {
             String str = st.nextToken();
             if (str.equals("-i")) {
-                checkOrderArguments(withoutReg, files);
+                checkOrderArguments(files);
+                com = String.CASE_INSENSITIVE_ORDER;
             } else if (str.equals("-u")) {
-                checkOrderArguments(uniqLines, files);
+                checkOrderArguments(files);
+                uniqLines = true;
             } else if (str.equals("-ui") || str.equals("-iu")) {
-                checkOrderArguments(withoutReg, files);
-                checkOrderArguments(uniqLines, files);
+                checkOrderArguments(files);
+                com = String.CASE_INSENSITIVE_ORDER;
+                uniqLines = true;
             } else if (str.equals("-t")) {
                 if (files.isEmpty()) {
                     if (st.hasMoreTokens()) {
                         try {
-                            countThreads.t = Integer.parseInt(st.nextToken());
+                            countThreads = Integer.parseInt(st.nextToken());
                         } catch (Exception e) {
-                            LoUtils.printErrorAndExit("Usage: [-t THREAD_COUNT]." + e.getMessage());
+                            IOUtils.printErrorAndExit("Usage: [-t THREAD_COUNT]." + e.getMessage());
                         }
                     } else {
-                        LoUtils.printErrorAndExit("Usage: [-t THREAD_COUNT]");
+                        IOUtils.printErrorAndExit("Usage: [-t THREAD_COUNT]");
                     }
                 } else {
-                    LoUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT]"
+                    IOUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT]"
                         + "[-o OUTPUT] [FILES...]");
                 }
             } else if (str.equals("-o")) {
                 if (files.isEmpty()) {
                     if (st.hasMoreTokens()) {
-                        outputFile.t = st.nextToken();
+                        outputFile = st.nextToken();
                     } else {
-                        LoUtils.printErrorAndExit("Usage: [-o OUTPUT]");
+                        IOUtils.printErrorAndExit("Usage: [-o OUTPUT]");
                     }
                 } else {
-                    LoUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT]"
+                    IOUtils.printErrorAndExit("Bad order. Usage: [-iu] [-t THREAD_COUNT]"
                         + "[-o OUTPUT] [FILES...]");
                 }
             } else {
@@ -165,19 +152,19 @@ public class Main {
     }
 
     public static void readFromBufferedReader(BufferedReader br, boolean fromConsole,
-            FileReader fr, List <String> lines) {
+            FileReader fr, List<String> lines) {
         try {
             String str;
             while ((str = br.readLine()) != null) {
                 lines.add(str);
             }
         } catch (Exception e) {
-            LoUtils.printErrorAndExit("Bad reading from BufferedReader: " + e.getMessage());
+            IOUtils.printErrorAndExit("Bad reading from BufferedReader: " + e.getMessage());
         } finally {
             if (!fromConsole) {
-                LoUtils.closeOrExit(fr);
+                IOUtils.closeOrExit(fr);
+                IOUtils.closeOrExit(br);
             }
-            LoUtils.closeOrExit(br);
         }
     }
 
@@ -189,173 +176,171 @@ public class Main {
                  br = new BufferedReader(new InputStreamReader(System.in));
                  readFromBufferedReader(br, true, null, lines);
             } catch (Exception e) {
-                LoUtils.printErrorAndExit("Bad opening BufferedReader: " + e.getMessage());
+                IOUtils.printErrorAndExit("Bad opening BufferedReader: " + e.getMessage());
             } finally {
-                LoUtils.closeOrExit(br);
+                IOUtils.closeOrExit(br);
             }
         } else { // считывание из файлов
-            for (int i = 0; i < files.size(); ++i) {
+            for (String file : files) {
                 FileReader fr = null;
                 try {
-                    fr = new FileReader(new File(files.get(i)));
+                    fr = new FileReader(new File(file));
                     br = new BufferedReader(fr);
                     readFromBufferedReader(br, false, fr, lines);
                 } catch (Exception e) {
-                    LoUtils.printErrorAndExit("Bad opening BufferedReader: " +
+                    IOUtils.printErrorAndExit("Bad opening BufferedReader: " +
                             e.getMessage());
                 } finally {
-                    LoUtils.closeOrExit(fr);
-                    LoUtils.closeOrExit(br);
+                    IOUtils.closeOrExit(br);
                 }
             }
         }
         return lines;
     }
 
-    public static List<List<String> > startingThreads(List<String> lines,
-            WrapperPrimitive<Integer> countThreads, WrapperPrimitive<Boolean> withoutReg) {
+    public static List<List<String> > startingThreadsToSort(List<String> lines) {
         List<List<String> > result = new ArrayList<List<String> >();
 
-        for (int i = 0; i < countThreads.t - 1; ++i) {
+        for (int i = 0; i < countThreads; ++i) {
             result.add(new ArrayList<String>());
         }
         try{
-            List<Thread> threads = new ArrayList<Thread>(countThreads.t);
+            List<Thread> threads = new ArrayList<Thread>(countThreads);
             int size = lines.size();
             int start = 0;
-            int end = size / (countThreads.t - 1) - 1;
-            
-            for (int i = 0; i < countThreads.t - 1; ++i) {
-                Sorter s = new Sorter(lines, start, end, result.get(i), withoutReg.t);
+            int end = size / countThreads - 1;
+
+            for (int i = 0; i < countThreads; ++i) {
+                if (i + 1 == countThreads) {
+                    end = size - 1;
+                }
+                Sorter s = new Sorter(lines, start, end, result.get(i), com);
                 threads.add(new Thread(s));
                 threads.get(i).start();
                 start = end + 1;
-                end += size / (countThreads.t - 1);
-            }
-            if (start != size) { // последний поток сортирует оставшуюся последнюю
-                // часть массива line, ее размер может быть меньше size / (countThreads.t - 1)
-                result.add(new ArrayList<String>());
-                Sorter s = new Sorter(lines, start, size - 1, result.get(countThreads.t - 1),
-                        withoutReg.t);
-                threads.add(new Thread(s));
-                threads.get(countThreads.t - 1).start();
+                end += size / countThreads;
             }
 
-            for (int i = 0; i < threads.size(); ++i) {
+            for (Thread t : threads) {
                 try {
-                    threads.get(i).join();
+                    t.join();
                 } catch (Exception e) {
-                    LoUtils.printErrorAndExit("Bad joining: " + e.getMessage());
+                    IOUtils.printErrorAndExit("Bad joining: " + e.getMessage());
                 }
             }
             lines.clear();
         } catch (Exception e) {
-            LoUtils.printErrorAndExit("Smth bad happened while threads were working: " +
+            IOUtils.printErrorAndExit("Smth bad happened while threads were sorting: " +
                     e.getMessage());
         }
         return result;
     }
 
-    public static void removeAndAdd(List<List<String> > result, List<String> res,
-            TreeMap<String, List<Pair> > tm) {
-        // достаем строчку наименьшую из tm и добавляем в res
-        String cur = tm.firstKey();
-        res.add(cur);
-        Pair p = tm.get(cur).get(0);
-        tm.get(cur).remove(p);
-        if (tm.get(cur).isEmpty()) {
-            tm.remove(cur);
-        }
-        if (p.second + 1 < result.get(p.first).size()) {
-            String toAdd = result.get(p.first).get(p.second + 1);
-            if (!tm.containsKey(toAdd)) {
-                tm.put(toAdd, new ArrayList<Pair>());
-            }
-            tm.get(toAdd).add(new Pair(p.first, p.second + 1));
-        }
-    }
+    public static List<String> startingThreadsToMerge(List<List<String> > result) {
+        try {
+            int size = result.size();
+            List<List<String> > res;
 
-    public static List<String> MergeResult(List<List<String> > result) {
-        // res - результат слияния result
-        List<String> res = new ArrayList<String>();
-        
-        // хранит в качестве ключа входные слова, в качестве значения массив
-        // пар координаты в двумерном массиве result
-        TreeMap<String, List<Pair> > tm = new TreeMap<String, List<Pair> >();
-        
-        for (int i = 0; i < result.size(); ++i) {
-            String cur = result.get(i).get(0);
-            if (!tm.containsKey(cur)) {
-                tm.put(cur, new ArrayList<Pair>());
+            while (size > 1) {
+                int curSize = (size + 1) / 2;
+                List<Thread> threads = new ArrayList<Thread>(curSize);
+                res = new ArrayList<List<String> >(curSize);
+                for (int i = 0; i < curSize; ++i) {
+                    res.add(new ArrayList<String>());
+                }
+                int start = 0;
+                int end = 1;
+
+                for (int i = 0; i < curSize; ++i) {
+                    Merger m;
+                    if (i == 0 && size % 2 != 0) {
+                        m = new Merger(res.get(i), result, start, end, 0,
+                                result.get(start).size() - 1, 0,
+                                result.get(end).size() / 2, com);
+                        start += 1;
+                        end += 1;
+                    } else if (i == 1 && size % 2 != 0) {
+                        m = new Merger(res.get(i), result, start, end,
+                                result.get(start).size() / 2 + 1,
+                                result.get(start).size() - 1, 0,
+                                result.get(end).size() - 1, com);
+                        start += 2;
+                        end += 2;
+                    } else {
+                        m = new Merger(res.get(i), result, start, end, 0,
+                                result.get(start).size() - 1, 0,
+                                result.get(end).size() - 1, com);
+                        start += 2;
+                        end += 2;
+                    }
+                    threads.add(new Thread(m));
+                    threads.get(i).start();
+                }
+
+                for (Thread t : threads) {
+                    try {
+                        t.join();
+                    } catch (Exception e) {
+                        IOUtils.printErrorAndExit("Bad joining: " + e.getMessage());
+                    }
+                }
+
+                if (start != size) {
+                    for (int i = start; i < size; ++i) {
+                        res.add(result.get(i));
+                    }
+                }
+                result = res;
+                size = result.size();
             }
-            tm.get(cur).add(new Pair(i, 0));
+        } catch (Exception e) {
+            IOUtils.printErrorAndExit("Smth bad happened while threads were merging: " +
+                    e.getMessage());
         }
-        while (!tm.isEmpty()) {
-            removeAndAdd(result, res, tm);
-        }
-        tm.clear();
-        return res;
+        return result.get(0);
     }
 
     public static void writeLineToBufferedWriter(BufferedWriter bw,
-            List<String> lines, int i, boolean withLineBreak) {
+            String s) {
         try {
-            if (withLineBreak) {
-                bw.write("\n" + lines.get(i), 0, lines.get(i).length() + 1);
-            } else {
-                bw.write(lines.get(i), 0, lines.get(i).length());
-            }
-            bw.flush();
+            bw.write(s + "\n", 0, s.length() + 1);
         } catch (IOException e) {
-            LoUtils.printErrorAndExit("Bad writing to BufferedWriter: " + e.getMessage());
+            IOUtils.printErrorAndExit("Bad writing to BufferedWriter: " + e.getMessage());
         }
     }
 
-    public static void printResult(WrapperPrimitive<Boolean> uniqLines,
-             WrapperPrimitive<String> outputFile, List<String> lines) {
-        int size = lines.size();
-        if (outputFile.t.equals("")) { // вывод в stdout
-            if (uniqLines.t) { // вывод уникальных строк
+    public static void printResult(List<String> lines) {
+        BufferedWriter bw = null;
+        FileWriter fw = null;
+        try {
+            if (outputFile.equals("")) {
+                bw = new BufferedWriter(new OutputStreamWriter(System.out));
+            } else {
+                fw = new FileWriter(new File(outputFile));
+                bw = new BufferedWriter(fw);
+            }
+            if (uniqLines) { // вывод уникальных строк
                 String prev = lines.get(0);
-                System.out.println(prev);
-                for (int i = 1; i < size; ++i) {
-                    if (!lines.get(i).equals(prev)) {
-                        System.out.println(lines.get(i));
-                        prev = lines.get(i);
+                writeLineToBufferedWriter(bw, prev);
+
+                for (String s: lines) {
+                    if (com.compare(prev, s) != 0) {
+                        writeLineToBufferedWriter(bw, s);
+                        prev = s;
                     }
                 }
-             } else {
-                for (int i = 0; i < size; ++i) {
-                    System.out.println(lines.get(i));
+            } else {
+                for (String s: lines) {
+                    writeLineToBufferedWriter(bw, s);
                 }
             }
-        } else { // вывод в файл
-            BufferedWriter bw = null;
-            FileWriter fw = null;
-            try {
-                fw = new FileWriter(new File(outputFile.t));
-                bw = new BufferedWriter(fw);
-                if (uniqLines.t) { // вывод уникальных строк
-                    String prev = lines.get(0);
-                    bw.write(lines.get(0), 0, lines.get(0).length());
-                    bw.flush();
-                    for (int i = 1; i < size; ++i) {
-                        if (!lines.get(i).equals(prev)) {
-                            writeLineToBufferedWriter(bw, lines, i, true);
-                            prev = lines.get(i);
-                        }
-                    }
-                } else {
-                    writeLineToBufferedWriter(bw, lines, 0,false);
-                    for (int i = 1; i < size; ++i) {
-                        writeLineToBufferedWriter(bw, lines, i, true);
-                    }
-                }
-            } catch (Exception e) {
-                LoUtils.printErrorAndExit(e.getMessage());
-            } finally {
-                LoUtils.closeOrExit(fw);
-                LoUtils.closeOrExit(bw);
+            bw.flush();
+        } catch (Exception e) {
+            IOUtils.printErrorAndExit(e.getMessage());
+        } finally {
+            if (!(outputFile.equals(""))) {
+                IOUtils.closeOrExit(fw);
+                IOUtils.closeOrExit(bw);
             }
         }
     }
