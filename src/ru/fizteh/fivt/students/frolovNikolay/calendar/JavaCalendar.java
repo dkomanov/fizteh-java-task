@@ -116,7 +116,8 @@ public class JavaCalendar {
             if (writeWeekNumb) {
                 System.out.print(weekNumb++ + "\t");
             }
-            for (int i = calendar.getFirstDayOfWeek(); i < calendar.get(Calendar.DAY_OF_WEEK); ++i) {
+            int add = calendar.get(Calendar.DAY_OF_WEEK) < calendar.getFirstDayOfWeek() ? 7 : 0;
+            for (int i = calendar.getFirstDayOfWeek(); i < calendar.get(Calendar.DAY_OF_WEEK) + add; ++i) {
                 System.out.print('\t');
             }
         }
