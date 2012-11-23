@@ -1,6 +1,6 @@
 package ru.fizteh.fivt.students.yushkevichAnton.parallelsort;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import sun.reflect.generics.reflectiveObjects.RuntimeException;
 
 import java.util.*;
 
