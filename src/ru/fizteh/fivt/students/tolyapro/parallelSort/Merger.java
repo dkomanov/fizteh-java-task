@@ -20,7 +20,6 @@ public class Merger implements Runnable {
     public void run() {
         boolean doneNothing = true;
         while (doneNothing) {
-            //System.out.println(number + " : " + queue.size());
             ArrayList<String> firstList = null;
             ArrayList<String> secondList = null;
             synchronized (queue) {
@@ -47,11 +46,7 @@ public class Merger implements Runnable {
                 while (j < n) {
                     resultList.add(secondList.get(j++));
                 }
-               
-                //synchronized (queue) {
-                 //   System.out.println(number + " l:l " + queue.size());
-                    queue.add(resultList);
-               // }
+                queue.add(resultList);
             }
 
         }
