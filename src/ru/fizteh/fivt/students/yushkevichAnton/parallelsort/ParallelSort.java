@@ -3,7 +3,7 @@ package ru.fizteh.fivt.students.yushkevichAnton.parallelsort;
 import java.util.*;
 
 public class ParallelSort {
-    static boolean preFiltering = true;
+    static boolean preFiltering = false;
 
     private IOHandler io           = new IOHandler();
     private boolean   uniqueMode   = false;
@@ -72,7 +72,10 @@ public class ParallelSort {
         processArguments(args);
 
         ArrayList<String> strings = new ArrayList<String>();
-        HashSet<String> uniqueStrings = new HashSet<String>();
+        // a try to rehabilitate preFiltering method
+        Set<String> uniqueStrings = new CaseInsensitiveStringHashSet();
+        // fail
+        // postFiltering is better (80 against 180), is now default
         while (true) {
             String s = io.readLine();
             if (s == null) {
@@ -80,7 +83,7 @@ public class ParallelSort {
             }
             if (uniqueMode && preFiltering) {
                 if (ignoringCase) {
-                    String lowerCase = s.toLowerCase();
+                    String lowerCase = myToLowercase(s);
                     if (!uniqueStrings.contains(lowerCase)) {
                         uniqueStrings.add(lowerCase);
                         strings.add(s);
@@ -114,5 +117,13 @@ public class ParallelSort {
         }
 
         io.close();
+    }
+
+    public static String myToLowercase(String s) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (char c : s.toCharArray()) {
+            stringBuilder.append(Character.toLowerCase(c));
+        }
+        return stringBuilder.toString();
     }
 }

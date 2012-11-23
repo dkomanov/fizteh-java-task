@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.yushkevichAnton.parallelsort;
 
+mport ru.fizteh.fivt.PerfomanceTest;
+
 public class Tester {
     public static void main(String[] args) {
         new Tester().run();

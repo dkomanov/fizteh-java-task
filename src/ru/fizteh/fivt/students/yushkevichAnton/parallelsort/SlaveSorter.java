@@ -4,13 +4,13 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SlaveSorter extends Thread {
-    private ArrayList<String> strings;
+    final ArrayList<String> strings;
 
-    private Comparator<String> comparator;
+    final Comparator<String> comparator;
 
-    private final AtomicInteger threadsLeft;
+    final AtomicInteger threadsLeft;
 
-    private int l, r;
+    final int l, r;
 
     public SlaveSorter(ArrayList<String> strings, Comparator<String> comparator, AtomicInteger threadCount, int l, int r) {
         this.strings = strings;
@@ -40,11 +40,11 @@ public class SlaveSorter extends Thread {
             }
         }
         if (parallelMode) {
-            Thread assistant = new SlaveSorter(strings, comparator, threadsLeft, l, m);
-            assistant.start();
+            Thread slave = new SlaveSorter(strings, comparator, threadsLeft, l, m);
+            slave.start();
             sort(m, r);
             try {
-                assistant.join();
+                slave.join();
             } catch (InterruptedException e) {
                 System.err.println("Sorting interrupted");
                 System.exit(1);

@@ -2,7 +2,7 @@ package ru.fizteh.fivt.students.yushkevichAnton.parallelsort;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;t;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MasterSorter {
     public void sort(ArrayList<String> strings, Comparator<String> comparator, int maxThreadCount) {

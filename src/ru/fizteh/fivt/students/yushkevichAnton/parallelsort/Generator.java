@@ -30,7 +30,13 @@ public class Generator {
     private static String getRandomString() {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < 1000; i++) {
-            stringBuilder.append((char) (random.nextInt(26) + 'a'));
+            int c = random.nextInt(26);
+            if (random.nextBoolean()) {
+                c += 'a';
+            } else {
+                c += 'A';
+            }
+            stringBuilder.append((char) c);
         }
         return stringBuilder.toString();
     }
