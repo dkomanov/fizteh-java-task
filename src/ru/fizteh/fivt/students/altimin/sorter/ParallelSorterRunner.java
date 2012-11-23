@@ -32,15 +32,15 @@ public class ParallelSorterRunner {
             System.err.println(e.getMessage());
             System.exit(1);
         }
-        PrintWriter printer;
+        PrintWriter printer = null;
         boolean hasOpenedFile = false;
-        if (!parsedArgs.hasProperty("o")) {
-            printer = new PrintWriter(System.out);
-        } else {
-            printer = new PrintWriter(new FileWriter(parsedArgs.getProperty("o")));
-            hasOpenedFile = true;
-        }
         try {
+            if (!parsedArgs.hasProperty("o")) {
+                printer = new PrintWriter(System.out);
+            } else {
+                printer = new PrintWriter(new FileWriter(parsedArgs.getProperty("o")));
+                hasOpenedFile = true;
+            }
             List<String> array = new ArrayList<String>();
             if (parsedArgs.other.length == 0) {
                 Scanner scanner = new Scanner(new BufferedReader(new InputStreamReader(System.in)));
@@ -93,10 +93,13 @@ public class ParallelSorterRunner {
             }
             String[] result = parallelSorter.sort(array.toArray(new String[0]), value);
             boolean printUnique = parsedArgs.hasProperty("u");
+            String prevValue = null;
             for (int i = 0; i < result.length; i ++) {
-                if (i == 0 || (comparator.compare((String)result[i], (String)result[i - 1]) != 0 || !printUnique)) {
-                    printer.println(result[i]);
+                String curValue = result[i];
+                if (i == 0 || (comparator.compare(prevValue, curValue) != 0 || !printUnique)) {
+                    printer.println(curValue);
                 }
+                prevValue = curValue;
             }
         } finally {
             if (hasOpenedFile) {
