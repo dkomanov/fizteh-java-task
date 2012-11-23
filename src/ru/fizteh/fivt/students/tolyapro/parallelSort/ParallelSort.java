@@ -131,7 +131,6 @@ public class ParallelSort {
             System.err.println("Bad threads number");
             System.exit(1);
         }
-        long time = System.currentTimeMillis();
         Reader reader = new Reader(files);
         ArrayList<String> allStrings = null;
         try {
@@ -176,6 +175,5 @@ public class ParallelSort {
         Merger merger = new Merger(comparator, result, s);
         merger.run();
         printFromDiffSources(output, result.take(), onlyUnique, comparator);
-        System.out.println(System.currentTimeMillis() - time);
     }
 }
