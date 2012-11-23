@@ -38,9 +38,9 @@ public class MyCalendar {
                     exitError("wrong use of -m");
                 }
                 try {
-                month = Integer.parseInt(args[++i]);}
-                catch (Exception e) {
-                    exitError("wrong use of -m "+e.getMessage());
+                    month = Integer.parseInt(args[++i]);
+                } catch (Exception e) {
+                    exitError("wrong use of -m " + e.getMessage());
                 }
                 month--;
                 if (month > mCalendar.getActualMaximum(Calendar.MONTH) || month < mCalendar.getActualMinimum(Calendar.MONTH)) {
@@ -54,10 +54,10 @@ public class MyCalendar {
                     exitError("wrong use of -y");
                 }
                 try {
-                    year = Integer.parseInt(args[++i]);}
-                    catch (Exception e) {
-                        exitError("wrong use of -y "+e.getMessage());
-                    }
+                    year = Integer.parseInt(args[++i]);
+                } catch (Exception e) {
+                    exitError("wrong use of -y " + e.getMessage());
+                }
                 if (year > mCalendar.getActualMaximum(Calendar.YEAR) || year < mCalendar.getActualMinimum(Calendar.YEAR)) {
                     exitError("wrong number of year");
                 }
@@ -105,19 +105,19 @@ public class MyCalendar {
         }
         System.out.println("    " + dfs.getMonths()[month] + " " + year);
         String[] weekDays = dfs.getShortWeekdays();
-        int length=weekDays[1].length();
+        int length = weekDays[1].length();
         if (printWeek) {
             week.append("   ");
         }
         for (int i = 2; i < weekDays.length; i++) {
-            if (length<2) {
-                week.append(emptyString(2-length));
+            if (length < 2) {
+                week.append(emptyString(2 - length));
             }
             week.append(weekDays[i]);
             week.append(" ");
         }
-        if (length<2) {
-        length=2;
+        if (length < 2) {
+            length = 2;
         }
         week.append(weekDays[1]);
         System.out.println(week);
