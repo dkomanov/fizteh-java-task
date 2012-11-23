@@ -23,11 +23,13 @@ import java.util.*;
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     private HashMap<Class, ArrayList<Pair<Method, Method>>> methodsForClasses;
     private HashMap<Class, ArrayList<Field>> fieldsForClasses;
+    private IdentityHashMap<Object, Object> alreadySerialised;
 
     XmlBinder(Class<T> clazz) {
         super(clazz);
         methodsForClasses = new HashMap<>();
         fieldsForClasses = new HashMap<>();
+        alreadySerialised = new IdentityHashMap<>();
         prepareToSerialization(clazz);
     }
 
@@ -123,10 +125,11 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         return methods;
     }
 
-    private void serializeObjectToWriter(Object value, XMLStreamWriter xmlWriter, int deep) {
-        if (deep >= 100) {
-            throw new RuntimeException("Cannot serialize.");
+    private void serializeObjectToWriter(Object value, XMLStreamWriter xmlWriter) {
+        if(alreadySerialised.containsKey(value)) {
+            throw new RuntimeException("Cannot serialize this object.");
         }
+        alreadySerialised.put(value, null);
         if (value == null) {
             return;
         }
@@ -148,7 +151,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     if (field.get(value) != null) {
                         if (field.getAnnotation(AsXmlCdata.class) == null || !isPrimitive(field.get(value).getClass())) {
                             xmlWriter.writeStartElement(field.getName());
-                            serializeObjectToWriter(field.get(value), xmlWriter, deep + 1);
+                            serializeObjectToWriter(field.get(value), xmlWriter);
                             xmlWriter.writeEndElement();
                         } else {
                             xmlWriter.writeCData(field.get(value).toString());
@@ -163,7 +166,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     if (val != null) {
                         if (method.getAnnotation(AsXmlCdata.class) == null || !isPrimitive(method.getReturnType())) {
                             xmlWriter.writeStartElement(firstCharToLowerCase(method.getName().replaceFirst("(get)|(is)", "")));
-                            serializeObjectToWriter(val, xmlWriter, deep + 1);
+                            serializeObjectToWriter(val, xmlWriter);
                             xmlWriter.writeEndElement();
                         } else {
                             xmlWriter.writeStartElement(firstCharToLowerCase(method.getName().replaceFirst("(get)|(is)", "")));
@@ -186,6 +189,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         if (!getClazz().equals(value.getClass())) {
             throw new RuntimeException("Incorrect type.");
         }
+        alreadySerialised.clear();
+        //alreadySerialised.put(value, null);
         String serialized;
         StringWriter writer = null;
         try {
@@ -194,7 +199,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             XMLStreamWriter xmlWriter = factory.createXMLStreamWriter(writer);
             String className = value.getClass().getName();
             xmlWriter.writeStartElement(firstCharToLowerCase(className));
-            serializeObjectToWriter(value, xmlWriter, 0);
+            serializeObjectToWriter(value, xmlWriter);
             xmlWriter.writeEndElement();
             serialized = writer.getBuffer().toString();
         } catch (Throwable t) {
@@ -203,10 +208,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             IoUtils.close(writer);
         }
         return serialized.getBytes();
-    }
-
-    private Object deserializeElement() {
-        return null;
     }
 
     private Object getValueForPrimitiveType(String val, Class clazz) {
@@ -292,6 +293,5 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         } finally {
             IoUtils.close(reader);
         }
-        //return null;
     }
 }
