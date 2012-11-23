@@ -87,7 +87,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                 addToMap(component.getter().getReturnType());
             }
         }
-        System.out.println(clazz.getName());
         methods.put(clazz, result);
     }
 
@@ -102,9 +101,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             result.addAll(Arrays.asList(fieldList));
             parent = parent.getSuperclass();
         }
-        System.out.println(clazz.getName());
         fields.put(clazz, result);
-        System.out.println(result.size());
         for (Field field: result) {
             addToMap(field.getType());
         }
@@ -114,7 +111,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         if (possibleToString(clazz)) {
             return;
         }
-        System.out.println(clazz.getName());
         BindingType bindingType = (BindingType) clazz.getAnnotation(BindingType.class);
         if (bindingType == null  ||  bindingType.value().equals(MembersToBind.FIELDS)) {
             addToFieldMap(clazz);
@@ -181,7 +177,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     private void writeToDocumentByMethods(Document document, Object value, Element root) throws Exception {
         for (SerializeComponent component: methods.get(value.getClass())) {
             String name = firstCharToLowerCase(component.getName());
-            System.out.println(name);
             Object newValue = component.getter().invoke(value);
             if (newValue != null) {
                 Element child = document.createElement(name);
@@ -217,11 +212,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         try {
             Document document = factory.newDocumentBuilder().newDocument();
             Element root = document.createElement(getElementName(value, value.getClass().getName()));
-            System.out.println("DONE " + methods.size());
             writeToDocument(document, value, root);
-            System.out.println("DONE");
             document.appendChild(root);
-            System.out.println("DONE");
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             Result result = new StreamResult(out);
             Transformer transformer = transformerFactory.newTransformer();
