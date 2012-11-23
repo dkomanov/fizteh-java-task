@@ -149,34 +149,26 @@ public class ParallelSort {
         LinkedBlockingQueue<ArrayList<String>> result = new LinkedBlockingQueue<ArrayList<String>>();
         ExecutorService sorters = Executors.newFixedThreadPool(numTreads);
         int blockSize = allStrings.size() / numTreads;
+        ArrayList<Sorter> s = new ArrayList<Sorter>();
         for (int i = 0; i < numTreads; ++i) {
             if (i != numTreads - 1) {
                 List<String> tmp = allStrings.subList(i * blockSize, (i + 1)
                         * blockSize);
                 ArrayList<String> someStrings = new ArrayList<String>(tmp);
-                Sorter sorter = new Sorter(someStrings, comparator, result, i);
-                sorters.execute(sorter);
+                s.add(new Sorter(someStrings, comparator, result));
+                sorters.execute(s.get(i));
             } else {
                 ArrayList<String> someStrings = new ArrayList<String>(
                         allStrings.subList(i * blockSize, allStrings.size()));
-                Sorter sorter = new Sorter(someStrings, comparator, result, i);
-                sorters.execute(sorter);
+                s.add(new Sorter(someStrings, comparator, result));
+                sorters.execute(s.get(i));
+                // System.out.println(prevSorter.toString());
             }
         }
         sorters.shutdown();
         sorters.awaitTermination(100500, TimeUnit.MINUTES);
-        if (numTreads > 1) {
-            ExecutorService mergers = Executors
-                    .newFixedThreadPool(numTreads - 1);
-            for (int i = 0; i < numTreads - 1; ++i) {
-                Merger merger = new Merger(comparator, result, Math.max(
-                        numTreads - 2 * i, 2));
-                mergers.execute(merger);
-            }
-            mergers.shutdown();
-            mergers.awaitTermination(100500, TimeUnit.MINUTES);
-        }
+        Merger merger = new Merger(comparator, result, s);
+        merger.run();
         printFromDiffSources(output, result.take(), onlyUnique, comparator);
-
     }
 }
