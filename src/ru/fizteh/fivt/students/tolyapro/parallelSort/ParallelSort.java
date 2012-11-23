@@ -149,7 +149,6 @@ public class ParallelSort {
         LinkedBlockingQueue<ArrayList<String>> result = new LinkedBlockingQueue<ArrayList<String>>();
         ExecutorService sorters = Executors.newFixedThreadPool(numTreads);
         int blockSize = allStrings.size() / numTreads;
-        // Sorter prevSorter = null;
         ArrayList<Sorter> s = new ArrayList<Sorter>();
         for (int i = 0; i < numTreads; ++i) {
             if (i != numTreads - 1) {
