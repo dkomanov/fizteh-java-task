@@ -10,25 +10,45 @@ public class Sorter implements Runnable {
     ArrayList<String> strings;
     LinkedBlockingQueue<ArrayList<String>> queue;
     Comparator<String> comparator;
-    int number;
+    int currPosition;
+    boolean taken;
+    
 
     Sorter(ArrayList<String> strings, Comparator<String> comparator,
-            LinkedBlockingQueue<ArrayList<String>> queue, int number) {
+            LinkedBlockingQueue<ArrayList<String>> queue) {
         this.strings = strings;
         this.queue = queue;
         this.comparator = comparator;
-        this.number = number;
+        currPosition = 0;
     }
 
     @Override
     public void run() {
         Collections.sort(strings, comparator);
-
-        while (queue.size() != number) {
-            ;
-        }
-        synchronized (queue) {
-            queue.add(strings);
-        }
+        //queue.add(strings);
+    }
+    
+    boolean hasNext() {
+        return currPosition != strings.size();
+    }
+    
+    void next(){
+        currPosition++;
+    }
+    
+    String get() {
+        return strings.get(currPosition);
+    }
+    
+    void take() {
+        taken = true;
+    }
+    
+    boolean isTaken() {
+        return taken;
+    }
+    
+    void release() {
+        taken = false;
     }
 }
