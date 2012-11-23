@@ -37,7 +37,12 @@ public class MyCalendar {
                 if (i == args.length - 1) {
                     exitError("wrong use of -m");
                 }
-                month = Integer.parseInt(args[++i]) - 1;
+                try {
+                month = Integer.parseInt(args[++i]);}
+                catch (Exception e) {
+                    exitError("wrong use of -m "+e.getMessage());
+                }
+                month--;
                 if (month > mCalendar.getActualMaximum(Calendar.MONTH) || month < mCalendar.getActualMinimum(Calendar.MONTH)) {
                     exitError("wrong number of month");
                 }
@@ -48,7 +53,11 @@ public class MyCalendar {
                 if (i == args.length - 1) {
                     exitError("wrong use of -y");
                 }
-                year = Integer.parseInt(args[++i]);
+                try {
+                    year = Integer.parseInt(args[++i]);}
+                    catch (Exception e) {
+                        exitError("wrong use of -y "+e.getMessage());
+                    }
                 if (year > mCalendar.getActualMaximum(Calendar.YEAR) || year < mCalendar.getActualMinimum(Calendar.YEAR)) {
                     exitError("wrong number of year");
                 }
@@ -96,19 +105,26 @@ public class MyCalendar {
         }
         System.out.println("    " + dfs.getMonths()[month] + " " + year);
         String[] weekDays = dfs.getShortWeekdays();
+        int length=weekDays[1].length();
         if (printWeek) {
             week.append("   ");
         }
         for (int i = 2; i < weekDays.length; i++) {
+            if (length<2) {
+                week.append(emptyString(2-length));
+            }
             week.append(weekDays[i]);
             week.append(" ");
         }
+        if (length<2) {
+        length=2;
+        }
         week.append(weekDays[1]);
         System.out.println(week);
-        int length = weekDays[1].length();
         int firstDay = mCalendar.getActualMinimum(Calendar.DAY_OF_MONTH);
         int lastDay = mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
         mCalendar.set(Calendar.DAY_OF_MONTH, firstDay);
+        mCalendar.setFirstDayOfWeek(2);
         int emptyDays = mCalendar.get(Calendar.DAY_OF_WEEK);
         if (emptyDays > 1) {
             emptyDays -= 2;
@@ -146,7 +162,7 @@ public class MyCalendar {
 
         if (timeZone != null) {
             Date date = new Date();
-            DateFormat dateFormat = new SimpleDateFormat();
+            DateFormat dateFormat = new SimpleDateFormat("yyy.MM.dd HH:mm:ss");
             dateFormat.setTimeZone(timeZone);
             System.out.print("Now: " + dateFormat.format(date) + " " + timeZone.getDisplayName(Locale.getDefault()));
         }
