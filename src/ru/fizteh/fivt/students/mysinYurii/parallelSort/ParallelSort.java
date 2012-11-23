@@ -212,7 +212,7 @@ public class ParallelSort {
                             prevMin = minString;
                         }
                     } else {
-                        if (minString.compareToIgnoreCase(minString) != 0) {
+                        if (minString.compareToIgnoreCase(prevMin) != 0) {
                             write(outputStream, minString);
                             prevMin = minString;
                         }
