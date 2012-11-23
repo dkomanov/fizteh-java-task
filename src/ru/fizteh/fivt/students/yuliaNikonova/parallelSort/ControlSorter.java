@@ -188,19 +188,15 @@ public class ControlSorter {
             System.exit(1);
         }
         int size = result.size();
-
+String prevValue="";
         for (int i = 0; i < size; i++) {
             if (unique) {
-                if (ignoreCase) {
-                    if ((i == 0) || (i > 0 && String.CASE_INSENSITIVE_ORDER.compare(result.get(i), result.get(i - 1)) != 0)) {
-                        pw.println(result.get(i));
+                String curValue=result.get(i);
+                    if ((i == 0) || (i > 0 && stringComp.compare(curValue, prevValue)!=0)) {
+                        pw.println(curValue);
                     }
-
-                } else {
-                    if ((i == 0) || (i > 0 && !result.get(i).equals(result.get(i - 1)))) {
-                        pw.println(result.get(i));
-                    }
-                }
+                    prevValue=curValue;
+                
             } else {
                 pw.println(result.get(i));
             }
