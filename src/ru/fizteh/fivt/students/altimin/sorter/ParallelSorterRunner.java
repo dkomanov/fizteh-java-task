@@ -40,61 +40,68 @@ public class ParallelSorterRunner {
             printer = new PrintWriter(new FileWriter(parsedArgs.getProperty("o")));
             hasOpenedFile = true;
         }
-        List<String> array = new ArrayList<String>();
-        if (parsedArgs.other.length == 0) {
-            Scanner scanner = new Scanner(new BufferedReader(new InputStreamReader(System.in)));
-            while (scanner.hasNext()) {
-                array.add(scanner.next());
-            }
-        } else {
-            for (String fileName: parsedArgs.other) {
-                Scanner scanner = null;
+        try {
+            List<String> array = new ArrayList<String>();
+            if (parsedArgs.other.length == 0) {
+                Scanner scanner = new Scanner(new BufferedReader(new InputStreamReader(System.in)));
                 try {
-                    scanner = new Scanner(new BufferedReader(new FileReader(new File(fileName))));
                     while (scanner.hasNext()) {
                         array.add(scanner.next());
                     }
-                } catch (FileNotFoundException e){
-                    System.err.println(e.toString());
-                    System.exit(1);
                 } finally {
-                    if (scanner != null) {
-                        scanner.close();
+                    scanner.close();
+                }
+            } else {
+                for (String fileName: parsedArgs.other) {
+                    Scanner scanner = null;
+                    try {
+                        scanner = new Scanner(new BufferedReader(new FileReader(new File(fileName))));
+                        while (scanner.hasNext()) {
+                            array.add(scanner.next());
+                        }
+                    } catch (FileNotFoundException e){
+                        System.err.println(e.toString());
+                        System.exit(1);
+                    } finally {
+                        if (scanner != null) {
+                            scanner.close();
+                        }
                     }
                 }
             }
-        }
-        Comparator<String> comparator;
-        if (!parsedArgs.hasProperty("i")) {
-            comparator = new Comparator<String>() {
-                @Override
-                public int compare(String lhs, String rhs) {
-                    return lhs.compareTo(rhs);
-                }
-            };
-        } else {
-            comparator = String.CASE_INSENSITIVE_ORDER;
-        }
+            Comparator<String> comparator;
+            if (!parsedArgs.hasProperty("i")) {
+                comparator = new Comparator<String>() {
+                    @Override
+                    public int compare(String lhs, String rhs) {
+                        return lhs.compareTo(rhs);
+                    }
+                };
+            } else {
+                comparator = String.CASE_INSENSITIVE_ORDER;
+            }
 
-        ParallelSorter<String> parallelSorter = new ParallelSorter<String>(comparator, String.class);
-        int value = MAX_THREADS;
-        if (parsedArgs.hasProperty("t")) {
-            try {
-                value = Integer.parseInt(parsedArgs.getProperty("t"));
-            } catch (NumberFormatException e) {
-                System.err.println(e.toString());
-                System.exit(1);
+            ParallelSorter<String> parallelSorter = new ParallelSorter<String>(comparator, String.class);
+            int value = MAX_THREADS;
+            if (parsedArgs.hasProperty("t")) {
+                try {
+                    value = Integer.parseInt(parsedArgs.getProperty("t"));
+                } catch (NumberFormatException e) {
+                    System.err.println(e.toString());
+                    System.exit(1);
+                }
             }
-        }
-        String[] result = parallelSorter.sort(array.toArray(new String[0]), value);
-        boolean printUnique = parsedArgs.hasProperty("u");
-        for (int i = 0; i < result.length; i ++) {
-            if (i == 0 || (comparator.compare((String)result[i], (String)result[i - 1]) != 0 || !printUnique)) {
-                printer.println(result[i]);
+            String[] result = parallelSorter.sort(array.toArray(new String[0]), value);
+            boolean printUnique = parsedArgs.hasProperty("u");
+            for (int i = 0; i < result.length; i ++) {
+                if (i == 0 || (comparator.compare((String)result[i], (String)result[i - 1]) != 0 || !printUnique)) {
+                    printer.println(result[i]);
+                }
             }
-        }
-        if (hasOpenedFile) {
-            printer.close();
+        } finally {
+            if (hasOpenedFile) {
+                printer.close();
+            }
         }
     }
 }
