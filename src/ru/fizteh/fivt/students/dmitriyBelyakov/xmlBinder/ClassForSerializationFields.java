@@ -5,11 +5,17 @@ import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.chat.MessageType;
 
-@BindingType(value = MembersToBind.FIELDS)
-public class ClassForSerialization {
-    public int intField = 11;
-    public double doubleField = 1.1;
+public class ClassForSerializationFields {
+    int intField = 11;
+    private double doubleField = 1.1;
     public MessageType enumField = MessageType.MESSAGE;
+    Boolean boolField = false;
+    Byte byteField = 12;
+    char c = 'D';
+    Short shField = 21;
+    long longField = 2012;
+    Float flField = 1.993f;
+    String stringField = "fizteh-java-task";
 
     public int get() {
         return 0;
@@ -19,12 +25,12 @@ public class ClassForSerialization {
         return;
     }
 
-    //@AsXmlCdata
+    @AsXmlCdata
     public void setIntField(int i) {
         intField = i;
     }
 
-    //@AsXmlCdata
+    @AsXmlCdata
     public int getIntField() {
         return intField;
     }

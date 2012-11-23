@@ -14,15 +14,19 @@ import ru.fizteh.fivt.students.dmitriyBelyakov.shell.IoUtils;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
+import java.awt.image.AreaAveragingScaleFilter;
+import java.io.Console;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
-    private HashMap<Class, ArrayList<Pair<Method, Method>>> methodsForClasses;
-    private HashMap<Class, ArrayList<Field>> fieldsForClasses;
+    private HashMap<Class, HashMap<String, Pair<Method, Method>>> methodsForClasses;
+    private HashMap<Class, HashMap<String, Field>> fieldsForClasses;
     private IdentityHashMap<Object, Object> alreadySerialised;
 
     XmlBinder(Class<T> clazz) {
@@ -44,13 +48,22 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
         if (allFields) {
             ArrayList<Field> fields = getFields(clazz);
-            fieldsForClasses.put(clazz, fields);
+            HashMap<String, Field> map = new HashMap<>();
+            for (Field field : fields) {
+                map.put(field.getName(), field);
+            }
+            fieldsForClasses.put(clazz, map);
             for (Field field : fields) {
                 prepareToSerialization(field.getType());
             }
         } else {
             ArrayList<Pair<Method, Method>> methods = getMethods(clazz);
-            methodsForClasses.put(clazz, methods);
+            HashMap<String, Pair<Method, Method>> map = new HashMap<>();
+            for (Pair pair : methods) {
+                String name = firstCharToLowerCase(((Method) pair.getValue()).getName().replace("set", ""));
+                map.put(name, pair);
+            }
+            methodsForClasses.put(clazz, map);
             for (Pair<Method, Method> pair : methods) {
                 prepareToSerialization(pair.getKey().getReturnType());
             }
@@ -126,7 +139,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
 
     private void serializeObjectToWriter(Object value, XMLStreamWriter xmlWriter) {
-        if(alreadySerialised.containsKey(value)) {
+        if (alreadySerialised.containsKey(value)) {
             throw new RuntimeException("Cannot serialize this object.");
         }
         alreadySerialised.put(value, null);
@@ -145,8 +158,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 allFields = false;
             }
             if (allFields) {
-                ArrayList<Field> fields = fieldsForClasses.get(clazz);
-                for (Field field : fields) {
+                HashMap<String, Field> fields = fieldsForClasses.get(clazz);
+                for (Field field : fields.values()) {
                     field.setAccessible(true);
                     if (field.get(value) != null) {
                         if (field.getAnnotation(AsXmlCdata.class) == null || !isPrimitive(field.get(value).getClass())) {
@@ -159,8 +172,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     }
                 }
             } else {
-                ArrayList<Pair<Method, Method>> methods = methodsForClasses.get(clazz);
-                for (Pair<Method, Method> pair : methods) {
+                HashMap<String, Pair<Method, Method>> methods = methodsForClasses.get(clazz);
+                for (Pair<Method, Method> pair : methods.values()) {
                     Method method = pair.getKey(); // get getter
                     Object val = method.invoke(value);
                     if (val != null) {
@@ -190,7 +203,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             throw new RuntimeException("Incorrect type.");
         }
         alreadySerialised.clear();
-        //alreadySerialised.put(value, null);
         String serialized;
         StringWriter writer = null;
         try {
@@ -238,38 +250,58 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         } else if (clazz.equals(String.class)) {
             return val;
         }
-        return null;
+        return null; // never returned;
     }
 
     private Object deserializeToValue(Element element, Class clazz) {
-        if(isPrimitive(clazz)) {
+        if (isPrimitive(clazz)) {
             return getValueForPrimitiveType(element.getTextContent(), clazz);
         }
         try {
             boolean allFields = true;
-            if (!(getClazz().getAnnotation(BindingType.class) == null)
-                    && getClazz().getAnnotation(BindingType.class).value() == MembersToBind.GETTERS_AND_SETTERS) {
+            BindingType annotation = (BindingType) clazz.getAnnotation(BindingType.class);
+            if (annotation != null
+                    && annotation.value() == MembersToBind.GETTERS_AND_SETTERS) {
                 allFields = false;
             }
             if (allFields) {
-                Object returnObject = clazz.newInstance();
-                if (isPrimitive(clazz)) {
-                    return getValueForPrimitiveType(element.getTextContent(), clazz);
-                } else {
-                    NodeList children = element.getChildNodes();
-                    for (int i = 0; i < children.getLength(); ++i) {
-                        Node node = children.item(i);
-                        if (node.getNodeType() == Node.ELEMENT_NODE) {
-                            Field field = clazz.getDeclaredField(((Element) node).getTagName());
-                            field.setAccessible(true);
-                            field.set(returnObject, deserializeToValue((Element) node, clazz.getField(((Element) node).getTagName()).getType()));
+                Object returnObject = clazz.newInstance(); // TODO does not always work
+                NodeList children = element.getChildNodes();
+                HashMap<String, Field> serializedFields = fieldsForClasses.get(clazz);
+                if (serializedFields == null) {
+                    throw new RuntimeException("Cannot serialize object.");
+                }
+                for (int i = 0; i < children.getLength(); ++i) {
+                    Node node = children.item(i);
+                    if (node.getNodeType() == Node.ELEMENT_NODE) {
+                        Field field = serializedFields.get(((Element) node).getTagName());
+                        if (field == null) {
+                            continue;
                         }
+                        field.setAccessible(true);
+                        field.set(returnObject, deserializeToValue((Element) node, field.getType()));
                     }
                 }
                 return returnObject;
             } else {
-                // TODO
-                return null;
+                Object returnObject = clazz.newInstance();
+                NodeList children = element.getChildNodes();
+                HashMap<String, Pair<Method, Method>> serializedMethods = methodsForClasses.get(clazz);
+                if (serializedMethods == null) {
+                    throw new RuntimeException("Cannot serialize object.");
+                }
+                for (int i = 0; i < children.getLength(); ++i) {
+                    Node node = children.item(i);
+                    if (node.getNodeType() == Node.ELEMENT_NODE) {
+                        Pair<Method, Method> method = serializedMethods.get(((Element) node).getTagName());
+                        if (method == null) {
+                            continue;
+                        }
+                        method.getValue().invoke(returnObject, deserializeToValue((Element) node, method.getKey().getReturnType()));
+                    }
+                }
+                //Object returnObject = clazz.newInstance();
+                return returnObject;
             }
         } catch (Throwable t) {
             throw new RuntimeException("An exception occurred within serialization of " + element.getTagName(), t);
