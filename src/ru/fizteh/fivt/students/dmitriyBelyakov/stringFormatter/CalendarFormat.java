@@ -32,7 +32,7 @@ public class CalendarFormat extends StringFormatterExtension {
             SimpleDateFormat formatter = new SimpleDateFormat(pattern);
             buffer.append(formatter.format(((Calendar) object).getTime()));
         } catch (Throwable t) {
-            throw new FormatterException(t.getMessage());
+            throw new FormatterException(t.getMessage(), t);
         }
     }
 

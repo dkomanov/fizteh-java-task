@@ -156,9 +156,14 @@ public class Shell {
 
     private static void move(String source, String destination)
             throws Exception {
+        File sourceFile = new File(source).getAbsoluteFile();
+        if (!sourceFile.exists()) {
+            sourceFile = new File(currentPath + File.separator + source);
+        }
+        File destShortFile = new File(destination);
         File destFile = new File(currentPath + File.separator + destination);
-        if (!destFile.exists()) {
-            new File(currentPath + File.separator + source).renameTo(destFile);
+        if (!destFile.exists() && !destShortFile.exists()) {
+            sourceFile.renameTo(destFile);
         } else {
             copy(source, destination);
             remove(source);
@@ -167,24 +172,39 @@ public class Shell {
 
     private static void copy(String source, String destination)
             throws Exception {
-        File sourceFile = new File(currentPath + File.separator + source)
-                .getAbsoluteFile();
-        File destinationFile = new File(currentPath + File.separator
-                + destination).getAbsoluteFile();
+        File sourceFile = new File(source).getAbsoluteFile();
+        if (!sourceFile.exists()) {
+            sourceFile = new File(currentPath + File.separator + source)
+                    .getAbsoluteFile();
+        }
+        File destinationFile = new File(destination).getAbsoluteFile();
+        if (!destinationFile.exists()) {
+            destinationFile = new File(currentPath + File.separator
+                    + destination).getAbsoluteFile();
+        }
         if (sourceFile.exists()) {
-            if (destinationFile.exists() && destinationFile.isDirectory()) {
-                if (sourceFile.isDirectory()) {
-                    copyDir(sourceFile,
-                            new File(destinationFile.getAbsolutePath()
-                                    + File.separator + sourceFile.getName()));
-                } else if (sourceFile.isFile()) {
-                    copyFile(sourceFile,
-                            new File(destinationFile.getAbsolutePath()
-                                    + File.separator + sourceFile.getName()));
+            if (destinationFile.exists()) {
+                if (destinationFile.isDirectory()) {
+                    if (sourceFile.isDirectory()) {
+                        copyDir(sourceFile,
+                                new File(destinationFile.getAbsolutePath()
+                                        + File.separator + sourceFile.getName()));
+                    } else if (sourceFile.isFile()) {
+                        copyFile(
+                                sourceFile,
+                                new File(destinationFile.getAbsolutePath()
+                                        + File.separator + sourceFile.getName()));
+                    } else {
+                        throw new Exception("cp: \'" + destination
+                                + "\': can't copy to this file, it exists.");
+                    }
                 } else {
                     throw new Exception("cp: \'" + destination
-                            + "\': can't copy this, it's a strange file.");
+                            + "\': can't copy this, it's a strange files.");
                 }
+            } else if (sourceFile.isFile()) {
+                copyFile(sourceFile,
+                        new File(destinationFile.getAbsolutePath()));
             } else {
                 throw new Exception("cp: \'" + destination
                         + "\': No such file or directory.");
@@ -243,7 +263,10 @@ public class Shell {
     }
 
     private static void remove(String file) throws Exception {
-        File cur = new File(currentPath + File.separator + file);
+        File cur = new File(file);
+        if (!cur.exists()) {
+            cur = new File(currentPath + File.separator + file);
+        }
         if (cur.exists()) {
             deleteObject(cur);
         } else {
@@ -291,11 +314,11 @@ public class Shell {
         File newFile = new File(currentPath + File.separator + path)
                 .getAbsoluteFile();
         File newShortFile = new File(path).getAbsoluteFile();
-        if (newFile.exists() && newFile.isDirectory()) {
-            currentPath = newFile.getAbsolutePath();
-        } else if (newShortFile.exists() && newShortFile.isDirectory()
-                && !(path.equals(".") || path.equals(".."))) {
+        if (newShortFile.exists() && newShortFile.isDirectory()
+                && !(path.charAt(0) == '.')) {
             currentPath = newShortFile.getAbsolutePath();
+        } else if (newFile.exists() && newFile.isDirectory()) {
+            currentPath = newFile.getAbsolutePath();
         } else {
             throw new Exception("cd: \'" + path
                     + "\': No such file or directory");
