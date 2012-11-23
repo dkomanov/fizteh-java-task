@@ -1,15 +1,18 @@
 package ru.fizteh.fivt.students.yuliaNikonova.parallelSort;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class Sorter extends Thread {
     private List<String> strList;
-    private StringComparator stringComp;
+    private Comparator<String> stringComp;
+    private int size;
 
-    public Sorter(List<String> subList, StringComparator strComp) {
+    public Sorter(List<String> subList, Comparator<String> strComp) {
         strList = subList;
         stringComp = strComp;
+        size=subList.size();
     }
 
     public void run() {

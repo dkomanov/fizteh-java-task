@@ -14,6 +14,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -32,7 +33,8 @@ public class ControlSorter {
     private ArrayList<Sorter> sorters;
     private ArrayList<Merger> mergers;
     private ArrayList<String> result;
-    private StringComparator stringComp;
+    private Comparator<String> stringComp;
+    private ArrayList<String> res1;
     private int size;
 
     public ControlSorter(boolean ignoreCase, boolean unique, int numthreads, String outputFileName, ArrayList<String> fileNames) {
@@ -47,7 +49,11 @@ public class ControlSorter {
         this.sorters = new ArrayList<Sorter>();
         this.mergers = new ArrayList<Merger>();
         this.result = new ArrayList<String>();
-        this.stringComp = new StringComparator(ignoreCase);
+        if (ignoreCase) {
+        this.stringComp = String.CASE_INSENSITIVE_ORDER;
+        } else {
+            this.stringComp=new StringComparator();
+        }
     }
 
     public void readStrings() {
@@ -63,7 +69,7 @@ public class ControlSorter {
                     in = new DataInputStream(fstream);
                     readFromSource(in);
                 } catch (Exception e) {
-
+                    System.err.println(fileName+": "+e.getMessage());
                 } finally {
                     Utils.close(fstream);
                     Utils.close(in);
@@ -97,9 +103,6 @@ public class ControlSorter {
     }
 
     private void pSort() throws Exception {
-        if (size == 0) {
-            throw new Exception("nothing to sort");
-        }
         if (numthreads == 0) {
             numthreads = Runtime.getRuntime().availableProcessors() + 1;
         }
@@ -107,7 +110,7 @@ public class ControlSorter {
         if (numthreads > size) {
             numthreads = size;
         }
-        int length = (int) Math.ceil((double) size / (double) numthreads);
+        int length = size / numthreads;
 
         for (int i = 0; i < numthreads; i++) {
             Sorter sort;
@@ -185,6 +188,7 @@ public class ControlSorter {
     }
 
     private void printToDestination(OutputStream out) {
+        String prevValue="";
         PrintWriter pw = null;
         try {
             pw = new PrintWriter(out);
@@ -192,20 +196,24 @@ public class ControlSorter {
             System.err.println(e.getMessage());
             System.exit(1);
         }
-        int size = result.size();
+        int size = res1.size();
 
         for (int i = 0; i < size; i++) {
             if (unique) {
+                String curValue=result.get(i);
                 if (ignoreCase) {
-                    if ((i == 0) || (i > 0 && String.CASE_INSENSITIVE_ORDER.compare(result.get(i), result.get(i - 1)) != 0)) {
-                        pw.println(result.get(i));
+                    
+                    if ((i == 0) || (i > 0 && String.CASE_INSENSITIVE_ORDER.compare(curValue, prevValue) != 0)) {
+                        pw.println(curValue);
                     }
 
                 } else {
-                    if ((i == 0) || (i > 0 && !result.get(i).equals(result.get(i - 1)))) {
-                        pw.println(result.get(i));
+                    if ((i == 0) || (i > 0 && !curValue.equals(prevValue))) {
+                        pw.println(curValue);
                     }
                 }
+                
+                prevValue=result.get(i);
             } else {
                 pw.println(result.get(i));
             }
@@ -216,6 +224,35 @@ public class ControlSorter {
         }
 
     }
+    
+    public void mergeRes() {
+        res1=new ArrayList<String>();
+        System.out.println(size);
+            while (res1.size()!=size) {
+                String min=null;
+                int minIndex=-1;
+                System.out.println("Size is "+res1.size());
+                for (int i=0; i<sorters.size(); i++) {
+                    System.out.println("Sorter: "+i);
+                    if (sorters.get(i).hasNext()) {
+                        System.out.println(i+" has next value");
+                    String val=sorters.get(i).getNext();
+                    System.out.println(val);
+                    if ((min==null) || (min!=null && stringComp.compare(val, min)<0)) {
+                        min=val;
+                        minIndex=i;
+                    }
+                    }
+                }
+                System.out.println("Min string is "+min);
+                res1.add(min);
+                if (minIndex>-1) {
+                sorters.get(minIndex).pop();
+                }
+                
+            }
+        }
+    
 
     public void sort() throws Exception {
         this.readStrings();
@@ -237,9 +274,14 @@ public class ControlSorter {
          * System.out.println(strLine);
          * } */
         // start = System.nanoTime();
-        this.mergeResults();
+        //this.mergeResults();
         // finish = System.nanoTime();
         // System.out.println("Old merge: " + (finish - start));
+        // System.out.println(time + finish - start);
+     long start = System.nanoTime();
+        this.mergeRes();
+        long finish = System.nanoTime();
+        System.out.println("New merge: " + (finish - start));
         // System.out.println(time + finish - start);
         this.printResults();
         /* (String strLine : inputStrings) {

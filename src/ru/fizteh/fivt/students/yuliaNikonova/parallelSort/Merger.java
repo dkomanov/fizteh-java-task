@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.yuliaNikonova.parallelSort;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -9,9 +10,9 @@ public class Merger extends Thread {
     private LinkedBlockingQueue<String> list1;
     private LinkedBlockingQueue<String> list2;
     private LinkedBlockingQueue<String> resultList;
-    private StringComparator stringComp;
+    private Comparator<String> stringComp;
 
-    public Merger(LinkedBlockingQueue<String> List1, LinkedBlockingQueue<String> List2, StringComparator stringComp) {
+    public Merger(LinkedBlockingQueue<String> List1, LinkedBlockingQueue<String> List2, Comparator<String> stringComp) {
         this.list1 = List1;
         this.list2 = List2;
         this.stringComp = stringComp;
