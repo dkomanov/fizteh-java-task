@@ -211,6 +211,11 @@ public class UnitTest {
                 "a{0}b", null));
     }
     
+    @Test(expected = FormatterException.class)
+    public void formatterMinusZero() {
+        formatter.format("{-0}", new Long(1));
+    }
+    
     @Test
     public void formatterGoodFormatForCalendar() {
         Calendar c = Calendar.getInstance();
