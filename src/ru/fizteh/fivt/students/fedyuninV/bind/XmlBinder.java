@@ -7,6 +7,7 @@ import ru.fizteh.fivt.bind.AsXmlElement;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
@@ -14,13 +15,12 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Fedyunin Valeriy
@@ -28,26 +28,110 @@ import java.util.TreeSet;
  */
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
 
-
+    Map<Class, List<SerializeComponent>> methods;
+    Map<Class, List<Field>> fields;
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
     public XmlBinder(Class<T> clazz) {
         super(clazz);
+        methods = new HashMap<>();
+        fields = new HashMap<>();
+        addToMap(clazz);
     }
 
+    private void addToMethodMap(Class clazz) {
+        if (methods.containsKey(clazz)) { //already in map
+            return;
+        }
+        List<SerializeComponent> components = new ArrayList<>();
+        Method[] methodList = clazz.getMethods();
+        for (Method method: methodList) {
+            String name = null;
+            char mode = 'g';
+            Class[] args = method.getParameterTypes();
+            String methodName = method.getName();
+            if (checkPrefix("get", methodName)  &&  args.length == 0) {
+                name = methodName.substring(3);
+            }
+            if (checkPrefix("is", methodName)  &&  args.length == 0) {
+                name = methodName.substring(2);
+            }
+            if (checkPrefix("set", methodName)  &&  args.length == 1) {
+                name = methodName.substring(3);
+                mode = 's';
+            }
+            if (name  != null) {
+                boolean componentFound = false;
+                for (SerializeComponent component: components) {
+                    if (component.getName().equals(name)) {
+                        componentFound = true;
+                        if (!component.setMethod(method, mode)) {
+                            throw new RuntimeException("Indefinite pair of methods found in " + clazz.getName());
+                        }
+                    }
+                }
+                if (!componentFound) {
+                    SerializeComponent newComponent = new SerializeComponent(name);
+                    if (!newComponent.setMethod(method, mode)) {
+                        throw new RuntimeException("Error while creating new component");
+                    }
+                    components.add(newComponent);
+                }
+            }
+        }
+        List<SerializeComponent> result = new ArrayList<>();
+        for (SerializeComponent component: components) {
+            if (component.getter() != null  &&  component.setter() != null) {
+                result.add(component);
+                addToMap(component.getter().getReturnType());
+            }
+        }
+        System.out.println(clazz.getName());
+        methods.put(clazz, result);
+    }
+
+    private void addToFieldMap(Class clazz) {
+        if (fields.containsKey(clazz)) {
+            return;
+        }
+        List<Field> result = new ArrayList<>();
+        Class parent = clazz;
+        while (parent != null) {
+            Field[] fieldList = parent.getDeclaredFields();
+            result.addAll(Arrays.asList(fieldList));
+            parent = parent.getSuperclass();
+        }
+        System.out.println(clazz.getName());
+        fields.put(clazz, result);
+        System.out.println(result.size());
+        for (Field field: result) {
+            addToMap(field.getType());
+        }
+    }
+
+    private void addToMap(Class clazz) {
+        if (possibleToString(clazz)) {
+            return;
+        }
+        System.out.println(clazz.getName());
+        BindingType bindingType = (BindingType) clazz.getAnnotation(BindingType.class);
+        if (bindingType == null  ||  bindingType.value().equals(MembersToBind.FIELDS)) {
+            addToFieldMap(clazz);
+        } else {
+            addToMethodMap(clazz);
+        }
+    }
 
     private boolean checkPrefix(String prefix, String methodName) {
         return (methodName.length() >= prefix.length()  &&  methodName.substring(0, prefix.length()).equals(prefix));
     }
 
+
+
     private String firstCharToLowerCase(String str) {
-        char first = str.charAt(0);
-        if (first >= 'A'  &&  first <= 'Z') {
-            StringBuilder builder = new StringBuilder();
-            builder.append((char) (first - 'A' + 'a'));
-            builder.append(str.substring(1));
-            return builder.toString();
+        if (str.length() > 0) {
+            str = Character.toLowerCase(str.charAt(0)) + str.substring(1);
         }
         return str;
     }
@@ -70,85 +154,43 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                 || classExample.getName().equals("java.lang.Byte")
                 ||  classExample.getName().equals("java.lang.Long")
                 ||  classExample.getName().equals("java.lang.Short")
+                ||  classExample.getName().equals("java.lang.Character")
                 ||  classExample.isEnum());
     }
 
     private void writeToDocumentByFields(Document document, Object value, Element root) throws Exception {
         Set<String> alreadyWritten = new TreeSet<>();
-        Class parent = value.getClass();
-        while (parent != null) {
-            Field[] fields = value.getClass().getDeclaredFields();
-            for (Field field: fields) {
-                field.setAccessible(true);
-                Object fieldValue = field.get(value);
-                if (fieldValue != null  &&  !alreadyWritten.contains(field.getName())) {
-                    alreadyWritten.add(field.getName());
-                    Element child = document.createElement(field.getName());
-                    root.appendChild(child);
-                    if (possibleToString(fieldValue.getClass())) {
-                        child.setTextContent(fieldValue.toString());
-                    } else {
-                        writeToDocument(document, fieldValue, child);
-                    }
+        for (Field field: fields.get(value.getClass())) {
+            field.setAccessible(true);
+            Object fieldValue = field.get(value);
+            if (!alreadyWritten.contains(field.getName())) {
+                alreadyWritten.add(field.getName());
+                Element child = document.createElement(field.getName());
+                root.appendChild(child);
+                if (fieldValue == null) {
+                    child.setTextContent("null");
+                } else if (possibleToString(fieldValue.getClass())) {
+                    child.setTextContent(fieldValue.toString());
+                } else {
+                    writeToDocument(document, fieldValue, child);
                 }
             }
-            parent = parent.getSuperclass();
         }
     }
 
     private void writeToDocumentByMethods(Document document, Object value, Element root) throws Exception {
-        //building components to Bind
-        List<SerializeComponent> components = new ArrayList<>();
-        Method[] methods = value.getClass().getMethods();
-        for (Method method: methods) {
-            String name = null;
-            char mode = 'g';
-            Class[] args = method.getParameterTypes();
-            String methodName = method.getName();
-            if (checkPrefix("get", methodName)  &&  args.length == 0) {
-                name = methodName.substring(3);
-            }
-            if (checkPrefix("is", methodName)  &&  args.length == 0) {
-                name = methodName.substring(2);
-            }
-            if (checkPrefix("set", methodName)  &&  args.length == 1) {
-                name = methodName.substring(3);
-                mode = 's';
-            }
-            if (name  != null) {
-                boolean componentFound = false;
-                for (SerializeComponent component: components) {
-                    if (component.getName().equals(name)) {
-                        componentFound = true;
-                        if (!component.setMethod(method, mode)) {
-                            throw new RuntimeException("Indefinite pair of methods found in " + value.getClass().getName());
-                        }
-                    }
+        for (SerializeComponent component: methods.get(value.getClass())) {
+            String name = firstCharToLowerCase(component.getName());
+            System.out.println(name);
+            Object newValue = component.getter().invoke(value);
+            if (newValue != null) {
+                Element child = document.createElement(name);
+                root.appendChild(child);
+                if (possibleToString(newValue.getClass())) {
+                    child.setTextContent(newValue.toString());
+                } else {
+                    writeToDocument(document, newValue, child);
                 }
-                if (!componentFound) {
-                    SerializeComponent newComponent = new SerializeComponent(name);
-                    if (!newComponent.setMethod(method, mode)) {
-                        throw new RuntimeException("Error while creating new component");
-                    }
-                    components.add(newComponent);
-                }
-            }
-        }
-        for (SerializeComponent component: components) {
-            //System.out.println(component.getName() + " " + (component.getter() == null) + " " + (component.setter() == null));
-            if (component.getter() != null  &&  component.setter() != null) {
-                String name = firstCharToLowerCase(component.getName());
-                Object newValue = component.getter().invoke(value);
-                if (newValue != null) {
-                    Element child = document.createElement(name);
-                    root.appendChild(child);
-                    if (possibleToString(newValue.getClass())) {
-                        child.setTextContent(newValue.toString());
-                    } else {
-                        writeToDocument(document, newValue, child);
-                    }
-                }
-                //document.appendChild(child);
             }
         }
     }
@@ -175,8 +217,11 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         try {
             Document document = factory.newDocumentBuilder().newDocument();
             Element root = document.createElement(getElementName(value, value.getClass().getName()));
+            System.out.println("DONE " + methods.size());
             writeToDocument(document, value, root);
+            System.out.println("DONE");
             document.appendChild(root);
+            System.out.println("DONE");
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             Result result = new StreamResult(out);
             Transformer transformer = transformerFactory.newTransformer();
@@ -186,19 +231,30 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                     "{http://xml.apache.org/xslt}indent-amount",
                     "2"
             );
-            transformer.transform(new DOMSource(document), result);
-            return out.toByteArray();
-            /*StringWriter stringWriter = new StringWriter();
+            /*transformer.transform(new DOMSource(document), result);
+            return out.toByteArray();*/
+            StringWriter stringWriter = new StringWriter();
             transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
             System.out.println(stringWriter.getBuffer().toString());
-            return null;*/
+            return null;
         } catch (Exception ex) {
-            throw new RuntimeException("Serializing error: ", ex);
+            throw new RuntimeException("Serializing error", ex);
+        }
+    }
+
+    private Document bytesToXml(byte[] xml) {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            return builder.parse(new ByteArrayInputStream(xml));
+        } catch (Exception ex) {
+            throw new RuntimeException("Incorrect byte array", ex);
         }
     }
 
     @Override
     public T deserialize(byte[] bytes) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        Document document = bytesToXml(bytes);
+        return null;
     }
 }
