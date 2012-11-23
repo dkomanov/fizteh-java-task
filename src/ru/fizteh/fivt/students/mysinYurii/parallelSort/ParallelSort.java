@@ -207,12 +207,12 @@ public class ParallelSort {
                 toMerge.get(minPosition).remove(0);
                 if (onlyUnique) {
                     if (caseSense) {
-                        if (!minString.equals(prevMin)) {
+                        if (minString.compareTo(prevMin) != 0) {
                             write(outputStream, minString);
                             prevMin = minString;
                         }
                     } else {
-                        if (minString.compareToIgnoreCase(minString) != 0) {
+                        if (minString.compareToIgnoreCase(prevMin) != 0) {
                             write(outputStream, minString);
                             prevMin = minString;
                         }
