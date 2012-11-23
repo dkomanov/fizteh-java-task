@@ -20,12 +20,12 @@ public class ClassForSerialization {
     }
 
     @AsXmlCdata
-    void setIntField(int i) {
+    public void setIntField(int i) {
         intField = i;
     }
 
     @AsXmlCdata
-    private int getIntField() {
+    public int getIntField() {
         return intField;
     }
 

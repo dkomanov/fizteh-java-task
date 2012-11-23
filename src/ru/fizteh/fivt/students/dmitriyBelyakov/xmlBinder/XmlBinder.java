@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder;
 
+import javafx.util.Pair;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -30,7 +31,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         if (str.length() == 1) {
             return str.toLowerCase();
         } else {
-            return str.toLowerCase().charAt(0) + str.substring(1);
+            return Character.toLowerCase(str.charAt(0)) + str.substring(1);
         }
     }
 
@@ -38,7 +39,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         if (str.length() == 1) {
             return str.toLowerCase();
         } else {
-            return str.toUpperCase().charAt(0) + str.substring(1);
+            return Character.toUpperCase(str.charAt(0)) + str.substring(1);
         }
     }
 
@@ -60,60 +61,36 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         return fields;
     }
 
-    private ArrayList<Method> getMethods(Class clazz) {
-        ArrayList<Method> methods = new ArrayList<>();
-        while (clazz != null) {
-            Method[] tmpMethods = clazz.getDeclaredMethods();
-            HashMap<String, Method> methodsNames = new HashMap<>();
-            for (Method method : tmpMethods) {
-                if (method.getName().matches("get.+")) {
-                    if (method.getParameterTypes().length != 0) {
+    private ArrayList<Pair<Method, Method>> getMethods(Class clazz) {
+        ArrayList<Pair<Method, Method>> methods = new ArrayList<>();
+        Method[] tmpMethods = clazz.getMethods();
+        for (Method method : tmpMethods) {
+            if (method.getName().matches("set.+")) {
+                if (!method.getReturnType().equals(void.class) || method.getParameterTypes().length != 1) {
+                    continue;
+                }
+                String nameGet = method.getName().replaceFirst("set", "get");
+                String nameIs = method.getName().replaceFirst("set", "is");
+                try {
+                    Method methodGet = clazz.getMethod(nameGet);
+                    if (!method.getParameterTypes()[0].equals(methodGet.getReturnType())) {
                         continue;
                     }
-                    String name = method.getName().replaceFirst("get", "set");
-                    if (methodsNames.containsKey(name)) {
-                        if (!method.getReturnType().equals(methodsNames.get(name).getParameterTypes()[0])) {
-                            continue;
-                        }
-                        methods.add(method);
-                    } else {
-                        methodsNames.put(method.getName(), method);
-                    }
-                } else if (method.getName().matches("is.+")) {
-                    if (method.getParameterTypes().length != 0 || !method.getReturnType().equals(boolean.class)) {
+                    methods.add(new Pair(methodGet, method));
+                    continue;
+                } catch (NoSuchMethodException e) {
+                    /* nothing */
+                }
+                try {
+                    Method methodIs = clazz.getMethod(nameIs);
+                    if (!method.getParameterTypes()[0].equals(methodIs.getReturnType())) {
                         continue;
                     }
-                    String name = method.getName().replaceFirst("is", "set");
-                    if (methodsNames.containsKey(name)) {
-                        if (!methodsNames.get(name).getParameterTypes()[0].equals(boolean.class)) {
-                            continue;
-                        }
-                        methods.add(method);
-                    } else {
-                        methodsNames.put(method.getName(), method);
-                    }
-                } else if (method.getName().matches("set.+")) {
-                    if (!method.getReturnType().equals(void.class) || method.getParameterTypes().length != 1) {
-                        continue;
-                    }
-                    String nameGet = method.getName().replaceFirst("set", "get");
-                    String nameIs = method.getName().replaceFirst("set", "is");
-                    if (methodsNames.containsKey(nameGet)) {
-                        if (!method.getParameterTypes()[0].equals(methodsNames.get(nameGet).getReturnType())) {
-                            continue;
-                        }
-                        methods.add(methodsNames.get(nameGet));
-                    } else if (methodsNames.containsKey(nameIs)) {
-                        if (!method.getParameterTypes()[0].equals(methodsNames.get(nameIs).getReturnType())) {
-                            continue;
-                        }
-                        methods.add(methodsNames.get(nameIs));
-                    } else {
-                        methodsNames.put(method.getName(), method);
-                    }
+                    methods.add(new Pair(methodIs, method));
+                } catch (NoSuchMethodException e) {
+                    /* nothing */
                 }
             }
-            clazz = clazz.getSuperclass();
         }
         return methods;
     }
@@ -151,8 +128,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     }
                 }
             } else {
-                ArrayList<Method> methods = getMethods(clazz);
-                for (Method method : methods) {
+                ArrayList<Pair<Method, Method>> methods = getMethods(clazz);
+                for (Pair<Method, Method> pair : methods) {
+                    Method method = pair.getKey(); // get getter
                     method.setAccessible(true);
                     Object val = method.invoke(value);
                     if (val != null) {
@@ -205,47 +183,47 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
 
     private Object getValue(String val, Class clazz) {
-        if(!isPrimitive(clazz)) {
+        if (!isPrimitive(clazz)) {
             throw new RuntimeException("Not primitive type.");
         }
-        if(clazz.equals(Boolean.class) || clazz.equals(boolean.class)) {
+        if (clazz.equals(Boolean.class) || clazz.equals(boolean.class)) {
             return Boolean.parseBoolean(val);
-        } else if(clazz.equals(Byte.class) || clazz.equals(byte.class)) {
+        } else if (clazz.equals(Byte.class) || clazz.equals(byte.class)) {
             return Byte.parseByte(val);
-        } else if(clazz.equals(Character.class) || clazz.equals(char.class)) {
-            if(val.length() != 1) {
+        } else if (clazz.equals(Character.class) || clazz.equals(char.class)) {
+            if (val.length() != 1) {
                 throw new RuntimeException("Incorrect value.");
             }
             return val.charAt(0);
-        } else if(clazz.equals(Short.class) || clazz.equals(short.class)) {
+        } else if (clazz.equals(Short.class) || clazz.equals(short.class)) {
             return Short.parseShort(val);
-        } else if(clazz.equals(Integer.class) || clazz.equals(int.class)) {
+        } else if (clazz.equals(Integer.class) || clazz.equals(int.class)) {
             return Integer.parseInt(val);
-        } else if(clazz.equals(Long.class) || clazz.equals(long.class)) {
+        } else if (clazz.equals(Long.class) || clazz.equals(long.class)) {
             return Long.parseLong(val);
-        } else if(clazz.equals(Float.class) || clazz.equals(float.class)) {
+        } else if (clazz.equals(Float.class) || clazz.equals(float.class)) {
             return Float.parseFloat(val);
-        } else if(clazz.equals(Double.class) || clazz.equals(double.class)) {
+        } else if (clazz.equals(Double.class) || clazz.equals(double.class)) {
             return Double.parseDouble(val);
         } else if (clazz.isEnum()) {
             return Enum.valueOf(clazz, val);
-        } else if(clazz.equals(String.class)) {
+        } else if (clazz.equals(String.class)) {
             return val;
         }
         return null;
     }
 
     private Object deserializeToValue(Element element) {
-        if(getClazz().getAnnotation(BindingType.class) == null
+        if (getClazz().getAnnotation(BindingType.class) == null
                 || getClazz().getAnnotation(BindingType.class).value() == MembersToBind.FIELDS) {
             Class clazz = getClazz();
-            if(isPrimitive(clazz)) {
+            if (isPrimitive(clazz)) {
                 return getValue(element.getTextContent(), clazz);
             } else {
                 NodeList children = element.getChildNodes();
-                for(int i = 0; i < children.getLength(); ++i) {
+                for (int i = 0; i < children.getLength(); ++i) {
                     Node node = children.item(i);
-                    if(node.getNodeType() == Node.ELEMENT_NODE) {
+                    if (node.getNodeType() == Node.ELEMENT_NODE) {
                         // TODO
                     } else {
                         throw new RuntimeException("Incorrect bytes.");
@@ -255,6 +233,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         } else {
             // TODO
         }
+        return null;
     }
 
     private void iterate(Document document) {
