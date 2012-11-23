@@ -9,18 +9,20 @@ public class Sort {
 
     public static void main(String[] args) {
         ExecutorService manager =
-            Executors.newFixedThreadPool(10);
+            Executors.newSingleThreadExecutor();
         CompletionService<List<String>> monitor =
             new ExecutorCompletionService<>(manager);
 
-        List<Future<List<String>>> readers = new ArrayList<>(); 
+        int trace = 0;
 
         if (args.length == 0) {
-            readers.add(monitor.submit(LinesInputFactory.create()));
+            monitor.submit(LinesInputFactory.create());
+            ++trace;
         } else {
             for (String file : args) {
                 try {
-                    readers.add(monitor.submit(LinesInputFactory.create(file)));
+                    monitor.submit(LinesInputFactory.create(file));
+                    ++trace;
                 } catch (IOException ioEx) {
                     System.err.println("Cannot open " + file);
                     System.exit(1);
@@ -28,37 +30,27 @@ public class Sort {
             }
         }
 
-        List<Future<List<String>>> sorters = new ArrayList<>();
-        List<Future<List<String>>> mergers = new ArrayList<>();
+        Queue<List<String>> mergeQueue =
+            new java.util.concurrent.SynchronousQueue<>();
 
-        List<List<String>> mergeQueue = new ArrayList<>();
-
-        while(true) {
+        while(trace > 0) {
             try {
-                Future<List<String>> done = monitor.take();
-                if (readers.contains(done)) {
-                    System.err.println("Reader");
-                    List<String> result = done.get();
-                    sorters.add(monitor.submit(new LinesSort(done.get())));
-                } else if (sorters.contains(done) || mergers.contains(done)) {
-                    System.err.println("Sorter or merger");
-                    mergeQueue.add(done.get());
-                } else {
-                    System.err.println("Internal error: unexpected thread");
-                    System.exit(1);
+                Future<List<String>> future = monitor.take();
+                List<String> next = future.get();
+                --trace;
+                if (next != null) {
+                    monitor.submit(new LinesSort(next, mergeQueue), null);
+                    ++trace;
                 }
-                System.err.println(mergeQueue.size());
-                if (mergeQueue.size() == nMerge) {
-                    mergers.add(monitor.submit(new LinesMerge(mergeQueue)));
-                    mergeQueue = new ArrayList<>();
-                }
-            } catch (InterruptedException interrupted) {
-                System.err.println("Thread was interrupted unexpectedly");
+            } catch (InterruptedException inter) {
+                System.err.println("Unexpected thread interrupt");
                 System.exit(1);
             } catch (ExecutionException exec) {
-                System.err.println("Execution error: " + exec.getMessage());
+                System.err.println("Execution error");
                 System.exit(1);
             }
         }
+
+        System.err.println(mergeQueue);
     }
 }
