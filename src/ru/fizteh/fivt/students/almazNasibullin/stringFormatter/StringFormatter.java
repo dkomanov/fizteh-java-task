@@ -106,7 +106,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
         try {
             String ind = st.nextToken();
-            if (Character.isDigit(ind.charAt(0))) {
+            if (!Character.isDigit(ind.charAt(0))) {
                 throw new FormatterException("Incorrect index");
             }
             o = args[Integer.parseInt(ind)];
