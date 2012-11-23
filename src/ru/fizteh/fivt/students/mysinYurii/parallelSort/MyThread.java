@@ -27,7 +27,7 @@ public class MyThread implements Runnable {
             } catch (InterruptedException e) {
                 System.exit(1);
             }
-            if (!newString.equals("")) {
+            if (!newString.equals("\n")) {
                 resultList.add(newString);
             } else {
                 break;
