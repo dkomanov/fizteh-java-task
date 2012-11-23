@@ -35,6 +35,7 @@ class SensitiveComp implements Comparator<String> {
 }
 
 public class Sort {
+    private final static int maxChunk = 400000;
 
     public static void main(String[] args) {
         Argparser parser = new Argparser(args);
@@ -47,7 +48,7 @@ public class Sort {
         }
 
         ExecutorService manager =
-            Executors.newFixedThreadPool(4);
+            Executors.newFixedThreadPool(settings.threads);
         CompletionService<List<String>> monitor =
             new ExecutorCompletionService<>(manager);
 
@@ -80,12 +81,19 @@ public class Sort {
                 List<String> next = future.get();
                 --trace;
                 if (next != null) {
-                    if (settings.caseInsensitive) {
-                        monitor.submit(new LinesSort(next, mergeQueue, comp), null);
+                    if (next.size() > maxChunk) {
+                        int chunkStart = 0;
+                        while (chunkStart < next.size()) {
+                            int chunkEnd = Math.min(chunkStart + maxChunk, next.size());
+                            monitor.submit(new LinesSort(
+                                next.subList(chunkStart, chunkEnd), mergeQueue, comp), null);
+                            ++trace;
+                            chunkStart = chunkEnd;
+                        }
                     } else {
                         monitor.submit(new LinesSort(next, mergeQueue, comp), null);
+                        ++trace;
                     }
-                    ++trace;
                 }
             } catch (InterruptedException inter) {
                 System.err.println("Unexpected thread interrupt");
