@@ -7,12 +7,10 @@ import java.util.List;
 public class Sorter extends Thread {
     private List<String> strList;
     private Comparator<String> stringComp;
-    private int size;
 
     public Sorter(List<String> subList, Comparator<String> strComp) {
         strList = subList;
         stringComp = strComp;
-        size=subList.size();
     }
 
     public void run() {

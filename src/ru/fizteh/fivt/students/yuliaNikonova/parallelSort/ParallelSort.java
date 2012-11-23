@@ -58,7 +58,6 @@ public class ParallelSort {
         try {
             mSorter.sort();
         } catch (Exception e) {
-            e.printStackTrace();
             exitError(e.getMessage());
         }
     }
