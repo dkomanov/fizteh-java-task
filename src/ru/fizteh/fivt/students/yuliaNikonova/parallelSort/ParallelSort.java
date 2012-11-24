@@ -6,7 +6,7 @@ public class ParallelSort {
     public static void main(String[] args) {
         boolean ignoreCase = false;
         boolean unique = false;
-        int numthreads = 0;
+        int numthreads = -1;
         String outputFileName = "";
         ArrayList<String> fileNames = new ArrayList<String>();
         for (int i = 0; i < args.length; i++) {
@@ -41,13 +41,17 @@ public class ParallelSort {
                 }
 
                 try {
-                    numthreads = Integer.parseInt(args[++i]);
+                    int n = Integer.parseInt(args[++i]);
+                    if (n<=0) {
+                        exitError("wrong number of threads");
+                    }
+                    numthreads=n;
                 } catch (Exception e) {
                     exitError(e.getMessage());
                 }
-                if (numthreads < 0) {
-                    exitError("wrong number of threads");
-                }
+                
+                    
+                
             } else {
                 // System.out.println("new filename");
                 fileNames.add(args[i]);
@@ -58,6 +62,7 @@ public class ParallelSort {
         try {
             mSorter.sort();
         } catch (Exception e) {
+            //e.printStackTrace();
             exitError(e.getMessage());
         }
     }
