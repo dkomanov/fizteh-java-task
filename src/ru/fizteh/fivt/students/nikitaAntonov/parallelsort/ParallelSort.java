@@ -23,7 +23,7 @@ public class ParallelSort {
             opts.write(result);
         } catch (IOException e) {
             System.err.println("Unknown IO error occured\n" + e.getMessage());
-            System.exit(1)
+            System.exit(1);
         } catch (InterruptedException e) {
             System.err.println("Somthing strange occurred - thread was interrupted");
             System.exit(1);
