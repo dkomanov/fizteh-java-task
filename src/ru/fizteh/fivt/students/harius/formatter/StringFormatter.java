@@ -102,11 +102,13 @@ public class StringFormatter
         }
         String chain = token.substring(0, sep);
         Object obj = getFromChain(chain, args);
-        if (sep == token.length()) {
-            applyPlain(buffer, obj);
-        } else {
-            String pattern = token.substring(sep + 1);
-            applyPattern(buffer, pattern, obj);
+        if (obj != null) {
+            if (sep == token.length()) {
+                applyPlain(buffer, obj);
+            } else {
+                String pattern = token.substring(sep + 1);
+                applyPattern(buffer, pattern, obj);
+            }
         }
     }
 
@@ -118,7 +120,7 @@ public class StringFormatter
         String sIndex = tok.nextToken();
         int index = 0;
         Object arg;
-        try {    
+        try {  
             index = Integer.parseInt(sIndex);
             arg = args[index];
         } catch (NumberFormatException notNum) {
@@ -164,11 +166,7 @@ public class StringFormatter
 
     /* Simple format */
     private void applyPlain(StringBuilder buffer, Object arg) {
-        if (arg != null) {
-            buffer.append(arg.toString());
-        } else {
-            buffer.append("");
-        }
+        buffer.append(arg.toString());
     }
 
     /* Format using an extension */
