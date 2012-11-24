@@ -28,6 +28,9 @@ public class ParallelSort {
             System.err
                     .println("Somthing strange occurred - thread was interrupted");
             System.exit(1);
+        } catch (Exception e) {
+            System.err.println("Some other error occurred");
+            System.exit(1);
         } finally {
             opts.closeAll();
         }
