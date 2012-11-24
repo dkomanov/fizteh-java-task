@@ -113,7 +113,7 @@ public class ControlSorter {
         }
         int length = 0;
         if (numthreads != 0) {
-            length = numthreads / size;
+            length = size / numthreads;
         }
 
         for (int i = 0; i < numthreads; i++) {
