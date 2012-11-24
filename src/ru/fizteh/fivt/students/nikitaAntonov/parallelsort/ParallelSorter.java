@@ -26,13 +26,16 @@ class ParallelSorter extends Sorter {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Line> readAndSort() throws IOException, InterruptedException {
 
         ArrayList<Line> chunk = opts.getChunk();
-
+        
         if (chunk == null) {
             return chunk;
         }
+        
+        ArrayList<Line> firstChunk = (ArrayList<Line>) chunk.clone();
 
         try {
 
@@ -42,18 +45,33 @@ class ParallelSorter extends Sorter {
                 chunk = opts.getChunk();
                 numberOfChunks.incrementAndGet();
             }
-
-            while (true) {
-                ArrayList<Line> a = mergeQueue.take();
-
-                if (numberOfChunks.get() == 1) {
-                    chunk = a;
-                    break;
+            
+            
+            boolean isNoNeedToGo = false;
+            if (numberOfChunks.get() == 1) {
+                if (opts.unique) {
+                    executor.execute(new SortingTask(firstChunk, this));
+                    numberOfChunks.incrementAndGet();
+                } else {
+                    chunk = mergeQueue.take();
+                    isNoNeedToGo = true;
                 }
-
-                ArrayList<Line> b = mergeQueue.take();
-                executor.execute(new MergingTask(a, b, this));
+            } 
+            
+            if (!isNoNeedToGo) {
+                while (true) {
+                    ArrayList<Line> a = mergeQueue.take();
+    
+                    if (numberOfChunks.get() == 1 ) {
+                        chunk = a;
+                        break;
+                    }
+    
+                    ArrayList<Line> b = mergeQueue.take();
+                    executor.execute(new MergingTask(a, b, this));
+                }
             }
+            
         } catch (InterruptedException e) {
             throw e;
         } finally {
