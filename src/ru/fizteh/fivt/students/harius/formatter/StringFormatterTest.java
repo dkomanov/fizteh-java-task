@@ -117,6 +117,8 @@ public abstract class StringFormatterTest {
         checkFail(basic, "{-1}", "hello");
         checkFail(basic, null);
         checkFail(basic, "{0} {1}", (Object[])null);
+        checkFail(basic, "{-0}", "hello");
+        checkFail(basic, "{+3}", "hello");
 
         StringBuilder builder = null;
         checkBufferFail(basic, builder, "hello, {0}", "world");

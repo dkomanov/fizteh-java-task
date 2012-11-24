@@ -118,6 +118,9 @@ public class StringFormatter
 
         StringTokenizer tok = new StringTokenizer(chain, ".");
         String sIndex = tok.nextToken();
+        if (sIndex.startsWith("+") || sIndex.startsWith("-")) {
+            throw new FormatterException("Index must be unsigned");
+        }
         int index = 0;
         Object arg;
         try {  
@@ -144,7 +147,9 @@ public class StringFormatter
         Class deep = arg.getClass();
         try {
             try {
-                return deep.getField(name).get(arg);
+                Field field = deep.getField(name);
+                field.setAccessible(true);
+                return field.get(arg);
             } catch (NoSuchFieldException noField) {
                 while (deep != null) {
                     try {
