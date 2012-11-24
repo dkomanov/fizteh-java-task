@@ -118,6 +118,9 @@ public class StringFormatter
 
         StringTokenizer tok = new StringTokenizer(chain, ".");
         String sIndex = tok.nextToken();
+        if (sIndex.startsWith("+") || sIndex.startsWith("-")) {
+            throw new FormatterException("Index must be unsigned");
+        }
         int index = 0;
         Object arg;
         try {  
