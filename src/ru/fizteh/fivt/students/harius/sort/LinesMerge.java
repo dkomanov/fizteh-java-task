@@ -25,7 +25,7 @@ public class LinesMerge implements Runnable {
         int i1 = 0;
         int i2 = 0;
         while(i1 < li1.size() && i2 < li2.size()) {
-            if (comp.compare(li1.get(i1), li2.get(i2)) >= 0) {
+            if (comp.compare(li1.get(i1), li2.get(i2)) > 0) {
                 result.add(li2.get(i2));
                 ++i2;
             } else {

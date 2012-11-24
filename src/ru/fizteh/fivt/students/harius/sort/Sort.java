@@ -22,12 +22,6 @@ class SortSettings {
     public List<String> files = null;
 }
 
-class InsensitiveComp implements Comparator<String> {
-    public int compare(String s1, String s2) {
-        return s1.compareToIgnoreCase(s2);
-    }
-}
-
 class SensitiveComp implements Comparator<String> {
     public int compare(String s1, String s2) {
         return s1.compareTo(s2);
@@ -35,7 +29,7 @@ class SensitiveComp implements Comparator<String> {
 }
 
 public class Sort {
-    private final static int maxChunk = 400000;
+    private final static int maxChunk = 200000;
 
     public static void main(String[] args) {
         Argparser parser = new Argparser(args);
@@ -73,7 +67,7 @@ public class Sort {
             new java.util.concurrent.LinkedBlockingQueue<>();
 
         Comparator<String> comp = settings.caseInsensitive ? 
-            new InsensitiveComp() : new SensitiveComp();
+            String.CASE_INSENSITIVE_ORDER : new SensitiveComp();
 
         while (trace > 0) {
             try {
@@ -150,8 +144,10 @@ public class Sort {
                     + ioEx.getMessage());
             } finally {
                 try {
-                    outp.close();
-                } catch (IOException | NullPointerException ex) {}
+                    if (outp != null) {
+                        outp.close();
+                    }
+                } catch (IOException ex) {}
             }
         }
     }
