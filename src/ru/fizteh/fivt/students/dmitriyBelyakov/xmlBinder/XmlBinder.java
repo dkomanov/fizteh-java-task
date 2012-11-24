@@ -15,14 +15,12 @@ import sun.misc.Unsafe;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
-import java.awt.image.AreaAveragingScaleFilter;
-import java.io.Console;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
@@ -36,6 +34,30 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         fieldsForClasses = new HashMap<>();
         alreadySerialised = new IdentityHashMap<>();
         prepareToSerialization(clazz);
+    }
+
+    private Object newInstance(Class clazz) {
+        try {
+            Constructor constructor = clazz.getConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (NoSuchMethodException e) {
+            /* default constructor does not exist */
+        } catch (InstantiationException e) {
+            /* nothing */
+        } catch (InvocationTargetException e) {
+            /* nothing */
+        } catch (IllegalAccessException e) {
+            /* nothing */
+        }
+        try {
+            Field f = Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            Unsafe unsafe = (Unsafe) f.get(Unsafe.class);
+            return unsafe.allocateInstance(clazz);
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot create new instance of object.");
+        }
     }
 
     private void prepareToSerialization(Class clazz) {
@@ -79,13 +101,14 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
     }
 
-    private String firstCharToUpperCase(String str) {
+    // Unused
+    /* private String firstCharToUpperCase(String str) {
         if (str.length() == 1) {
             return str.toLowerCase();
         } else {
             return Character.toUpperCase(str.charAt(0)) + str.substring(1);
         }
-    }
+    } */
 
     private boolean isPrimitive(Class clazz) {
         return clazz.isPrimitive() || clazz.equals(Boolean.class) || clazz.equals(Byte.class)
@@ -266,10 +289,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 allFields = false;
             }
             if (allFields) {
-                Field f = Unsafe.class.getDeclaredField("theUnsafe");
-                f.setAccessible(true);
-                Unsafe unsafe = (Unsafe) f.get(Unsafe.class);
-                Object returnObject = unsafe.allocateInstance(clazz);
+                Object returnObject = newInstance(clazz);
                 NodeList children = element.getChildNodes();
                 HashMap<String, Field> serializedFields = fieldsForClasses.get(clazz);
                 if (serializedFields == null) {
@@ -288,10 +308,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 }
                 return returnObject;
             } else {
-                Field f = Unsafe.class.getDeclaredField("theUnsafe");
-                f.setAccessible(true);
-                Unsafe unsafe = (Unsafe) f.get(Unsafe.class);
-                Object returnObject = unsafe.allocateInstance(clazz);
+                Object returnObject = newInstance(clazz);
                 NodeList children = element.getChildNodes();
                 HashMap<String, Pair<Method, Method>> serializedMethods = methodsForClasses.get(clazz);
                 if (serializedMethods == null) {

@@ -11,11 +11,31 @@ public class ClassForSerializationFields {
     public MessageType enumField = MessageType.MESSAGE;
     Boolean boolField = false;
     Byte byteField = 12;
+    @AsXmlCdata
     char c = 'D';
     Short shField = 21;
     long longField = 2012;
     Float flField = 1.993f;
+    @AsXmlCdata
     String stringField = "fizteh-java-task";
+    @AsXmlCdata
+    Object nullPointer = null;
+
+    @Override
+    public boolean equals(Object o) {
+        ClassForSerializationFields object = (ClassForSerializationFields) o;
+        return intField == object.intField
+                && doubleField == object.doubleField
+                && enumField.equals(object.enumField)
+                && boolField.equals(object.boolField)
+                && byteField.equals(object.byteField)
+                && c == object.c
+                && shField.equals(object.shField)
+                && longField == object.longField
+                && flField.equals(object.flField)
+                && stringField.equals(object.stringField)
+                && nullPointer == object.nullPointer;
+    }
 
     public int get() {
         return 0;
