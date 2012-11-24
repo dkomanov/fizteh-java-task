@@ -7,10 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -104,15 +102,15 @@ public class ParallelSort {
             } else break;
             ++i;
         }
-        List<String> inputFiles = Collections.synchronizedList(new ArrayList<String>());
+        ArrayList<String> inputFiles = new ArrayList<String>();
         if (i < args.length) {
             for (int j = i; j < args.length; ++j) {
                 inputFiles.add(args[j]);
             }
         }
-        ArrayList< List<String> > toMerge = new ArrayList< List<String> >();
+        ArrayList< ArrayList<String> > toMerge = new ArrayList< ArrayList<String> >();
         for (int i1 = 0; i1 < threadNum; ++i1) {
-            toMerge.add(Collections.synchronizedList(new ArrayList<String>()));
+            toMerge.add(new ArrayList<String>());
         }
         if (inputFiles.size() == 0) {
             BufferedReader systemIn = new BufferedReader(
@@ -161,41 +159,45 @@ public class ParallelSort {
             System.out.println(e.getMessage());
             System.exit(1);
         }
-        PrintWriter outputStream = null;
+        PrintStream outputStream = null;
         if (writeInFile) {
             File outputFile = new File(fileName);
             if (outputFile.exists()) {
                 outputFile.delete();
             }
             try {
-                outputStream = new PrintWriter(fileName);
+                outputStream = new PrintStream(fileName);
             } catch (FileNotFoundException e) {
                 System.out.println(e.getMessage());
                 System.exit(1);
             }
         } else {
-            outputStream = new PrintWriter(System.out);
+            outputStream = new PrintStream(System.out);
         }
         String prevMin = "\n";
+        int[] currArrPos = new int[threadNum];
+        for (int i1 = 0; i1 < threadNum; ++i1) {
+            currArrPos[i1] = 0;
+        }
         while (true) {
             String minString = null;
             int minPosition = -1;
             for (int i1 = 0; i1 < toMerge.size(); ++i1) {
-                if (toMerge.get(i1).isEmpty()) {
+                if (currArrPos[i1] == toMerge.get(i1).size()) {
                     continue;
                 }
                 if (minPosition == -1) {
-                    minString = toMerge.get(i1).get(0);
+                    minString = toMerge.get(i1).get(currArrPos[i1]);
                     minPosition = i1;
                 } else {
                     if (caseSense) {
-                        if (minString.compareTo(toMerge.get(i1).get(0)) > 0) {
-                            minString = toMerge.get(i1).get(0);
+                        if (minString.compareTo(toMerge.get(i1).get(currArrPos[i1])) > 0) {
+                            minString = toMerge.get(i1).get(currArrPos[i1]);
                             minPosition = i1;
                         }
                     } else {
-                        if (minString.compareToIgnoreCase(toMerge.get(i1).get(0)) > 0) {
-                            minString = toMerge.get(i1).get(0);
+                        if (minString.compareToIgnoreCase(toMerge.get(i1).get(currArrPos[i1])) > 0) {
+                            minString = toMerge.get(i1).get(currArrPos[i1]);
                             minPosition = i1;
                         }
                     }
@@ -204,31 +206,26 @@ public class ParallelSort {
             if (minPosition == -1) {
                 break;
             } else {
-                toMerge.get(minPosition).remove(0);
+                ++currArrPos[minPosition];
                 if (onlyUnique) {
                     if (caseSense) {
                         if (minString.compareTo(prevMin) != 0) {
-                            write(outputStream, minString);
+                            outputStream.println(minString);
                             prevMin = minString;
                         }
                     } else {
                         if (minString.compareToIgnoreCase(prevMin) != 0) {
-                            write(outputStream, minString);
+                            outputStream.println(minString);
                             prevMin = minString;
                         }
                     }
                 } else {
-                    write(outputStream, minString);
+                    outputStream.println(minString);
                 }
             }
         }
         if (writeInFile) {
             closeStream(outputStream);
         }
-    }
-
-    private static void write(PrintWriter outputStream, String minString) {
-        outputStream.println(minString);
-        outputStream.flush();
     }
 }
