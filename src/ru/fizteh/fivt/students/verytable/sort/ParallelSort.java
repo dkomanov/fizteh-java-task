@@ -98,6 +98,7 @@ public class ParallelSort {
                     }
                 }
             }
+            writer.flush();
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.exit(1);
