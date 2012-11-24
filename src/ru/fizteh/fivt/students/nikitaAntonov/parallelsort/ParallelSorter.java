@@ -31,11 +31,11 @@ class ParallelSorter extends Sorter {
 
         ArrayList<Line> chunk = opts.getChunk();
         
-        ArrayList<Line> firstChunk = (ArrayList<Line>) chunk.clone();
-        
         if (chunk == null) {
             return chunk;
         }
+        
+        ArrayList<Line> firstChunk = (ArrayList<Line>) chunk.clone();
 
         try {
 
@@ -50,8 +50,6 @@ class ParallelSorter extends Sorter {
             boolean isNoNeedToGo = false;
             if (numberOfChunks.get() == 1) {
                 if (opts.unique) {
-                //ArrayList<Line> emptyChunk = new ArrayList<Line>();
-                //emptyChunk.add(new Line("", 0));
                     executor.execute(new SortingTask(firstChunk, this));
                     numberOfChunks.incrementAndGet();
                 } else {
