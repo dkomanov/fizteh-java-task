@@ -37,7 +37,7 @@ class ProgramOptions {
     private static final int defaultChunkSize = 16384;
     private static final int estimateBytesInLine = 256;
     public int chunkSize = defaultChunkSize;
-    
+
     private int actualFile = 0;
 
     public ProgramOptions(String args[]) throws IncorrectArgsException {
@@ -224,9 +224,9 @@ class ProgramOptions {
             }
         }
     }
-    
+
     public Sorter getSorter() {
-        
+
         if (numberOfThreads == 1) {
             return new SimpleSorter(this);
         } else {
@@ -238,48 +238,48 @@ class ProgramOptions {
         if (actualFile >= inputs.size()) {
             return null;
         }
-        
+
         ArrayList<String> chunk = null;
-        
+
         if (chunkSize == 0) {
             chunk = new ArrayList<>();
         } else {
             chunk = new ArrayList<>(chunkSize);
         }
-        
+
         int i = 0;
         while (chunkSize == 0 || i != chunkSize) {
             String line = inputs.get(actualFile).readLine();
-            
+
             if (line == null) {
                 ++actualFile;
                 break;
             }
-            
+
             chunk.add(line);
             ++i;
         }
-        
+
         if (chunk.isEmpty()) {
             return null;
         }
-        
+
         return chunk;
     }
-    
+
     public void write(List<String> result) throws IOException {
         String sep = System.lineSeparator();
-        
+
         if (result == null) {
             return;
         }
-        
+
         for (String line : result) {
             output.write(line);
             output.write(sep);
         }
     }
-    
+
 }
 
 /**
