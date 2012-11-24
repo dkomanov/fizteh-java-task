@@ -73,5 +73,6 @@ class MergingTask implements Runnable {
         chunk1.clear();
         chunk2.clear();
         sorter.mergeQueue.put(result);
+        sorter.numberOfChunks.decrementAndGet();
     }
 }
