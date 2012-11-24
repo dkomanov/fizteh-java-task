@@ -46,13 +46,21 @@ class ParallelSorter extends Sorter {
                 numberOfChunks.incrementAndGet();
             }
             
-         
-            if (numberOfChunks.get() == 1) {                
+            
+            boolean isNoNeedToGo = false;
+            if (numberOfChunks.get() == 1) {
+                if (opts.unique) {
                 //ArrayList<Line> emptyChunk = new ArrayList<Line>();
                 //emptyChunk.add(new Line("", 0));
-                executor.execute(new SortingTask(firstChunk, this));
-                numberOfChunks.incrementAndGet();
+                    executor.execute(new SortingTask(firstChunk, this));
+                    numberOfChunks.incrementAndGet();
+                } else {
+                    chunk = mergeQueue.take();
+                    isNoNeedToGo = true;
+                }
             } 
+            
+            if (!isNoNeedToGo) {
                 while (true) {
                     ArrayList<Line> a = mergeQueue.take();
     
@@ -64,7 +72,7 @@ class ParallelSorter extends Sorter {
                     ArrayList<Line> b = mergeQueue.take();
                     executor.execute(new MergingTask(a, b, this));
                 }
-            
+            }
             
         } catch (InterruptedException e) {
             throw e;
