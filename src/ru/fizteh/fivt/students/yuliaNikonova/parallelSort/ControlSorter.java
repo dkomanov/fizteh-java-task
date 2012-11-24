@@ -111,7 +111,10 @@ public class ControlSorter {
         if (numthreads > size) {
             numthreads = size;
         }
-        int length = size / numthreads;
+        int length = 0;
+        if (numthreads != 0) {
+            length = numthreads / size;
+        }
 
         for (int i = 0; i < numthreads; i++) {
             Sorter sort;
