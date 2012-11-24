@@ -12,7 +12,6 @@ public class Sorter implements Runnable {
     Comparator<String> comparator;
     int currPosition;
     boolean taken;
-    
 
     Sorter(ArrayList<String> strings, Comparator<String> comparator,
             LinkedBlockingQueue<ArrayList<String>> queue) {
@@ -25,29 +24,29 @@ public class Sorter implements Runnable {
     @Override
     public void run() {
         Collections.sort(strings, comparator);
-        //queue.add(strings);
+        // queue.add(strings);
     }
-    
+
     boolean hasNext() {
         return currPosition != strings.size();
     }
-    
-    void next(){
+
+    void next() {
         currPosition++;
     }
-    
+
     String get() {
         return strings.get(currPosition);
     }
-    
+
     void take() {
         taken = true;
     }
-    
+
     boolean isTaken() {
         return taken;
     }
-    
+
     void release() {
         taken = false;
     }
