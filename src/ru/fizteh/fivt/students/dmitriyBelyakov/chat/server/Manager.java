@@ -23,6 +23,7 @@ public class Manager implements Runnable {
     public Manager(int port) {
         this.port = port;
         names = new HashSet<>();
+        names.add(serverName);
         users = Collections.synchronizedList(new ArrayList<User>());
         userDeleteRegulator = new UserDeleteRegulator(this);
     }
