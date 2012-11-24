@@ -35,7 +35,7 @@ class ProgramOptions {
     public int numberOfThreads = 0;
 
     private static final int DEFAULT_CHUNK_SIZE = 16384;
-    private static final int ESTIMATE_BYTES_IN_LINE = 256;
+    private static final int ESTIMATE_BYTES_IN_LINE = 2048;
     public int chunkSize = DEFAULT_CHUNK_SIZE;
 
     private int actualFile = 0;
