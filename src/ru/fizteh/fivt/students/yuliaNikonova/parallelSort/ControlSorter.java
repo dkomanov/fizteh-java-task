@@ -104,17 +104,20 @@ public class ControlSorter {
     }
 
     private void pSort() throws Exception {
-        if (numthreads == 0) {
+        if (numthreads == -1) {
             numthreads = Runtime.getRuntime().availableProcessors() + 1;
         }
 
         if (numthreads > size) {
             numthreads = size;
         }
-        int length = 0;
-        if (numthreads != 0) {
-            length = size / numthreads;
+        
+        if (numthreads==0) {
+            System.err.println("impossible number of threads");
+            System.exit(1);
         }
+        
+        int length = size / numthreads;
 
         for (int i = 0; i < numthreads; i++) {
             Sorter sort;
