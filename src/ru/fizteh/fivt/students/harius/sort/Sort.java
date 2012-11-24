@@ -88,7 +88,7 @@ public class Sort {
         }
 
         int maxChunk = size / settings.threads;
-        maxChunk = Math.max(maxChunk, 300000);
+        //maxChunk = Math.max(maxChunk, 300000);
 
         Comparator<String> comp = settings.caseInsensitive ? 
             String.CASE_INSENSITIVE_ORDER : new SensitiveComp();
@@ -154,10 +154,7 @@ public class Sort {
         } else {
             List<String> result = sorted.get(0);
             if (settings.uniqueOnly) {
-                Set<String> unique = new TreeSet<>(comp);
-                unique.addAll(result);
-                result.clear();
-                result.addAll(unique);
+                result = unique(result, comp);
             }
             BufferedWriter outp = null;
             try {
@@ -182,5 +179,18 @@ public class Sort {
                 } catch (IOException ex) {}
             }
         }
+    }
+
+    private static List<String> unique(List<String> list, Comparator<String> comp) {
+        ArrayList<String> result = new ArrayList<String>();
+        result.ensureCapacity(list.size());
+        String prev = null;
+        for (String str : list) {
+            if (prev == null || comp.compare(str, prev) != 0) {
+                result.add(str);
+            }
+            prev = str;
+        }
+        return result;
     }
 }
