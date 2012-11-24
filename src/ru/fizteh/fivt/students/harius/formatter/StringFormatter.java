@@ -144,7 +144,9 @@ public class StringFormatter
         Class deep = arg.getClass();
         try {
             try {
-                return deep.getField(name).get(arg);
+                Field field = deep.getField(name);
+                field.setAccessible(true);
+                return field.get(arg);
             } catch (NoSuchFieldException noField) {
                 while (deep != null) {
                     try {
