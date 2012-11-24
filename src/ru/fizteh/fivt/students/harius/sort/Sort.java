@@ -29,7 +29,7 @@ class SensitiveComp implements Comparator<String> {
 }
 
 public class Sort {
-    private final static int maxChunk = 200000;
+    private final static int maxChunk = 400000;
 
     public static void main(String[] args) {
         Argparser parser = new Argparser(args);
@@ -48,13 +48,18 @@ public class Sort {
 
         int trace = 0;
 
+        List<List<String>> input =
+            new ArrayList<>();
+
         if (settings.files.isEmpty()) {
-            monitor.submit(LinesInputFactory.create());
+            input.add(null);
+            monitor.submit(LinesInputFactory.create(input, trace), null);
             ++trace;
         } else {
             for (String file : settings.files) {
                 try {
-                    monitor.submit(LinesInputFactory.create(file));
+                    input.add(null);
+                    monitor.submit(LinesInputFactory.create(file, input, trace), null);
                     ++trace;
                 } catch (IOException ioEx) {
                     System.err.println("Expected filename, got " + file);
@@ -63,65 +68,79 @@ public class Sort {
             }
         }
 
-        Queue<List<String>> mergeQueue =
-            new java.util.concurrent.LinkedBlockingQueue<>();
+        while (trace > 0) {
+            try {
+                monitor.take().get();
+                --trace;
+            } catch (InterruptedException | ExecutionException ex) {
+                System.err.println("Error while input: " + ex.getMessage());
+                System.exit(1);
+            }
+        }
 
         Comparator<String> comp = settings.caseInsensitive ? 
             String.CASE_INSENSITIVE_ORDER : new SensitiveComp();
 
+
+        List<List<String>> sorted = new ArrayList<>();
+        for (List<String> data : input) {
+            int chunkBegin = 0;
+            while (chunkBegin < data.size()) {
+                int chunkEnd = Math.min(
+                    chunkBegin + maxChunk, data.size());
+
+                List<String> part = data.subList(chunkBegin, chunkEnd);
+                sorted.add(part);
+                monitor.submit(new LinesSort(part, comp), null);
+                ++trace;
+                chunkBegin = chunkEnd;
+            }
+        }
+
         while (trace > 0) {
             try {
-                Future<List<String>> future = monitor.take();
-                List<String> next = future.get();
+                monitor.take().get();
                 --trace;
-                if (next != null) {
-                    if (next.size() > maxChunk) {
-                        int chunkStart = 0;
-                        while (chunkStart < next.size()) {
-                            int chunkEnd = Math.min(chunkStart + maxChunk, next.size());
-                            monitor.submit(new LinesSort(
-                                next.subList(chunkStart, chunkEnd), mergeQueue, comp), null);
-                            ++trace;
-                            chunkStart = chunkEnd;
-                        }
-                    } else {
-                        monitor.submit(new LinesSort(next, mergeQueue, comp), null);
-                        ++trace;
-                    }
-                }
-            } catch (InterruptedException inter) {
-                System.err.println("Unexpected thread interrupt");
-                System.exit(1);
-            } catch (ExecutionException exec) {
-                System.err.println("Execution error: " + exec.getMessage());
+            } catch (InterruptedException | ExecutionException ex) {
+                System.err.println("Error while sorting: " + ex.getMessage());
                 System.exit(1);
             }
         }
 
-        while (mergeQueue.size() > 1 || trace > 0) {
-            if (mergeQueue.size() > 1) {
-                List<String> li1 = mergeQueue.poll();
-                List<String> li2 = mergeQueue.poll();
-                monitor.submit(new LinesMerge(li1, li2, mergeQueue, comp), null);
+        while (sorted.size() > 1) {
+            List<List<String>> level = new ArrayList<>();
+            int i;
+            for (i = 0; i < sorted.size(); i += 2) {
+                level.add(null);
+                List<String> second = (i + 1) == sorted.size() ?
+                    null : sorted.get(i + 1);
+
+                monitor.submit(new LinesMerge(
+                    sorted.get(i), second, level, trace, comp), null);
+
+                ++trace;
             }
-            try {
-                Future<List<String>> future = monitor.take();
-                future.get();
-            } catch (InterruptedException inter) {
-                System.err.println("Unexpected thread interrupt");
-                System.exit(1);
-            } catch (ExecutionException exec) {
-                System.err.println("Execution error: " + exec.getMessage());
-                System.exit(1);
+
+            while (trace > 0) {
+                try {
+                    monitor.take().get();
+                    --trace;
+                } catch (InterruptedException | ExecutionException ex) {
+                    System.err.println("Error while merging: " + ex.getMessage());
+                    System.exit(1);
+                }
             }
+
+            sorted = level;
         }
+
         manager.shutdown();
 
-        if (mergeQueue.isEmpty()) {
+        if (sorted.isEmpty()) {
             System.err.println("Internal error: empty queue");
             System.exit(1);
         } else {
-            List<String> result = mergeQueue.poll();
+            List<String> result = sorted.get(0);
             if (settings.uniqueOnly) {
                 Set<String> unique = new TreeSet<>(comp);
                 unique.addAll(result);

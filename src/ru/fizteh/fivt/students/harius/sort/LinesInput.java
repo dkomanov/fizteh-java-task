@@ -6,15 +6,19 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
-public class LinesInput implements Callable<List<String>> {
+public class LinesInput implements Runnable {
     private BufferedReader input;
+    private List<List<String>> q;
+    private int index;
 
-    public LinesInput(BufferedReader input) {
+    public LinesInput(BufferedReader input, List<List<String>> q, int index) {
         this.input = input;
+        this.q = q;
+        this.index = index;
     }
 
     @Override
-    public List<String> call() throws IOException {
+    public void run() {
         List<String> result = new ArrayList<String>();
         try {
             while (true) {
@@ -24,9 +28,15 @@ public class LinesInput implements Callable<List<String>> {
                 }
                 result.add(line);
             }
+        } catch (IOException ioEX) {
+            result = null;
         } finally {
-            input.close();
+            try {
+                input.close();
+            } catch (IOException ioEx) {
+                result = null;
+            }
         }
-        return result;
+        q.set(index, result);
     }
 }
