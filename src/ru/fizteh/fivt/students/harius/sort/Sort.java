@@ -29,7 +29,6 @@ class SensitiveComp implements Comparator<String> {
 }
 
 public class Sort {
-    private final static int maxChunk = 400000;
 
     public static void main(String[] args) {
         Argparser parser = new Argparser(args);
@@ -82,6 +81,14 @@ public class Sort {
                 System.exit(1);
             }
         }
+
+        int size = 0;
+        for (List<String> list : input) {
+            size += list.size();
+        }
+
+        int maxChunk = size / settings.threads;
+        maxChunk = Math.max(maxChunk, 300000);
 
         Comparator<String> comp = settings.caseInsensitive ? 
             String.CASE_INSENSITIVE_ORDER : new SensitiveComp();

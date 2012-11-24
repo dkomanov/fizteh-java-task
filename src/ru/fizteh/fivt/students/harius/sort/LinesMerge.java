@@ -30,7 +30,8 @@ public class LinesMerge implements Runnable {
             return;
         }
         
-        List<String> result = new ArrayList<String>();
+        ArrayList<String> result = new ArrayList<String>();
+        result.ensureCapacity(li1.size() + li2.size());
         int i1 = 0;
         int i2 = 0;
         while(i1 < li1.size() && i2 < li2.size()) {
