@@ -1,12 +1,12 @@
 package ru.fizteh.fivt.students.mysinYurii.parallelSort;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Collections;
 
 public class MyThread implements Runnable {
-    List<String> strings;
+    ArrayList<String> strings;
     
-    List<String> resultList;
+    ArrayList<String> resultList;
     
     boolean caseSensitive;
     
@@ -14,7 +14,7 @@ public class MyThread implements Runnable {
     
     int sizeOfData;
     
-    public MyThread(List<String> inputStrings, List<String> toMerge,
+    public MyThread(ArrayList<String> inputStrings, ArrayList<String> toMerge,
             boolean caseSense, int currPos, int sortSize) {
         strings = inputStrings;
         resultList = toMerge;
@@ -34,4 +34,5 @@ public class MyThread implements Runnable {
             Collections.sort(resultList, String.CASE_INSENSITIVE_ORDER);
         }
     }
+    
 }
