@@ -257,6 +257,11 @@ class ProgramOptions {
             }
             
             chunk.add(line);
+            ++i;
+        }
+        
+        if (chunk.isEmpty()) {
+            return null;
         }
         
         return chunk;
@@ -264,6 +269,10 @@ class ProgramOptions {
     
     public void write(List<String> result) throws IOException {
         String sep = System.lineSeparator();
+        
+        if (result == null) {
+            return;
+        }
         
         for (String line : result) {
             output.write(line);

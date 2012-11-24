@@ -20,7 +20,7 @@ class SimpleSorter extends Sorter {
         
         ArrayList<String> data = opts.getChunk();
         
-        if (data.isEmpty()) {
+        if (data == null || data.isEmpty()) {
             return data;
         }
         
