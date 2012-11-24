@@ -39,6 +39,7 @@ class ProgramOptions {
     public int chunkSize = defaultChunkSize;
 
     private int actualFile = 0;
+    private int actualChunk = 0;
 
     public ProgramOptions(String args[]) throws IncorrectArgsException {
         inputFilenames = new ArrayList<String>();
@@ -234,12 +235,12 @@ class ProgramOptions {
         }
     }
 
-    public ArrayList<String> getChunk() throws IOException {
+    public ArrayList<Line> getChunk() throws IOException {
         if (actualFile >= inputs.size()) {
             return null;
         }
 
-        ArrayList<String> chunk = null;
+        ArrayList<Line> chunk = null;
 
         if (chunkSize == 0) {
             chunk = new ArrayList<>();
@@ -249,14 +250,14 @@ class ProgramOptions {
 
         int i = 0;
         while (chunkSize == 0 || i != chunkSize) {
-            String line = inputs.get(actualFile).readLine();
+            String str = inputs.get(actualFile).readLine();
 
-            if (line == null) {
+            if (str == null) {
                 ++actualFile;
                 break;
             }
 
-            chunk.add(line);
+            chunk.add(new Line(str, actualChunk));
             ++i;
         }
 
@@ -264,18 +265,19 @@ class ProgramOptions {
             return null;
         }
 
+        ++actualChunk;
         return chunk;
     }
 
-    public void write(List<String> result) throws IOException {
+    public void write(List<Line> result) throws IOException {
         String sep = System.lineSeparator();
 
         if (result == null) {
             return;
         }
 
-        for (String line : result) {
-            output.write(line);
+        for (Line line : result) {
+            output.write(line.str);
             output.write(sep);
         }
     }
@@ -299,5 +301,21 @@ class IncorrectArgsException extends Exception {
 class DefaultComparator implements Comparator<String> {
     public int compare(String one, String two) {
         return one.compareTo(two);
+    }
+}
+
+
+class Line {
+    public String str;
+    public int chunkNo;
+    
+    public Line() {
+        str = "";
+        chunkNo = 0;
+    }
+    
+    public Line(String s, int n) {
+        str = s;
+        chunkNo = n;
     }
 }

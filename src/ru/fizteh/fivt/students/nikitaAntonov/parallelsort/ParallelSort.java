@@ -19,7 +19,7 @@ public class ParallelSort {
         try {
             Sorter sorter = opts.getSorter();
 
-            List<String> result = sorter.readAndSort();
+            List<Line> result = sorter.readAndSort();
             opts.write(result);
         } catch (IOException e) {
             System.err.println("Unknown IO error occured\n" + e.getMessage());

@@ -4,11 +4,11 @@ import java.util.ArrayList;
 
 class MergingTask implements Runnable {
 
-    private ArrayList<String> chunk1;
-    private ArrayList<String> chunk2;
+    private ArrayList<Line> chunk1;
+    private ArrayList<Line> chunk2;
     private ParallelSorter sorter;
 
-    public MergingTask(ArrayList<String> a, ArrayList<String> b,
+    public MergingTask(ArrayList<Line> a, ArrayList<Line> b,
             ParallelSorter s) {
         chunk1 = a;
         chunk2 = b;
@@ -17,7 +17,7 @@ class MergingTask implements Runnable {
 
     @Override
     public void run() {
-        ArrayList<String> result = new ArrayList<>(chunk1.size()
+        ArrayList<Line> result = new ArrayList<>(chunk1.size()
                 + chunk2.size());
 
         int i = 0;
@@ -29,11 +29,17 @@ class MergingTask implements Runnable {
                 while (i < chunk1.size()
                         && sorter.cmp.compare(chunk1.get(i),
                                 result.get(result.size() - 1)) == 0) {
+                    if (chunk1.get(i).chunkNo < result.get(result.size() - 1).chunkNo) {
+                        result.set(result.size() - 1, chunk1.get(i));
+                    }
                     ++i;
                 }
                 while (j < chunk2.size()
                         && sorter.cmp.compare(chunk2.get(j),
                                 result.get(result.size() - 1)) == 0) {
+                    if (chunk2.get(j).chunkNo < result.get(result.size() - 1).chunkNo) {
+                        result.set(result.size() - 1, chunk2.get(j));
+                    }
                     ++j;
                 }
             }

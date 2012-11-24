@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class ParallelSorter extends Sorter {
 
-    public PriorityBlockingQueue<ArrayList<String>> mergeQueue;
+    public PriorityBlockingQueue<ArrayList<Line>> mergeQueue;
     private ExecutorService executor;
     AtomicInteger numberOfChunks;
 
@@ -26,9 +26,9 @@ class ParallelSorter extends Sorter {
     }
 
     @Override
-    public List<String> readAndSort() throws IOException, InterruptedException {
+    public List<Line> readAndSort() throws IOException, InterruptedException {
 
-        ArrayList<String> chunk = opts.getChunk();
+        ArrayList<Line> chunk = opts.getChunk();
 
         if (chunk == null) {
             return chunk;
@@ -44,14 +44,14 @@ class ParallelSorter extends Sorter {
             }
 
             while (true) {
-                ArrayList<String> a = mergeQueue.take();
+                ArrayList<Line> a = mergeQueue.take();
 
                 if (numberOfChunks.get() == 1) {
                     chunk = a;
                     break;
                 }
 
-                ArrayList<String> b = mergeQueue.take();
+                ArrayList<Line> b = mergeQueue.take();
                 executor.execute(new MergingTask(a, b, this));
             }
         } catch (InterruptedException e) {
@@ -69,10 +69,10 @@ class ParallelSorter extends Sorter {
 
 }
 
-class ChunkComparator implements Comparator<ArrayList<String>> {
+class ChunkComparator implements Comparator<ArrayList<Line>> {
 
     @Override
-    public int compare(ArrayList<String> o1, ArrayList<String> o2) {
+    public int compare(ArrayList<Line> o1, ArrayList<Line> o2) {
         return o1.size() - o2.size();
     }
 

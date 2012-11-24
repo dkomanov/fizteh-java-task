@@ -6,16 +6,16 @@ import java.util.Collections;
 import java.util.List;
 
 class SimpleSorter extends Sorter {
-
+    
     public SimpleSorter(ProgramOptions o) {
         super(o);
     }
 
     @Override
-    public List<String> readAndSort() throws IOException {
+    public List<Line> readAndSort() throws IOException {
 
-        ArrayList<String> data = opts.getChunk();
-
+        ArrayList<Line> data = opts.getChunk();
+        
         if (data == null || data.isEmpty()) {
             return data;
         }
@@ -26,7 +26,7 @@ class SimpleSorter extends Sorter {
             return data;
         }
 
-        ArrayList<String> result = new ArrayList<>(data.size());
+        ArrayList<Line> result = new ArrayList<>(data.size());
 
         result.add(data.get(0));
         for (int i = 1, e = data.size(); i < e; ++i) {
@@ -41,3 +41,4 @@ class SimpleSorter extends Sorter {
     }
 
 }
+

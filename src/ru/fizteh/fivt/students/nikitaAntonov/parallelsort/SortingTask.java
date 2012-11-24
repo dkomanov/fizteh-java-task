@@ -5,10 +5,10 @@ import java.util.Collections;
 
 class SortingTask implements Runnable {
 
-    private ArrayList<String> chunk;
+    private ArrayList<Line> chunk;
     private ParallelSorter sorter;
 
-    public SortingTask(ArrayList<String> toSort, ParallelSorter s) {
+    public SortingTask(ArrayList<Line> toSort, ParallelSorter s) {
         chunk = toSort;
         sorter = s;
     }
