@@ -11,15 +11,13 @@ public class LinesSort implements Runnable {
     private Queue<List<String>> q;
     private Comparator<String> comp;
 
-    public LinesSort(List<String> data, Queue<List<String>> q, Comparator<String> comp) {
+    public LinesSort(List<String> data, Comparator<String> comp) {
         this.data = data;
-        this.q = q;
         this.comp = comp;
     }
 
     @Override
     public void run() {
         Collections.sort(data, comp);
-        q.add(data);
     }
 }
