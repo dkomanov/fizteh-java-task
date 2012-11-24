@@ -35,7 +35,7 @@ public class XmlBinderTest extends Assert {
         byte[] btes = binder.serialize(user);
         User anotherUser = (User) binder.deserialize(btes);
         assertFalse(user == anotherUser);
-        // assertEquals(user, anotherUser); TODO ask
+        assertEquals(user, anotherUser);
         XmlBinder anotherBinder = new XmlBinder(ClassForSerializationFields.class);
         ClassForSerializationFields classObject = new ClassForSerializationFields();
         byte[] bytes = anotherBinder.serialize(classObject);
