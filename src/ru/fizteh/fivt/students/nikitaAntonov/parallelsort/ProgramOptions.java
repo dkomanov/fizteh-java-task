@@ -271,7 +271,7 @@ class ProgramOptions {
 
     public void write(List<Line> result) throws IOException {
         String sep = System.lineSeparator();
-
+        
         if (result == null) {
             return;
         }
@@ -279,6 +279,10 @@ class ProgramOptions {
         for (Line line : result) {
             output.write(line.str);
             output.write(sep);
+        }
+        
+        if (outputFilename == null) {
+            output.flush();
         }
     }
 
