@@ -92,11 +92,6 @@ public class SimpleCalendar {
         TimeZone timeZone = TimeZone.getDefault();
         Calendar calendar = Calendar.getInstance();
 
-        if (args == null || args.length == 0) {
-            System.err.println("Usage: [-m MONTH] [-y YEAR] [-w] [-t TIMEZONE]");
-            System.exit(1);
-        }
-
         for (int i = 0; i < args.length; ++i) {
             switch (args[i]) {
                 case "-m":
