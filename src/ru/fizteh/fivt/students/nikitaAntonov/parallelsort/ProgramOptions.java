@@ -211,7 +211,6 @@ class ProgramOptions {
     }
 
     public void closeAll() {
-        // TODO: CLOSE ALL THE SHIT!!!
         if (outputFilename != null) {
             Utils.closeResource(output);
         }
