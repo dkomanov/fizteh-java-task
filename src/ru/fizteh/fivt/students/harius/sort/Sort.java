@@ -41,8 +41,13 @@ public class Sort {
             System.exit(1);
         }
 
-        ExecutorService manager =
-            Executors.newFixedThreadPool(settings.threads);
+        ExecutorService manager = null;
+        try {
+            manager = Executors.newFixedThreadPool(settings.threads);
+        } catch (IllegalArgumentException bad) {
+            System.err.println("Invalid thread count");
+            System.exit(1);
+        }
         CompletionService<List<String>> monitor =
             new ExecutorCompletionService<>(manager);
 
