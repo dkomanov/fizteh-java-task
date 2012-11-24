@@ -221,7 +221,24 @@ class ProgramOptions {
             }
         }
     }
+    
+    public Sorter getSorter() {
+        
+        if (numberOfThreads == 1) {
+            return new SimpleSorter(this);
+        } else {
+            return new ParallelSorter(this);
+        }
+    }
 
+    public List<String> getChunk() {
+        return null;
+    }
+    
+    public void write(List<String> result) {
+        
+    }
+    
 }
 
 /**
