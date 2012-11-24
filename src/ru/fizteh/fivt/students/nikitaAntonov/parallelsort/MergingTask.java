@@ -8,8 +8,7 @@ class MergingTask implements Runnable {
     private ArrayList<Line> chunk2;
     private ParallelSorter sorter;
 
-    public MergingTask(ArrayList<Line> a, ArrayList<Line> b,
-            ParallelSorter s) {
+    public MergingTask(ArrayList<Line> a, ArrayList<Line> b, ParallelSorter s) {
         chunk1 = a;
         chunk2 = b;
         sorter = s;
@@ -17,8 +16,7 @@ class MergingTask implements Runnable {
 
     @Override
     public void run() {
-        ArrayList<Line> result = new ArrayList<>(chunk1.size()
-                + chunk2.size());
+        ArrayList<Line> result = new ArrayList<>(chunk1.size() + chunk2.size());
 
         int i = 0;
         int j = 0;
@@ -64,6 +62,12 @@ class MergingTask implements Runnable {
                         result.get(result.size() - 1)) != 0)
                         || !sorter.opts.unique) {
                     result.add(chunk2.get(j));
+                } else if (sorter.opts.unique
+                        && sorter.cmp.compare(chunk2.get(j),
+                                result.get(result.size() - 1)) == 0
+                        && chunk2.get(j).chunkNo < result
+                                .get(result.size() - 1).chunkNo) {
+                    result.set(result.size() - 1, chunk2.get(j));
                 }
             }
         } else {
@@ -72,6 +76,12 @@ class MergingTask implements Runnable {
                         result.get(result.size() - 1)) != 0)
                         || !sorter.opts.unique) {
                     result.add(chunk1.get(i));
+                } else if (sorter.opts.unique
+                        && sorter.cmp.compare(chunk1.get(i),
+                                result.get(result.size() - 1)) == 0
+                        && chunk1.get(i).chunkNo < result
+                                .get(result.size() - 1).chunkNo) {
+                    result.set(result.size() - 1, chunk1.get(i));
                 }
             }
         }
