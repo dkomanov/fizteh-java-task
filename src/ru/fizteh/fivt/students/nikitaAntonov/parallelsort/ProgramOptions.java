@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import ru.fizteh.fivt.students.nikitaAntonov.utils.Utils;
@@ -36,6 +37,8 @@ class ProgramOptions {
     private static final int defaultChunkSize = 16384;
     private static final int estimateBytesInLine = 256;
     public int chunkSize = defaultChunkSize;
+    
+    private int actualFile = 0;
 
     public ProgramOptions(String args[]) throws IncorrectArgsException {
         inputFilenames = new ArrayList<String>();
@@ -231,12 +234,41 @@ class ProgramOptions {
         }
     }
 
-    public List<String> getChunk() {
-        return null;
+    public ArrayList<String> getChunk() throws IOException {
+        if (actualFile >= inputs.size()) {
+            return null;
+        }
+        
+        ArrayList<String> chunk = null;
+        
+        if (chunkSize == 0) {
+            chunk = new ArrayList<>();
+        } else {
+            chunk = new ArrayList<>(chunkSize);
+        }
+        
+        int i = 0;
+        while (chunkSize == 0 || i != chunkSize) {
+            String line = inputs.get(actualFile).readLine();
+            
+            if (line == null) {
+                ++actualFile;
+                break;
+            }
+            
+            chunk.add(line);
+        }
+        
+        return chunk;
     }
     
-    public void write(List<String> result) {
+    public void write(List<String> result) throws IOException {
+        String sep = System.lineSeparator();
         
+        for (String line : result) {
+            output.write(line);
+            output.write(sep);
+        }
     }
     
 }
@@ -252,5 +284,11 @@ class IncorrectArgsException extends Exception {
 
     public IncorrectArgsException(String message) {
         super(message);
+    }
+}
+
+class DefaultComparator implements Comparator<String> {
+    public int compare(String one, String two) {
+        return one.compareTo(two);
     }
 }

@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.nikitaAntonov.parallelsort;
 
+import java.io.IOException;
 import java.util.List;
 
 public class ParallelSort {
@@ -14,13 +15,17 @@ public class ParallelSort {
             System.err.println(e.getMessage());
             System.exit(1);
         }
+
+        try {
+            Sorter sorter = opts.getSorter();
         
-        Sorter sorter = opts.getSorter();
-        
-        List<String> result = sorter.readAndSort();
-        opts.write(result);
-        
-        opts.closeAll();
+            List<String> result = sorter.readAndSort();
+            opts.write(result);
+        } catch (IOException e) {
+            System.err.println("Unknown IO error uccured\n" + e.getMessage());
+        } finally {
+            opts.closeAll();
+        }
     }
     
 }
