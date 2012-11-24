@@ -254,7 +254,7 @@ public class ParallelSort {
             out.write(currentString + System.lineSeparator());
             String nextString;
             for (int i = 1; i < stringsToSort.size(); ++i) {
-                if (flagOnlyUnique && currentCountOfThreads <= 1) {
+                if (flagOnlyUnique) {
                     nextString = stringsToSort.get(i);
                     if (comparator.compare(nextString, currentString) != 0) {
                         out.write(nextString + System.lineSeparator());
