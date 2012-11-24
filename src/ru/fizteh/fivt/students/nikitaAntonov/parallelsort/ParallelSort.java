@@ -22,7 +22,11 @@ public class ParallelSort {
             List<String> result = sorter.readAndSort();
             opts.write(result);
         } catch (IOException e) {
-            System.err.println("Unknown IO error uccured\n" + e.getMessage());
+            System.err.println("Unknown IO error occured\n" + e.getMessage());
+            System.exit(1)
+        } catch (InterruptedException e) {
+            System.err.println("Somthing strange occurred - thread was interrupted");
+            System.exit(1);
         } finally {
             opts.closeAll();
         }

@@ -7,52 +7,63 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class ParallelSorter extends Sorter {
 
-    public PriorityBlockingQueue<ArrayList<String>>  mergeQueue;
+    public PriorityBlockingQueue<ArrayList<String>> mergeQueue;
     private ExecutorService executor;
     AtomicInteger numberOfChunks;
-    
+
     public ParallelSorter(ProgramOptions o) {
         super(o);
-        
-        mergeQueue = new PriorityBlockingQueue<>(o.numberOfThreads, new ChunkComparator());
+
+        mergeQueue = new PriorityBlockingQueue<>(o.numberOfThreads,
+                new ChunkComparator());
         executor = Executors.newFixedThreadPool(o.numberOfThreads);
         numberOfChunks = new AtomicInteger(0);
     }
 
     @Override
-    public List<String> readAndSort() throws IOException {
-        
+    public List<String> readAndSort() throws IOException, InterruptedException {
+
         ArrayList<String> chunk = opts.getChunk();
-        
+
         if (chunk == null) {
             return chunk;
         }
-        
-        while (chunk != null) {
-            executor.execute(new SortingTask(chunk, this));
-            
-            chunk = opts.getChunk();
-            numberOfChunks.incrementAndGet();
-        }
-        
-        while (true) {
-            ArrayList<String> a = mergeQueue.take();
-            
-            if (numberOfChunks.get() == 1) {
-                chunk = a;
-                break;
+
+        try {
+
+            while (chunk != null) {
+                executor.execute(new SortingTask(chunk, this));
+
+                chunk = opts.getChunk();
+                numberOfChunks.incrementAndGet();
             }
-            
-            ArrayList<String> b = mergeQueue.take();
-            executor.execute(new MergingTask(a, b, this));
+
+            while (true) {
+                ArrayList<String> a = mergeQueue.take();
+
+                if (numberOfChunks.get() == 1) {
+                    chunk = a;
+                    break;
+                }
+
+                ArrayList<String> b = mergeQueue.take();
+                executor.execute(new MergingTask(a, b, this));
+            }
+        } catch (InterruptedException e) {
+            throw e;
+        } finally {
+            executor.shutdown();
+            try {
+                executor.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+            }
+            executor.shutdownNow();
         }
-        
-        executor.shutdown();
-        
         return chunk;
     }
 
@@ -64,5 +75,5 @@ class ChunkComparator implements Comparator<ArrayList<String>> {
     public int compare(ArrayList<String> o1, ArrayList<String> o2) {
         return o1.size() - o2.size();
     }
-    
+
 }

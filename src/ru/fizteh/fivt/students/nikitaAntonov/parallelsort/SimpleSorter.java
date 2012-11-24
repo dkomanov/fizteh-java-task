@@ -3,16 +3,12 @@ package ru.fizteh.fivt.students.nikitaAntonov.parallelsort;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 class SimpleSorter extends Sorter {
-    
-    Comparator<String> cmp;
-    
+
     public SimpleSorter(ProgramOptions o) {
         super(o);
-        cmp = o.caseInsensitive ? String.CASE_INSENSITIVE_ORDER : new DefaultComparator();
     }
 
     @Override
