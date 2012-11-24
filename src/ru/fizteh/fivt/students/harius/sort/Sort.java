@@ -163,12 +163,13 @@ public class Sort {
                     outp.write(line);
                     outp.write("\n");
                 }
+                outp.flush();
             } catch (IOException ioEx) {
                 System.err.println("I/O exception while writing output: "
                     + ioEx.getMessage());
             } finally {
                 try {
-                    if (outp != null) {
+                    if (outp != null && settings.output != null) {
                         outp.close();
                     }
                 } catch (IOException ex) {}
