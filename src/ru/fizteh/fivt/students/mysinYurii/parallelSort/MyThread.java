@@ -2,37 +2,32 @@ package ru.fizteh.fivt.students.mysinYurii.parallelSort;
 
 import java.util.List;
 import java.util.Collections;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class MyThread implements Runnable {
-    LinkedBlockingQueue<String> stringQueue;
+    List<String> strings;
     
     List<String> resultList;
     
     boolean caseSensitive;
     
-    public MyThread(LinkedBlockingQueue<String> inputStrings, List<String> toMerge,
-            boolean caseSense) {
-        stringQueue = inputStrings;
+    int currentPosition;
+    
+    int sizeOfData;
+    
+    public MyThread(List<String> inputStrings, List<String> toMerge,
+            boolean caseSense, int currPos, int sortSize) {
+        strings = inputStrings;
         resultList = toMerge;
         caseSensitive = caseSense;
+        currentPosition = currPos;
+        sizeOfData = sortSize;
     }
 
     @Override
     public void run() {
-        String newString = null;
-        do {
-            try {
-                newString = stringQueue.take();
-            } catch (InterruptedException e) {
-                System.exit(1);
-            }
-            if (!newString.equals("\n")) {
-                resultList.add(newString);
-            } else {
-                break;
-            }
-        } while (true);
+        for (int i = currentPosition; i < currentPosition + sizeOfData; ++i) {
+            resultList.add(strings.get(i));
+        }
         if (caseSensitive) {
             Collections.sort(resultList);
         } else {

@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class ParallelSort {
@@ -40,7 +39,7 @@ public class ParallelSort {
         }
     }
     
-    static void readFrom(BufferedReader inputStream, LinkedBlockingQueue<String> inputStrings) {
+    static void readFrom(BufferedReader inputStream, ArrayList<String> inputStrings) {
         try {
             String newString = inputStream.readLine();
             while (newString != null) {
@@ -61,7 +60,7 @@ public class ParallelSort {
         fileName = null;
         onlyUnique = false;
         caseSense = true;
-        LinkedBlockingQueue<String> inputStrings = new LinkedBlockingQueue<String>();
+        ArrayList<String> inputStrings = new ArrayList<String>();
         while (i < args.length) {
             if (args[i].equals("-o")) {
                 ++i;
@@ -105,7 +104,7 @@ public class ParallelSort {
             } else break;
             ++i;
         }
-        ArrayList<String> inputFiles = new ArrayList<String>();
+        List<String> inputFiles = Collections.synchronizedList(new ArrayList<String>());
         if (i < args.length) {
             for (int j = i; j < args.length; ++j) {
                 inputFiles.add(args[j]);
@@ -115,45 +114,46 @@ public class ParallelSort {
         for (int i1 = 0; i1 < threadNum; ++i1) {
             toMerge.add(Collections.synchronizedList(new ArrayList<String>()));
         }
-        threads = Executors.newFixedThreadPool(threadNum);
-        for (int i1 = 0; i1 < threadNum; ++i1) {
-            threads.execute(new MyThread(inputStrings, toMerge.get(i1), caseSense));
-        }
-
         if (inputFiles.size() == 0) {
-           BufferedReader systemIn = new BufferedReader(
-                   new InputStreamReader(System.in));
-           readFrom(systemIn, inputStrings);
-        } else {
-            for (String s : inputFiles) {
-                BufferedReader inputStream = null;
-                FileReader tempReader = null;
-                try {    
-                    tempReader = new FileReader(s);
-                    inputStream = new BufferedReader(tempReader);
-                } catch (FileNotFoundException e1) {
-                    System.out.println(e1.getMessage());
-                    threads.shutdownNow();
-                    closeStream(tempReader);
-                    closeStream(inputStream);
-                    System.exit(1);
-                }
-                try {
-                    readFrom(inputStream, inputStrings);
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                    threads.shutdown();
-                    closeStream(inputStream);
-                    System.exit(1);
-                }
-                closeStream(inputStream);
+            BufferedReader systemIn = new BufferedReader(
+                    new InputStreamReader(System.in));
+            readFrom(systemIn, inputStrings);
+         } else {
+             for (String s : inputFiles) {
+                 BufferedReader inputStream = null;
+                 FileReader tempReader = null;
+                 try {    
+                     tempReader = new FileReader(s);
+                     inputStream = new BufferedReader(tempReader);
+                 } catch (FileNotFoundException e1) {
+                     System.out.println(e1.getMessage());
+                     closeStream(tempReader);
+                     closeStream(inputStream);
+                     System.exit(1);
+                 }
+                 try {
+                     readFrom(inputStream, inputStrings);
+                 } catch (Exception e) {
+                     System.out.println(e.getMessage());
+                     closeStream(inputStream);
+                     System.exit(1);
+                 }
+                 closeStream(inputStream);
+             }
+        }
+        threads = Executors.newFixedThreadPool(threadNum);
+        int forThreadSize = inputStrings.size() / threadNum;
+        int currPos = 0;
+        for (int i1 = 0; i1 < threadNum; ++i1) {
+            if (i1 < inputStrings.size() % threadNum) {
+                threads.execute(new MyThread(inputStrings, toMerge.get(i1), caseSense, currPos, forThreadSize + 1));
+                currPos += forThreadSize + 1;
+            } else {
+                threads.execute(new MyThread(inputStrings, toMerge.get(i1), caseSense, currPos, forThreadSize));
+                currPos += forThreadSize;
             }
         }
-        
         try {
-            for (int i1 = 0; i1 < threadNum; ++i1) {
-                inputStrings.add("\n");
-            }
             threads.shutdown();
             threads.awaitTermination(10, TimeUnit.MINUTES);
         } catch(InterruptedException e) {
