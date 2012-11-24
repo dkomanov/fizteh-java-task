@@ -34,9 +34,9 @@ class ProgramOptions {
     public boolean unique = false;
     public int numberOfThreads = 0;
 
-    private static final int defaultChunkSize = 16384;
-    private static final int estimateBytesInLine = 256;
-    public int chunkSize = defaultChunkSize;
+    private static final int DEFAULT_CHUNK_SIZE = 16384;
+    private static final int ESTIMATE_BYTES_IN_LINE = 256;
+    public int chunkSize = DEFAULT_CHUNK_SIZE;
 
     private int actualFile = 0;
     private int actualChunk = 0;
@@ -207,7 +207,7 @@ class ProgramOptions {
             int estimateLinesCount = 0;
 
             for (File file : inputFiles) {
-                estimateLinesCount += file.length() / estimateBytesInLine;
+                estimateLinesCount += file.length() / ESTIMATE_BYTES_IN_LINE;
             }
 
             chunkSize = estimateLinesCount / numberOfThreads;

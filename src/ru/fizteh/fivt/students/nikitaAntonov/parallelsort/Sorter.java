@@ -19,19 +19,16 @@ abstract class Sorter {
 
 class LineComparator implements Comparator<Line> {
     private Comparator<String> comparator;
-    private boolean isCaseInsensitive;
     private boolean isUnique;
     
     public LineComparator(boolean caseInsensitive, boolean unique) {
         comparator = caseInsensitive ? String.CASE_INSENSITIVE_ORDER
                 : new DefaultComparator();
-        isCaseInsensitive = caseInsensitive;
         isUnique = unique;
     }
     
     @Override
     public int compare(Line o1, Line o2) {
-        // TODO Auto-generated method stub
         int result = comparator.compare(o1.str, o2.str);
         if (result == 0 && !isUnique) {
             return o1.chunkNo - o2.chunkNo;
