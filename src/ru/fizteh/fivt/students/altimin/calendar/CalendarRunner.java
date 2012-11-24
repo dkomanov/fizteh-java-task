@@ -29,7 +29,7 @@ public class CalendarRunner {
             String timeZone = parseResult.getProperty("t");
             boolean correctTimeZone = false;
             for (String tz: availableTimeZones) {
-                if (tz.equals(availableTimeZones)) {
+                if (tz.equals(timeZone)) {
                     correctTimeZone = true;
                     break;
                 }

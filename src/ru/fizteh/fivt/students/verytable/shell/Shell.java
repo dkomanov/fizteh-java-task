@@ -145,6 +145,19 @@ public class Shell {
         return true;
     }
 
+    public static boolean isSubDir(File file, File subFile) {
+        if (file.equals(subFile)) {
+            return true;
+        }
+        for (File parentDir = file.getParentFile(); parentDir != null;
+             parentDir = parentDir.getParentFile()) {
+            if (subFile.equals(parentDir)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     static boolean execCp(String source, String destination) {
         File from = new File(source);
         File to = new File(destination);
@@ -156,10 +169,6 @@ public class Shell {
         }
         if (!from.exists()) {
             reportError("cp: " + from + " doesn't exist");
-            return false;
-        }
-        if (!to.exists()) {
-            reportError("cp: " + to + " doesn't exist.");
             return false;
         }
         try {
@@ -180,9 +189,9 @@ public class Shell {
         int fromLen = fromStr.length();
         int toLen = toStr.length();
 
-        if (fromStr.equals(toStr.substring(0, Math.min(fromLen, toLen)))) {
+        if (isSubDir(to, from)) {
             reportError("cp: unable to copy from " + from
-                        + " to it's subdirectory " + to);
+                        + " to its subdirectory " + to);
             return false;
         }
 
@@ -190,8 +199,13 @@ public class Shell {
         if (from.isDirectory()) {
             File directoryCopy = new File(toStr + File.separatorChar
                                           + relativeSourceFile);
-            if (!directoryCopy.exists()) {
-                if (!directoryCopy.mkdir()) {
+            if (directoryCopy.exists() && !directoryCopy.isDirectory()) {
+                reportError("Cp: Unable to copy non file - " + fromStr
+                            + "to file - " + toStr);
+                return false;
+            } else if (!directoryCopy.exists()) {
+                if (!directoryCopy.mkdirs()) {
+                    reportError("Cp: unable to create " + directoryCopy);
                     return false;
                 }
             }
@@ -203,10 +217,15 @@ public class Shell {
                 }
             }
         } else {
-            File fileToCopy = new File(toStr + File.separatorChar
-                                       + relativeSourceFile);
+            File fileWhereToCopy = new File(toStr);
+            if (to.isDirectory()) {
+                fileWhereToCopy = new File(toStr + File.separatorChar
+                                           + relativeSourceFile);
+            }
             try {
-                fileToCopy.createNewFile();
+                if (!fileWhereToCopy.exists()) {
+                    fileWhereToCopy.createNewFile();
+                }
             } catch (Exception ex) {
                 System.err.println(ex.getMessage());
                 System.exit(1);
@@ -214,10 +233,8 @@ public class Shell {
             FileInputStream fis = null;
             FileOutputStream fos = null;
             try {
-                File fromFile = new File(toStr + File.separatorChar
-                                         + relativeSourceFile);
-                fis = new FileInputStream(fromFile);
-                fos = new FileOutputStream(fileToCopy);
+                fis = new FileInputStream(from);
+                fos = new FileOutputStream(fileWhereToCopy);
                 byte[] buffer = new byte[1024];
                 int dataSize;
                 while ((dataSize = fis.read(buffer)) >= 0) {
@@ -248,10 +265,6 @@ public class Shell {
             reportError("cp: " + from + " doesn't exist");
             return false;
         }
-        if (!to.exists()) {
-            reportError("cp: " + to + " doesn't exist.");
-            return false;
-        }
         try {
             from = from.getCanonicalFile();
         } catch (Exception ex) {
@@ -275,9 +288,12 @@ public class Shell {
             from.renameTo(renamedFile);
         } else {
             if (!execCp(source, destination)) {
+                reportError("Mv: unable to execute cp "
+                            + source + " " + destination);
                 return false;
             }
             if (!execRm(from.toString())) {
+                reportError("Mv: unable to execute rm " + from.toString());
                 return false;
             }
         }
@@ -288,7 +304,7 @@ public class Shell {
         File curDir = new File(curPath);
         File[] fileList = curDir.listFiles();
         for (int i = 0; i < fileList.length; i++) {
-            System.out.println(fileList[i]);
+            System.out.println(fileList[i].getName());
         }
     }
 

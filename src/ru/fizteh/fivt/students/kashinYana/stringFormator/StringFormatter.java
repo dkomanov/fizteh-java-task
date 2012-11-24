@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     private List<StringFormatterExtension> template;
@@ -76,21 +75,24 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             throws FormatterException {
 
         int endName = token.indexOf(":");
+
         if (endName == -1) {
             endName = token.length();
         }
 
         String name = token.substring(0, endName);
-        Object obj = null;
-        obj = getField(name, args);
+        Object object = null;
+        object = getField(name, args);
 
         if (endName == token.length()) {
-            if (obj != null) {
-                buffer.append(obj.toString());
+            if (object != null) {
+                buffer.append(object.toString());
             }
         } else {
-            String pattern = token.substring(endName + 1);
-            useExtension(buffer, pattern, obj);
+            if (object != null) {
+                String pattern = token.substring(endName + 1);
+                useExtension(buffer, pattern, object);
+            }
         }
     }
 
@@ -98,24 +100,49 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             throws FormatterException {
 
         StringTokenizer tokenRead = new StringTokenizer(string, ".");
+        if (!tokenRead.hasMoreTokens()) {
+            throw new FormatterException("I forget smth. Don't use {}.");
+        }
         String indexInString = tokenRead.nextToken();
         int index = 0;
         Object object;
+        if (indexInString.equals("-0")) {
+            throw new FormatterException("-0 not good");
+        }
+        if (indexInString.startsWith("+")) {
+            throw new FormatterException("start on + not good");
+        }
         try {
             index = Integer.parseInt(indexInString);
-            object = args[index];
         } catch (Exception notNum) {
-            throw new FormatterException("Found error number ot type of argv.");
+            throw new FormatterException("Found error type of argvs.");
+        }
+        try {
+            object = args[index];
+        } catch (Exception outRange) {
+            throw new FormatterException("index of argv ouf of range.");
         }
         while (tokenRead.hasMoreTokens()) {
+            if (object == null) {
+                return object;
+            }
             String token = tokenRead.nextToken();
-            try {
-                Field privateStringField = object.getClass().getDeclaredField(token);
-                privateStringField.setAccessible(true);
-                object = privateStringField.get(object);
-            } catch (Exception e) {
-                //throw new FormatterException("Unknown field");
+            Class parent = object.getClass();
+            boolean isFind = false;
+            while (parent != null) {
+                try {
+                    Field privateStringField = parent.getDeclaredField(token);
+                    privateStringField.setAccessible(true);
+                    object = privateStringField.get(object);
+                    isFind = true;
+                    break;
+                } catch (Exception e) {
+                    parent = parent.getSuperclass();
+                }
+            }
+            if (!isFind) {
                 object = null;
+                return object;
             }
         }
         return object;
@@ -124,6 +151,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     private void useExtension(StringBuilder buffer, String pattern, Object arg)
             throws FormatterException {
 
+        if (pattern.length() == 0) {
+            throw new FormatterException("I forget smth. Don't use \"*:\"");
+        }
         for (StringFormatterExtension extend : template) {
             if (extend.supports(arg.getClass())) {
                 try {
