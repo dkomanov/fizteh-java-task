@@ -84,7 +84,12 @@ public class ParallelSort {
                     caseSensitive = false;
                     onlyUnique = true;
                 } else if (arg.equals("-o")) {
-                    output = args[++i];
+                    if (args.length > i + 1) {
+                        output = args[++i];
+                    } else {
+                        System.err.println("Incorrect flag");
+                        System.exit(1);
+                    }
                 } else if (arg.equals("-t")) {
                     try {
                         numTreads = Integer.parseInt(args[++i]);
