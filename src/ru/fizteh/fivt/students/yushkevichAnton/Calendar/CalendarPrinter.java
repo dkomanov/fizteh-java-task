@@ -8,18 +8,18 @@ public class CalendarPrinter {
         new CalendarPrinter().run(args);
     }
 
-    Locale   locale    = Locale.getDefault(); // for testing
+    Locale   locale    = Locale.getDefault(); 
     Calendar calendar  = Calendar.getInstance(locale);
     boolean  showWeeks = false;
     boolean  showTime  = false;
     TimeZone timeZone  = calendar.getTimeZone();
 
-    int width = 7 * 2 + 6; // default width of calendar
+    int width = 7 * 2 + 6; 
 
     final int MAP_SIZE = 1000;
-    char[][] map = new char[MAP_SIZE][MAP_SIZE]; // drawing map
+    char[][] map = new char[MAP_SIZE][MAP_SIZE]; 
 
-    int startX = MAP_SIZE / 2, startY = MAP_SIZE / 2; // left upper corner
+    int startX = MAP_SIZE / 2, startY = MAP_SIZE / 2; 
 
     void run(String[] arguments) {
         parseArguments(arguments);
