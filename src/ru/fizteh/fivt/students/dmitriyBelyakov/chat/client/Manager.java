@@ -62,11 +62,7 @@ class Manager {
     synchronized public void delete(ServerWorker server) {
         if (server == currentWorker) {
             currentWorker = servers.size() > 0 ? servers.get(0) : null;
-            if (currentWorker != null) {
-                if (currentWorker != null) {
-                    currentWorker.activate();
-                }
-            }
+            currentWorker.activate();
         }
         servers.remove(server);
         System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) + "] Closed connection with server '" + server.name() + "'.");
