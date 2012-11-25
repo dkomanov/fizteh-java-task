@@ -1,5 +1,9 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.client;
 
+/**
+ * @author Dmitriy Belyakov
+ */
+
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageUtils;
