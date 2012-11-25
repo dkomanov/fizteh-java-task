@@ -14,6 +14,11 @@ public final class Permissions {
 
     private final Map<String, String> map = new HashMap<>();
 
+    public Permissions() {
+        setRoot(false);
+        setQuota(10);
+    }
+
     public boolean isRoot() {
         return Boolean.valueOf(getOrElse("root", Boolean.FALSE.toString()));
     }

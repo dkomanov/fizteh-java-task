@@ -17,7 +17,7 @@ import java.util.Formatter;
 public class StringFormatterBigIntegerExtension
     extends StringFormatterExtension {
 
-    private Formatter formatter = new Formatter();
+    private Formatter formatter;
     private final String conv = "bBhHsSdoxX";
 
     /* Constructor */
@@ -28,6 +28,7 @@ public class StringFormatterBigIntegerExtension
     /* Format the given BigInteger */
     @Override
     public void format(StringBuilder buffer, Object o, String pattern) {
+        formatter = new Formatter();
         if (pattern == null) {
             throw new FormatterException("Null pattern string");
         }

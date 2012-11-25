@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.altimin.calendar;
 
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -18,6 +19,24 @@ public class CalendarPrinter {
     private final int minimalWeekDayNumber;
     private final int maximalWeekDayNumber;
     private TimeZone timeZone;
+    private int[] days = {
+            Calendar.MONDAY,
+            Calendar.TUESDAY,
+            Calendar.WEDNESDAY,
+            Calendar.THURSDAY,
+            Calendar.FRIDAY,
+            Calendar.SATURDAY,
+            Calendar.SUNDAY
+    };
+
+    private int getCorrectDayNumber(int day) {
+        for (int i = 0; i < days.length; i ++) {
+            if (days[i] == day) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     private int convertMonthValue(int value) throws IllegalArgumentException {
         switch (value) {
@@ -58,6 +77,10 @@ public class CalendarPrinter {
         return value != null ? String.format("%1$" + offset + "d", value) : "  ";
     }
 
+    private String format(String value) {
+        return value != null ? String.format("%1$" + offset + "s", value) : "  ";
+    }
+
     private void printMonthName() {
         if (printWeekNumber) {
             System.out.print("   ");
@@ -71,32 +94,30 @@ public class CalendarPrinter {
         if (printWeekNumber) {
             System.out.print("   ");
         }
-        Map<String, Integer> dn = calendar.getDisplayNames(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());
-        Map<Integer, String> dayNames = new TreeMap<Integer, String>();
-        for (String key: dn.keySet()) {
-            dayNames.put(dn.get(key), key);
-        }
-        for (int i = minimalWeekDayNumber; i <= maximalWeekDayNumber; i ++) {
-            String curDayName = dayNames.get(i);
-            curDayName = curDayName.substring(0, offset);
-            System.out.print(((i == minimalWeekDayNumber) ? "" : " ") + curDayName);
+        String[] dayNames = new DateFormatSymbols().getShortWeekdays();
+        for (int i = 0; i < DAYS_IN_WEEK; i ++) {
+            String curDayName = dayNames[days[i]];
+            curDayName = curDayName.length() <= offset ? curDayName : curDayName.substring(0, offset);
+            System.out.print(((i == 0) ? "" : " ") + format(curDayName));
         }
         System.out.println();
     }
 
     private void printTable() {
-        int weeksInCurrentMonth = calendar.getActualMaximum(Calendar.WEEK_OF_MONTH);
+        int weeksInCurrentMonth = calendar.getActualMaximum(Calendar.WEEK_OF_MONTH)
+                - calendar.get(Calendar.WEEK_OF_MONTH) + 1;
         Integer[][] buffer = new Integer[weeksInCurrentMonth][DAYS_IN_WEEK];
-        int firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - minimalWeekDayNumber;
+        int firstDayOfWeek = getCorrectDayNumber(calendar.get(Calendar.DAY_OF_WEEK));
         int minDayNumber = calendar.getActualMinimum(Calendar.DATE);
         int maxDayNumber = calendar.getActualMaximum(Calendar.DATE);
         for (int date = minDayNumber; date <= maxDayNumber; date ++) {
             int position = firstDayOfWeek + date - minDayNumber;
-            buffer[date / DAYS_IN_WEEK][date % DAYS_IN_WEEK] = date;
+            buffer[position / DAYS_IN_WEEK][position % DAYS_IN_WEEK] = date;
         }
         for (int i = 0; i < weeksInCurrentMonth; i ++) {
             if (printWeekNumber) {
-                System.out.print(format(calendar.get(Calendar.WEEK_OF_YEAR) + i) + " ");
+                System.out.print(format(calendar.get(Calendar.WEEK_OF_YEAR)
+                        - calendar.getActualMinimum(Calendar.WEEK_OF_YEAR) + 1 + i) + " ");
             }
             for (int j = 0; j < DAYS_IN_WEEK; j ++) {
                 System.out.print(((j == 0) ? "" : " ") + format(buffer[i][j]));

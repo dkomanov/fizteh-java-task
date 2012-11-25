@@ -102,11 +102,13 @@ public class StringFormatter
         }
         String chain = token.substring(0, sep);
         Object obj = getFromChain(chain, args);
-        if (sep == token.length()) {
-            applyPlain(buffer, obj);
-        } else {
-            String pattern = token.substring(sep + 1);
-            applyPattern(buffer, pattern, obj);
+        if (obj != null) {
+            if (sep == token.length()) {
+                applyPlain(buffer, obj);
+            } else {
+                String pattern = token.substring(sep + 1);
+                applyPattern(buffer, pattern, obj);
+            }
         }
     }
 
@@ -116,9 +118,12 @@ public class StringFormatter
 
         StringTokenizer tok = new StringTokenizer(chain, ".");
         String sIndex = tok.nextToken();
+        if (sIndex.startsWith("+") || sIndex.startsWith("-")) {
+            throw new FormatterException("Index must be unsigned");
+        }
         int index = 0;
         Object arg;
-        try {    
+        try {  
             index = Integer.parseInt(sIndex);
             arg = args[index];
         } catch (NumberFormatException notNum) {
@@ -142,7 +147,9 @@ public class StringFormatter
         Class deep = arg.getClass();
         try {
             try {
-                return deep.getField(name).get(arg);
+                Field field = deep.getField(name);
+                field.setAccessible(true);
+                return field.get(arg);
             } catch (NoSuchFieldException noField) {
                 while (deep != null) {
                     try {
@@ -164,11 +171,7 @@ public class StringFormatter
 
     /* Simple format */
     private void applyPlain(StringBuilder buffer, Object arg) {
-        if (arg != null) {
-            buffer.append(arg.toString());
-        } else {
-            buffer.append("");
-        }
+        buffer.append(arg.toString());
     }
 
     /* Format using an extension */

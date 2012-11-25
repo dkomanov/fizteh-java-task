@@ -22,7 +22,7 @@ public class StringFormatterFloatExtension extends StringFormatterExtension{
         Formatter formatter = new Formatter();
         try {
             if (pattern.length() == 0) {
-                pattern = "f";
+                throw new FormatterException("Incorrect patter");
             }
             if (pattern.lastIndexOf('f') == -1  &&  pattern.lastIndexOf('e') == -1) {
                 throw new FormatterException("Incorrect pattern");

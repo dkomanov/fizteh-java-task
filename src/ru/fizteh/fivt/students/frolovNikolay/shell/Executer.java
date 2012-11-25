@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.frolovNikolay.shell;
 
+import ru.fizteh.fivt.students.frolovNikolay.Closer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -9,7 +10,7 @@ import java.io.FileOutputStream;
  * за выполнение команд.
  */
 public class Executer {
-    final private static String separator = System.getProperty("file.separator").toString();
+    final private static String separator = System.getProperty("file.separator");
     
     public static String execute(String[] commandArray, String currentDir) throws Exception {
         if (commandArray[0].equals("cd")) {
@@ -60,10 +61,12 @@ public class Executer {
                 String destAddress = getRealAddress(currentDir, commandArray[2]);
                 File source = new File(sourceAddress);
                 File destination = new File(destAddress);
-                if (!source.exists()) {
+                if (source.equals(destination)) {
+                    throw new Exception("cp: source and destination are the same.");
+                } else if (!source.exists()) {
                     throw new Exception("cp: '" + commandArray[1] + "': no such file or directory.");
                 } else if (destination.exists()) {
-                    throw new Exception("cp: '" + commandArray[2] + "': file already exists.");
+                    remove(destination);
                 } else if (!destination.getParentFile().exists()) {
                     throw new Exception("cp: Incorrect destination.");
                 }
@@ -77,10 +80,12 @@ public class Executer {
                 String dest = getRealAddress(currentDir, commandArray[2]);
                 File source = new File(src);
                 File destination = new File(dest);
-                if (!source.exists()) {
+                if (source.equals(destination)) {
+                    throw new Exception("mv: source and destination are the same.");
+                } else if (!source.exists()) {
                     throw new Exception("mv: '" + commandArray[1] + "': No such file or directory.");
                 } else if (destination.exists()) {
-                    throw new Exception("mv: '" + commandArray[2] + "': File already exists.");
+                    remove(destination);
                 } else if (!destination.getParentFile().exists()) {
                     throw new Exception("mv: Incorrect destination.");
                 }
