@@ -36,7 +36,9 @@ class Manager {
             if (last != null) {
                 last.deactivate();
             }
-            currentWorker.activate();
+            if (currentWorker != null) {
+                currentWorker.activate();
+            }
             sendMessage(new Message(MessageType.HELLO, name, ""));
         } catch (Throwable t) {
             if (currentWorker != null) {
