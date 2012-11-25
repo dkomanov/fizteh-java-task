@@ -141,7 +141,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 try {
                     Method methodGet = clazz.getMethod(nameGet);
                     if (!method.getParameterTypes()[0].equals(methodGet.getReturnType())) {
-                        continue;
+                        throw new NoSuchMethodException();
                     }
                     methods.add(new Pair(methodGet, method));
                     continue;
@@ -166,10 +166,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         if (alreadySerialised.containsKey(value)) {
             throw new RuntimeException("Cannot serialize this object.");
         }
-        alreadySerialised.put(value, null);
         if (value == null) {
             return;
         }
+        alreadySerialised.put(value, null);
         try {
             Class clazz = value.getClass();
             if (isPrimitive(clazz)) {
@@ -191,7 +191,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                             serializeObjectToWriter(field.get(value), xmlWriter);
                             xmlWriter.writeEndElement();
                         } else {
+                            xmlWriter.writeStartElement(field.getName());
                             xmlWriter.writeCData(field.get(value).toString());
+                            xmlWriter.writeEndElement();
                         }
                     }
                 }
@@ -274,7 +276,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         } else if (clazz.equals(String.class)) {
             return val;
         }
-        return null; // never returned;
+        return null; // never used
     }
 
     private Object deserializeToValue(Element element, Class clazz) {
@@ -295,6 +297,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 if (serializedFields == null) {
                     throw new RuntimeException("Cannot serialize object.");
                 }
+                HashSet<Field> unused = new HashSet<>(serializedFields.values());
                 for (int i = 0; i < children.getLength(); ++i) {
                     Node node = children.item(i);
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -304,6 +307,13 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         }
                         field.setAccessible(true);
                         field.set(returnObject, deserializeToValue((Element) node, field.getType()));
+                        unused.remove(field);
+                    }
+                }
+                for (Field field : unused) {
+                    if (!field.getType().isPrimitive()) {
+                        field.setAccessible(true);
+                        field.set(returnObject, null);
                     }
                 }
                 return returnObject;
@@ -343,6 +353,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             reader = new StringReader(data);
             InputSource source = new InputSource(reader);
             Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(source);
+            if (!document.getDocumentElement().getTagName().equals(getClazz().getName())) {
+                throw new RuntimeException("Unsupported class.");
+            }
             return (T) deserializeToValue(document.getDocumentElement(), getClazz());
         } catch (Throwable t) {
             throw new RuntimeException(t.getMessage(), t);

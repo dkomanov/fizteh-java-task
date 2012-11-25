@@ -18,8 +18,28 @@ public class ClassForSerializationMethods {
         isSmth = smth;
     }
 
-    public void setSomething() {
+    public void setSomething(int unused) {
         isSmth = false;
+    }
+
+    public long getSomething() {
+        return 1;
+    }
+
+    public boolean isSmth() {
+        return false;
+    }
+
+    public void setSmth(int i) {
+        return;
+    }
+
+    public void setWithoutPair(String str) {
+        return;
+    }
+
+    public void setIncorrect(int a, int b) {
+        return;
     }
 
     @Override

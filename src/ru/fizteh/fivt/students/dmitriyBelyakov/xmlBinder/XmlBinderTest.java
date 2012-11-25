@@ -26,26 +26,47 @@ public class XmlBinderTest extends Assert {
         new XmlBinder(BadClassForSerialization.class).serialize(new BadClassForSerialization());
     }
 
+    @Test(expected = RuntimeException.class)
+    public void testUnsupportedClass() {
+        new XmlBinder(ClassForSerializationFields.class).deserialize( new String(
+                "<ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerializationMethods>"
+                        + "</ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerializationMethods>").getBytes());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testNoneBytes() {
+        new XmlBinder(ClassForSerializationFields.class).deserialize(null);
+    }
+
     @Test
     public void testXmlBuilder() {
         XmlBinder binder = new XmlBinder(User.class);
         Permissions permissions = new Permissions();
         permissions.setQuota(100500);
         User user = new User(1, UserType.USER, new UserName("first", "last"), permissions);
-        byte[] btes = binder.serialize(user);
-        User anotherUser = (User) binder.deserialize(btes);
+        byte[] bytes1 = binder.serialize(user);
+        User anotherUser = (User) binder.deserialize(bytes1);
         assertFalse(user == anotherUser);
-        // assertEquals(user, anotherUser); TODO ask
+        assertEquals(user, anotherUser);
         XmlBinder anotherBinder = new XmlBinder(ClassForSerializationFields.class);
         ClassForSerializationFields classObject = new ClassForSerializationFields();
-        byte[] bytes = anotherBinder.serialize(classObject);
-        ClassForSerializationFields anotherClass = (ClassForSerializationFields) anotherBinder.deserialize(bytes);
+        byte[] bytes2 = anotherBinder.serialize(classObject);
+        ClassForSerializationFields anotherClass = (ClassForSerializationFields) anotherBinder.deserialize(bytes2);
         assertFalse(anotherClass == classObject);
         assertEquals(classObject, anotherClass);
         XmlBinder yetAnotherBinder = new XmlBinder(ClassForSerializationMethods.class);
         ClassForSerializationMethods classMethods = new ClassForSerializationMethods();
         classMethods.setSomething(true);
-        byte[] b = yetAnotherBinder.serialize(classMethods);
-        ClassForSerializationMethods clMethods = (ClassForSerializationMethods) yetAnotherBinder.deserialize(b);
+        byte[] bytes3 = yetAnotherBinder.serialize(classMethods);
+        ClassForSerializationMethods clMethods = (ClassForSerializationMethods) yetAnotherBinder.deserialize(bytes3);
+        assertEquals(classMethods, clMethods);
+        String str = "<ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerializationFields>"
+                + "<boolFieldNotExist>false</boolFieldNotExist><shField>21</shField><c><![CDATA[D]]></c><doubleField>1.1</doubleField>"
+                + "<intField>11</intField><flField>1.993</flField><longField>2012</longField>"
+                + "<enumField>MESSAGE</enumField><byteField>12</byteField>"
+                + "</ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerializationFields>";
+        ClassForSerializationFields classWithNull = (ClassForSerializationFields) anotherBinder.deserialize(str.getBytes());
+        assertNull(classWithNull.stringField);
+        assertNotEquals(classObject, classWithNull);
     }
 }
