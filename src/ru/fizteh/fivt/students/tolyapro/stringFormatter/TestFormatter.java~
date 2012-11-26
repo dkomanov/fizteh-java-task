@@ -124,7 +124,6 @@ public class TestFormatter {
 
 		result = formatter.format("{0.testDoubleChild.d4}", testBigInteger);
 		Assert.assertEquals("4.0", result);
-
 	}
 
 }
