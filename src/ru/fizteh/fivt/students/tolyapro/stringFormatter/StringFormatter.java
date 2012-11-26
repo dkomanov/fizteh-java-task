@@ -13,14 +13,12 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 			throws FormatterException {
 		StringBuilder result = new StringBuilder();
 		format(result, format, args);
-
 		return result.toString();
 	}
 
 	@Override
 	public void format(StringBuilder result, String format, Object... args)
 			throws FormatterException {
-		// TODO Auto-generated method stub
 		parser(result, format, 0, args);
 	}
 
@@ -29,7 +27,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 	public void addToExtensions(StringFormatterExtension extension)
 			throws FormatterException {
 		if (extension == null) {
-			throw new FormatterException("no extension");
+			throw new FormatterException("Null extension");
 		}
 		try {
 			extensions.add(extension);
@@ -38,15 +36,15 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 		}
 	}
 
-	public void giveMeObject(StringBuilder result, String format,
-			Object... args) throws FormatterException {
+	public void getObject(StringBuilder result, String format, Object... args)
+			throws FormatterException {
 		Object object;
 		int position = format.indexOf(':');
 		if (position == -1) {
 			position = format.length();
 		}
-		String pattern = format.substring(0, position);
-		String[] tokens = pattern.split("\\.");
+		String beforePattern = format.substring(0, position);
+		String[] tokens = beforePattern.split("\\.");
 		try {
 			String tmp = tokens[0];
 			int number = Integer.parseInt(tmp);
@@ -103,41 +101,41 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
 	public void parser(StringBuilder result, String format, int currPosition,
 			Object... args) {
-		int leftPosition = format.indexOf('{', currPosition);
-		int rightPosition = format.indexOf('}', currPosition);
+		int leftBracket = format.indexOf('{', currPosition);
+		int rightBracket = format.indexOf('}', currPosition);
 
-		if (leftPosition == -1 && rightPosition == -1) {
+		if (leftBracket == -1 && rightBracket == -1) {
 			result.append(format.substring(currPosition));
 			return;
 		}
-		if (leftPosition == -1) {
-			leftPosition = format.length();
+		if (leftBracket == -1) {
+			leftBracket = format.length();
 		}
-		if (rightPosition == -1) {
-			rightPosition = format.length();
+		if (rightBracket == -1) {
+			rightBracket = format.length();
 		}
-
-		if (leftPosition <= rightPosition) {
-			result.append(format.substring(currPosition, leftPosition));
-			if (format.length() > (leftPosition + 1)
-					&& format.charAt(leftPosition + 1) == '{') {
+		if (leftBracket <= rightBracket) {
+			result.append(format.substring(currPosition, leftBracket));
+			if (format.length() > (leftBracket + 1)
+					&& format.charAt(leftBracket + 1) == '{') {
 				result.append('{');
-				parser(result, format, leftPosition + 1, args);
-			} else if (rightPosition == format.length()) {
+				if (leftBracket + 2 < format.length()) {
+					parser(result, format, leftBracket + 2, args);
+				}
+			} else if (rightBracket == format.length()
+					|| rightBracket == leftBracket + 1) {
 				throw new FormatterException("Brackets error");
-			} else if (rightPosition == leftPosition + 1) {
-				throw new FormatterException("Expression in brackets is empty");
 			} else {
-				giveMeObject(result,
-						format.substring(leftPosition + 1, rightPosition), args);
-				parser(result, format, rightPosition + 1, args);
+				getObject(result,
+						format.substring(leftBracket + 1, rightBracket), args);
+				parser(result, format, rightBracket + 1, args);
 			}
 
 		} else {
-			if (rightPosition + 1 < format.length()
-					&& format.charAt(rightPosition + 1) == '}') {
-				result.append(format.substring(currPosition, rightPosition + 1));
-				parser(result, format, rightPosition + 2, args);
+			if (rightBracket + 1 < format.length()
+					&& format.charAt(rightBracket + 1) == '}') {
+				result.append(format.substring(currPosition, rightBracket + 1));
+				parser(result, format, rightBracket + 2, args);
 			} else {
 				throw new FormatterException("Brackets Error");
 			}

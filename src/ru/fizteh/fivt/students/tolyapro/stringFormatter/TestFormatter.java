@@ -26,14 +26,22 @@ public class TestFormatter {
 		private final double d5 = 0.55555;
 	}
 
+	static public class TestBigInteger {
+		public final BigInteger b1 = new BigInteger("1");
+		private BigInteger b2 = new BigInteger("2");
+		private TestDoubleChild testDoubleChild = new TestDoubleChild();
+	}
+
 	TestDouble testDouble;
 	TestDoubleChild testDoubleChild;
+	TestBigInteger testBigInteger;
 	String result;
 
 	@Before
 	public void init() {
 		testDouble = new TestDouble();
 		testDoubleChild = new TestDoubleChild();
+		testBigInteger = new TestBigInteger();
 		String result = new String();
 	}
 
@@ -77,6 +85,11 @@ public class TestFormatter {
 	}
 
 	@Test(expected = FormatterException.class)
+	public void testNegativeindex() {
+		formatter.format("{-1}", testDouble.d4);
+	}
+
+	@Test(expected = FormatterException.class)
 	public void testNonExistingFieldsChild() {
 		formatter.format("{0}.d", testDoubleChild);
 	}
@@ -87,12 +100,30 @@ public class TestFormatter {
 		result = formatter.format("{0.d5}", testDoubleChild);
 		Assert.assertEquals("0.55555", result);
 
+		result = formatter.format("{0.d5:.1f}", testDoubleChild);
+		Assert.assertEquals("0,6", result);
+
 		result = formatter.format("{0.d4}", testDoubleChild);
 		Assert.assertEquals("4.0", result);
 
 		result = formatter.format("{{", testDoubleChild);
 		Assert.assertEquals("{", result);
 
+		result = formatter.format("}}", testDoubleChild);
+		Assert.assertEquals("}", result);
+
+		result = formatter.format("{{{0.d1}}}", testDouble);
+		Assert.assertEquals("{1.0}", result);
+
+		Double d = null;
+		result = formatter.format("{0}", d);
+		Assert.assertEquals("", result);
+
+		result = formatter.format("{0.b1} + {0.b2} = 3", testBigInteger);
+		Assert.assertEquals("1 + 2 = 3", result);
+
+		result = formatter.format("{0.testDoubleChild.d4}", testBigInteger);
+		Assert.assertEquals("4.0", result);
 	}
 
 }
