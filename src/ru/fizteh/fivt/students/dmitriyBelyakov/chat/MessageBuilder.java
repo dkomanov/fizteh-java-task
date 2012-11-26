@@ -4,8 +4,6 @@ package ru.fizteh.fivt.students.dmitriyBelyakov.chat;
  * @author Dmitriy Belyakov
  */
 
-//TODO в error писать причину ошибок
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;

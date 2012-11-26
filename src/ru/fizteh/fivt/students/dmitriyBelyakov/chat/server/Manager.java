@@ -87,7 +87,7 @@ public class Manager implements Runnable {
         try {
             userDeleteRegulator.lock();
             for (User user : users) {
-                user.close(false, true);
+                user.close(User.BYE, User.SEND_MESSAGE);
             }
             if (!socket.isClosed()) {
                 socket.close();
@@ -131,7 +131,7 @@ public class Manager implements Runnable {
             userDeleteRegulator.lock();
             for (User u : users) {
                 if (u.name().equals(user)) {
-                    u.close(false, true);
+                    u.close(User.BYE, User.SEND_MESSAGE);
                     break;
                 }
             }

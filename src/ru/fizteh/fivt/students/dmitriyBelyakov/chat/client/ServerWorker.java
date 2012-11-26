@@ -35,7 +35,7 @@ class ServerWorkerThread extends Thread {
                     worker.getMessage();
                 } else if (type == MessageType.ERROR.getId()) {
                     Message message = MessageUtils.getErrorMessage(iStream);
-                    System.out.println("[Server error] " + message.getText());
+                    System.err.println("[Server error] " + message.getText());
                     worker.close(ServerWorker.ERROR, ServerWorker.NOT_SEND_MESSAGE);
                 } else {
                     throw new RuntimeException("Incorrect message type.");
@@ -44,7 +44,7 @@ class ServerWorkerThread extends Thread {
         } catch (Exception e) {
             if (!isInterrupted()) {
                 String messageText;
-                if(e.getMessage() != null) {
+                if (e.getMessage() != null) {
                     messageText = e.getMessage();
                 } else {
                     messageText = "Unknown.";
@@ -104,7 +104,7 @@ class ServerWorker {
                     + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) + "] " + message.getText());
         } catch (Exception e) {
             String messageText;
-            if(e.getMessage() != null) {
+            if (e.getMessage() != null) {
                 messageText = e.getMessage();
             } else {
                 messageText = "Unknown.";
@@ -114,6 +114,9 @@ class ServerWorker {
     }
 
     public void close(boolean isError, boolean sendMessage, String messageText) {
+        if (messageText != null && !messageText.equals("")) {
+            System.out.println(messageText);
+        }
         if (sendMessage == SEND_MESSAGE && isError == ERROR) {
             myManager.sendMessage(new Message(MessageType.ERROR, "", messageText));
         } else if (sendMessage == SEND_MESSAGE) {
