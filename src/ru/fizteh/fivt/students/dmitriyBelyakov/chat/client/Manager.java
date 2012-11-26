@@ -28,24 +28,26 @@ class Manager {
     }
 
     synchronized void newConnection(String host, int port) {
+        ServerWorker last = currentWorker;
         try {
-            ServerWorker last = currentWorker;
             currentWorker = new ServerWorker(host, port, this);
             currentWorker.start();
             servers.add(currentWorker);
             if (last != null) {
                 last.deactivate();
             }
-            if (currentWorker != null) {
-                currentWorker.activate();
-            }
+            currentWorker.activate();
             sendMessage(new Message(MessageType.HELLO, name, ""));
         } catch (Throwable t) {
             if (currentWorker != null) {
-                currentWorker.close(true, false);
+                currentWorker.close(ServerWorker.ERROR, ServerWorker.NOT_SEND_MESSAGE);
             }
             System.err.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) +
                     "] Cannot connect to " + host + ":" + port + ".");
+            currentWorker = last;
+            if (currentWorker != null) {
+                currentWorker.activate();
+            }
         }
     }
 
@@ -56,7 +58,12 @@ class Manager {
             }
         } catch (Throwable e) {
             if (currentWorker != null) {
-                currentWorker.close(true, false);
+                currentWorker.close(ServerWorker.ERROR, ServerWorker.NOT_SEND_MESSAGE);
+            }
+            if (e.getMessage() != null) {
+                System.err.println(e.getMessage());
+            } else {
+                System.err.println("Unknown error.");
             }
         }
     }
@@ -97,7 +104,7 @@ class Manager {
         try {
             serverWorkerDeleteRegulator.lock();
             for (ServerWorker w : servers) {
-                w.close(false, true);
+                w.close(ServerWorker.BYE, ServerWorker.SEND_MESSAGE);
             }
         } finally {
             serverWorkerDeleteRegulator.unlock();
@@ -119,7 +126,7 @@ class Manager {
 
     public void disconnect() {
         if (currentWorker != null) {
-            currentWorker.close(false, true);
+            currentWorker.close(ServerWorker.BYE, ServerWorker.SEND_MESSAGE);
             if (servers.size() > 0) {
                 currentWorker = servers.get(0);
             } else {
