@@ -41,7 +41,11 @@ public class FormattedCalendar {
             } else if (args[i].equals("-w")) {
                 showWeekNumber = true;
             } else if (args[i].equals("-t")) {
+                if (args.length == i + 1) {
+                    throw new Exception("Bad timezone");
+                }
                 timeZone = TimeZone.getTimeZone(args[++i]);
+                System.out.println(timeZone);
                 if (!args[i].equals(timeZone.getID())) {
                     throw new Exception("Bad timezone");
                 }
@@ -117,7 +121,7 @@ public class FormattedCalendar {
         try {
             parseArgs(args);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            System.err.println("Incorrect input: " + e.getMessage());
             System.exit(1);
         }
         Calendar calendar = Calendar.getInstance();
