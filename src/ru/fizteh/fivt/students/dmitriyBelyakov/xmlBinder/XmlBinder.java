@@ -18,7 +18,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -26,40 +25,45 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     private HashMap<Class, HashMap<String, GetterAndSetterPair>> methodsForClasses;
     private HashMap<Class, HashMap<String, Field>> fieldsForClasses;
     private IdentityHashMap<Object, Object> alreadySerialised;
+    private HashMap<String, Constructor> constructors;
+    private Unsafe unsafe;
 
     XmlBinder(Class<T> clazz) {
         super(clazz);
         methodsForClasses = new HashMap<>();
         fieldsForClasses = new HashMap<>();
         alreadySerialised = new IdentityHashMap<>();
+        constructors = new HashMap<>();
         prepareToSerialization(clazz);
-    }
-
-    private Object newInstance(Class clazz) {
-        try {
-            Constructor constructor = clazz.getConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
-        } catch (NoSuchMethodException e) {
-            /* default constructor does not exist */
-        } catch (InstantiationException e) {
-            /* nothing */
-        } catch (InvocationTargetException e) {
-            /* nothing */
-        } catch (IllegalAccessException e) {
-            /* nothing */
-        }
         try {
             Field f = Unsafe.class.getDeclaredField("theUnsafe");
             f.setAccessible(true);
-            Unsafe unsafe = (Unsafe) f.get(Unsafe.class);
-            return unsafe.allocateInstance(clazz);
+            unsafe = (Unsafe) f.get(Unsafe.class);
         } catch (Throwable t) {
-            throw new RuntimeException("Cannot create new instance of object.");
+            throw new RuntimeException("Cannot create binder.");
         }
     }
 
+    private Constructor getConstructor(Class clazz) {
+        try {
+            Constructor constructor = clazz.getConstructor();
+            constructor.setAccessible(true);
+            return constructor;
+        } catch (NoSuchMethodException e) {
+            /* default constructor does not exist */
+        }
+        return null;
+    }
+
+    private Object newInstance(Class clazz) throws Exception {
+        if (constructors.containsKey(clazz.getName()) && constructors.get(clazz.getName()) != null) {
+            return constructors.get(clazz.getName()).newInstance();
+        }
+        return unsafe.allocateInstance(clazz);
+    }
+
     private void prepareToSerialization(Class clazz) {
+        constructors.put(clazz.getName(), getConstructor(clazz));
         if (fieldsForClasses.containsKey(clazz) || methodsForClasses.containsKey(clazz) || isPrimitive(clazz)) {
             return;
         }
@@ -340,7 +344,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         method.setter.invoke(returnObject, deserializeToValue((Element) node, method.getter.getReturnType()));
                     }
                 }
-                //Object returnObject = clazz.newInstance();
                 return returnObject;
             }
         } catch (Throwable t) {
