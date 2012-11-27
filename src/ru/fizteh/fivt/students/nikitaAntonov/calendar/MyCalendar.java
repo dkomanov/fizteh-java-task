@@ -63,15 +63,11 @@ public class MyCalendar {
         }
 
         for (int i = 0, e = daysOfWeekNames.length; i < e; ++i) {
-            for (int j = maxLength - daysOfWeekLengths[i]; j > 0; --j) {
-                System.out.print(" ");
-            }
-
-            System.out.print(daysOfWeekNames[i]);
+            printStringWithAlignment(daysOfWeekNames[i], maxLength);
 
             System.out.print(" ");
         }
-        
+
         System.out.println();
 
         opts.calendar.set(Calendar.DAY_OF_MONTH, 1);
@@ -79,51 +75,35 @@ public class MyCalendar {
         int currentWeek = opts.calendar.get(Calendar.WEEK_OF_YEAR);
 
         if (opts.showWeeks) {
-            String numOfWeek = String.valueOf(currentWeek);
-            if (numOfWeek.length() == 1) {
-                numOfWeek = " " + numOfWeek;
-            }
+            printNumWithAlignment(currentWeek, 2);
 
-            System.out.print(numOfWeek);
             System.out.print(" ");
         }
 
         int EmptyDays = opts.calendar.get(Calendar.DAY_OF_WEEK) - 2;
         for (; EmptyDays > 0; --EmptyDays) {
-            for (int j = 0; j < maxLength; ++j) {
-                System.out.print(" ");
-            }
+            printStringWithAlignment("", maxLength);
             System.out.print(" ");
         }
 
         while (opts.month == opts.calendar.get(Calendar.MONTH)) {
 
             while (currentWeek == opts.calendar.get(Calendar.WEEK_OF_YEAR)) {
-                String number = String.valueOf(currentDay);
-                
-                for (int i = 0, e = maxLength - number.length(); i < e; ++i) {
-                    System.out.print(" ");
-                }
-                System.out.print(number);
+                printNumWithAlignment(currentDay, maxLength);
                 System.out.print(" ");
-            
+
                 ++currentDay;
                 opts.calendar.set(Calendar.DAY_OF_MONTH, currentDay);
             }
-            
+
             currentWeek = opts.calendar.get(Calendar.WEEK_OF_YEAR);
-            
+
             System.out.println();
-            
+
             if (opts.month == opts.calendar.get(Calendar.MONTH)) {
 
                 if (opts.showWeeks) {
-                    String numOfWeek = String.valueOf(currentWeek);
-                    if (numOfWeek.length() == 1) {
-                        numOfWeek = " " + numOfWeek;
-                    }
-
-                    System.out.print(numOfWeek);
+                    printNumWithAlignment(currentWeek, 2);
                     System.out.print(" ");
                 }
 
@@ -142,6 +122,24 @@ public class MyCalendar {
         }
 
         return result;
+    }
+
+    private static void printNumWithAlignment(int number, int places) {
+        printStringWithAlignment(String.valueOf(number), places);
+    }
+
+    private static void printStringWithAlignment(String str, int places) {
+        for (int i = 0, e = places - str.length(); i < e; ++i) {
+            System.out.print(" ");
+        }
+
+        System.out.print(str);
+    }
+
+    private static void printSpaces(int number) {
+        for (int i = 0; i < number; ++i) {
+            System.out.print(" ");
+        }
     }
 
     public static void main(String[] args) throws IncorrectArgsException {
