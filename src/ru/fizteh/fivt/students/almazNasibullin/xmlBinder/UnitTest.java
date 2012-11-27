@@ -6,6 +6,10 @@ import ru.fizteh.fivt.bind.test.Permissions;
 import ru.fizteh.fivt.bind.test.User;
 import ru.fizteh.fivt.bind.test.UserName;
 import ru.fizteh.fivt.bind.test.UserType;
+import ru.fizteh.fivt.bind.MembersToBind;
+import ru.fizteh.fivt.bind.AsXmlAttribute;
+import ru.fizteh.fivt.bind.BindingType;
+
 /**
  * 26.11.12
  * @author almaz
