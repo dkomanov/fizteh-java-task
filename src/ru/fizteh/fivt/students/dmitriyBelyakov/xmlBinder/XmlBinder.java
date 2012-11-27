@@ -27,8 +27,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     private IdentityHashMap<Object, Object> alreadySerialised;
     private HashMap<String, Constructor> constructors;
     private Unsafe unsafe;
+    private static HashMap<Class, XmlBinder> binders = new HashMap<>();
 
-    XmlBinder(Class<T> clazz) {
+    private XmlBinder(Class<T> clazz) {
         super(clazz);
         methodsForClasses = new HashMap<>();
         fieldsForClasses = new HashMap<>();
@@ -44,6 +45,13 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
     }
 
+    public static XmlBinder newInstance(Class clazz) {
+        if (binders.containsKey(clazz)) {
+            return binders.get(clazz);
+        }
+        return new XmlBinder(clazz);
+    }
+
     private Constructor getConstructor(Class clazz) {
         try {
             Constructor constructor = clazz.getConstructor();
@@ -55,7 +63,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         return null;
     }
 
-    private Object newInstance(Class clazz) throws Exception {
+    private Object newInstanceOfObject(Class clazz) throws Exception {
         if (constructors.containsKey(clazz.getName()) && constructors.get(clazz.getName()) != null) {
             return constructors.get(clazz.getName()).newInstance();
         }
@@ -301,7 +309,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 allFields = false;
             }
             if (allFields) {
-                Object returnObject = newInstance(clazz);
+                Object returnObject = newInstanceOfObject(clazz);
                 NodeList children = element.getChildNodes();
                 HashMap<String, Field> serializedFields = fieldsForClasses.get(clazz);
                 if (serializedFields == null) {
@@ -328,7 +336,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 }
                 return returnObject;
             } else {
-                Object returnObject = newInstance(clazz);
+                Object returnObject = newInstanceOfObject(clazz);
                 NodeList children = element.getChildNodes();
                 HashMap<String, GetterAndSetterPair> serializedMethods = methodsForClasses.get(clazz);
                 if (serializedMethods == null) {

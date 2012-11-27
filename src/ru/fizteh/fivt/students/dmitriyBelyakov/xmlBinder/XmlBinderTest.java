@@ -13,34 +13,34 @@ import java.util.HashMap;
 public class XmlBinderTest extends Assert {
     @Test(expected = RuntimeException.class)
     public void testValueNullPointer() {
-        new XmlBinder(User.class).serialize(null);
+        XmlBinder.newInstance(User.class).serialize(null);
     }
 
     @Test(expected = RuntimeException.class)
     public void testIncorrectTypeOfValue() {
-        new XmlBinder(User.class).serialize(new String("Hello, world!"));
+        XmlBinder.newInstance(User.class).serialize(new String("Hello, world!"));
     }
 
     @Test(expected = RuntimeException.class)
     public void testRecursiveClass() {
-        new XmlBinder(BadClassForSerialization.class).serialize(new BadClassForSerialization());
+        XmlBinder.newInstance(BadClassForSerialization.class).serialize(new BadClassForSerialization());
     }
 
     @Test(expected = RuntimeException.class)
     public void testUnsupportedClass() {
-        new XmlBinder(ClassForSerializationFields.class).deserialize( new String(
+        XmlBinder.newInstance(ClassForSerializationFields.class).deserialize(new String(
                 "<ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerializationMethods>"
                         + "</ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.ClassForSerializationMethods>").getBytes());
     }
 
     @Test(expected = RuntimeException.class)
     public void testNoneBytes() {
-        new XmlBinder(ClassForSerializationFields.class).deserialize(null);
+        XmlBinder.newInstance(ClassForSerializationFields.class).deserialize(null);
     }
 
     @Test
     public void testXmlBuilder() {
-        XmlBinder binder = new XmlBinder(User.class);
+        XmlBinder binder = XmlBinder.newInstance(User.class);
         Permissions permissions = new Permissions();
         permissions.setQuota(100500);
         User user = new User(1, UserType.USER, new UserName("first", "last"), permissions);
@@ -48,13 +48,13 @@ public class XmlBinderTest extends Assert {
         User anotherUser = (User) binder.deserialize(bytes1);
         assertFalse(user == anotherUser);
         assertEquals(user, anotherUser);
-        XmlBinder anotherBinder = new XmlBinder(ClassForSerializationFields.class);
+        XmlBinder anotherBinder = XmlBinder.newInstance(ClassForSerializationFields.class);
         ClassForSerializationFields classObject = new ClassForSerializationFields();
         byte[] bytes2 = anotherBinder.serialize(classObject);
         ClassForSerializationFields anotherClass = (ClassForSerializationFields) anotherBinder.deserialize(bytes2);
         assertFalse(anotherClass == classObject);
         assertEquals(classObject, anotherClass);
-        XmlBinder yetAnotherBinder = new XmlBinder(ClassForSerializationMethods.class);
+        XmlBinder yetAnotherBinder = XmlBinder.newInstance(ClassForSerializationMethods.class);
         ClassForSerializationMethods classMethods = new ClassForSerializationMethods();
         classMethods.setSomething(true);
         byte[] bytes3 = yetAnotherBinder.serialize(classMethods);
