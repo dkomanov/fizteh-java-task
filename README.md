@@ -24,7 +24,8 @@ Thread.stop(), Shutdown hook. java.lang.reflect.Proxy]
 9. [Метаданные, структура class-файла](http://yadi.sk/d/zvIHFjHa0icS5)
 10. [Байт-код: инструкции, пример генерации с помощью asm. JUnit]
 (http://yadi.sk/d/DkPrkdxp0q7LQ)
-11. GUI
+11. [GUI, Swing, MVC](http://yadi.sk/d/sOG6YDQN0v6BQ)
+12. Spring, IoC
 
 ## Семинары
 В папке [tasks](fizteh-java-task/tree/master/tasks) находятся описания заданий на
