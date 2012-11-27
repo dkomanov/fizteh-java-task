@@ -12,7 +12,7 @@ import java.util.TreeMap;
  * 
  * @author Антонов Никита
  */
-public abstract class OptionParser {
+public class OptionParser {
     private TreeMap<Character, Option> options;
     protected boolean canWorkWithoutParams = false;
     public ArrayList<String> FreedomOpts;
@@ -23,6 +23,8 @@ public abstract class OptionParser {
             throw new NullPointerException();
         }
 
+        options = new TreeMap<>();
+        
         int toSkip = 0;
 
         for (int i = 0, e = optstring.length(); i < e; ++i) {
@@ -117,7 +119,11 @@ public abstract class OptionParser {
     }
 
     public boolean has(char c) {
-        return options.containsKey(c);
+        Option o = options.get(c);
+        if (o == null) {
+            return false;
+        }
+        return o.isSet;
     }
     
     public boolean hasArgument(char c) {
