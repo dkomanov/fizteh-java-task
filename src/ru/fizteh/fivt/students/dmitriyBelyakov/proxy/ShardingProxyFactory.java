@@ -19,11 +19,11 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
             throw new IllegalArgumentException("No one interface found.");
         }
         for (Class face : interfaces) {
-            if (!face.isInterface()) {
-                throw new IllegalArgumentException(face.getName() + " is not interface.");
-            }
             if (face == null || face.getMethods().length == 0) {
                 throw new IllegalArgumentException("One of interfaces hasn't methods.");
+            }
+            if (!face.isInterface()) {
+                throw new IllegalArgumentException(face.getName() + " is not interface.");
             }
             Method[] methods = face.getMethods();
             for (Method method : methods) {
