@@ -16,6 +16,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
+        method.setAccessible(true);
         if (method.getAnnotation(DoNotProxy.class) != null) {
             throw new RuntimeException("Incorrect method.");
         }
