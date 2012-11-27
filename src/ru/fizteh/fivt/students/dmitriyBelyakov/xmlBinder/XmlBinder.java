@@ -1,6 +1,5 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder;
 
-import javafx.util.Pair;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -24,7 +23,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
-    private HashMap<Class, HashMap<String, Pair<Method, Method>>> methodsForClasses;
+    private HashMap<Class, HashMap<String, GetterAndSetterPair>> methodsForClasses;
     private HashMap<Class, HashMap<String, Field>> fieldsForClasses;
     private IdentityHashMap<Object, Object> alreadySerialised;
 
@@ -80,15 +79,15 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 prepareToSerialization(field.getType());
             }
         } else {
-            ArrayList<Pair<Method, Method>> methods = getMethods(clazz);
-            HashMap<String, Pair<Method, Method>> map = new HashMap<>();
-            for (Pair pair : methods) {
-                String name = firstCharToLowerCase(((Method) pair.getValue()).getName().replace("set", ""));
+            ArrayList<GetterAndSetterPair> methods = getMethods(clazz);
+            HashMap<String, GetterAndSetterPair> map = new HashMap<>();
+            for (GetterAndSetterPair pair : methods) {
+                String name = firstCharToLowerCase((pair.setter).getName().replace("set", ""));
                 map.put(name, pair);
             }
             methodsForClasses.put(clazz, map);
-            for (Pair<Method, Method> pair : methods) {
-                prepareToSerialization(pair.getKey().getReturnType());
+            for (GetterAndSetterPair pair : methods) {
+                prepareToSerialization(pair.getter.getReturnType());
             }
         }
     }
@@ -128,8 +127,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         return fields;
     }
 
-    private ArrayList<Pair<Method, Method>> getMethods(Class clazz) {
-        ArrayList<Pair<Method, Method>> methods = new ArrayList<>();
+    private ArrayList<GetterAndSetterPair> getMethods(Class clazz) {
+        ArrayList<GetterAndSetterPair> methods = new ArrayList<>();
         Method[] tmpMethods = clazz.getMethods();
         for (Method method : tmpMethods) {
             if (method.getName().matches("set.+")) {
@@ -143,7 +142,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     if (!method.getParameterTypes()[0].equals(methodGet.getReturnType())) {
                         throw new NoSuchMethodException();
                     }
-                    methods.add(new Pair(methodGet, method));
+                    GetterAndSetterPair pair = new GetterAndSetterPair();
+                    pair.getter = methodGet;
+                    pair.setter = method;
+                    methods.add(pair);
                     continue;
                 } catch (NoSuchMethodException e) {
                     /* nothing */
@@ -154,7 +156,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                             || method.getReturnType().equals(Boolean.class))) {
                         continue;
                     }
-                    methods.add(new Pair(methodIs, method));
+                    GetterAndSetterPair pair = new GetterAndSetterPair();
+                    pair.getter = methodIs;
+                    pair.setter = method;
+                    methods.add(pair);
                 } catch (NoSuchMethodException e) {
                     /* nothing */
                 }
@@ -199,9 +204,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     }
                 }
             } else {
-                HashMap<String, Pair<Method, Method>> methods = methodsForClasses.get(clazz);
-                for (Pair<Method, Method> pair : methods.values()) {
-                    Method method = pair.getKey(); // get getter
+                HashMap<String, GetterAndSetterPair> methods = methodsForClasses.get(clazz);
+                for (GetterAndSetterPair pair : methods.values()) {
+                    Method method = pair.getter;
                     Object val = method.invoke(value);
                     if (val != null) {
                         if (method.getAnnotation(AsXmlCdata.class) == null || !isPrimitive(method.getReturnType())) {
@@ -321,18 +326,18 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             } else {
                 Object returnObject = newInstance(clazz);
                 NodeList children = element.getChildNodes();
-                HashMap<String, Pair<Method, Method>> serializedMethods = methodsForClasses.get(clazz);
+                HashMap<String, GetterAndSetterPair> serializedMethods = methodsForClasses.get(clazz);
                 if (serializedMethods == null) {
                     throw new RuntimeException("Cannot serialize object.");
                 }
                 for (int i = 0; i < children.getLength(); ++i) {
                     Node node = children.item(i);
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
-                        Pair<Method, Method> method = serializedMethods.get(((Element) node).getTagName());
+                        GetterAndSetterPair method = serializedMethods.get(((Element) node).getTagName());
                         if (method == null) {
                             continue;
                         }
-                        method.getValue().invoke(returnObject, deserializeToValue((Element) node, method.getKey().getReturnType()));
+                        method.setter.invoke(returnObject, deserializeToValue((Element) node, method.getter.getReturnType()));
                     }
                 }
                 //Object returnObject = clazz.newInstance();
