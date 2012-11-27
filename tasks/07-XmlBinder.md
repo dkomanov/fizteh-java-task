@@ -65,3 +65,14 @@ assert user.equals(deserialized);
 #### 3
 [AsXmlElement]
 (https://github.com/dkomanov/fizteh-java-task/blob/master/src/ru/fizteh/fivt/bind/AsXmlElement.java).
+
+### Дополнительная информация
+#### Как создавать экземпляры классов
+Если у класса есть конструктор без параметров (он может не быть public), то
+для создания экземпляра класса надо использовать его. Если конструктора без
+параметров нет, то надо использовать технику, показанную в примере:
+(https://github.com/dkomanov/fizteh-java-task/blob/master/src/ru/fizteh/fivt/examples/UnsafeExample.java)
+
+#### Для предотвращения циклических ссылок
+Можно использовать [IdentityHashMap](http://docs.oracle.com/javase/1.4.2/docs/api/java/util/IdentityHashMap.html).
+Этот контейнер использует сравнение по ссылке, а не с помощью equals.
