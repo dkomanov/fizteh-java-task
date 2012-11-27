@@ -24,7 +24,7 @@ public class OptionParser {
         }
 
         options = new TreeMap<>();
-        
+
         int toSkip = 0;
 
         for (int i = 0, e = optstring.length(); i < e; ++i) {
@@ -125,29 +125,29 @@ public class OptionParser {
         }
         return o.isSet;
     }
-    
+
     public boolean hasArgument(char c) {
         Option o = options.get(c);
         if (o == null) {
             return false;
         }
-        
+
         return o.value != null;
     }
-    
+
     public String valueOf(char c) {
         Option o = options.get(c);
         if (o == null) {
             return null;
         }
-        
+
         return o.value;
     }
-    
+
     static boolean isOptions(String opt) {
         return opt.matches("^-\\w+$");
     }
-    
+
     static class Option {
         public String value = null;
         public boolean isSet = false;
