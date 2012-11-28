@@ -45,7 +45,6 @@ public class FormattedCalendar {
                     throw new Exception("Bad timezone");
                 }
                 timeZone = TimeZone.getTimeZone(args[++i]);
-                System.out.println(timeZone);
                 if (!args[i].equals(timeZone.getID())) {
                     throw new Exception("Bad timezone");
                 }
