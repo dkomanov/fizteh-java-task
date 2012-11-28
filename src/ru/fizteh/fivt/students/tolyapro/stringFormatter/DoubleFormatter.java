@@ -7,7 +7,7 @@ import ru.fizteh.fivt.format.FormatterException;
 public class DoubleFormatter extends
         ru.fizteh.fivt.format.StringFormatterExtension {
 
-    protected DoubleFormatter() {
+    public DoubleFormatter() {
         super(Double.class);
     }
 

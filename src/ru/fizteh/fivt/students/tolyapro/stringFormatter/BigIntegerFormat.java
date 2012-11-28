@@ -8,7 +8,7 @@ import ru.fizteh.fivt.format.StringFormatterExtension;
 
 public class BigIntegerFormat extends StringFormatterExtension {
 
-    protected BigIntegerFormat() {
+    public BigIntegerFormat() {
         super(BigInteger.class);
     }
 
