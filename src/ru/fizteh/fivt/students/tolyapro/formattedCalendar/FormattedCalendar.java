@@ -113,6 +113,8 @@ public class FormattedCalendar {
             System.out.println("Now: "
                     + simpleDateFormat.format(new Date().getTime()) + " "
                     + timeZone.getDisplayName());
+        } else {
+            System.out.println();
         }
     }
 
