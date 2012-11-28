@@ -1,8 +1,6 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder;
 
 import ru.fizteh.fivt.bind.AsXmlCdata;
-import ru.fizteh.fivt.bind.BindingType;
-import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.chat.MessageType;
 
 public class ClassForSerializationFields {

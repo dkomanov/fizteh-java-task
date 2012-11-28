@@ -26,11 +26,12 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     private HashMap<Class, HashMap<String, Field>> fieldsForClasses;
     private IdentityHashMap<Object, Object> alreadySerialised;
     private HashMap<String, Constructor> constructors;
+    private String className;
     private Unsafe unsafe;
-    private static HashMap<Class, XmlBinder> binders = new HashMap<>();
 
-    private XmlBinder(Class<T> clazz) {
+    public XmlBinder(Class<T> clazz) {
         super(clazz);
+        className = firstCharToLowerCase(clazz.getName().replaceFirst(clazz.getPackage().getName() + "\\.*", ""));
         methodsForClasses = new HashMap<>();
         fieldsForClasses = new HashMap<>();
         alreadySerialised = new IdentityHashMap<>();
@@ -43,13 +44,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         } catch (Throwable t) {
             throw new RuntimeException("Cannot create binder.");
         }
-    }
-
-    public static XmlBinder newInstance(Class clazz) {
-        if (binders.containsKey(clazz)) {
-            return binders.get(clazz);
-        }
-        return new XmlBinder(clazz);
     }
 
     private Constructor getConstructor(Class clazz) {
@@ -105,6 +99,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
 
     private String firstCharToLowerCase(String str) {
+        if(str == null || str.length() == 0) {
+            throw new RuntimeException("String not found.");
+        }
         if (str.length() == 1) {
             return str.toLowerCase();
         } else {
@@ -253,8 +250,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             writer = new StringWriter();
             XMLOutputFactory factory = XMLOutputFactory.newInstance();
             XMLStreamWriter xmlWriter = factory.createXMLStreamWriter(writer);
-            String className = value.getClass().getName();
-            xmlWriter.writeStartElement(firstCharToLowerCase(className));
+            xmlWriter.writeStartElement(className);
             serializeObjectToWriter(value, xmlWriter);
             xmlWriter.writeEndElement();
             serialized = writer.getBuffer().toString();
@@ -370,7 +366,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             reader = new StringReader(data);
             InputSource source = new InputSource(reader);
             Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(source);
-            if (!document.getDocumentElement().getTagName().equals(getClazz().getName())) {
+            if (!document.getDocumentElement().getTagName().equals(className)) {
                 throw new RuntimeException("Unsupported class.");
             }
             return (T) deserializeToValue(document.getDocumentElement(), getClazz());
