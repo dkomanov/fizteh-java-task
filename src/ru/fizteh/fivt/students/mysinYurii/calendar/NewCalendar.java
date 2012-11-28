@@ -1,6 +1,5 @@
 package ru.fizteh.fivt.students.mysinYurii.calendar;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -49,18 +48,18 @@ public class NewCalendar {
         date.set(Calendar.YEAR, yearNum);
         date.set(Calendar.DAY_OF_MONTH, 1);
         System.out.println();
-        int i1 = 2;
         int currDay = 1;
         int currWeek = date.get(Calendar.WEEK_OF_YEAR);
         if (toPrintWeek) {
             System.out.print(format(currWeek));
         }
-        while (i1 < date.get(Calendar.DAY_OF_WEEK)) {
-            ++i1;
+        date.setFirstDayOfWeek(Calendar.MONDAY);
+        int i1 = 0;
+        for (i1 = date.getFirstDayOfWeek(); i1 != date.get(Calendar.DAY_OF_WEEK); i1 = i1 % 7 + 1) {
             System.out.print("   ");
         }
         --i1;
-        for (; i1 <= date.getActualMaximum(Calendar.DAY_OF_WEEK); ++i1) {
+        for (; i1 != Calendar.SUNDAY; i1 = i1 % 7 + 1) {
             System.out.print(format(currDay));
             ++currDay;
         }
@@ -78,6 +77,7 @@ public class NewCalendar {
             }
         }
         if (toPrintTime) {
+            date = Calendar.getInstance(timeZone);
             SimpleDateFormat outputDate = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             outputDate.setTimeZone(timeZone);
             outputDate.setCalendar(date);
@@ -162,15 +162,15 @@ public class NewCalendar {
 		            if (available) {
 		                timeZone = TimeZone.getTimeZone(args[i]);
 		            } else {
-		                System.out.println("-t: time zone not available");
-		                System.exit(1);
+		                timeZone = TimeZone.getDefault();
+		                continue;
 		            }
 		        } else {
-		            System.out.println("-t: too few arguments");
-		            System.exit(1);
+		            timeZone = TimeZone.getDefault();
 		        }
 		    } else {
 		        System.out.println("Unknown comand: " + args[i]);
+		        System.exit(1);
 		    }
 		    ++i;
 		}
