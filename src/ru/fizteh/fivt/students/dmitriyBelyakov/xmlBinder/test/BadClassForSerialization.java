@@ -1,9 +1,9 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder;
+package ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.test;
 
 public class BadClassForSerialization {
     private BadClassForSerialization link;
 
-    BadClassForSerialization() {
+    public BadClassForSerialization() {
         link = this;
     }
 }
