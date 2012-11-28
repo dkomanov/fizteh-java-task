@@ -1,5 +1,9 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.client;
 
+/**
+ * @author Dmitriy Belyakov
+ */
+
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageBuilder;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
@@ -24,8 +28,8 @@ class Manager {
     }
 
     synchronized void newConnection(String host, int port) {
+        ServerWorker last = currentWorker;
         try {
-            ServerWorker last = currentWorker;
             currentWorker = new ServerWorker(host, port, this);
             currentWorker.start();
             servers.add(currentWorker);
@@ -36,10 +40,14 @@ class Manager {
             sendMessage(new Message(MessageType.HELLO, name, ""));
         } catch (Throwable t) {
             if (currentWorker != null) {
-                currentWorker.close(true, false);
+                currentWorker.close(ServerWorker.ERROR, ServerWorker.NOT_SEND_MESSAGE);
             }
             System.err.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) +
                     "] Cannot connect to " + host + ":" + port + ".");
+            currentWorker = last;
+            if (currentWorker != null) {
+                currentWorker.activate();
+            }
         }
     }
 
@@ -50,7 +58,12 @@ class Manager {
             }
         } catch (Throwable e) {
             if (currentWorker != null) {
-                currentWorker.close(true, false);
+                currentWorker.close(ServerWorker.ERROR, ServerWorker.NOT_SEND_MESSAGE);
+            }
+            if (e.getMessage() != null) {
+                System.err.println(e.getMessage());
+            } else {
+                System.err.println("Unknown error.");
             }
         }
     }
@@ -60,12 +73,17 @@ class Manager {
     }
 
     synchronized public void delete(ServerWorker server) {
-        if (server == currentWorker) {
-            currentWorker = servers.size() > 0 ? servers.get(0) : null;
-            currentWorker.activate();
+        if (servers.contains(server)) {
+            if (server == currentWorker) {
+                currentWorker = servers.size() > 0 ? servers.get(0) : null;
+                if (currentWorker != null) {
+                    currentWorker.activate();
+                }
+            }
+            servers.remove(server);
+            System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime())
+                    + "] Closed connection with server '" + server.name() + "'.");
         }
-        servers.remove(server);
-        System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date().getTime()) + "] Closed connection with server '" + server.name() + "'.");
     }
 
     public String list() {
@@ -86,7 +104,7 @@ class Manager {
         try {
             serverWorkerDeleteRegulator.lock();
             for (ServerWorker w : servers) {
-                w.close(false, true);
+                w.close(ServerWorker.BYE, ServerWorker.SEND_MESSAGE);
             }
         } finally {
             serverWorkerDeleteRegulator.unlock();
@@ -108,7 +126,7 @@ class Manager {
 
     public void disconnect() {
         if (currentWorker != null) {
-            currentWorker.close(false, true);
+            currentWorker.close(ServerWorker.BYE, ServerWorker.SEND_MESSAGE);
             if (servers.size() > 0) {
                 currentWorker = servers.get(0);
             } else {
