@@ -1,7 +1,10 @@
 package ru.fizteh.fivt.students.nikitaAntonov.calendar;
 
+import java.text.DateFormat;
 import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -16,11 +19,7 @@ public class MyCalendar {
         opts = o;
     }
 
-    public void print() {
-        print_header();
-    }
-
-    private void print_header() {
+    private void print() {
 
         if (opts.showWeeks) {
             System.out.print("   ");
@@ -75,7 +74,7 @@ public class MyCalendar {
         int currentWeek = opts.calendar.get(Calendar.WEEK_OF_YEAR);
 
         if (opts.showWeeks) {
-            printNumWithAlignment(currentWeek, 2);
+            printNumWithAlignment(currentWeek - 1, 2);
 
             System.out.print(" ");
         }
@@ -103,11 +102,17 @@ public class MyCalendar {
             if (opts.month == opts.calendar.get(Calendar.MONTH)) {
 
                 if (opts.showWeeks) {
-                    printNumWithAlignment(currentWeek, 2);
+                    printNumWithAlignment(currentWeek - 1, 2);
                     System.out.print(" ");
                 }
 
             }
+        }
+        
+        if (opts.timezoneWasSet) {
+            DateFormat dateFormat = new SimpleDateFormat("yyy.MM.dd HH:mm:ss");
+            dateFormat.setTimeZone(opts.timeZone);
+            System.out.println("\nNow: " +  dateFormat.format(new Date()) + " " + opts.timeZone.getID() + " time");
         }
 
     }
@@ -129,9 +134,7 @@ public class MyCalendar {
     }
 
     private static void printStringWithAlignment(String str, int places) {
-        for (int i = 0, e = places - str.length(); i < e; ++i) {
-            System.out.print(" ");
-        }
+        printSpaces(places - str.length());
 
         System.out.print(str);
     }
@@ -154,7 +157,8 @@ public class MyCalendar {
         public Calendar calendar;
         public int month;
         public int year;
-
+        public boolean timezoneWasSet = false;
+        
         public Options(String args[]) throws IncorrectArgsException {
 
             OptionParser parser = new OptionParser("m:y:wt:");
@@ -166,6 +170,7 @@ public class MyCalendar {
             showWeeks = parser.has('w');
 
             if (parser.has('t')) {
+                timezoneWasSet = true;
                 String userTimeZone = parser.valueOf('t');
                 timeZone = TimeZone.getTimeZone(userTimeZone);
                 if (!timeZone.getID().equals(userTimeZone)) {
