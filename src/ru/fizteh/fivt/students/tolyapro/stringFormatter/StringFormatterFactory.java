@@ -19,7 +19,7 @@ public class StringFormatterFactory implements
             return stringFormatter;
 
         } catch (Exception e) {
-            throw new FormatterException("bad extension");
+            throw new FormatterException("Extension is not supported", e);
         }
     }
 
