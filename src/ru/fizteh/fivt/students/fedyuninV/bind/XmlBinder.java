@@ -255,11 +255,12 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                     "2"
             );
             transformer.transform(new DOMSource(document), result);
-            return out.toByteArray();
-            /*StringWriter stringWriter = new StringWriter();
+
+            StringWriter stringWriter = new StringWriter();
             transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
             System.out.println(stringWriter.getBuffer().toString());
-            return null;                               */
+            /*return null;                               */
+            return out.toByteArray();
         } catch (Exception ex) {
             throw new RuntimeException("Serializing error", ex);
         }
@@ -347,6 +348,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                         } catch (Exception ex) {
                             throw new RuntimeException("Fail in deserializing");
                         }
+                    } else {
+                        return null;
                     }
                 }
             } else if(fields.containsKey(clazz)) {
@@ -364,6 +367,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                         } catch (Exception ex) {
                             throw new RuntimeException("Fail in deserializing");
                         }
+                    } else {
+                        return null;
                     }
                 }
             } else {
