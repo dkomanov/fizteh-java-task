@@ -65,7 +65,7 @@ class ProgramOptions {
             String opt = args[i];
             String nextOpt = ((i + 1 < end) ? args[i + 1] : null);
 
-            if (args[i].matches("-\\w+")) {
+            if (args[i].matches("^-\\w+$")) {
                 skipNext = parseOption(opt.substring(1), nextOpt);
             } else {
                 inputFilenames.add(opt);

@@ -112,7 +112,7 @@ public class JavaCalendar {
         printDaysOfWeek();
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         int weekNumb = calendar.get(Calendar.WEEK_OF_YEAR);
-        if (calendar.get(Calendar.DAY_OF_WEEK) != 0) {
+        if (calendar.get(Calendar.DAY_OF_WEEK) != calendar.getFirstDayOfWeek()) {
             if (writeWeekNumb) {
                 System.out.print(weekNumb++ + "\t");
             }
@@ -131,8 +131,9 @@ public class JavaCalendar {
             }
             System.out.print(i + "\t");
         }
+        System.out.println();
         if (writeTimeInTimeZone) {
-            System.out.println('\n');
+            System.out.println();
             SimpleDateFormat timeOutput = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             timeOutput.setTimeZone(timeZone);
             System.out.println("Now: " + timeOutput.format(new Date().getTime())

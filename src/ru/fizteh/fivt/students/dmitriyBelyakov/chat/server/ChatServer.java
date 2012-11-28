@@ -1,5 +1,8 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.server;
 
+/**
+ * @author Dmitriy Belyakov
+ */
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
