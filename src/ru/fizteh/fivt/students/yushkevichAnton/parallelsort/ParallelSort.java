@@ -73,7 +73,7 @@ public class ParallelSort {
 
         ArrayList<String> strings = new ArrayList<String>();
         // a try to rehabilitate preFiltering method
-        Set<String> uniqueStrings = new CaseInsensitiveStringHashSet();
+        Set<String> uniqueStrings = new HashSet<String>();
         // fail
         // postFiltering is better (80 against 180), is now default
         while (true) {
