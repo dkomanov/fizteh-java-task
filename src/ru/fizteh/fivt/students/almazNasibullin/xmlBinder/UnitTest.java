@@ -9,6 +9,8 @@ import ru.fizteh.fivt.bind.test.UserType;
 import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.bind.AsXmlAttribute;
 import ru.fizteh.fivt.bind.BindingType;
+import ru.fizteh.fivt.students.almazNasibullin.xmlBinder.TestClassSerializationFields;
+import ru.fizteh.fivt.students.almazNasibullin.xmlBinder.TestClassSerializationMethods;
 
 /**
  * 26.11.12
@@ -18,33 +20,33 @@ import ru.fizteh.fivt.bind.BindingType;
 public class UnitTest {
 
     @Test(expected = RuntimeException.class)
-    public void NullPointerObjectToSerialization() {
+    public void nullPointerObjectToSerialization() {
         new XmlBinder<User>(User.class).serialize(null);
     }
 
     @Test(expected = RuntimeException.class)
-    public void BadTypeOfObjectToSerialization() {
+    public void badTypeOfObjectToSerialization() {
         new XmlBinder(User.class).serialize(new Long(2012));
     }
 
     @Test(expected = RuntimeException.class)
-    public void NullPointerObjectToDeserialization() {
+    public void nullPointerObjectToDeserialization() {
         new XmlBinder<User>(User.class).deserialize(null);
     }
 
     @Test(expected = RuntimeException.class)
-    public void BadObjectToDeserialization() {
+    public void badObjectToDeserialization() {
         new XmlBinder(User.class).serialize(new byte[0]);
     }
 
     @Test(expected = RuntimeException.class)
-    public void BadTypeOfObjectToDeserialization() {
+    public void badTypeOfObjectToDeserialization() {
         new XmlBinder<User>(User.class).deserialize(new XmlBinder<Integer>
                 (Integer.class).serialize(new Integer(2012)));
     }
 
     @Test
-    public void TestXMLBinderForUser() {
+    public void testXMLBinderForUser() {
         XmlBinder<User> binder = new XmlBinder<User>(User.class);
         Permissions permissions = new Permissions();
         permissions.setQuota(100500);
@@ -68,10 +70,39 @@ public class UnitTest {
     }
 
     @Test
-    public void TestAnnotationAsXmlAttribute() {
+    public void testAnnotationAsXmlAttribute() {
         XmlBinder<TestClass> xb = new XmlBinder<TestClass>(TestClass.class);
         TestClass tc = new TestClass(2012, "Something here");
         String result = xb.mySerialize(tc);
         Assert.assertTrue(result.indexOf("newB=\"Something here\"") != -1);
+    }
+    
+    @Test
+    public void testSerializationMethods() {
+       TestClassSerializationMethods sm = new TestClassSerializationMethods();
+       XmlBinder<TestClassSerializationMethods> xb =
+               new XmlBinder<TestClassSerializationMethods>(TestClassSerializationMethods.class);
+       sm.setName("Almaz");
+       byte[] bytes = xb.serialize(sm);
+       TestClassSerializationMethods serialized = xb.deserialize(bytes);
+       Assert.assertEquals(serialized, sm);
+       Assert.assertTrue(serialized != sm);
+    }
+
+    @Test
+    public void testSerializationFields() {
+        XmlBinder<TestClassSerializationFields> xb =
+                new XmlBinder<TestClassSerializationFields>(TestClassSerializationFields.class);
+        TestClassSerializationFields BMW = new TestClassSerializationFields();
+        TestClassSerializationFields Lada = new TestClassSerializationFields();
+        Lada.setCar("Lada", "Granta");
+        Lada.setPrice(280L);
+        Lada.setOwner("Ivan");
+
+        TestClassSerializationFields serializedLada = xb.deserialize(xb.serialize(Lada));
+        TestClassSerializationFields serializedBMW = xb.deserialize(xb.serialize(BMW));
+        Assert.assertEquals(Lada, serializedLada);
+        Assert.assertEquals(BMW, serializedBMW);
+        Assert.assertNotSame(serializedLada, serializedBMW);
     }
 }
