@@ -8,7 +8,7 @@ public class CalendarPrinter {
         new CalendarPrinter().run(args);
     }
 
-    Locale   locale    = Locale.getDefault(); // for testing
+    Locale   locale    = Locale.UK; 
     Calendar calendar  = Calendar.getInstance(locale);
     boolean  showWeeks = false;
     boolean  showTime  = false;
