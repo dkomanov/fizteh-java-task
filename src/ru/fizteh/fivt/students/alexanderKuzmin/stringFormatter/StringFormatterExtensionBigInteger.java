@@ -22,13 +22,13 @@ public class StringFormatterExtensionBigInteger extends
             throws FormatterException {
         try {
             if (pattern == null || pattern.length() == 0) {
-                throw new FormatterException("NULL pattern.");
+                throw new Exception("NULL pattern.");
             }
             if (buffer == null) {
-                throw new FormatterException("NULL buffer.");
+                throw new Exception("NULL buffer.");
             }
             if (o == null) {
-                throw new FormatterException("NULL object.");
+                throw new Exception("NULL object.");
             }
             Formatter format = new Formatter();
             buffer.append(format.format("%" + pattern, o));
