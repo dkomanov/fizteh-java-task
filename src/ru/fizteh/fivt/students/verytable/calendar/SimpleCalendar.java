@@ -144,7 +144,7 @@ public class SimpleCalendar {
                         TimeZone givenTimeZone = TimeZone.getTimeZone(args[i + 1]);
                         if (givenTimeZone.getID().equals("GMT")) {
                             System.err.println("Unavailable time zone: "
-                                               + givenTimeZone);
+                                               + args[i + 1]);
                             System.exit(1);
                         }
                         timeZone = givenTimeZone;
