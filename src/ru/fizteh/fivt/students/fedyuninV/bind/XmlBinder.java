@@ -20,7 +20,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -169,6 +168,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         } else {
             if (getterAnnnotation != null) {
                 component.setName(getterAnnnotation.name());
+            } else {
+                component.setName(firstCharToLowerCase(component.getName()));
             }
         }
     }
@@ -255,8 +256,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                     "2"
             );
             transformer.transform(new DOMSource(document), result);
-
-            StringWriter stringWriter = new StringWriter();
+            /*StringWriter stringWriter = new StringWriter();
             transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
             System.out.println(stringWriter.getBuffer().toString());
             /*return null;                               */
@@ -346,10 +346,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                         try {
                             component.setter().invoke(obj, deserialize(component.getter().getReturnType(), (Element) child));
                         } catch (Exception ex) {
-                            throw new RuntimeException("Fail in deserializing");
+                            throw new RuntimeException("Fail in deserializing", ex);
                         }
-                    } else {
-                        return null;
                     }
                 }
             } else if(fields.containsKey(clazz)) {
@@ -365,10 +363,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                         try {
                             field.set(obj, deserialize(field.getType(), (Element) child));
                         } catch (Exception ex) {
-                            throw new RuntimeException("Fail in deserializing");
+                            throw new RuntimeException("Fail in deserializing", ex);
                         }
-                    } else {
-                        return null;
                     }
                 }
             } else {

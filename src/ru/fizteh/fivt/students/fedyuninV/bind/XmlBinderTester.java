@@ -19,6 +19,8 @@ public class XmlBinderTester {
         byte[] bytes = binder.serialize(user);
         byte[] bytes2 = binder.serialize(user2);
         User deserialized = binder.deserialize(bytes);
+        User deserialized2 = binder.deserialize(bytes2);
+        System.out.println(deserialized.getPermissions().getQuota());
         assert user != deserialized;
         assert user.equals(deserialized);
     }
