@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.alexanderKuzmin.stringFormatter
+package ru.fizteh.fivt.students.alexanderKuzmin.stringFormatter;
 
 import java.math.BigInteger;
 import java.util.Formatter;

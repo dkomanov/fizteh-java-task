@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.alexanderKuzmin.stringFormatter
+package ru.fizteh.fivt.students.alexanderKuzmin.stringFormatter;
 
 import java.util.Formatter;
 import ru.fizteh.fivt.format.FormatterException;
