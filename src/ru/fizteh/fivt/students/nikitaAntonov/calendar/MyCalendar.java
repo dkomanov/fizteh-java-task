@@ -31,8 +31,6 @@ public class MyCalendar {
         title.append(" ");
         title.append(opts.calendar.get(Calendar.YEAR));
 
-        StringBuilder daysOfWeek = new StringBuilder();
-
         String daysOfWeekNames[] = getDaysOfWeekNames();
         int daysOfWeekLengths[] = new int[daysOfWeekNames.length];
         int maxLength = -1;
@@ -84,7 +82,7 @@ public class MyCalendar {
             emptyDays = 7;
         }
         --emptyDays;
-        
+
         for (; emptyDays > 0; --emptyDays) {
             printStringWithAlignment("", maxLength);
             System.out.print(" ");
@@ -92,7 +90,8 @@ public class MyCalendar {
 
         while (opts.month == opts.calendar.get(Calendar.MONTH)) {
 
-            while (currentWeek == opts.calendar.get(Calendar.WEEK_OF_YEAR) && opts.month == opts.calendar.get(Calendar.MONTH)) {
+            while (currentWeek == opts.calendar.get(Calendar.WEEK_OF_YEAR)
+                    && opts.month == opts.calendar.get(Calendar.MONTH)) {
                 printNumWithAlignment(currentDay, maxLength);
                 System.out.print(" ");
 
@@ -113,11 +112,12 @@ public class MyCalendar {
 
             }
         }
-        
+
         if (opts.timezoneWasSet) {
             DateFormat dateFormat = new SimpleDateFormat("yyy.MM.dd HH:mm:ss");
             dateFormat.setTimeZone(opts.timeZone);
-            System.out.println("\nNow: " +  dateFormat.format(new Date()) + " " + opts.timeZone.getID() + " time");
+            System.out.println("\nNow: " + dateFormat.format(new Date()) + " "
+                    + opts.timeZone.getID() + " time");
         }
 
     }
@@ -157,6 +157,8 @@ public class MyCalendar {
             cal = new MyCalendar(new Options(args));
         } catch (IncorrectArgsException e) {
             System.err.println(e.getMessage());
+            System.err
+                    .println("Usage: java Calendar [-m MONTH] [-y YEAR] [-w] [-t TIMEZONE]");
             System.exit(1);
         }
 
@@ -175,6 +177,10 @@ public class MyCalendar {
 
             OptionParser parser = new OptionParser("m:y:wt:");
             parser.parse(args);
+
+            if (!parser.FreedomOpts.isEmpty()) {
+                throw new IncorrectArgsException("Wrong parameter");
+            }
 
             calendar = Calendar.getInstance();
             calendar.setFirstDayOfWeek(Calendar.MONDAY);
