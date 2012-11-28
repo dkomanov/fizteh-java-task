@@ -99,7 +99,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
 
     private String firstCharToLowerCase(String str) {
-        if(str == null || str.length() == 0) {
+        if (str == null || str.length() == 0) {
             throw new RuntimeException("String not found.");
         }
         if (str.length() == 1) {

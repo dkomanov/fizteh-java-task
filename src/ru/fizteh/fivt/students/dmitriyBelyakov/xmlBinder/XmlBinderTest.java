@@ -10,7 +10,7 @@ import ru.fizteh.fivt.bind.test.UserType;
 public class XmlBinderTest extends Assert {
     @Test(expected = RuntimeException.class)
     public void testValueNullPointer() {
-       new XmlBinder(User.class).serialize(null);
+        new XmlBinder(User.class).serialize(null);
     }
 
     @Test(expected = RuntimeException.class)
