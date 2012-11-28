@@ -1,6 +1,5 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder;
 
-import com.sun.tools.corba.se.idl.toJavaPortable.StringGen;
 import org.junit.Assert;
 import ru.fizteh.fivt.bind.test.Permissions;
 import ru.fizteh.fivt.bind.test.User;

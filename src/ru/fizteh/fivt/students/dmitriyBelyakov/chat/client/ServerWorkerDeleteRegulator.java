@@ -1,5 +1,9 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.client;
 
+/**
+ * @author Dmitriy Belyakov
+ */
+
 import java.util.ArrayList;
 import java.util.List;
 
