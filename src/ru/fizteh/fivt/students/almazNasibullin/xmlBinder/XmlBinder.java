@@ -245,7 +245,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                      }
                  }
             }
-        } catch (Throwable cause) {cause.printStackTrace();
+        } catch (Throwable cause) {
             throw new RuntimeException("Something bad occured during serialization",
                     cause);
         }
