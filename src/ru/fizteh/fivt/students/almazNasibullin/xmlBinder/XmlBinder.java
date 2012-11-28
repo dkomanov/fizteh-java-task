@@ -35,7 +35,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             HashMap<Class, List<PairMethodsToSerialization> >();
     private Map<Class, List<Field> > fields = new HashMap<Class, List<Field> >();
 
-    XmlBinder(Class<T> clazz) {
+    public XmlBinder(Class<T> clazz) {
         super(clazz);
         addForSerialization(clazz);
     }
@@ -80,7 +80,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 if (m.getParameterTypes().length == 0) {
                     if (m.getName().matches("get.+")) {
                         name = m.getName().substring(3);
-                    } else if (m.getName().matches("is.+")) {
+                    } else if (m.getName().matches("is.+") && (
+                            m.getReturnType().equals(Boolean.class) ||
+                            m.getReturnType().equals(boolean.class))) {
                         name = m.getName().substring(2);
                     }
                 }
@@ -211,14 +213,32 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 }
             } else {
                  List<PairMethodsToSerialization> pairMethods = methods.get(clazz);
-                 for (PairMethodsToSerialization pm : pairMethods) {
+                 for (int i = 0; i < pairMethods.size(); ++i) {
+                     PairMethodsToSerialization pm = pairMethods.get(i);
                      String name = getName(pm.getter, pm.name);
                      Object newObject = pm.getter.invoke(o);
                      if (newObject != null) {
                          if (pm.getter.getAnnotation(AsXmlAttribute.class) == null) {
-                             xmlsw.writeStartElement(name);
-                             serializeObject(newObject, xmlsw, serialized);
-                             xmlsw.writeEndElement();
+                            xmlsw.writeStartElement(name);
+                            int k = i + 1;
+                            while (k < pairMethods.size()) {
+                                PairMethodsToSerialization m = pairMethods.get(k);
+                                String s = getName(m.getter, m.name);
+                                Object obj = m.getter.invoke(o);
+                                if (obj != null) {
+                                    if (m.getter.getAnnotation(AsXmlAttribute.class) != null) {
+                                        xmlsw.writeAttribute(s, obj.toString());
+                                        ++k;
+                                    } else {
+                                        break;
+                                    }
+                                } else {
+                                    ++k;
+                                }
+                            }
+                            i = --k;
+                            serializeObject(newObject, xmlsw, serialized);
+                            xmlsw.writeEndElement();
                          } else {
                              xmlsw.writeAttribute(name, newObject.toString());
                          }
