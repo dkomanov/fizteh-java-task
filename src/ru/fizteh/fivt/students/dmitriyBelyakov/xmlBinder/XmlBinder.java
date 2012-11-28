@@ -23,11 +23,12 @@ import java.util.*;
 
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     private HashMap<Class, HashMap<String, GetterAndSetterPair>> methodsForClasses;
-    private HashMap<Class, HashMap<String, Field>> fieldsForClasses;
+    private HashMap<Class, HashMap<String, FieldData>> fieldsForClasses;
     private IdentityHashMap<Object, Object> alreadySerialised;
     private HashMap<String, Constructor> constructors;
     private String className;
     private Unsafe unsafe;
+    private HashSet<Class> usedClasses;
 
     public XmlBinder(Class<T> clazz) {
         super(clazz);
@@ -36,7 +37,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         fieldsForClasses = new HashMap<>();
         alreadySerialised = new IdentityHashMap<>();
         constructors = new HashMap<>();
+        usedClasses = new HashSet<>();
         prepareToSerialization(clazz);
+        usedClasses.clear();
         try {
             Field f = Unsafe.class.getDeclaredField("theUnsafe");
             f.setAccessible(true);
@@ -66,9 +69,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
 
     private void prepareToSerialization(Class clazz) {
         constructors.put(clazz.getName(), getConstructor(clazz));
-        if (fieldsForClasses.containsKey(clazz) || methodsForClasses.containsKey(clazz) || isPrimitive(clazz)) {
+        if (usedClasses.contains(clazz)) {
             return;
         }
+        usedClasses.add(clazz);
         BindingType annotation = (BindingType) clazz.getAnnotation(BindingType.class);
         boolean allFields = true;
         if (annotation != null && annotation.value().equals(MembersToBind.GETTERS_AND_SETTERS)) {
@@ -76,9 +80,14 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
         if (allFields) {
             ArrayList<Field> fields = getFields(clazz);
-            HashMap<String, Field> map = new HashMap<>();
+            HashMap<String, FieldData> map = new HashMap<>();
             for (Field field : fields) {
-                map.put(field.getName(), field);
+                FieldData data = new FieldData();
+                data.name = field.getName();
+                data.field = field;
+                data.type = field.getType();
+                data.asXmlData = field.getAnnotation(AsXmlCdata.class) != null;
+                map.put(data.name, data);
             }
             fieldsForClasses.put(clazz, map);
             for (Field field : fields) {
@@ -88,8 +97,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             ArrayList<GetterAndSetterPair> methods = getMethods(clazz);
             HashMap<String, GetterAndSetterPair> map = new HashMap<>();
             for (GetterAndSetterPair pair : methods) {
-                String name = firstCharToLowerCase((pair.setter).getName().replace("set", ""));
-                map.put(name, pair);
+                map.put(pair.name, pair);
             }
             methodsForClasses.put(clazz, map);
             for (GetterAndSetterPair pair : methods) {
@@ -154,6 +162,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     GetterAndSetterPair pair = new GetterAndSetterPair();
                     pair.getter = methodGet;
                     pair.setter = method;
+                    pair.name = firstCharToLowerCase(nameGet.replaceFirst("get", ""));
+                    pair.type = methodGet.getReturnType();
+                    pair.asXmlCdata = methodGet.getAnnotation(AsXmlCdata.class) != null;
                     methods.add(pair);
                     continue;
                 } catch (NoSuchMethodException e) {
@@ -162,12 +173,15 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 try {
                     Method methodIs = clazz.getMethod(nameIs);
                     if (!method.getParameterTypes()[0].equals(methodIs.getReturnType()) || !(methodIs.getReturnType().equals(boolean.class)
-                            || method.getReturnType().equals(Boolean.class))) {
+                            || methodIs.getReturnType().equals(Boolean.class))) {
                         continue;
                     }
                     GetterAndSetterPair pair = new GetterAndSetterPair();
                     pair.getter = methodIs;
                     pair.setter = method;
+                    pair.name = firstCharToLowerCase(nameIs.replaceFirst("is", ""));
+                    pair.type = methodIs.getReturnType();
+                    pair.asXmlCdata = methodIs.getAnnotation(AsXmlCdata.class) != null;
                     methods.add(pair);
                 } catch (NoSuchMethodException e) {
                     /* nothing */
@@ -197,17 +211,18 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 allFields = false;
             }
             if (allFields) {
-                HashMap<String, Field> fields = fieldsForClasses.get(clazz);
-                for (Field field : fields.values()) {
-                    field.setAccessible(true);
-                    if (field.get(value) != null) {
-                        if (field.getAnnotation(AsXmlCdata.class) == null || !isPrimitive(field.get(value).getClass())) {
-                            xmlWriter.writeStartElement(field.getName());
-                            serializeObjectToWriter(field.get(value), xmlWriter);
+                HashMap<String, FieldData> fields = fieldsForClasses.get(clazz);
+                for (FieldData data : fields.values()) {
+                    data.field.setAccessible(true);
+                    Object val = data.field.get(value);
+                    if (val != null) {
+                        if (!data.asXmlData || !isPrimitive(data.type)) {
+                            xmlWriter.writeStartElement(data.name);
+                            serializeObjectToWriter(val, xmlWriter);
                             xmlWriter.writeEndElement();
                         } else {
-                            xmlWriter.writeStartElement(field.getName());
-                            xmlWriter.writeCData(field.get(value).toString());
+                            xmlWriter.writeStartElement(data.name);
+                            xmlWriter.writeCData(val.toString());
                             xmlWriter.writeEndElement();
                         }
                     }
@@ -215,15 +230,14 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             } else {
                 HashMap<String, GetterAndSetterPair> methods = methodsForClasses.get(clazz);
                 for (GetterAndSetterPair pair : methods.values()) {
-                    Method method = pair.getter;
-                    Object val = method.invoke(value);
+                    Object val = pair.getter.invoke(value);
                     if (val != null) {
-                        if (method.getAnnotation(AsXmlCdata.class) == null || !isPrimitive(method.getReturnType())) {
-                            xmlWriter.writeStartElement(firstCharToLowerCase(method.getName().replaceFirst("(get)|(is)", "")));
+                        if (!pair.asXmlCdata || !isPrimitive(pair.type)) {
+                            xmlWriter.writeStartElement(firstCharToLowerCase(pair.name));
                             serializeObjectToWriter(val, xmlWriter);
                             xmlWriter.writeEndElement();
                         } else {
-                            xmlWriter.writeStartElement(firstCharToLowerCase(method.getName().replaceFirst("(get)|(is)", "")));
+                            xmlWriter.writeStartElement(firstCharToLowerCase(pair.name));
                             xmlWriter.writeCData(val.toString());
                             xmlWriter.writeEndElement();
                         }
@@ -307,27 +321,27 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             if (allFields) {
                 Object returnObject = newInstanceOfObject(clazz);
                 NodeList children = element.getChildNodes();
-                HashMap<String, Field> serializedFields = fieldsForClasses.get(clazz);
+                HashMap<String, FieldData> serializedFields = fieldsForClasses.get(clazz);
                 if (serializedFields == null) {
-                    throw new RuntimeException("Cannot serialize object.");
+                    throw new RuntimeException("Cannot deserialize object.");
                 }
-                HashSet<Field> unused = new HashSet<>(serializedFields.values());
+                HashSet<FieldData> unused = new HashSet<>(serializedFields.values());
                 for (int i = 0; i < children.getLength(); ++i) {
                     Node node = children.item(i);
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
-                        Field field = serializedFields.get(((Element) node).getTagName());
-                        if (field == null) {
+                        FieldData data = serializedFields.get(((Element) node).getTagName());
+                        if (data == null) {
                             continue;
                         }
-                        field.setAccessible(true);
-                        field.set(returnObject, deserializeToValue((Element) node, field.getType()));
-                        unused.remove(field);
+                        data.field.setAccessible(true);
+                        data.field.set(returnObject, deserializeToValue((Element) node, data.type));
+                        unused.remove(data);
                     }
                 }
-                for (Field field : unused) {
-                    if (!field.getType().isPrimitive()) {
-                        field.setAccessible(true);
-                        field.set(returnObject, null);
+                for (FieldData data : unused) {
+                    if (!data.type.isPrimitive()) {
+                        data.field.setAccessible(true);
+                        data.field.set(returnObject, null);
                     }
                 }
                 return returnObject;
@@ -336,22 +350,22 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 NodeList children = element.getChildNodes();
                 HashMap<String, GetterAndSetterPair> serializedMethods = methodsForClasses.get(clazz);
                 if (serializedMethods == null) {
-                    throw new RuntimeException("Cannot serialize object.");
+                    throw new RuntimeException("Cannot deserialize object.");
                 }
                 for (int i = 0; i < children.getLength(); ++i) {
                     Node node = children.item(i);
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
-                        GetterAndSetterPair method = serializedMethods.get(((Element) node).getTagName());
-                        if (method == null) {
+                        GetterAndSetterPair pair = serializedMethods.get(((Element) node).getTagName());
+                        if (pair == null) {
                             continue;
                         }
-                        method.setter.invoke(returnObject, deserializeToValue((Element) node, method.getter.getReturnType()));
+                        pair.setter.invoke(returnObject, deserializeToValue((Element) node, pair.type));
                     }
                 }
                 return returnObject;
             }
         } catch (Throwable t) {
-            throw new RuntimeException("An exception occurred within serialization of " + element.getTagName(), t);
+            throw new RuntimeException("An exception occurred within deserialization of " + element.getTagName(), t);
         }
     }
 

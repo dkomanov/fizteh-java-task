@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder;
+package ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.test;
 
 import ru.fizteh.fivt.bind.AsXmlCdata;
 import ru.fizteh.fivt.chat.MessageType;
@@ -15,7 +15,7 @@ public class ClassForSerializationFields {
     long longField = 2012;
     Float flField = 1.993f;
     @AsXmlCdata
-    String stringField = "fizteh-java-task";
+    public String stringField = "fizteh-java-task";
     @AsXmlCdata
     Object nullPointer = null;
 

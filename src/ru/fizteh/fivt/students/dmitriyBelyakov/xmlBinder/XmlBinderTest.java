@@ -6,6 +6,9 @@ import ru.fizteh.fivt.bind.test.User;
 import org.junit.Test;
 import ru.fizteh.fivt.bind.test.UserName;
 import ru.fizteh.fivt.bind.test.UserType;
+import ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.test.BadClassForSerialization;
+import ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.test.ClassForSerializationFields;
+import ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.test.ClassForSerializationMethods;
 
 public class XmlBinderTest extends Assert {
     @Test(expected = RuntimeException.class)
