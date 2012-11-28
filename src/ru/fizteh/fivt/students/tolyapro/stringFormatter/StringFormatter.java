@@ -35,7 +35,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         try {
             extensions.add(extension);
         } catch (Exception e) {
-            throw new FormatterException(e.getCause());
+            throw new FormatterException(e);
         }
     }
 
@@ -80,7 +80,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             }
         } catch (Exception e) {
             throw new FormatterException("Can't get field: "
-                    + tokens.toString());
+                    + tokens.toString(), e);
         }
         if (position == format.length()) {
             result.append(object.toString());
