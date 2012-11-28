@@ -1,6 +1,8 @@
 package ru.fizteh.fivt.students.tolyapro.stringFormatter;
 
 import java.math.BigInteger;
+import java.text.Format;
+import java.util.Formatter;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,9 +34,16 @@ public class TestFormatter {
         private TestDoubleChild testDoubleChild = new TestDoubleChild();
     }
 
+    static public class TestOtherFormats {
+        public final String s1 = "s1";
+        private final String s2 = "s2";
+    }
+
     TestDouble testDouble;
     TestDoubleChild testDoubleChild;
     TestBigInteger testBigInteger;
+    TestOtherFormats testOtherFormats;
+    Formatter format;
     String result;
 
     @Before
@@ -42,7 +51,9 @@ public class TestFormatter {
         testDouble = new TestDouble();
         testDoubleChild = new TestDoubleChild();
         testBigInteger = new TestBigInteger();
+        testOtherFormats = new TestOtherFormats();
         String result = new String();
+        format = new Formatter();
     }
 
     @Test(expected = FormatterException.class)
@@ -55,13 +66,6 @@ public class TestFormatter {
     public void testBadPatternBigInteger() {
         BigInteger b = new BigInteger("100500");
         formatter.format("{0:...}", b);
-    }
-
-    @Test(expected = FormatterException.class)
-    public void testNonDouble() {
-        String s = "Bad string";
-        formatter.format("{0}", s);
-
     }
 
     @Test(expected = FormatterException.class)
@@ -80,18 +84,8 @@ public class TestFormatter {
     }
 
     @Test(expected = FormatterException.class)
-    public void testNonExistingFieldsParent() {
-        formatter.format("{0}.d", testDouble);
-    }
-
-    @Test(expected = FormatterException.class)
     public void testNegativeindex() {
         formatter.format("{-1}", testDouble.d4);
-    }
-
-    @Test(expected = FormatterException.class)
-    public void testNonExistingFieldsChild() {
-        formatter.format("{0}.d", testDoubleChild);
     }
 
     @Test
@@ -101,7 +95,7 @@ public class TestFormatter {
         Assert.assertEquals("0.55555", result);
 
         result = formatter.format("{0.d5:.1f}", testDoubleChild);
-        Assert.assertEquals("0,6", result);
+        Assert.assertEquals(format.format("%.1f", 0.55555).toString(), result);
 
         result = formatter.format("{0.d4}", testDoubleChild);
         Assert.assertEquals("4.0", result);
@@ -124,6 +118,12 @@ public class TestFormatter {
 
         result = formatter.format("{0.testDoubleChild.d4}", testBigInteger);
         Assert.assertEquals("4.0", result);
+
+        result = formatter.format("{0.s1}", testOtherFormats);
+        Assert.assertEquals("s1", result);
+
+        result = formatter.format("{0.null}a", testOtherFormats);
+        Assert.assertEquals("a", result);
     }
 
 }

@@ -1,7 +1,9 @@
 package ru.fizteh.fivt.students.tolyapro.stringFormatter;
 
+import java.util.*;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
@@ -22,7 +24,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         parser(result, format, 0, args);
     }
 
-    public ArrayList<StringFormatterExtension> extensions = new ArrayList<StringFormatterExtension>();
+    public List<StringFormatterExtension> extensions = Collections
+            .synchronizedList(new ArrayList<StringFormatterExtension>());
 
     public void addToExtensions(StringFormatterExtension extension)
             throws FormatterException {
@@ -32,7 +35,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         try {
             extensions.add(extension);
         } catch (Exception e) {
-            throw new FormatterException(e.getMessage());
+            throw new FormatterException(e.getCause());
         }
     }
 
@@ -52,10 +55,10 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 throw new Exception();
             }
             object = args[number];
+            Field tempField = null;
             for (int i = 1; i < tokens.length; ++i) {
                 Class<?> clazz = object.getClass();
                 String nameOfField = tokens[i];
-                Field tempField = null;
                 while (true) {
                     try {
                         tempField = clazz.getDeclaredField(nameOfField);
@@ -66,17 +69,22 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                         tempField = null;
                         clazz = clazz.getSuperclass();
                         if (clazz == null) {
-                            throw new Exception();
+                            break;
                         }
                     }
                 }
 
             }
-            if (object == null) {
+            if (object == null || (tempField == null && tokens.length > 1)) {
                 return;
             }
         } catch (Exception e) {
-            throw new FormatterException("Error with fields");
+            throw new FormatterException("Can't get field: "
+                    + tokens.toString());
+        }
+        if (position == format.length()) {
+            result.append(object.toString());
+            return;
         }
         StringFormatterExtension thisExtension = null;
         for (StringFormatterExtension e : extensions) {
@@ -86,13 +94,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             }
         }
         if (thisExtension != null) {
-            if (position == format.length()) {
-                result.append(object.toString());
-                return;
-            } else {
-                thisExtension.format(result, object,
-                        format.substring(position + 1));
-            }
+            thisExtension
+                    .format(result, object, format.substring(position + 1));
         } else {
             throw new FormatterException("No such extension");
         }
