@@ -3,11 +3,10 @@ package ru.fizteh.fivt.students.fedyuninV.bind;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import ru.fizteh.fivt.bind.AsXmlElement;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
+import sun.misc.Unsafe;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,6 +19,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -36,6 +36,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     TransformerFactory transformerFactory = TransformerFactory.newInstance();
     Object CONTAINS = new Object();
+    Unsafe unsafeInstance;
 
     public XmlBinder(Class<T> clazz) {
         super(clazz);
@@ -74,7 +75,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             }
             try {
                 getter = clazz.getMethod(prefix + component.getName());
-            } catch (NoSuchMethodException ex) {
+            } catch (NoSuchMethodException ignored) {
             }
             if (getter != null) {
                 component.setGetter(getter);
@@ -273,12 +274,11 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         }
     }
 
-    private void deserializeElement(T result, Element root) {
-        NodeList children = root.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            switch (child.getNodeType()) {
-            }
+    private void deserialize(Object obj, Element root) {
+        if (possibleToString(obj.getClass())) {
+            obj = root.getTextContent();
+        } else {
+
         }
     }
 
@@ -286,12 +286,21 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     public T deserialize(byte[] bytes) {
         Document document = bytesToXml(bytes);
         Element root = document.getDocumentElement();
+        T result = null;
         try {
-            T result = clazz.newInstance();
-            deserializeElement(result, root);
+            Constructor constructor = clazz.getConstructor();
+            constructor.setAccessible(true);
+            result = (T) constructor.newInstance();
+        } catch (NoSuchMethodException ex) {
+            try {
+                result = (T) unsafeInstance.allocateInstance(clazz);
+            } catch (Exception exc) {
+                throw new RuntimeException("Error in deserializing", ex);
+            }
         } catch (Exception ex) {
             throw new RuntimeException("Error in deserializing", ex);
         }
+        deserialize(result, root);
         return null;
     }
 }
