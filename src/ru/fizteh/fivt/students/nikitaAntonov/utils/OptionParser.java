@@ -24,7 +24,8 @@ public class OptionParser {
         }
 
         options = new TreeMap<>();
-
+        FreedomOpts = new ArrayList<>();
+        
         int toSkip = 0;
 
         for (int i = 0, e = optstring.length(); i < e; ++i) {
