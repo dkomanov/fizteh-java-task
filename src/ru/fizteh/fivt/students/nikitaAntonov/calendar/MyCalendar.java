@@ -74,20 +74,25 @@ public class MyCalendar {
         int currentWeek = opts.calendar.get(Calendar.WEEK_OF_YEAR);
 
         if (opts.showWeeks) {
-            printNumWithAlignment(currentWeek - 1, 2);
+            printNumWithAlignment(currentWeek, 2);
 
             System.out.print(" ");
         }
 
-        int EmptyDays = opts.calendar.get(Calendar.DAY_OF_WEEK) - 2;
-        for (; EmptyDays > 0; --EmptyDays) {
+        int emptyDays = opts.calendar.get(Calendar.DAY_OF_WEEK) - 1;
+        if (emptyDays == 0) {
+            emptyDays = 7;
+        }
+        --emptyDays;
+        
+        for (; emptyDays > 0; --emptyDays) {
             printStringWithAlignment("", maxLength);
             System.out.print(" ");
         }
 
         while (opts.month == opts.calendar.get(Calendar.MONTH)) {
 
-            while (currentWeek == opts.calendar.get(Calendar.WEEK_OF_YEAR)) {
+            while (currentWeek == opts.calendar.get(Calendar.WEEK_OF_YEAR) && opts.month == opts.calendar.get(Calendar.MONTH)) {
                 printNumWithAlignment(currentDay, maxLength);
                 System.out.print(" ");
 
@@ -102,7 +107,7 @@ public class MyCalendar {
             if (opts.month == opts.calendar.get(Calendar.MONTH)) {
 
                 if (opts.showWeeks) {
-                    printNumWithAlignment(currentWeek - 1, 2);
+                    printNumWithAlignment(currentWeek, 2);
                     System.out.print(" ");
                 }
 
@@ -147,14 +152,14 @@ public class MyCalendar {
 
     public static void main(String[] args) {
         MyCalendar cal = null;
-        
+
         try {
             cal = new MyCalendar(new Options(args));
         } catch (IncorrectArgsException e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
-        
+
         cal.print();
     }
 
@@ -165,7 +170,7 @@ public class MyCalendar {
         public int month;
         public int year;
         public boolean timezoneWasSet = false;
-        
+
         public Options(String args[]) throws IncorrectArgsException {
 
             OptionParser parser = new OptionParser("m:y:wt:");
