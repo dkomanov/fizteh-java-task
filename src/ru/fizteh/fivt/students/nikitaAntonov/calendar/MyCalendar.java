@@ -145,9 +145,16 @@ public class MyCalendar {
         }
     }
 
-    public static void main(String[] args) throws IncorrectArgsException {
-
-        MyCalendar cal = new MyCalendar(new Options(args));
+    public static void main(String[] args) {
+        MyCalendar cal = null;
+        
+        try {
+            cal = new MyCalendar(new Options(args));
+        } catch (IncorrectArgsException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+        
         cal.print();
     }
 
