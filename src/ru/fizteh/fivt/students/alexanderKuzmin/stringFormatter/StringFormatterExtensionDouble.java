@@ -5,7 +5,7 @@ import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
 /**
- * @author Kuzmin A. group 196 Class StringFormatterExtension.
+ * @author Kuzmin A. group 196 Class StringFormatterExtensionDouble.
  * 
  */
 
@@ -32,7 +32,7 @@ public class StringFormatterExtensionDouble extends StringFormatterExtension {
             buffer.append(format.format("%" + pattern, o));
             format.close();
         } catch (Throwable e) {
-            throw new FormatterException(e.getMessage());
+            throw new FormatterException(e.getMessage(), e);
         }
     }
 }
