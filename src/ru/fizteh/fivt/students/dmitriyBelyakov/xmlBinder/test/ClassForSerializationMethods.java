@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder;
+package ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.test;
 
 import ru.fizteh.fivt.bind.AsXmlCdata;
 import ru.fizteh.fivt.bind.BindingType;
