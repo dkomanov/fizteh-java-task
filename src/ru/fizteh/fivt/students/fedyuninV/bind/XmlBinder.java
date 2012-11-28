@@ -170,15 +170,15 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
 
     private boolean possibleToString(Class classExample) {
         return (classExample.isPrimitive()
-                ||  classExample.getName().equals("java.lang.Integer")
-                ||  classExample.getName().equals("java.lang.Boolean")
-                ||  classExample.getName().equals("java.lang.String")
-                ||  classExample.getName().equals("java.lang.Double")
-                ||  classExample.getName().equals("java.lang.Float")
-                || classExample.getName().equals("java.lang.Byte")
-                ||  classExample.getName().equals("java.lang.Long")
-                ||  classExample.getName().equals("java.lang.Short")
-                ||  classExample.getName().equals("java.lang.Character")
+                ||  classExample.equals(Integer.class)
+                ||  classExample.equals(Boolean.class)
+                ||  classExample.equals(String.class)
+                ||  classExample.equals(Double.class)
+                ||  classExample.equals(Float.class)
+                ||  classExample.equals(Byte.class)
+                ||  classExample.equals(Long.class)
+                ||  classExample.equals(Short.class)
+                ||  classExample.equals(Character.class)
                 ||  classExample.isEnum());
     }
 
