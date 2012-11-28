@@ -34,7 +34,7 @@ public class StringFormatterExtensionBigInteger extends
             buffer.append(format.format("%" + pattern, o));
             format.close();
         } catch (Throwable e) {
-            throw new FormatterException(e.getMessage());
+            throw new FormatterException(e.getMessage(), e);
         }
     }
 }

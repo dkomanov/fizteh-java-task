@@ -104,7 +104,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             }
         } catch (Throwable e) {
             throw new FormatterException(
-                    "Use correct input: Any characters, {idx}, {idx: pattern}, {idx.field}, {idx.field.field: pattern}");
+                    "Use correct input: Any characters, {idx}, {idx: pattern}, {idx.field}, {idx.field.field: pattern}", e);
         }
 
         if (begin == format.length()) {
@@ -143,7 +143,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             return null;
         } catch (Throwable e) {
             throw new FormatterException("Can't access field " + field + " in "
-                    + cur.getClass());
+                    + cur.getClass(), e);
         }
     }
 }

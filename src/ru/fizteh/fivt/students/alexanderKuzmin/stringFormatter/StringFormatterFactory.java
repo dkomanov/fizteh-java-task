@@ -21,7 +21,7 @@ public class StringFormatterFactory implements
         try {
             Collections.sort(Arrays.asList(extensionClassNames));
         } catch (Throwable e) {
-            throw new FormatterException("NULL extension.");
+            throw new FormatterException("NULL extension.", e);
         }
         for (int i = 0; i < extensionClassNames.length; i++) {
             String currentClassName = extensionClassNames[i];
@@ -38,7 +38,7 @@ public class StringFormatterFactory implements
                 throw e;
             } catch (Exception ex) {
                 throw new FormatterException(
-                        "Can't create a formatter with this extensions.");
+                        "Can't create a formatter with this extensions.", ex);
             }
         }
         return new StringFormatter(extension);

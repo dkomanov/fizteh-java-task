@@ -12,7 +12,7 @@ import ru.fizteh.fivt.format.FormatterException;
 
 public class UnitTests {
 
-    class smt {
+    class Smt {
         public int pub = 123;
         private final int priv = 1234;
         protected final int prot = 1235;
@@ -98,7 +98,7 @@ public class UnitTests {
     @Test
     public void testExtensionDoubleRight() {
         StringBuilder sb = new StringBuilder();
-        new StringFormatterExtensionDouble().format(sb, new Double(5), "f");
+        new StringFormatterExtensionDouble().format(sb, new Double(5), ".6f");
         Assert.assertEquals("5,000000", sb.toString());
     }
 
@@ -119,7 +119,7 @@ public class UnitTests {
     @Test
     public void testStringFormatterNormalDouble() {
         String str = formatter.format("lalal }}0{{ {1.prot} {2:.2f} close", 7,
-                new smt(), 555.1412412412);
+                new Smt(), 555.1412412412);
         Assert.assertEquals(str, "lalal }0{ 1235 555,14 close");
     }
 
@@ -131,14 +131,14 @@ public class UnitTests {
 
     @Test
     public void testStringFormatterNormal1() {
-        String str = formatter.format("lalal }}0{{ {0.pub} close", new smt());
+        String str = formatter.format("lalal }}0{{ {0.pub} close", new Smt());
         Assert.assertEquals(str, "lalal }0{ 123 close");
     }
 
     @Test
     public void testStringFormatterNormal2() {
         String str = formatter.format("lalal }}0{{ {1.prot} close", 7,
-                new smt(), 555);
+                new Smt(), 555);
         Assert.assertEquals(str, "lalal }0{ 1235 close");
     }
 
@@ -169,19 +169,19 @@ public class UnitTests {
 
     @Test
     public void testStringFormatterCorrectPublicPattern() {
-        String str = formatter.format("lalal {0.pub} end", new smt());
+        String str = formatter.format("lalal {0.pub} end", new Smt());
         Assert.assertEquals(str, "lalal 123 end");
     }
 
     @Test
     public void testStringFormatterCorrectProtectedPattern() {
-        String str = formatter.format("lalal {0.prot} end", new smt());
+        String str = formatter.format("lalal {0.prot} end", new Smt());
         Assert.assertEquals(str, "lalal 1235 end");
     }
 
     @Test
     public void testStringFormatterCorrectPrivatePattern() {
-        String str = formatter.format("lalal {0.priv} end", new smt());
+        String str = formatter.format("lalal {0.priv} end", new Smt());
         Assert.assertEquals(str, "lalal 1234 end");
     }
 
