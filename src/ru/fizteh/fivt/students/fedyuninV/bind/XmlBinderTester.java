@@ -16,6 +16,8 @@ public class XmlBinderTester {
         permissions.setQuota(100500);
         User user = new User(1, UserType.USER, new UserName("first", "last"), permissions);
         byte[] bytes = binder.serialize(user);
+        user = null;
+        byte[] bytes2 = binder.serialize(user);
         //User deserialized = binder.deserialize(bytes);
         //assert user != deserialized;
         //assert user.equals(deserialized);

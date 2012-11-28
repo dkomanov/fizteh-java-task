@@ -3,6 +3,8 @@ package ru.fizteh.fivt.students.fedyuninV.bind;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import ru.fizteh.fivt.bind.AsXmlElement;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
@@ -27,7 +29,7 @@ import java.util.*;
  * MIPT FIVT 195
  */
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
-
+    Map<String, DeserializeComponent> deserializeComponentMap;
     Map<Class, List<SerializeComponent>> methods;
     Map<Class, List<Field>> fields;
     IdentityHashMap<Object, Object> serialized;
@@ -39,6 +41,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         super(clazz);
         methods = new HashMap<>();
         fields = new HashMap<>();
+        deserializeComponentMap = new HashMap<>();
         addToMap(clazz);
     }
 
@@ -50,43 +53,35 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         Method[] methodList = clazz.getMethods();
         for (Method method: methodList) {
             String name = null;
-            char mode = 'g';
             Class[] args = method.getParameterTypes();
             String methodName = method.getName();
-            if (checkPrefix("get", methodName)  &&  args.length == 0) {
+            if (checkPrefix("set", methodName)  &&  args.length == 1  &&  method.getReturnType().equals(void.class)) {
                 name = methodName.substring(3);
-            }
-            if (checkPrefix("is", methodName)  &&  args.length == 0) {
-                name = methodName.substring(2);
-            }
-            if (checkPrefix("set", methodName)  &&  args.length == 1) {
-                name = methodName.substring(3);
-                mode = 's';
             }
             if (name  != null) {
-                boolean componentFound = false;
-                for (SerializeComponent component: components) {
-                    if (component.getName().equals(name)) {
-                        componentFound = true;
-                        if (!component.setMethod(method, mode)) {
-                            throw new RuntimeException("Indefinite pair of methods found in " + clazz.getName());
-                        }
-                    }
-                }
-                if (!componentFound) {
-                    SerializeComponent newComponent = new SerializeComponent(name);
-                    if (!newComponent.setMethod(method, mode)) {
-                        throw new RuntimeException("Error while creating new component");
-                    }
-                    components.add(newComponent);
-                }
+                SerializeComponent newComponent = new SerializeComponent(name);
+                newComponent.setSetter(method);
+                components.add(newComponent);
             }
         }
         List<SerializeComponent> result = new ArrayList<>();
         for (SerializeComponent component: components) {
-            if (component.getter() != null  &&  component.setter() != null) {
+            Method getter = null;
+            String prefix = "get";
+            Class setterArg = component.setter().getParameterTypes()[0];
+            if (setterArg.equals(boolean.class)  ||  setterArg.equals(Boolean.class)) {
+                prefix = "is";
+            }
+            try {
+                getter = clazz.getMethod(prefix + component.getName());
+            } catch (NoSuchMethodException ex) {
+            }
+            if (getter != null) {
+                component.setGetter(getter);
                 result.add(component);
                 addToMap(component.getter().getReturnType());
+                setComponentName(component);
+                deserializeComponentMap.put(component.getName(), new DeserializeComponent(component.setter()));
             }
         }
         methods.put(clazz, result);
@@ -106,6 +101,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         fields.put(clazz, result);
         for (Field field: result) {
             addToMap(field.getType());
+            deserializeComponentMap.put(getElementName(field), new DeserializeComponent(field));
         }
     }
 
@@ -149,6 +145,26 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             return firstCharToLowerCase(value.getName());
         } else {
             return asXmlElement.name();
+        }
+    }
+
+    private void setComponentName(SerializeComponent component) {
+        AsXmlElement getterAnnnotation = component.getter().getAnnotation(AsXmlElement.class);
+        AsXmlElement setterAnnnotation = component.setter().getAnnotation(AsXmlElement.class);
+        if (setterAnnnotation != null) {
+            if (getterAnnnotation != null) {
+                if (setterAnnnotation.name().equals(getterAnnnotation.name())) {
+                    component.setName(setterAnnnotation.name());
+                } else {
+                    throw new RuntimeException("Incorrect annotations of methods");
+                }
+            } else {
+                component.setName(setterAnnnotation.name());
+            }
+        } else {
+            if (getterAnnnotation != null) {
+                component.setName(getterAnnnotation.name());
+            }
         }
     }
 
@@ -257,11 +273,25 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         }
     }
 
+    private void deserializeElement(T result, Element root) {
+        NodeList children = root.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            switch (child.getNodeType()) {
+            }
+        }
+    }
+
     @Override
     public T deserialize(byte[] bytes) {
         Document document = bytesToXml(bytes);
         Element root = document.getDocumentElement();
-
+        try {
+            T result = clazz.newInstance();
+            deserializeElement(result, root);
+        } catch (Exception ex) {
+            throw new RuntimeException("Error in deserializing", ex);
+        }
         return null;
     }
 }

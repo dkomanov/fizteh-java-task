@@ -23,19 +23,16 @@ class SerializeComponent {
            default - try to set this.getter.
      */
 
-    public boolean setMethod(Method method, char mode) {
-        if (mode == 's') {
-            if (setter != null) {
-                return false;
-            }
-            setter = method;
-        } else {
-            if (getter != null) {
-                return false;
-            }
-            getter = method;
-        }
-        return true;
+    public void setGetter(Method method) {
+        getter = method;
+    }
+
+    public void setSetter(Method method) {
+        setter = method;
+    }
+
+    public void setName(String newName) {
+        name = newName;
     }
 
     public Method getter() {
