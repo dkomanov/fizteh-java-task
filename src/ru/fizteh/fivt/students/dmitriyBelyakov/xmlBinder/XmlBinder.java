@@ -85,6 +85,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 FieldData data = new FieldData();
                 data.name = field.getName();
                 data.field = field;
+                data.field.setAccessible(true);
                 data.type = field.getType();
                 data.asXmlData = field.getAnnotation(AsXmlCdata.class) != null;
                 map.put(data.name, data);
@@ -162,6 +163,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     GetterAndSetterPair pair = new GetterAndSetterPair();
                     pair.getter = methodGet;
                     pair.setter = method;
+                    pair.getter.setAccessible(true);
+                    pair.setter.setAccessible(true);
                     pair.name = firstCharToLowerCase(nameGet.replaceFirst("get", ""));
                     pair.type = methodGet.getReturnType();
                     pair.asXmlCdata = methodGet.getAnnotation(AsXmlCdata.class) != null;
@@ -213,7 +216,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             if (allFields) {
                 HashMap<String, FieldData> fields = fieldsForClasses.get(clazz);
                 for (FieldData data : fields.values()) {
-                    data.field.setAccessible(true);
                     Object val = data.field.get(value);
                     if (val != null) {
                         if (!data.asXmlData || !isPrimitive(data.type)) {
@@ -333,14 +335,12 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         if (data == null) {
                             continue;
                         }
-                        data.field.setAccessible(true);
                         data.field.set(returnObject, deserializeToValue((Element) node, data.type));
                         unused.remove(data);
                     }
                 }
                 for (FieldData data : unused) {
                     if (!data.type.isPrimitive()) {
-                        data.field.setAccessible(true);
                         data.field.set(returnObject, null);
                     }
                 }
