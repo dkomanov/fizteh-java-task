@@ -18,8 +18,8 @@ public class XmlBinderTester {
         byte[] bytes = binder.serialize(user);
         user = null;
         byte[] bytes2 = binder.serialize(user);
-        //User deserialized = binder.deserialize(bytes);
-        //assert user != deserialized;
-        //assert user.equals(deserialized);
+        User deserialized = binder.deserialize(bytes);
+        assert user != deserialized;
+        assert user.equals(deserialized);
     }
 }

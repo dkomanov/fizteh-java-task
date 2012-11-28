@@ -3,6 +3,8 @@ package ru.fizteh.fivt.students.fedyuninV.bind;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import ru.fizteh.fivt.bind.AsXmlElement;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
@@ -29,7 +31,6 @@ import java.util.*;
  * MIPT FIVT 195
  */
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
-    Map<String, DeserializeComponent> deserializeComponentMap;
     Map<Class, List<SerializeComponent>> methods;
     Map<Class, List<Field>> fields;
     IdentityHashMap<Object, Object> serialized;
@@ -42,9 +43,16 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         super(clazz);
         methods = new HashMap<>();
         fields = new HashMap<>();
-        deserializeComponentMap = new HashMap<>();
         addToMap(clazz);
+        try {
+            Field f = Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            unsafeInstance = (Unsafe) f.get(Unsafe.class);
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot create binder.");
+        }
     }
+
 
     private void addToMethodMap(Class clazz) {
         if (methods.containsKey(clazz)) { //already in map
@@ -82,7 +90,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                 result.add(component);
                 addToMap(component.getter().getReturnType());
                 setComponentName(component);
-                deserializeComponentMap.put(component.getName(), new DeserializeComponent(component.setter()));
             }
         }
         methods.put(clazz, result);
@@ -102,7 +109,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         fields.put(clazz, result);
         for (Field field: result) {
             addToMap(field.getType());
-            deserializeComponentMap.put(getElementName(field), new DeserializeComponent(field));
         }
     }
 
@@ -122,8 +128,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         return (methodName.length() >= prefix.length()  &&  methodName.substring(0, prefix.length()).equals(prefix));
     }
 
-
-
     private String firstCharToLowerCase(String str) {
         if (str.length() > 0) {
             str = Character.toLowerCase(str.charAt(0)) + str.substring(1);
@@ -140,7 +144,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         }
     }
 
-    private String getElementName(Field value) {
+    private String getFieldName(Field value) {
         AsXmlElement asXmlElement = value.getAnnotation(AsXmlElement.class);
         if (asXmlElement == null) {
             return firstCharToLowerCase(value.getName());
@@ -188,7 +192,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             field.setAccessible(true);
             Object fieldValue = field.get(value);
             if (fieldValue != null) {
-                Element child = document.createElement(getElementName(field));
+                Element child = document.createElement(getFieldName(field));
                 root.appendChild(child);
                 if (possibleToString(fieldValue.getClass())) {
                     child.setTextContent(fieldValue.toString());
@@ -215,7 +219,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         }
     }
 
-
     private void writeToDocument(Document document, Object value, Element root) throws Exception{
         BindingType bindingType = value.getClass().getAnnotation(BindingType.class);
         if (serialized.put(value, CONTAINS) != null) {
@@ -227,8 +230,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             writeToDocumentByMethods(document, value, root);
         }
     }
-
-
 
     @Override
     public byte[] serialize(Object value) {
@@ -253,12 +254,12 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                     "{http://xml.apache.org/xslt}indent-amount",
                     "2"
             );
-            /*transformer.transform(new DOMSource(document), result);
-            return out.toByteArray();*/
-            StringWriter stringWriter = new StringWriter();
+            transformer.transform(new DOMSource(document), result);
+            return out.toByteArray();
+            /*StringWriter stringWriter = new StringWriter();
             transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
             System.out.println(stringWriter.getBuffer().toString());
-            return null;
+            return null;                               */
         } catch (Exception ex) {
             throw new RuntimeException("Serializing error", ex);
         }
@@ -274,11 +275,101 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         }
     }
 
-    private void deserialize(Object obj, Element root) {
-        if (possibleToString(obj.getClass())) {
-            obj = root.getTextContent();
-        } else {
+    private Object getObjectOfClass(Class clazz) {
+        try {
+            Constructor constructor = getClazz().getConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (NoSuchMethodException ex) {
+            try {
+                return unsafeInstance.allocateInstance(clazz);
+            } catch (Exception exc) {
+                throw new RuntimeException("Error in deserializing", ex);
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException("Error in deserializing", ex);
+        }
+    }
 
+    private Object getValueFromString(Class clazz, String text) {
+        if (clazz.equals(boolean.class)  ||  clazz.equals(Boolean.class)) {
+            return Boolean.parseBoolean(text);
+        }
+        if (clazz.equals(int.class)  ||  clazz.equals(Integer.class)) {
+            return Integer.parseInt(text);
+        }
+        if (clazz.equals(long.class)  ||  clazz.equals(Long.class)) {
+            return Long.parseLong(text);
+        }
+        if (clazz.equals(double.class)  ||  clazz.equals(Double.class)) {
+            return Double.parseDouble(text);
+        }
+        if (clazz.equals(float.class)  ||  clazz.equals(Float.class)) {
+            return Float.parseFloat(text);
+        }
+        if (clazz.equals(byte.class)  ||  clazz.equals(Byte.class)) {
+            return Byte.parseByte(text);
+        }
+        if (clazz.equals(short.class)  ||  clazz.equals(Short.class)) {
+            return Short.parseShort(text);
+        }
+        if (clazz.equals(char.class)  ||  clazz.equals(Character.class)) {
+            if (text.length() != 1) {
+                throw new RuntimeException("Incorrect type");
+            }
+            return text.charAt(0);
+        }
+        if (clazz.equals(String.class)) {
+            return text;
+        }
+        if (clazz.isEnum()) {
+            return Enum.valueOf(clazz, text);
+        }
+        return null;
+    }
+
+    private Object deserialize(Class clazz, Element root) {
+        if (possibleToString(clazz)) {
+            return getValueFromString(clazz, root.getTextContent());
+        } else {
+            Object obj = getObjectOfClass(clazz);
+            if (methods.containsKey(clazz)) {
+                List<SerializeComponent> components = methods.get(clazz);
+                for (SerializeComponent component: components) {
+                    NodeList childs = root.getElementsByTagName(component.getName());
+                    if (childs.getLength() > 1) {
+                        throw new RuntimeException("Incorrect number of fields in XML");
+                    }
+                    if (childs.getLength() > 0) {
+                        Node child = childs.item(0);
+                        try {
+                            component.setter().invoke(obj, deserialize(component.getter().getReturnType(), (Element) child));
+                        } catch (Exception ex) {
+                            throw new RuntimeException("Fail in deserializing");
+                        }
+                    }
+                }
+            } else if(fields.containsKey(clazz)) {
+                List<Field> fieldList = fields.get(clazz);
+                for (Field field: fieldList) {
+                    field.setAccessible(true);
+                    NodeList childs = root.getElementsByTagName(getFieldName(field));
+                    if (childs.getLength() > 1) {
+                        throw new RuntimeException("Incorrect number of fields in XML");
+                    }
+                    if (childs.getLength() > 0) {
+                        Node child = childs.item(0);
+                        try {
+                            field.set(obj, deserialize(field.getType(), (Element) child));
+                        } catch (Exception ex) {
+                            throw new RuntimeException("Fail in deserializing");
+                        }
+                    }
+                }
+            } else {
+                throw new RuntimeException("Cannot deserialize class");
+            }
+            return obj;
         }
     }
 
@@ -286,21 +377,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     public T deserialize(byte[] bytes) {
         Document document = bytesToXml(bytes);
         Element root = document.getDocumentElement();
-        T result = null;
-        try {
-            Constructor constructor = clazz.getConstructor();
-            constructor.setAccessible(true);
-            result = (T) constructor.newInstance();
-        } catch (NoSuchMethodException ex) {
-            try {
-                result = (T) unsafeInstance.allocateInstance(clazz);
-            } catch (Exception exc) {
-                throw new RuntimeException("Error in deserializing", ex);
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException("Error in deserializing", ex);
-        }
-        deserialize(result, root);
-        return null;
+        return (T) deserialize(getClazz(), root);
     }
 }
