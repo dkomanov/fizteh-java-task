@@ -8,15 +8,12 @@ public class CalendarView {
 	private Calendar calendar;
 	private DateFormat header;
 	private DateFormatSymbols names;
-	private Locale locale = Locale.getDefault();
+	private Locale locale;
 
-	public static void main(String[] args) {
-		CalendarView view = new CalendarView(Calendar.getInstance());
-		System.out.println(view);
-	}
-
-	public CalendarView(Calendar calendar) {
+	public CalendarView(Calendar calendar, Locale locale) {
 		this.calendar = calendar;
+		this.locale = locale;
+		
 		header = new SimpleDateFormat(
 			"        MMMM Y", locale);
 
