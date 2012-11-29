@@ -6,7 +6,7 @@ import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
 public class LongExtension extends StringFormatterExtension {
-    LongExtension() {
+    public LongExtension() {
         super(Long.class);
     }
 
@@ -30,7 +30,7 @@ public class LongExtension extends StringFormatterExtension {
             Formatter formatter = new Formatter().format("%" + pattern, object);
             buffer.append(formatter.toString());
         } catch (Throwable t) {
-            throw new FormatterException(t.getMessage(), t);
+            throw t;
         }
     }
 }

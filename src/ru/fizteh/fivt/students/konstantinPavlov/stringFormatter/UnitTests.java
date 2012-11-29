@@ -1,13 +1,14 @@
 package ru.fizteh.fivt.students.konstantinPavlov.stringFormatter;
 
-import java.util.Calendar;
+import static org.junit.Assert.*;
 
-import org.junit.Assert;
+import java.util.Calendar;
+import org.junit.Assert.*;
 import org.junit.Test;
 
 import ru.fizteh.fivt.format.FormatterException;
 
-public class UnitTests extends Assert {
+public class UnitTests {
 
     class TestClass {
         private final int fieldInt = 100;
