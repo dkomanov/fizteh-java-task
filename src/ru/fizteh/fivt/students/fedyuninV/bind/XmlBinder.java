@@ -32,6 +32,7 @@ import java.util.*;
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     Map<Class, List<SerializeComponent>> methods;
     Map<Class, List<Field>> fields;
+    Map<Class, Constructor> constructors;
     IdentityHashMap<Object, Object> serialized;
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -42,6 +43,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         super(clazz);
         methods = new HashMap<>();
         fields = new HashMap<>();
+        constructors = new HashMap<>();
         addToMap(clazz);
         try {
             Field f = Unsafe.class.getDeclaredField("theUnsafe");
@@ -60,6 +62,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         List<SerializeComponent> components = new ArrayList<>();
         Method[] methodList = clazz.getMethods();
         for (Method method: methodList) {
+            method.setAccessible(true);
             String name = null;
             Class[] args = method.getParameterTypes();
             String methodName = method.getName();
@@ -85,6 +88,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             } catch (NoSuchMethodException ignored) {
             }
             if (getter != null) {
+                getter.setAccessible(true);
                 component.setGetter(getter);
                 result.add(component);
                 addToMap(component.getter().getReturnType());
@@ -107,11 +111,18 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         }
         fields.put(clazz, result);
         for (Field field: result) {
+            field.setAccessible(true);
             addToMap(field.getType());
         }
     }
 
     private void addToMap(Class clazz) {
+        try {
+            Constructor constructor = getClazz().getConstructor();
+            constructor.setAccessible(true);
+            constructors.put(clazz, constructor);
+        } catch (NoSuchMethodException ignored) {
+        }
         if (possibleToString(clazz)) {
             return;
         }
@@ -277,18 +288,17 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     }
 
     private Object getObjectOfClass(Class clazz) {
-        try {
-            Constructor constructor = getClazz().getConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
-        } catch (NoSuchMethodException ex) {
+        if (constructors.containsKey(clazz)) {
             try {
-                return unsafeInstance.allocateInstance(clazz);
-            } catch (Exception exc) {
-                throw new RuntimeException("Error in deserializing", ex);
+                return constructors.get(clazz).newInstance();
+            } catch (Exception ex) {
+                throw new RuntimeException("Fail in building constructors", ex);
             }
+        }
+        try {
+            return unsafeInstance.allocateInstance(clazz);
         } catch (Exception ex) {
-            throw new RuntimeException("Error in deserializing", ex);
+            throw new RuntimeException("Fail in building constructors", ex);
         }
     }
 
