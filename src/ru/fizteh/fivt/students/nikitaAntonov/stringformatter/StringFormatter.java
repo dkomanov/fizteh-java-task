@@ -12,7 +12,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     StringFormatter(ArrayList<StringFormatterExtension> exList) {
         if (exList == null) {
-            throw new FormatterException(new NullPointerException());
+            throw new FormatterException("exList == null");
         }
 
         extensions = exList;
