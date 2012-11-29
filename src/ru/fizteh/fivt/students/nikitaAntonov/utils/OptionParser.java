@@ -15,7 +15,7 @@ import java.util.TreeMap;
 public class OptionParser {
     private TreeMap<Character, Option> options;
     protected boolean canWorkWithoutParams = false;
-    public ArrayList<String> FreedomOpts;
+    public ArrayList<String> freedomOpts;
 
     public OptionParser(String optstring) {
 
@@ -24,7 +24,7 @@ public class OptionParser {
         }
 
         options = new TreeMap<>();
-        FreedomOpts = new ArrayList<>();
+        freedomOpts = new ArrayList<>();
         
         int toSkip = 0;
 
@@ -81,7 +81,7 @@ public class OptionParser {
             if (isOptions(args[i])) {
                 skipNext = parseOption(opt.substring(1), nextOpt);
             } else {
-                FreedomOpts.add(opt);
+                freedomOpts.add(opt);
             }
         }
     }
