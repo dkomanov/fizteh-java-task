@@ -34,9 +34,11 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     private Map<Class, List<PairMethodsToSerialization> > methods = new 
             HashMap<Class, List<PairMethodsToSerialization> >();
     private Map<Class, List<Field> > fields = new HashMap<Class, List<Field> >();
+    private String className;
 
     public XmlBinder(Class<T> clazz) {
         super(clazz);
+        className = firstCharToLowerCase(clazz.getSimpleName());
         addForSerialization(clazz);
     }
 
@@ -264,8 +266,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         try {
             sw = new StringWriter();
             XMLStreamWriter xmlsw = XMLOutputFactory.newInstance().createXMLStreamWriter(sw);
-            String name = value.getClass().getName();
-            xmlsw.writeStartElement(firstCharToLowerCase(name));
+            xmlsw.writeStartElement(className);
             serializeObject(value, xmlsw, serialized);
             xmlsw.writeEndElement();
             result = sw.getBuffer().toString();
@@ -407,7 +408,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         T result = null;
         try {
             Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(bais);
-            if (!doc.getDocumentElement().getTagName().equals(getClazz().getName())) {
+            if (!doc.getDocumentElement().getTagName().equals(className)) {
                 throw new RuntimeException("Incompatible types");
             }
             result = (T)deserializeObject(doc.getDocumentElement(), getClazz());
