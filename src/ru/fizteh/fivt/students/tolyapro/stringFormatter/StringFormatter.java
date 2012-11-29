@@ -51,12 +51,15 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         try {
             String tmp = tokens[0];
             if (!Character.isDigit(tmp.charAt(0))) {
-                throw new Exception();
+                throw new Exception("Bad index");
             }
             int number = Integer.parseInt(tmp);
             object = args[number];
             Field tempField = null;
             for (int i = 1; i < tokens.length; ++i) {
+                if (object == null) {
+                    return;
+                }
                 Class<?> clazz = object.getClass();
                 String nameOfField = tokens[i];
                 while (true) {
@@ -79,8 +82,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 return;
             }
         } catch (Exception e) {
-            throw new FormatterException("Can't get field: "
-                    + tokens.toString(), e);
+            throw new FormatterException(e);
+
         }
         if (position == format.length()) {
             result.append(object.toString());
