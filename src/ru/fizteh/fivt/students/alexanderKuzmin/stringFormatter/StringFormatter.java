@@ -104,7 +104,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             }
         } catch (Throwable e) {
             throw new FormatterException(
-                    "Use correct input: Any characters, {idx}, {idx: pattern}, {idx.field}, {idx.field.field: pattern}", e);
+                    "Use correct input: Any characters, {idx}, {idx: pattern}, {idx.field}, {idx.field.field: pattern}",
+                    e);
         }
 
         if (begin == format.length()) {

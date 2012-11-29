@@ -18,10 +18,15 @@ public class StringFormatterFactory implements
     public StringFormatter create(String... extensionClassNames)
             throws FormatterException {
         ArrayList<StringFormatterExtension> extension = new ArrayList<StringFormatterExtension>();
+        if (extensionClassNames == null) {
+            throw new FormatterException("NULL extension class names.");
+        }
         try {
             Collections.sort(Arrays.asList(extensionClassNames));
-        } catch (Throwable e) {
-            throw new FormatterException("NULL extension.", e);
+        } catch (FormatterException e) {
+            throw e;
+        } catch (Exception ex) {
+            throw new FormatterException("Incorrect extension class names.", ex);
         }
         for (int i = 0; i < extensionClassNames.length; i++) {
             String currentClassName = extensionClassNames[i];
@@ -29,7 +34,8 @@ public class StringFormatterFactory implements
                 throw new FormatterException("Incorrect class name.");
             }
             if (i != 0 && extensionClassNames[i - 1].equals(currentClassName)) {
-                throw new FormatterException("The classes are duplicate.");
+                throw new FormatterException("The classes are duplicate: "
+                        + currentClassName);
             }
             try {
                 extension.add((StringFormatterExtension) Class.forName(
