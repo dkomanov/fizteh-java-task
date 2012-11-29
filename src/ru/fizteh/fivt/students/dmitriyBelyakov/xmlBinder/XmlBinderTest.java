@@ -68,5 +68,9 @@ public class XmlBinderTest extends Assert {
         ClassForSerializationFields classWithNull = anotherBinder.deserialize(str.getBytes());
         assertNull(classWithNull.stringField);
         assertNotEquals(classObject, classWithNull);
+        XmlBinder<ClassForSerializationFields.InnerClass> xmlBinderInner = new XmlBinder<>(ClassForSerializationFields.InnerClass.class);
+        ClassForSerializationFields.InnerClass inner = new ClassForSerializationFields.InnerClass();
+        byte[] bytes4 = xmlBinderInner.serialize(inner);
+        assertEquals("<innerClass><string>Eleven</string></innerClass>", new String(bytes4));
     }
 }
