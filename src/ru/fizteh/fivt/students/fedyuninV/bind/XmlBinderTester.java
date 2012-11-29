@@ -76,5 +76,16 @@ public class XmlBinderTester {
         bytes = binder.serialize(deserialized);
         user = binder.deserialize(bytes);
         Assert.assertEquals(user, deserialized);
+        /*
+        * UserType changed to null
+        * can't change
+        * */
+        user = new User(1, null, new UserName("first", "last"), permissions);
+        bytes = binder.serialize(user);
+        deserialized = binder.deserialize(bytes);
+        Assert.assertEquals(user, deserialized);
+        bytes = binder.serialize(deserialized);
+        user = binder.deserialize(bytes);
+        Assert.assertEquals(user, deserialized);
     }
 }
