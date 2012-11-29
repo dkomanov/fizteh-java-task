@@ -1,6 +1,8 @@
 package ru.fizteh.fivt.students.alexanderKuzmin.stringFormatter;
 
 import java.math.BigInteger;
+import java.util.Formatter;
+
 import junit.framework.Assert;
 import org.junit.Test;
 import ru.fizteh.fivt.format.FormatterException;
@@ -58,10 +60,8 @@ public class UnitTests {
 
     @Test(expected = FormatterException.class)
     public void testExtensionBigIntegerIncorrectPattern() {
-        StringBuilder sb = new StringBuilder();
-        new StringFormatterExtensionBigInteger().format(sb,
+        new StringFormatterExtensionBigInteger().format(new StringBuilder(),
                 new BigInteger("5"), "incorrect pattern");
-        Assert.assertEquals("5,000000", sb.toString());
     }
 
     @Test(expected = FormatterException.class)
@@ -98,8 +98,10 @@ public class UnitTests {
     @Test
     public void testExtensionDoubleRight() {
         StringBuilder sb = new StringBuilder();
+        Formatter format = new Formatter();
         new StringFormatterExtensionDouble().format(sb, new Double(5), ".6f");
-        Assert.assertEquals("5,000000", sb.toString());
+        Assert.assertEquals(format.format("%.6f", 5.0000000).toString(),
+                sb.toString());
     }
 
     @Test(expected = FormatterException.class)
