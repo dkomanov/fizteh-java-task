@@ -117,6 +117,9 @@ public class StringFormatter
         throws FormatterException {
 
         StringTokenizer tok = new StringTokenizer(chain, ".");
+        if (!tok.hasMoreTokens()) {
+            throw new FormatterException("Empty index string");
+        }
         String sIndex = tok.nextToken();
         if (sIndex.startsWith("+") || sIndex.startsWith("-")) {
             throw new FormatterException("Index must be unsigned");
@@ -144,6 +147,10 @@ public class StringFormatter
     private Object getField(Object arg, String name)
         throws FormatterException {
 
+        if (arg == null) {
+            return null;
+        }
+
         Class deep = arg.getClass();
         try {
             try {
@@ -160,8 +167,7 @@ public class StringFormatter
                         deep = deep.getSuperclass();
                     }
                 }
-                throw new FormatterException(String.format(
-                    "No field %s in %s", name, arg.getClass().getSimpleName()));
+                return null;
             }
         } catch (IllegalAccessException accEx) {
             throw new FormatterException(String.format(
