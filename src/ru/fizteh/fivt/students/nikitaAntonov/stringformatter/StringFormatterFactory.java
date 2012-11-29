@@ -24,15 +24,15 @@ public class StringFormatterFactory implements
 
         ArrayList<StringFormatterExtension> extensionsList = new ArrayList<>();
 
-        try {
-            for (String extensionName : extensionClassNames) {
-                if (extensionName == null) {
-                    throw new NullPointerException();
-                }
+        for (String extensionName : extensionClassNames) {
+            if (extensionName == null) {
+                throw new NullPointerException();
+            }
 
-                StringFormatterExtension extension = knownsExtensions
-                        .get(extensionName);
+            StringFormatterExtension extension = knownsExtensions
+                    .get(extensionName);
 
+            try {
                 if (extension == null) {
                     synchronized (knownsExtensions) {
 
@@ -46,13 +46,13 @@ public class StringFormatterFactory implements
                         }
                     }
                 }
-
-                extensionsList.add(extension);
+            } catch (Throwable e) {
+                throw new FormatterException("Can't create instance of "
+                        + extensionName, e);
             }
-        } catch (Throwable e) {
-            throw new FormatterException("Incorrect extension", e);
-        }
 
+            extensionsList.add(extension);
+        }
         return new StringFormatter(extensionsList);
     }
 }
