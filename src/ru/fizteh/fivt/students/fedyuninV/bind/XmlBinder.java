@@ -37,7 +37,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     TransformerFactory transformerFactory = TransformerFactory.newInstance();
     Object CONTAINS = new Object();
-    Unsafe unsafeInstance;
+    static Unsafe unsafeInstance;
 
     public XmlBinder(Class<T> clazz) {
         super(clazz);
