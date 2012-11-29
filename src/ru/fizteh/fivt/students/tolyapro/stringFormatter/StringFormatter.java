@@ -54,9 +54,6 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 throw new Exception();
             }
             int number = Integer.parseInt(tmp);
-            if (number < 0) {
-                throw new Exception();
-            }
             object = args[number];
             Field tempField = null;
             for (int i = 1; i < tokens.length; ++i) {
