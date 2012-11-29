@@ -280,10 +280,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                     "2"
             );
             transformer.transform(new DOMSource(document), result);
-            /*StringWriter stringWriter = new StringWriter();
-            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
-            System.out.println(stringWriter.getBuffer().toString());
-            /*return null;                               */
             return out.toByteArray();
         } catch (RuntimeException ex) {
             throw ex;
