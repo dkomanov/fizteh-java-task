@@ -167,7 +167,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     pair.setter.setAccessible(true);
                     pair.name = firstCharToLowerCase(nameGet.replaceFirst("get", ""));
                     pair.type = methodGet.getReturnType();
-                    pair.asXmlCdata = methodGet.getAnnotation(AsXmlCdata.class) != null;
+                    pair.asXmlCdata = methodGet.getAnnotation(AsXmlCdata.class) != null || method.getAnnotation(AsXmlCdata.class) != null;
                     methods.add(pair);
                     continue;
                 } catch (NoSuchMethodException e) {
@@ -184,7 +184,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     pair.setter = method;
                     pair.name = firstCharToLowerCase(nameIs.replaceFirst("is", ""));
                     pair.type = methodIs.getReturnType();
-                    pair.asXmlCdata = methodIs.getAnnotation(AsXmlCdata.class) != null;
+                    pair.asXmlCdata = methodIs.getAnnotation(AsXmlCdata.class) != null || method.getAnnotation(AsXmlCdata.class) != null;
                     methods.add(pair);
                 } catch (NoSuchMethodException e) {
                     /* nothing */

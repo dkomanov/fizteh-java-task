@@ -149,6 +149,7 @@ public class FormatterTest {
                                        + "integer, containing only digits.", "{abc}", 1);
         checkForFall(formatterForFall, "Error: invalid argument number.", "{1bc}", 1);
         checkForFall(formatterForFall, "Error: invalid pattern.", "{0:}", 1);
+        checkForFall(formatterForFall, "Error: empty pattern.", "{0:}", new GregorianCalendar(2012, 11, 21).getTime());
     }
 
     static void checkForFall(StringFormatter formatter, String correct,

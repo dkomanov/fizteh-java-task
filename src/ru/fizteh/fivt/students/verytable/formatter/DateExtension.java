@@ -21,7 +21,7 @@ public class DateExtension extends StringFormatterExtension{
         if (o == null) {
             throw new FormatterException("Error: empty object");
         }
-        if (pattern == null) {
+        if (pattern == null || pattern.equals("")) {
             throw new FormatterException("Error: empty pattern.");
         }
 
