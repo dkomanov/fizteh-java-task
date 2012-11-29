@@ -122,7 +122,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             throw e;
         } catch (Throwable e) {
             throw new FormatterException(
-                    "An error while extracting field occured", e);
+                    "An error while extracting field occurred", e);
         }
         
         if (pattern == null) {
