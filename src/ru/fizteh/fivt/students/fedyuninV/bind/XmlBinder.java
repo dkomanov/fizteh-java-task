@@ -273,12 +273,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             Result result = new StreamResult(out);
             Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            transformer.setOutputProperty(
-                    "{http://xml.apache.org/xslt}indent-amount",
-                    "2"
-            );
             transformer.transform(new DOMSource(document), result);
             return out.toByteArray();
         } catch (RuntimeException ex) {
