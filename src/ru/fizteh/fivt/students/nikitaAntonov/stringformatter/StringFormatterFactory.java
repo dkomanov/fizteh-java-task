@@ -26,7 +26,7 @@ public class StringFormatterFactory implements
 
         for (String extensionName : extensionClassNames) {
             if (extensionName == null) {
-                throw new NullPointerException();
+                throw new FormatterException("Name of the extension class can't be null");
             }
 
             StringFormatterExtension extension = knownsExtensions
