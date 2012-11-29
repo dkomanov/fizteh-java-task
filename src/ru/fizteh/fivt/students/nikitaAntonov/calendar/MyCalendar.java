@@ -178,7 +178,7 @@ public class MyCalendar {
             OptionParser parser = new OptionParser("m:y:wt:");
             parser.parse(args);
 
-            if (!parser.FreedomOpts.isEmpty()) {
+            if (!parser.freedomOpts.isEmpty()) {
                 throw new IncorrectArgsException("Wrong parameter");
             }
 
