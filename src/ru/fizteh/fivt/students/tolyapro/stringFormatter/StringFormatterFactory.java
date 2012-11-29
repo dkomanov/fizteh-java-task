@@ -12,6 +12,9 @@ public class StringFormatterFactory implements
         try {
             ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter stringFormatter = new ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter();
             for (String className : extensionClassNames) {
+                if (className == null) {
+                    throw new FormatterException("Bad classname");
+                }
                 stringFormatter
                         .addToExtensions((StringFormatterExtension) Class
                                 .forName(className).newInstance());
