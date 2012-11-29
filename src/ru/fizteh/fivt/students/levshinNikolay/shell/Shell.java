@@ -24,15 +24,16 @@ public class Shell {
     public static void cd(String path) {
         File newFile = new File(path);
         if (!newFile.exists()) {
-            error("cd: '" + newFile.getName() + ": No such file or directory.");
+            error("cd: '" + newFile.getName() + "': No such file or directory.");
+        } else {
+            currPath = path;
         }
-        currPath = path;
     }
 
     public static void mkdir(String name) {
         File newDir = new File(name);
         if (!newDir.mkdir()) {
-            error("mkdir: '" + newDir.getName() + ": Failed to create new directory.");
+            error("mkdir: '" + newDir.getName() + "': Failed to create new directory.");
         }
     }
 
@@ -57,40 +58,43 @@ public class Shell {
     }
 
     public static void cp(File source, File destination, String mode) {
-        if (!source.exists()) {
-            error(mode + ": '" + source.getName() + "': No such file or directory.");
-        }
-        if (source.isDirectory()) {
-            if (!destination.exists()) {
-                if (!destination.mkdir()) {
-                    error(mode + ": '" + destination.getName() + "': Failed to create directory.");
-                }
-            }
-            String[] files = source.list();
-            for (String file : files) {
-                File newSource = new File(source, file);
-                File newDestination = new File(destination, file);
-                cp(newSource, newDestination, mode);
-            }
-
-
+        if (source.equals(destination)) {
+            error(mode + ": Incorrect arguments.");
         } else {
-            FileInputStream in = null;
-            FileOutputStream out = null;
-            try {
-                in = new FileInputStream(source);
-                out = new FileOutputStream(destination);
-                byte[] buf = new byte[1024];
-                int length = 0;
-                while (length >= 0) {
-                    length = in.read(buf);
-                    out.write(buf, 0, length);
+            if (!source.exists()) {
+                error(mode + ": '" + source.getName() + "': No such file or directory.");
+            }
+            if (source.isDirectory()) {
+                if (!destination.exists()) {
+                    if (!destination.mkdir()) {
+                        error(mode + ": '" + destination.getName() + "': Failed to create directory.");
+                    }
                 }
-            } catch (Exception ex) {
-                error("cp: " + ex.getMessage());
-            } finally {
-                Utils.tryClose(in);
-                Utils.tryClose(out);
+                String[] files = source.list();
+                for (String file : files) {
+                    File newSource = new File(source, file);
+                    File newDestination = new File(destination, file);
+                    cp(newSource, newDestination, mode);
+                }
+
+
+            } else {
+                FileInputStream in = null;
+                FileOutputStream out = null;
+                try {
+                    in = new FileInputStream(source);
+                    out = new FileOutputStream(destination);
+                    byte[] buf = new byte[1024];
+                    int length;
+                    while ((length = in.read(buf)) > 0) {
+                        out.write(buf, 0, length);
+                    }
+                } catch (Exception ex) {
+                    error(mode + ": " + ex.getMessage());
+                } finally {
+                    Utils.tryClose(in);
+                    Utils.tryClose(out);
+                }
             }
         }
     }
@@ -109,65 +113,72 @@ public class Shell {
             case "cd":
                 if (args.length != 2) {
                     error("cd: Incorrect arguments.");
+                } else {
+                    args[1] = createAbsolute(args[1]);
+                    cd(args[1]);
+                    currPath = createAbsolute(currPath);
                 }
-                args[1] = createAbsolute(args[1]);
-                cd(args[1]);
-                currPath = createAbsolute(currPath);
                 break;
 
             case "mkdir":
                 if (args.length != 2) {
                     error("mkdir: Incorrect arguments.");
+                } else {
+                    args[1] = createAbsolute(args[1]);
+                    mkdir(args[1]);
                 }
-                args[1] = createAbsolute(args[1]);
-                mkdir(args[1]);
-                currPath = createAbsolute(currPath);
                 break;
 
             case "pwd":
                 if (args.length != 1) {
                     error("pwd: Incorrect arguments.");
-                }
-                try {
-                    System.out.println(new File(currPath).getCanonicalPath());
-                } catch (Exception ex) {
-                    error("pwd: " + ex.getMessage());
+                } else {
+                    try {
+                        System.out.println(new File(currPath).getCanonicalPath());
+                    } catch (Exception ex) {
+                        error("pwd: " + ex.getMessage());
+                    }
                 }
                 break;
 
             case "rm":
                 if (args.length != 2) {
                     error("rm: Incorrect arguments.");
+                } else {
+
+                    args[1] = createAbsolute(args[1]);
+                    File rmFile = new File(args[1]);
+                    rm(rmFile, args[0]);
                 }
-                args[1] = createAbsolute(args[1]);
-                File rmFile = new File(args[1]);
-                rm(rmFile, args[0]);
                 break;
 
             case "cp":
                 if (args.length != 3) {
                     error("cp: Incorrect arguments.");
+                } else {
+                    args[1] = createAbsolute(args[1]);
+                    args[2] = createAbsolute(args[2]);
+                    cp(new File(args[1]), new File(args[2]), args[0]);
                 }
-                args[1] = createAbsolute(args[1]);
-                args[2] = createAbsolute(args[1]);
-                cp(new File(args[1]), new File(args[2]), args[0]);
                 break;
 
             case "mv":
                 if (args.length != 3) {
                     error("mv: Incorrect arguments.");
+                } else {
+                    args[1] = createAbsolute(args[1]);
+                    args[2] = createAbsolute(args[2]);
+                    cp(new File(args[1]), new File(args[2]), args[0]);
+                    rm(new File(args[1]), args[0]);
                 }
-                args[1] = createAbsolute(args[1]);
-                args[2] = createAbsolute(args[2]);
-                cp(new File(args[1]), new File(args[2]), args[0]);
-                rm(new File(args[1]), args[0]);
                 break;
 
             case "dir":
                 if (args.length != 1) {
                     error("dir: Incorrect arguments.");
+                } else {
+                    dir();
                 }
-                dir();
                 break;
 
             case "exit":
@@ -187,10 +198,10 @@ public class Shell {
         currPath = new File("").getAbsolutePath();
         if (args.length == 0) {
             console = true;
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            while (true) {
-                System.out.print("$ ");
-                try {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                while (true) {
+                    System.out.print("$ ");
                     String incomingCommands = reader.readLine();
                     if (incomingCommands != null) {
                         commands = incomingCommands.split(";");
@@ -200,9 +211,10 @@ public class Shell {
                     } else {
                         System.exit(0);
                     }
-                } catch (Exception ex) {
-                    error(ex.getMessage());
                 }
+            } catch (Exception ex) {
+                error(ex.getMessage());
+                System.exit(1);
             }
         } else {
             console = false;

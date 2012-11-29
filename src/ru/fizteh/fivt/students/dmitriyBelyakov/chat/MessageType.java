@@ -1,5 +1,9 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat;
 
+/**
+ * @author Dmitriy Belyakov
+ */
+
 public enum MessageType {
     HELLO(1),
     MESSAGE(2),

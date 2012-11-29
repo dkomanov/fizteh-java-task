@@ -16,7 +16,7 @@ import java.util.Formatter;
 public class StringFormatterDoubleExtension
     extends StringFormatterExtension {
 
-    private Formatter formatter = new Formatter();
+    private Formatter formatter;
     private final String conv = "bBhHsSeEfgGaA";
 
     /* Constructor */
@@ -27,6 +27,7 @@ public class StringFormatterDoubleExtension
     /* Format the given Double */
     @Override
     public void format(StringBuilder buffer, Object o, String pattern) {
+        formatter = new Formatter();
         if (pattern == null) {
             throw new FormatterException("Null pattern string");
         }
@@ -36,7 +37,9 @@ public class StringFormatterDoubleExtension
         try {
             buffer.append(formatter.format("%" + pattern, o));
         } catch (Exception ex) {
-            throw new FormatterException("Error while formatting Double: " + ex.getMessage());
+            throw new FormatterException(
+                "Error while formatting Double: " + ex.getMessage(),
+                ex);
         }
     }
     

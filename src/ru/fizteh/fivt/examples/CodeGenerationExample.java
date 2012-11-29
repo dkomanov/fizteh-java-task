@@ -1,9 +1,6 @@
 package ru.fizteh.fivt.examples;
 
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 
@@ -126,11 +123,41 @@ public class CodeGenerationExample {
                 new Function1V<GeneratorAdapter>() {
                     @Override
                     public void apply(GeneratorAdapter ga) {
-                        Type printStreamType = Type.getType(PrintStream.class);
-                        ga.getStatic(Type.getType(System.class), "out", printStreamType);
+                        // char[] chars = this.message.toCharArray();
                         ga.loadThis();
                         ga.getField(type, fieldName, Type.getType(String.class));
-                        ga.invokeVirtual(printStreamType, new Method("println", "(Ljava/lang/String;)V"));
+                        ga.invokeVirtual(Type.getType(String.class), new Method("toCharArray", "()[C"));
+                        int charsLocal = ga.newLocal(Type.getType(char[].class));
+                        ga.storeLocal(charsLocal);
+
+                        Label forConditionLabel = ga.newLabel();
+                        Label forLoopEnd = ga.newLabel();
+
+                        // for (int i = 0;
+                        int iLocal = ga.newLocal(Type.INT_TYPE);
+                        ga.push(0);
+                        ga.storeLocal(iLocal);
+
+                        // i < chars.length;
+                        ga.visitLabel(forConditionLabel);
+                        ga.loadLocal(iLocal);
+                        ga.loadLocal(charsLocal);
+                        ga.arrayLength();
+                        ga.ifCmp(Type.INT_TYPE, Opcodes.IFGE, forLoopEnd);
+
+                        // System.out.println(chars[i]);
+                        Type printStreamType = Type.getType(PrintStream.class);
+                        ga.getStatic(Type.getType(System.class), "out", printStreamType);
+                        ga.loadLocal(charsLocal);
+                        ga.loadLocal(iLocal);
+                        ga.arrayLoad(Type.CHAR_TYPE);
+                        ga.invokeVirtual(printStreamType, new Method("println", "(C)V"));
+
+                        // i++)
+                        ga.iinc(iLocal, 1);
+                        ga.goTo(forConditionLabel);
+
+                        ga.visitLabel(forLoopEnd);
                         ga.returnValue();
                     }
                 });

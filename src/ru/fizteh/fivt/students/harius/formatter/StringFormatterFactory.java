@@ -37,11 +37,17 @@ public class StringFormatterFactory
                 Class clazz = Class.forName(name);
                 ext[index] = StringFormatterExtension.class.cast(clazz.newInstance());
             } catch (ClassNotFoundException notFound) {
-                throw new FormatterException(name + " is not a valid class");
+                throw new FormatterException(
+                    name + " is not a valid class",
+                    notFound);
             } catch (ClassCastException cast) {
-                throw new FormatterException(name + " is not an extension class");
+                throw new FormatterException(
+                    name + " is not an extension class",
+                    cast);
             } catch (InstantiationException | IllegalAccessException inst) {
-                throw new FormatterException(name + " cannot been instantiated");
+                throw new FormatterException(
+                    name + " cannot been instantiated",
+                    inst);
             }
             ++index;
         }

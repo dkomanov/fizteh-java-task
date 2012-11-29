@@ -1,5 +1,9 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat.server;
 
+/**
+ * @author Dmitriy Belyakov
+ */
+
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.Message;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageBuilder;
 import ru.fizteh.fivt.students.dmitriyBelyakov.chat.MessageType;
@@ -37,7 +41,7 @@ class UserThread extends Thread {
         } catch (Throwable t) {
             if (!isInterrupted()) {
                 String messageText;
-                if(t.getMessage() != null) {
+                if (t.getMessage() != null) {
                     messageText = t.getMessage();
                 } else {
                     messageText = "Unknown.";
@@ -82,7 +86,7 @@ public class User {
             }
         }
         myManager.deleteUser(this);
-        if(authorized) {
+        if (authorized) {
             myManager.showInServer("User " + name + " disconnected.");
         }
     }
@@ -97,7 +101,7 @@ public class User {
             myThread.start();
         } catch (Throwable t) {
             String messageText;
-            if(t.getMessage() != null) {
+            if (t.getMessage() != null) {
                 messageText = t.getMessage();
             } else {
                 messageText = "Unknown.";
@@ -108,9 +112,9 @@ public class User {
 
     void getHelloMessage() {
         try {
-            Message message =  MessageUtils.getHelloMessage(socket.getInputStream());
+            Message message = MessageUtils.getHelloMessage(socket.getInputStream());
             name = message.getName();
-            if (myManager.names.contains(name) || name.matches(".*\\s+.*")) {
+            if (myManager.names.contains(name) || name.matches(".*\\s+.*") || name.equals("")) {
                 throw new RuntimeException("Incorrect or already used name.");
             }
             myManager.names.add(name);
@@ -118,7 +122,7 @@ public class User {
             myManager.showInServer("User " + name + " connected.");
         } catch (Throwable e) {
             String messageText;
-            if(e.getMessage() != null) {
+            if (e.getMessage() != null) {
                 messageText = e.getMessage();
             } else {
                 messageText = "Unknown.";
@@ -140,7 +144,7 @@ public class User {
             myManager.sendAll(message, this);
         } catch (Throwable e) {
             String messageText;
-            if(e.getMessage() != null) {
+            if (e.getMessage() != null) {
                 messageText = e.getMessage();
             } else {
                 messageText = "Unknown.";
@@ -171,7 +175,7 @@ public class User {
             socket.getOutputStream().write(MessageBuilder.getMessageBytes(message));
         } catch (Throwable e) {
             String messageText;
-            if(e.getMessage() != null) {
+            if (e.getMessage() != null) {
                 messageText = e.getMessage();
             } else {
                 messageText = "Unknown.";

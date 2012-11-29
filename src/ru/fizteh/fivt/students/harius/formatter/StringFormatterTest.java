@@ -33,6 +33,10 @@ class Stuff extends Dummy {
     private long z = -9;
 }
 
+class OneMore extends Stuff {
+    String hello = "goodbye";
+}
+
 /*
  * Several correctness tests for StringFormatter
  */
@@ -40,19 +44,21 @@ public abstract class StringFormatterTest {
     private static StringFormatterFactory factory = new StringFormatterFactory();
     private static Dummy d = new Dummy();
     private static Stuff st = new Stuff();
+    private static OneMore om = new OneMore();
 
     /* Do the tests */
     public static void main(String[] args) {
-        simple();
-        simpleDouble();
-        simpleBigInteger();
+        simpleCorrectResult();
+        doubleCorrectResult();
+        bigIntegerCorrectResult();
         simpleCrash();
-        simpleDoubleCrash();
+        doubleCrash();
+        
         System.err.println("All tests OK");
     }
 
     /* Basic tests */
-    public static void simple() {
+    public static void simpleCorrectResult() {
         StringFormatter basic = factory.create();
         check(basic, "hello", "hello");
         check(basic, "hello, world", "hello, {0}", "world");
@@ -60,6 +66,7 @@ public abstract class StringFormatterTest {
         check(basic, "one one one", "{0} {0} {0}", "one");
         check(basic, d.x + " " + d.y, "{0.x} {0.y}", d);
         check(basic, "", "{0}", (Object)null);
+        check(basic, "", "{0:d}", (Object)null);
         check(basic, "", "{0.obj}", d);
         check(basic, "{hello}", "{{{0}}}", "hello");
         check(basic, "{0}", "{{0}}", "hello");
@@ -68,29 +75,35 @@ public abstract class StringFormatterTest {
         check(basic, "-9", "{0.z}", st);
         check(basic, "32", "{0.zz}", st);
         check(basic, "7.5", "{0.y}", st);
+        check(basic, "32", "{0.zz}", om);
+        check(basic, "", "{0.bad}", "hello");
+        check(basic, "", "{0.bad.worse}", "hello");        
     }
 
     /* Basic tests of formatting double */
-    public static void simpleDouble() {
+    public static void doubleCorrectResult() {
         StringFormatter dbasic = factory.create(
             StringFormatterDoubleExtension.class.getName());
         check(dbasic, "hello", "hello");
         check(dbasic, "3.14", "{0:.2f}", 3.1415926);
+        check(dbasic, "pi=3!", "pi={0:.0f}!", Math.PI);
+        check(dbasic, "", "{0:E}", (Object)null);
     }
 
     /* Basic tests of crashing double formatting */
-    public static void simpleDoubleCrash() {
+    public static void doubleCrash() {
         StringFormatter dbasic = factory.create(
             StringFormatterDoubleExtension.class.getName());
         checkFail(dbasic, "{0:test_test}?!", 4.33);
     }
 
     /* Basic tests of formatting BigInteger */
-    public static void simpleBigInteger() {
+    public static void bigIntegerCorrectResult() {
         StringFormatter ibasic = factory.create(
             StringFormatterBigIntegerExtension.class.getName());
         check(ibasic, "hello", "hello");
         check(ibasic, "1234321", "{0:d}", BigInteger.valueOf(1111 * 1111));
+        check(ibasic, "ab 1 cd", "ab {0:X} cd", BigInteger.valueOf(1));
     }
 
     /* Basic crash tests */
@@ -100,13 +113,15 @@ public abstract class StringFormatterTest {
         checkFail(basic, "{");
         checkFail(basic, "{ ");
         checkFail(basic, "}");
-        checkFail(basic, "{0.bad}", "hello");
+        checkFail(basic, "{}");
         checkFail(basic, "{0:field}", "hello");
         checkFail(basic, "{0}}", "hello");
         checkFail(basic, "{crash!}", "hello");
         checkFail(basic, "{-1}", "hello");
         checkFail(basic, null);
         checkFail(basic, "{0} {1}", (Object[])null);
+        checkFail(basic, "{-0}", "hello");
+        checkFail(basic, "{+3}", "hello");
 
         StringBuilder builder = null;
         checkBufferFail(basic, builder, "hello, {0}", "world");

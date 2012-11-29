@@ -145,6 +145,19 @@ public class Shell {
         return true;
     }
 
+    public static boolean isSubDir(File file, File subFile) {
+        if (file.equals(subFile)) {
+            return true;
+        }
+        for (File parentDir = file.getParentFile(); parentDir != null;
+             parentDir = parentDir.getParentFile()) {
+            if (subFile.equals(parentDir)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     static boolean execCp(String source, String destination) {
         File from = new File(source);
         File to = new File(destination);
@@ -176,11 +189,12 @@ public class Shell {
         int fromLen = fromStr.length();
         int toLen = toStr.length();
 
-        if (fromStr.equals(toStr.substring(0, Math.min(fromLen, toLen)))) {
+        if (isSubDir(to, from)) {
             reportError("cp: unable to copy from " + from
-                        + " to it's subdirectory " + to);
+                        + " to its subdirectory " + to);
             return false;
         }
+
         String relativeSourceFile = fromStr.substring(fromStr.lastIndexOf(File.separatorChar) + 1);
         if (from.isDirectory()) {
             File directoryCopy = new File(toStr + File.separatorChar
@@ -290,7 +304,7 @@ public class Shell {
         File curDir = new File(curPath);
         File[] fileList = curDir.listFiles();
         for (int i = 0; i < fileList.length; i++) {
-            System.out.println(fileList[i]);
+            System.out.println(fileList[i].getName());
         }
     }
 
