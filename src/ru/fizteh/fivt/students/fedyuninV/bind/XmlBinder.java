@@ -59,6 +59,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         if (methods.containsKey(clazz)) { //already in map
             return;
         }
+        methods.put(clazz, null);
+        Set<String> names = new TreeSet<>();
         List<SerializeComponent> components = new ArrayList<>();
         Method[] methodList = clazz.getMethods();
         for (Method method: methodList) {
@@ -93,6 +95,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                 result.add(component);
                 addToMap(component.getter().getReturnType());
                 setComponentName(component);
+                if (names.contains(component.getName())) {
+                    throw new RuntimeException("Two pairs of methods with the same names.");
+                }
+                names.add(component.getName());
             }
         }
         methods.put(clazz, result);
@@ -102,6 +108,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         if (fields.containsKey(clazz)) {
             return;
         }
+        fields.put(clazz, null);
+        Set<String> names = new TreeSet<>();
         List<Field> result = new ArrayList<>();
         Class parent = clazz;
         while (parent != null) {
@@ -113,12 +121,17 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         for (Field field: result) {
             field.setAccessible(true);
             addToMap(field.getType());
+            String newFieldName = getFieldName(field);
+            if (names.contains(newFieldName)) {
+                throw new RuntimeException("Two fields with the same names.");
+            }
+            names.add(newFieldName);
         }
     }
 
     private void addToMap(Class clazz) {
         try {
-            Constructor constructor = getClazz().getConstructor();
+            Constructor constructor = clazz.getConstructor();
             constructor.setAccessible(true);
             constructors.put(clazz, constructor);
         } catch (NoSuchMethodException ignored) {
@@ -171,7 +184,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                 if (setterAnnnotation.name().equals(getterAnnnotation.name())) {
                     component.setName(setterAnnnotation.name());
                 } else {
-                    throw new RuntimeException("Incorrect annotations of methods");
+                    throw new RuntimeException("Incorrect annotations of methods.");
                 }
             } else {
                 component.setName(setterAnnnotation.name());
@@ -234,7 +247,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     private void writeToDocument(Document document, Object value, Element root) throws Exception{
         BindingType bindingType = value.getClass().getAnnotation(BindingType.class);
         if (serialized.put(value, CONTAINS) != null) {
-            throw new RuntimeException("Object contains link to itself, cannot serailize");
+            throw new RuntimeException("Object contains link to itself, cannot serailize.");
         }
         if (bindingType == null  ||  bindingType.value().equals(MembersToBind.FIELDS)) {
             writeToDocumentByFields(document, value, root);
@@ -272,6 +285,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             System.out.println(stringWriter.getBuffer().toString());
             /*return null;                               */
             return out.toByteArray();
+        } catch (RuntimeException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw new RuntimeException("Serializing error", ex);
         }
