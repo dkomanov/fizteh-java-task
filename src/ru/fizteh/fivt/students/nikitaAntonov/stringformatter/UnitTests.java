@@ -84,17 +84,8 @@ public class UnitTests {
 
     @Test
     public void formatterNullPointer() {
-        try {
-            StringFormatter f = new StringFormatter(null);
-        } catch (FormatterException e) {
-            Throwable cause = e.getCause();
-            if (cause != null) {
-                assertEquals(cause.getClass(), NullPointerException.class);
-                return;
-            }
-        }
-
-        fail("No exception =(");
+        thrown.expectMessage("exList == null");
+        StringFormatter f = new StringFormatter(null);
     }
 
     @Test
@@ -174,7 +165,7 @@ public class UnitTests {
             public Object a = null;
         }
 
-        thrown.expectMessage("An error while extracting field occured");
+        thrown.expectMessage("An error while extracting field occurred");
         String result = formatter.format("Test {0.a.b}", new TestClass());
     }
 

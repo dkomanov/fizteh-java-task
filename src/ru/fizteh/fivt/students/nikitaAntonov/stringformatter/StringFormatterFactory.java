@@ -19,8 +19,8 @@ public class StringFormatterFactory implements
     }
 
     @Override
-    public ru.fizteh.fivt.format.StringFormatter create(String... extensionClassNames)
-            throws FormatterException {
+    public ru.fizteh.fivt.format.StringFormatter create(
+            String... extensionClassNames) throws FormatterException {
 
         ArrayList<StringFormatterExtension> extensionsList = new ArrayList<>();
 
@@ -34,10 +34,17 @@ public class StringFormatterFactory implements
                         .get(extensionName);
 
                 if (extension == null) {
-                    extension = (StringFormatterExtension) Class.forName(
-                            extensionName).newInstance();
-                    
-                    knownsExtensions.put(extensionName, extension);
+                    synchronized (knownsExtensions) {
+
+                        extension = knownsExtensions.get(extensionName);
+                        if (extension == null) {
+
+                            extension = (StringFormatterExtension) Class
+                                    .forName(extensionName).newInstance();
+
+                            knownsExtensions.put(extensionName, extension);
+                        }
+                    }
                 }
 
                 extensionsList.add(extension);
