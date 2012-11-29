@@ -96,6 +96,8 @@ public class CalendarPrinter {
     void printWeeks() {
         int curY = 0;
         Calendar t = (Calendar) calendar.clone();
+        t.setMinimalDaysInFirstWeek(7);
+        t.setFirstDayOfWeek(1);
         while (calendar.get(Calendar.MONTH) == t.get(Calendar.MONTH)) {
             String s = Integer.toString(t.get(Calendar.WEEK_OF_YEAR));
             s = makeGoodLooking(s);
