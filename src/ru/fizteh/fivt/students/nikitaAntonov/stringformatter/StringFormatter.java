@@ -31,6 +31,10 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     public void format(StringBuilder buffer, String format, Object... args)
             throws FormatterException {
 
+        if (format == null) {
+            throw new FormatterException("Format musn't be null");
+        }
+        
         int pos = 0;
         int end = format.length();
 
