@@ -60,4 +60,32 @@ public class TestClassSerializationFields {
         hash = 71 * hash + (this.price != null ? this.price.hashCode() : 0);
         return hash;
     }
+    
+    @BindingType(MembersToBind.FIELDS)
+    public static class InnerClass {
+        private int day = 30;
+        int month = 11;
+
+        public int getDay() {
+            return day;
+        }
+
+        public int getMonth() {
+            return month;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            InnerClass ic = (InnerClass)o;
+            return ic.getDay() == day && ic.getMonth() == month;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 41 * hash + this.day;
+            hash = 41 * hash + this.month;
+            return hash;
+        }
+    }
 }
