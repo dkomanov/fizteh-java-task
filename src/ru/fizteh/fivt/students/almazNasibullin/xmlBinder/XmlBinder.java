@@ -111,13 +111,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     <PairMethodsToSerialization>();
             for (PairMethodsToSerialization pm : pairMethods) {
                 if (pm.getter != null && pm.setter != null) {
-                    AsXmlAttribute attributeGetter = pm.getter.getAnnotation(AsXmlAttribute.class);
-                    AsXmlAttribute attributeSetter = pm.setter.getAnnotation(AsXmlAttribute.class);
-                    if ((attributeGetter == null && attributeSetter == null) ||
-                            (attributeGetter != null && attributeGetter.equals(attributeSetter))){
-                        toSerialization.add(pm);
-                        addForSerialization(pm.getter.getReturnType());
-                    }
+                    toSerialization.add(pm);
+                    addForSerialization(pm.getter.getReturnType());
                 }
             }
             methods.put(clazz, toSerialization);
@@ -220,7 +215,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                      String name = getName(pm.getter, pm.name);
                      Object newObject = pm.getter.invoke(o);
                      if (newObject != null) {
-                         if (pm.getter.getAnnotation(AsXmlAttribute.class) == null) {
+                         if (pm.getter.getAnnotation(AsXmlAttribute.class) == null && pm.setter.getAnnotation(AsXmlAttribute.class) == null) {
                             xmlsw.writeStartElement(name);
                             int k = i + 1;
                             while (k < pairMethods.size()) {
