@@ -40,7 +40,7 @@ public class XmlBinderTest extends Assert {
 
     @Test
     public void testXmlBuilder() {
-        XmlBinder<User> binder = new XmlBinder<>(User.class);
+        XmlBinder<User> binder = new XmlBinder<User>(User.class);
         Permissions permissions = new Permissions();
         permissions.setQuota(100500);
         User user = new User(1, UserType.USER, new UserName("first", "last"), permissions);
@@ -48,13 +48,13 @@ public class XmlBinderTest extends Assert {
         User anotherUser = binder.deserialize(bytes1);
         assertFalse(user == anotherUser);
         assertEquals(user, anotherUser);
-        XmlBinder<ClassForSerializationFields> anotherBinder = new XmlBinder<>(ClassForSerializationFields.class);
+        XmlBinder<ClassForSerializationFields> anotherBinder = new XmlBinder<ClassForSerializationFields>(ClassForSerializationFields.class);
         ClassForSerializationFields classObject = new ClassForSerializationFields();
         byte[] bytes2 = anotherBinder.serialize(classObject);
         ClassForSerializationFields anotherClass = anotherBinder.deserialize(bytes2);
         assertFalse(anotherClass == classObject);
         assertEquals(classObject, anotherClass);
-        XmlBinder<ClassForSerializationMethods> yetAnotherBinder = new XmlBinder<>(ClassForSerializationMethods.class);
+        XmlBinder<ClassForSerializationMethods> yetAnotherBinder = new XmlBinder<ClassForSerializationMethods>(ClassForSerializationMethods.class);
         ClassForSerializationMethods classMethods = new ClassForSerializationMethods();
         classMethods.setSomething(true);
         byte[] bytes3 = yetAnotherBinder.serialize(classMethods);
