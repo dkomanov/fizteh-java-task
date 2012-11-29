@@ -13,29 +13,24 @@ import ru.fizteh.fivt.students.dmitriyBelyakov.xmlBinder.test.ClassForSerializat
 public class XmlBinderTest extends Assert {
     @Test(expected = RuntimeException.class)
     public void testValueNullPointer() {
-        new XmlBinder(User.class).serialize(null);
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void testIncorrectTypeOfValue() {
-        new XmlBinder(User.class).serialize(new String("Hello, world!"));
+        new XmlBinder<User>(User.class).serialize(null);
     }
 
     @Test(expected = RuntimeException.class)
     public void testRecursiveClass() {
-        new XmlBinder(BadClassForSerialization.class).serialize(new BadClassForSerialization());
+        new XmlBinder<BadClassForSerialization>(BadClassForSerialization.class).serialize(new BadClassForSerialization());
     }
 
     @Test(expected = RuntimeException.class)
     public void testUnsupportedClass() {
-        new XmlBinder(ClassForSerializationFields.class).deserialize(new String(
+        new XmlBinder<ClassForSerializationFields>(ClassForSerializationFields.class).deserialize(new String(
                 "<classForSerializationMethods>"
                         + "</classForSerializationMethods>").getBytes());
     }
 
     @Test(expected = RuntimeException.class)
     public void testNoneBytes() {
-        new XmlBinder(ClassForSerializationFields.class).deserialize(null);
+        new XmlBinder<ClassForSerializationFields>(ClassForSerializationFields.class).deserialize(null);
     }
 
     @Test
