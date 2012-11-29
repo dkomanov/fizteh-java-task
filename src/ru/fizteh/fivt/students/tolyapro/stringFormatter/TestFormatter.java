@@ -40,6 +40,15 @@ public class TestFormatter {
         private String s3 = null;
     }
 
+    static public class TestNull {
+        public TestDoubleChild t = null;
+        private TestNull nullAgain = null;
+    }
+
+    static public class TestNull2 {
+        public TestNull testNull = new TestNull();
+    }
+
     TestDouble testDouble;
     TestDoubleChild testDoubleChild;
     TestBigInteger testBigInteger;
@@ -140,6 +149,25 @@ public class TestFormatter {
 
         result = formatter.format("a{0.s3}b", testOtherFormats);
         Assert.assertEquals("ab", result);
+
+        TestNull testNull = new TestNull();
+
+        result = formatter.format("{0.t.d3}", testNull);
+        Assert.assertEquals("", result);
+
+        result = formatter.format(">>{0.t.d3}<<", testNull);
+        Assert.assertEquals(">><<", result);
+
+        result = formatter.format(">>{0.<>.<>}<<", testNull);
+        Assert.assertEquals(">><<", result);
+
+        result = formatter.format("{0.nullAgain.t.d3}", testNull);
+        Assert.assertEquals("", result);
+
+        TestNull2 testNull2 = new TestNull2();
+
+        result = formatter.format("{0.testNull.nullAgain.t.d3}", testNull2);
+        Assert.assertEquals("", result);
     }
 
 }
