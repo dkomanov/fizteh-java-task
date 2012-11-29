@@ -37,6 +37,7 @@ public class TestFormatter {
     static public class TestOtherFormats {
         public final String s1 = "s1";
         private final String s2 = "s2";
+        private String s3 = null;
     }
 
     TestDouble testDouble;
@@ -88,6 +89,11 @@ public class TestFormatter {
         formatter.format("{-1}", testDouble.d4);
     }
 
+    @Test(expected = FormatterException.class)
+    public void testBadIndex() {
+        formatter.format("{-0}", testDouble.d1);
+    }
+
     @Test
     public void correctnessTests() {
 
@@ -122,8 +128,18 @@ public class TestFormatter {
         result = formatter.format("{0.s1}", testOtherFormats);
         Assert.assertEquals("s1", result);
 
-        result = formatter.format("{0.null}a", testOtherFormats);
+        BigInteger bNull = null;
+        result = formatter.format("{0}a", bNull);
         Assert.assertEquals("a", result);
+
+        result = formatter.format("a{0}b", bNull);
+        Assert.assertEquals("ab", result);
+
+        result = formatter.format("{0.s3}", testOtherFormats);
+        Assert.assertEquals("", result);
+
+        result = formatter.format("a{0.s3}b", testOtherFormats);
+        Assert.assertEquals("ab", result);
     }
 
 }

@@ -50,6 +50,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         String[] tokens = beforePattern.split("\\.");
         try {
             String tmp = tokens[0];
+            if (!Character.isDigit(tmp.charAt(0))) {
+                throw new Exception();
+            }
             int number = Integer.parseInt(tmp);
             if (number < 0) {
                 throw new Exception();
