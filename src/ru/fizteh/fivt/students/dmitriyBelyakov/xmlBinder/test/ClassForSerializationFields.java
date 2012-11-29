@@ -19,6 +19,10 @@ public class ClassForSerializationFields {
     @AsXmlCdata
     Object nullPointer = null;
 
+    public static class InnerClass {
+        String string = "Eleven";
+    }
+
     @Override
     public boolean equals(Object o) {
         ClassForSerializationFields object = (ClassForSerializationFields) o;

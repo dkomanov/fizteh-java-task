@@ -32,7 +32,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
 
     public XmlBinder(Class<T> clazz) {
         super(clazz);
-        className = firstCharToLowerCase(clazz.getName().replaceFirst(clazz.getPackage().getName() + "\\.*", ""));
+        className = firstCharToLowerCase(clazz.getSimpleName());
         methodsForClasses = new HashMap<>();
         fieldsForClasses = new HashMap<>();
         alreadySerialised = new IdentityHashMap<>();

@@ -40,33 +40,37 @@ public class XmlBinderTest extends Assert {
 
     @Test
     public void testXmlBuilder() {
-        XmlBinder binder = new XmlBinder(User.class);
+        XmlBinder<User> binder = new XmlBinder<>(User.class);
         Permissions permissions = new Permissions();
         permissions.setQuota(100500);
         User user = new User(1, UserType.USER, new UserName("first", "last"), permissions);
         byte[] bytes1 = binder.serialize(user);
-        User anotherUser = (User) binder.deserialize(bytes1);
+        User anotherUser = binder.deserialize(bytes1);
         assertFalse(user == anotherUser);
         assertEquals(user, anotherUser);
-        XmlBinder anotherBinder = new XmlBinder(ClassForSerializationFields.class);
+        XmlBinder<ClassForSerializationFields> anotherBinder = new XmlBinder<>(ClassForSerializationFields.class);
         ClassForSerializationFields classObject = new ClassForSerializationFields();
         byte[] bytes2 = anotherBinder.serialize(classObject);
-        ClassForSerializationFields anotherClass = (ClassForSerializationFields) anotherBinder.deserialize(bytes2);
+        ClassForSerializationFields anotherClass = anotherBinder.deserialize(bytes2);
         assertFalse(anotherClass == classObject);
         assertEquals(classObject, anotherClass);
-        XmlBinder yetAnotherBinder = new XmlBinder(ClassForSerializationMethods.class);
+        XmlBinder<ClassForSerializationMethods> yetAnotherBinder = new XmlBinder<>(ClassForSerializationMethods.class);
         ClassForSerializationMethods classMethods = new ClassForSerializationMethods();
         classMethods.setSomething(true);
         byte[] bytes3 = yetAnotherBinder.serialize(classMethods);
-        ClassForSerializationMethods clMethods = (ClassForSerializationMethods) yetAnotherBinder.deserialize(bytes3);
+        ClassForSerializationMethods clMethods = yetAnotherBinder.deserialize(bytes3);
         assertEquals(classMethods, clMethods);
         String str = "<classForSerializationFields>"
                 + "<boolFieldNotExist>false</boolFieldNotExist><shField>21</shField><c><![CDATA[D]]></c><doubleField>1.1</doubleField>"
                 + "<intField>11</intField><flField>1.993</flField><longField>2012</longField>"
                 + "<enumField>MESSAGE</enumField><byteField>12</byteField>"
                 + "</classForSerializationFields>";
-        ClassForSerializationFields classWithNull = (ClassForSerializationFields) anotherBinder.deserialize(str.getBytes());
+        ClassForSerializationFields classWithNull = anotherBinder.deserialize(str.getBytes());
         assertNull(classWithNull.stringField);
         assertNotEquals(classObject, classWithNull);
+        XmlBinder<ClassForSerializationFields.InnerClass> xmlBinderInner = new XmlBinder<>(ClassForSerializationFields.InnerClass.class);
+        ClassForSerializationFields.InnerClass inner = new ClassForSerializationFields.InnerClass();
+        byte[] bytes4 = xmlBinderInner.serialize(inner);
+        assertEquals("<innerClass><string>Eleven</string></innerClass>", new String(bytes4));
     }
 }
