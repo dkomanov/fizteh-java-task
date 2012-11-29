@@ -19,3 +19,36 @@ GUI-приложение для просмотра-редактирования 
 
 ### Вариант 3
 Реализовать диалог поиска пользователя по имени.
+
+### Пример XML-файла
+```(xml)
+<users>
+    <user>
+        <id>1</id>
+        <userType>MODERATOR</userType>
+        <name>
+            <firstName>root</firstName>
+            <lastName>root</lastName>
+        </name>
+        <permissions>
+            <root>true</root>
+            <quota>100500</quota>
+        </permissions>
+    </user>
+    <user>
+        <id>2</id>
+        <userType>USER</userType>
+        <name>
+            <firstName>Ivan</firstName>
+            <lastName>Ivanov</lastName>
+        </name>
+        <permissions>
+            <root>false</root>
+            <quota>100</quota>
+        </permissions>
+    </user>
+</users>
+```
+
+Т.е. корневой элемент ```<users>```, который содержит N-элементов ```<user>```,
+которые представляют класс User. Могут встречаться и другие элементы.
