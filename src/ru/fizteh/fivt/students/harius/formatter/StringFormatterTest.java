@@ -48,16 +48,17 @@ public abstract class StringFormatterTest {
 
     /* Do the tests */
     public static void main(String[] args) {
-        simple();
-        simpleDouble();
-        simpleBigInteger();
+        simpleCorrectResult();
+        doubleCorrectResult();
+        bigIntegerCorrectResult();
         simpleCrash();
-        simpleDoubleCrash();
+        doubleCrash();
+        
         System.err.println("All tests OK");
     }
 
     /* Basic tests */
-    public static void simple() {
+    public static void simpleCorrectResult() {
         StringFormatter basic = factory.create();
         check(basic, "hello", "hello");
         check(basic, "hello, world", "hello, {0}", "world");
@@ -75,10 +76,12 @@ public abstract class StringFormatterTest {
         check(basic, "32", "{0.zz}", st);
         check(basic, "7.5", "{0.y}", st);
         check(basic, "32", "{0.zz}", om);
+        check(basic, "", "{0.bad}", "hello");
+        check(basic, "", "{0.bad.worse}", "hello");        
     }
 
     /* Basic tests of formatting double */
-    public static void simpleDouble() {
+    public static void doubleCorrectResult() {
         StringFormatter dbasic = factory.create(
             StringFormatterDoubleExtension.class.getName());
         check(dbasic, "hello", "hello");
@@ -88,14 +91,14 @@ public abstract class StringFormatterTest {
     }
 
     /* Basic tests of crashing double formatting */
-    public static void simpleDoubleCrash() {
+    public static void doubleCrash() {
         StringFormatter dbasic = factory.create(
             StringFormatterDoubleExtension.class.getName());
         checkFail(dbasic, "{0:test_test}?!", 4.33);
     }
 
     /* Basic tests of formatting BigInteger */
-    public static void simpleBigInteger() {
+    public static void bigIntegerCorrectResult() {
         StringFormatter ibasic = factory.create(
             StringFormatterBigIntegerExtension.class.getName());
         check(ibasic, "hello", "hello");
@@ -110,7 +113,7 @@ public abstract class StringFormatterTest {
         checkFail(basic, "{");
         checkFail(basic, "{ ");
         checkFail(basic, "}");
-        checkFail(basic, "{0.bad}", "hello");
+        checkFail(basic, "{}");
         checkFail(basic, "{0:field}", "hello");
         checkFail(basic, "{0}}", "hello");
         checkFail(basic, "{crash!}", "hello");

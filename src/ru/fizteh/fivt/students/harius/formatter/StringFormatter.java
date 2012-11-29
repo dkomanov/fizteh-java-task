@@ -117,6 +117,9 @@ public class StringFormatter
         throws FormatterException {
 
         StringTokenizer tok = new StringTokenizer(chain, ".");
+        if (!tok.hasMoreTokens()) {
+            throw new FormatterException("Empty index string");
+        }
         String sIndex = tok.nextToken();
         if (sIndex.startsWith("+") || sIndex.startsWith("-")) {
             throw new FormatterException("Index must be unsigned");
@@ -127,11 +130,18 @@ public class StringFormatter
             index = Integer.parseInt(sIndex);
             arg = args[index];
         } catch (NumberFormatException notNum) {
-            throw new FormatterException(sIndex + " is not a valid argument index");
+            throw new FormatterException(
+                sIndex + " is not a valid argument index",
+                notNum);
+
         } catch (ArrayIndexOutOfBoundsException out) {
-            throw new FormatterException("Argument index out of bounds: " + index);
+            throw new FormatterException(
+                "Argument index out of bounds: " + index,
+                out);
         } catch (NullPointerException nullEx) {
-            throw new FormatterException("Null arguments array");
+            throw new FormatterException(
+                "Null arguments array",
+                nullEx);
         }
         while (tok.hasMoreTokens()) {
             String field = tok.nextToken();
@@ -143,6 +153,10 @@ public class StringFormatter
     /* Get a field from an object or one of its parents */
     private Object getField(Object arg, String name)
         throws FormatterException {
+
+        if (arg == null) {
+            return null;
+        }
 
         Class deep = arg.getClass();
         try {
@@ -160,12 +174,15 @@ public class StringFormatter
                         deep = deep.getSuperclass();
                     }
                 }
-                throw new FormatterException(String.format(
-                    "No field %s in %s", name, arg.getClass().getSimpleName()));
+                return null;
             }
         } catch (IllegalAccessException accEx) {
-            throw new FormatterException(String.format(
-                "Illegal access to field %s of %s", name, arg.getClass().getSimpleName()));
+            throw new FormatterException(
+                String.format(
+                    "Illegal access to field %s of %s",
+                    name, arg.getClass().getSimpleName()),
+                accEx
+            );
         }
     }
 
@@ -183,8 +200,10 @@ public class StringFormatter
                 try {
                     extend.format(buffer, arg, pattern);
                 } catch (Exception ex) {
-                    throw new FormatterException("Error while formatting " +
-                        arg.getClass() + ": " + ex.getMessage());
+                    throw new FormatterException(
+                        "Error while formatting " +
+                            arg.getClass() + ": " + ex.getMessage(),
+                        ex);
                 }
                 return;
             }
