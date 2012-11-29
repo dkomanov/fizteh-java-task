@@ -29,7 +29,7 @@ public class DateExtension extends StringFormatterExtension{
             SimpleDateFormat formatter = new SimpleDateFormat(pattern);
             sb.append(formatter.format(o));
         } catch (Exception ex) {
-            throw new FormatterException("Error: invalid pattern.");
+            throw new FormatterException("Error: invalid pattern.", ex);
         }
     }
 }

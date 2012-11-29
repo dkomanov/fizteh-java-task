@@ -28,7 +28,7 @@ public class IntegerExtension extends StringFormatterExtension{
             Formatter formatter = new Formatter();
             sb.append(formatter.format("%" + pattern, o));
         } catch (Exception ex) {
-            throw new FormatterException("Error: invalid pattern.");
+            throw new FormatterException("Error: invalid pattern.", ex);
         }
     }
 }

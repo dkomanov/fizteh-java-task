@@ -16,7 +16,7 @@ public class StringFormatterFactory implements ru.fizteh.fivt.format.StringForma
         try {
             Collections.sort(Arrays.asList(classNames)); //to search identical
         } catch (Exception ex) {
-            throw new FormatterException("Error: empty classNames.");
+            throw new FormatterException("Error: empty classNames.", ex);
         }
 
         for (int i = 0; i < classNames.length; ++i) {
@@ -31,7 +31,7 @@ public class StringFormatterFactory implements ru.fizteh.fivt.format.StringForma
             try {
                 extension.add((StringFormatterExtension) Class.forName(curName).newInstance());
             } catch (Exception ex) {
-                throw new FormatterException("Error: invalid extension.");
+                throw new FormatterException("Error: invalid extension.", ex);
             }
         }
         return new StringFormatter(extension);

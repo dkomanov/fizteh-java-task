@@ -111,7 +111,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         try {
             o = args[Integer.parseInt(argNumber)];
         } catch (Exception ex) {
-            throw new FormatterException("Error: invalid argument number.");
+            throw new FormatterException("Error: invalid argument number.", ex);
         }
 
         while(st.hasMoreTokens()) {
@@ -161,7 +161,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             }
         } catch (IllegalAccessException iaex) {
             throw new FormatterException("Error: unable to get field: "
-                                         + fieldName);
+                                         + fieldName, iaex);
         }
         return null;
     }
