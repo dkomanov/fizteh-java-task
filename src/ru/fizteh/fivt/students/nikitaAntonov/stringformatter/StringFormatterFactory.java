@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ru.fizteh.fivt.format.FormatterException;
-import ru.fizteh.fivt.format.StringFormatter;
+import ru.fizteh.fivt.students.nikitaAntonov.stringformatter.StringFormatter;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
 public class StringFormatterFactory implements
@@ -19,7 +19,7 @@ public class StringFormatterFactory implements
     }
 
     @Override
-    public StringFormatter create(String... extensionClassNames)
+    public ru.fizteh.fivt.format.StringFormatter create(String... extensionClassNames)
             throws FormatterException {
 
         ArrayList<StringFormatterExtension> extensionsList = new ArrayList<>();
