@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.fedyuninV.bind;
 
+import junit.framework.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -63,18 +64,17 @@ public class XmlBinderTester {
         LinkToItself deserialized = binder.deserialize(bytes);
     }
 
-    public static void main(String[] args) {
-        XmlBinder<User> binder = new XmlBinder<>(User.class);
+    @Test
+    public void userTest() {
+        XmlBinder<User> binder = new XmlBinder<User>(User.class);
         Permissions permissions = new Permissions();
         permissions.setQuota(100500);
         User user = new User(1, UserType.USER, new UserName("first", "last"), permissions);
-        User user2 = new User(1, UserType.USER, new UserName("first", "last"), permissions);
         byte[] bytes = binder.serialize(user);
-        byte[] bytes2 = binder.serialize(user2);
         User deserialized = binder.deserialize(bytes);
-        User deserialized2 = binder.deserialize(bytes2);
-        System.out.println(deserialized.equals(user));
-        assert user != deserialized;
-        assert user.equals(deserialized);
+        Assert.assertEquals(user, deserialized);
+        bytes = binder.serialize(deserialized);
+        user = binder.deserialize(bytes);
+        Assert.assertEquals(user, deserialized);
     }
 }
