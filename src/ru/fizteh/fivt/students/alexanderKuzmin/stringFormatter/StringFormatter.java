@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.alexanderKuzmin.stringFormatter
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import ru.fizteh.fivt.format.FormatterException;
@@ -17,7 +18,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     private List<StringFormatterExtension> extensions;
 
     StringFormatter() {
-        extensions = new ArrayList<StringFormatterExtension>();
+        extensions = Collections.synchronizedList(new ArrayList<StringFormatterExtension>());
     }
 
     public StringFormatter(List<StringFormatterExtension> others) {

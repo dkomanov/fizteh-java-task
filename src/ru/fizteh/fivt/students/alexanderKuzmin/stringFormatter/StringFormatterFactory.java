@@ -23,9 +23,7 @@ public class StringFormatterFactory implements
         }
         try {
             Collections.sort(Arrays.asList(extensionClassNames));
-        } catch (FormatterException e) {
-            throw e;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new FormatterException("Incorrect extension class names.", ex);
         }
         for (int i = 0; i < extensionClassNames.length; i++) {
