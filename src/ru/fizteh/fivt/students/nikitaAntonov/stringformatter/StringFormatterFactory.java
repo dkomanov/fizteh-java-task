@@ -11,7 +11,7 @@ import ru.fizteh.fivt.format.StringFormatterExtension;
 
 public class StringFormatterFactory implements
         ru.fizteh.fivt.format.StringFormatterFactory {
-    private Map<String, StringFormatterExtension> knownsExtensions;
+    private volatile Map<String, StringFormatterExtension> knownsExtensions;
 
     public StringFormatterFactory() {
         knownsExtensions = Collections
