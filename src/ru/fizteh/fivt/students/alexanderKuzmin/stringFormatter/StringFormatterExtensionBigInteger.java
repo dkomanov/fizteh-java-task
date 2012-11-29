@@ -16,20 +16,20 @@ public class StringFormatterExtensionBigInteger extends
     public StringFormatterExtensionBigInteger() {
         super(BigInteger.class);
     }
-    
+
     @Override
     public void format(StringBuilder buffer, Object o, String pattern)
             throws FormatterException {
+        if (pattern == null || pattern.length() == 0) {
+            throw new FormatterException("NULL pattern.");
+        }
+        if (buffer == null) {
+            throw new FormatterException("NULL buffer.");
+        }
+        if (o == null) {
+            throw new FormatterException("NULL object.");
+        }
         try {
-            if (pattern == null || pattern.length() == 0) {
-                throw new Exception("NULL pattern.");
-            }
-            if (buffer == null) {
-                throw new Exception("NULL buffer.");
-            }
-            if (o == null) {
-                throw new Exception("NULL object.");
-            }
             Formatter format = new Formatter();
             buffer.append(format.format("%" + pattern, o));
             format.close();
