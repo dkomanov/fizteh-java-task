@@ -50,4 +50,3 @@ public class TableCharMap extends HashMap<Long, Character> {
         return stringBuilder.toString();
     }
 }
-

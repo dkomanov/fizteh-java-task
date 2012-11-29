@@ -16,11 +16,9 @@ public class CalendarPrinter {
 
     int width = 7 * 2 + 6; // default width of calendar
 
-    final int MAP_SIZE = 1000;
-
     TableCharMap map = new TableCharMap(); // special drawing map
 
-    int startX = MAP_SIZE / 2, startY = MAP_SIZE / 2; // left upper corner
+    int monday = Calendar.MONDAY; // to force week to begin from monday
 
     void run(String[] arguments) {
         parseArguments(arguments);
@@ -57,7 +55,8 @@ public class CalendarPrinter {
     void printWeekDays() {
         Calendar t = (Calendar) calendar.clone();
         for (int i = 0; i < 7; i++) {
-            t.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek() + i);
+            //t.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek() + i);
+            t.set(Calendar.DAY_OF_WEEK, monday + i);
             String s = t.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, locale);
             s = makeGoodLooking(s);
             for (int j = 0; j < 2; j++) {
@@ -67,7 +66,8 @@ public class CalendarPrinter {
     }
 
     void printSheet() {
-        int curX = (calendar.get(Calendar.DAY_OF_WEEK) - calendar.getFirstDayOfWeek() + 7) % 7, curY = 0;
+        //int curX = (calendar.get(Calendar.DAY_OF_WEEK) - calendar.getFirstDayOfWeek() + 7) % 7, curY = 0;
+        int curX = (calendar.get(Calendar.DAY_OF_WEEK) - monday + 7) % 7, curY = 0;
         Calendar t = (Calendar) calendar.clone();
         int num = 1;
         while (calendar.get(Calendar.MONTH) == t.get(Calendar.MONTH)) {
