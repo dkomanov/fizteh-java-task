@@ -130,11 +130,18 @@ public class StringFormatter
             index = Integer.parseInt(sIndex);
             arg = args[index];
         } catch (NumberFormatException notNum) {
-            throw new FormatterException(sIndex + " is not a valid argument index");
+            throw new FormatterException(
+                sIndex + " is not a valid argument index",
+                notNum);
+
         } catch (ArrayIndexOutOfBoundsException out) {
-            throw new FormatterException("Argument index out of bounds: " + index);
+            throw new FormatterException(
+                "Argument index out of bounds: " + index,
+                out);
         } catch (NullPointerException nullEx) {
-            throw new FormatterException("Null arguments array");
+            throw new FormatterException(
+                "Null arguments array",
+                nullEx);
         }
         while (tok.hasMoreTokens()) {
             String field = tok.nextToken();
@@ -170,8 +177,12 @@ public class StringFormatter
                 return null;
             }
         } catch (IllegalAccessException accEx) {
-            throw new FormatterException(String.format(
-                "Illegal access to field %s of %s", name, arg.getClass().getSimpleName()));
+            throw new FormatterException(
+                String.format(
+                    "Illegal access to field %s of %s",
+                    name, arg.getClass().getSimpleName()),
+                accEx
+            );
         }
     }
 
@@ -189,8 +200,10 @@ public class StringFormatter
                 try {
                     extend.format(buffer, arg, pattern);
                 } catch (Exception ex) {
-                    throw new FormatterException("Error while formatting " +
-                        arg.getClass() + ": " + ex.getMessage());
+                    throw new FormatterException(
+                        "Error while formatting " +
+                            arg.getClass() + ": " + ex.getMessage(),
+                        ex);
                 }
                 return;
             }
