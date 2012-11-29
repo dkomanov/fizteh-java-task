@@ -155,6 +155,11 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     private Object extractField(Object object, String field)
             throws IllegalArgumentException, IllegalAccessException {
+        
+        if (object == null) {
+            return null;
+        }
+        
         Class<?> parent = object.getClass();
         Object result = null;
         boolean wasSet = false;
@@ -169,10 +174,6 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             } catch (NoSuchFieldException expt) {
                 parent = parent.getSuperclass();
             }
-        }
-
-        if (!wasSet) {
-            throw new FormatterException("Field " + field + " not found");
         }
         
         return result;
