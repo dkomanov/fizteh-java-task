@@ -34,7 +34,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         if (format == null) {
             throw new FormatterException("Format musn't be null");
         }
-        
+
         int pos = 0;
         int end = format.length();
 
@@ -102,33 +102,26 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
         int pointPos = selector.indexOf('.');
         Object object;
-        try {
-            if (pointPos == -1) {
-                object = args[Integer.parseInt(selector)];
-            } else {
-                int lastPointPos = pointPos;
-                object = args[Integer.parseInt(selector.substring(0, pointPos))];
-                pointPos = selector.indexOf('.', pointPos + 1);
 
-                while (pointPos != -1) {
-                    object = extractField(object,
-                            selector.substring(lastPointPos + 1, pointPos));
+        if (pointPos == -1) {
+            object = args[Integer.parseInt(selector)];
+        } else {
+            int lastPointPos = pointPos;
+            object = args[Integer.parseInt(selector.substring(0, pointPos))];
+            pointPos = selector.indexOf('.', pointPos + 1);
 
-                    lastPointPos = pointPos;
-                    pointPos = selector.indexOf('.', pointPos + 1);
-                }
-
+            while (pointPos != -1) {
                 object = extractField(object,
-                        selector.substring(lastPointPos + 1));
+                        selector.substring(lastPointPos + 1, pointPos));
 
+                lastPointPos = pointPos;
+                pointPos = selector.indexOf('.', pointPos + 1);
             }
-        } catch (FormatterException e) {
-            throw e;
-        } catch (Throwable e) {
-            throw new FormatterException(
-                    "An error while extracting field occurred", e);
+
+            object = extractField(object, selector.substring(lastPointPos + 1));
+
         }
-        
+
         if (pattern == null) {
             if (object != null) {
                 buffer.append(object.toString());
@@ -153,13 +146,12 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     }
 
-    private Object extractField(Object object, String field)
-            throws IllegalArgumentException, IllegalAccessException {
-        
+    private Object extractField(Object object, String field) {
+
         if (object == null) {
             return null;
         }
-        
+
         Class<?> parent = object.getClass();
         Object result = null;
         boolean wasSet = false;
@@ -168,14 +160,18 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             try {
                 Field f = parent.getDeclaredField(field);
                 f.setAccessible(true);
-                result = f.get(object);
+                try {
+                    result = f.get(object);
+                } catch (Throwable e) {
+                    result = null;
+                }
                 wasSet = true;
                 break;
             } catch (NoSuchFieldException expt) {
                 parent = parent.getSuperclass();
             }
         }
-        
+
         return result;
     }
 
