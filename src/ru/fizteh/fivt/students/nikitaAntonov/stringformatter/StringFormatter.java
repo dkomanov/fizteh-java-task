@@ -62,6 +62,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 buffer.append('{');
                 ++pos;
             } else {
+                if (closeBracketPos == -1) {
+                    throw new FormatterException("Unexpected opened bracket");
+                }
                 doFormating(buffer, format.substring(pos, closeBracketPos),
                         args);
                 pos = closeBracketPos + 1;
@@ -95,14 +98,14 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
         int pointPos = selector.indexOf('.');
         Object object;
+        try {
+            if (pointPos == -1) {
+                object = args[Integer.parseInt(selector)];
+            } else {
+                int lastPointPos = pointPos;
+                object = args[Integer.parseInt(selector.substring(0, pointPos))];
+                pointPos = selector.indexOf('.', pointPos + 1);
 
-        if (pointPos == -1) {
-            object = args[Integer.parseInt(selector)];
-        } else {
-            int lastPointPos = pointPos;
-            object = args[Integer.parseInt(selector.substring(0, pointPos))];
-            pointPos = selector.indexOf('.', pointPos + 1);
-            try {
                 while (pointPos != -1) {
                     object = extractField(object,
                             selector.substring(lastPointPos + 1, pointPos));
@@ -113,12 +116,13 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
                 object = extractField(object,
                         selector.substring(lastPointPos + 1));
-            } catch (Throwable e) {
-                throw new FormatterException(
-                        "An error while extracting field occured", e);
-            }
-        }
 
+            }
+        } catch (Throwable e) {
+            throw new FormatterException(
+                    "An error while extracting field occured", e);
+        }
+        
         if (pattern == null) {
             if (object != null) {
                 buffer.append(object.toString());
