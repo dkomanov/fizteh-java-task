@@ -87,7 +87,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 data.field = field;
                 data.field.setAccessible(true);
                 data.type = field.getType();
-                data.asXmlData = field.getAnnotation(AsXmlCdata.class) != null;
+                data.asXmlData = field.getAnnotation(AsXmlCdata.class) != null || field.getAnnotation(AsXmlCdata.class) != null;
                 map.put(data.name, data);
             }
             fieldsForClasses.put(clazz, map);
