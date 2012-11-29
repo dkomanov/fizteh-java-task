@@ -12,37 +12,47 @@ public class NewCalendar {
     static TimeZone timeZone;
     static boolean toPrintTime;
     
-    static String format(int k) {
+    static String format(int k, int len) {
         String toFormat = Integer.toString(k);
-        while (toFormat.length() < 3) {
+        while (toFormat.length() < len || toFormat.length() < 3) {
             toFormat = toFormat + ' ';
         }
         return toFormat;
     }
     
-    static String format(String s) {
-        while (s.length() < 3) {
+    static String format(String s, int len) {
+        while (s.length() < len || s.length() < 3) {
             s += ' ';
         }
         return s;
     }
     
+    static int getNextDay(int dayNum) {
+        if (dayNum == Calendar.SATURDAY) {
+            return Calendar.SUNDAY;
+        } else {
+            return dayNum + 1;
+        }
+    }
+    
     static void printData() {
         Calendar date = Calendar.getInstance(timeZone);
+        date.setFirstDayOfWeek(Calendar.MONDAY);
         date.set(Calendar.MONTH, monthNum);
         date.set(Calendar.YEAR, yearNum);
         date.set(Calendar.DAY_OF_MONTH, 1);
-        System.out.print("   ");
+        int maxLength = date.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()).length() + 1;
+        System.out.print(format("", maxLength));
         if (toPrintWeek) {
-            System.out.print("   ");
+            System.out.print(format("", maxLength));
         }
         System.out.println(date.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()) + ' ' + date.get(Calendar.YEAR));
         if (toPrintWeek) {
-            System.out.print("   ");
+            System.out.print(format("", maxLength));
         }
         for (int i = date.getActualMinimum(Calendar.DAY_OF_WEEK); i <= date.getActualMaximum(Calendar.DAY_OF_WEEK); ++i) {
            date.set(Calendar.DAY_OF_WEEK, i + 1);
-           System.out.print(format(date.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault())));
+           System.out.print(format(date.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()), maxLength));
         }
         date.set(Calendar.MONTH, monthNum);
         date.set(Calendar.YEAR, yearNum);
@@ -51,41 +61,40 @@ public class NewCalendar {
         int currDay = 1;
         int currWeek = date.get(Calendar.WEEK_OF_YEAR);
         if (toPrintWeek) {
-            System.out.print(format(currWeek));
+            System.out.print(format(currWeek, maxLength));
         }
-        date.setFirstDayOfWeek(Calendar.MONDAY);
         int i1 = 0;
-        for (i1 = date.getFirstDayOfWeek(); i1 != date.get(Calendar.DAY_OF_WEEK); i1 = i1 % 7 + 1) {
-            System.out.print("   ");
+        for (i1 = date.getFirstDayOfWeek(); i1 != date.get(Calendar.DAY_OF_WEEK); i1 = getNextDay(i1)) {
+            System.out.print(format("", maxLength));
         }
         --i1;
         for (; i1 != Calendar.SUNDAY; i1 = i1 % 7 + 1) {
-            System.out.print(format(currDay));
+            System.out.print(format(currDay, maxLength));
             ++currDay;
         }
         for (int i = date.getActualMinimum(Calendar.WEEK_OF_MONTH) + 1;  i < date.getActualMaximum(Calendar.WEEK_OF_MONTH); ++i) {
             System.out.println();
             ++currWeek;
             if (toPrintWeek) {
-                System.out.print(format(currWeek));
+                System.out.print(format(currWeek, maxLength));
             }
             for (int j = date.getActualMinimum(Calendar.DAY_OF_WEEK); j <= date.getActualMaximum(Calendar.DAY_OF_WEEK); ++j) {
                 if (currDay <= date.getActualMaximum(Calendar.DAY_OF_MONTH)) {
-                    System.out.print(format(currDay));
+                    System.out.print(format(currDay, maxLength));
                 }
                 ++currDay;
             }
         }
+        System.out.println();
         if (toPrintTime) {
             date = Calendar.getInstance(timeZone);
             SimpleDateFormat outputDate = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             outputDate.setTimeZone(timeZone);
             outputDate.setCalendar(date);
-            System.out.println();
             System.out.print("Now: ");
             System.out.print(outputDate.format(date.getTime()));
             System.out.print(' ');
-            System.out.print(timeZone.getDisplayName());
+            System.out.println(timeZone.getDisplayName());
         }
     }
     
