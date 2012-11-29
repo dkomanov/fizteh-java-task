@@ -57,13 +57,10 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             object = args[number];
             Field tempField = null;
             for (int i = 1; i < tokens.length; ++i) {
-                Class<?> clazz = null;
-                try {
-                    clazz = object.getClass();
-
-                } catch (NullPointerException e) {
+                if (object == null) {
                     return;
                 }
+                Class<?> clazz = object.getClass();
                 String nameOfField = tokens[i];
                 while (true) {
                     try {
