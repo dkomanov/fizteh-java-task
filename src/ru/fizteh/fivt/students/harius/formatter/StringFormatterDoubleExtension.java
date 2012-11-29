@@ -37,7 +37,9 @@ public class StringFormatterDoubleExtension
         try {
             buffer.append(formatter.format("%" + pattern, o));
         } catch (Exception ex) {
-            throw new FormatterException("Error while formatting Double: " + ex.getMessage());
+            throw new FormatterException(
+                "Error while formatting Double: " + ex.getMessage(),
+                ex);
         }
     }
     
