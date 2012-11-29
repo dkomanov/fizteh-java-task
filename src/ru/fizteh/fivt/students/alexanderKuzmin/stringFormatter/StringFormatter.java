@@ -22,7 +22,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     }
 
     public StringFormatter(List<StringFormatterExtension> others) {
-        extensions = others;
+        extensions = Collections.synchronizedList(others);
     }
 
     @Override
