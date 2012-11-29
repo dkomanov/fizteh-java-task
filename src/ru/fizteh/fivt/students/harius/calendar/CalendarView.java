@@ -17,7 +17,9 @@ public class CalendarView {
 
 	public CalendarView(Calendar calendar) {
 		this.calendar = calendar;
-		header = new SimpleDateFormat("MMMM Y", locale);
+		header = new SimpleDateFormat(
+			"        MMMM Y", locale);
+
 		names = new DateFormatSymbols(locale);
 	}
 
@@ -33,7 +35,7 @@ public class CalendarView {
 
 		String[] days = names.getShortWeekdays();
 		for (int day : indices) {
-			builder.append(days[day] + " ");
+			builder.append(String.format("%3s ", days[day]));
 		}
 		builder.append("\n");
 	}
@@ -45,16 +47,29 @@ public class CalendarView {
 		iterator.set(WEEK_OF_MONTH,
 			iterator.getActualMinimum(WEEK_OF_MONTH));
 
+		iterator.set(DAY_OF_WEEK, iterator.getActualMinimum(DAY_OF_WEEK));
+
 		while (iterator.get(MONTH) !=
 			calendar.get(MONTH) ||
-				iterator.get(DAY_OF_MONTH) <
+				iterator.get(DAY_OF_MONTH) <=
 					iterator.getActualMaximum(DAY_OF_MONTH)) {
 
-			builder.append(iterator.get(DAY_OF_MONTH));
-			builder.append(" ");
+			builder.append(String.format("%3d", iterator.get(DAY_OF_MONTH)));
+			if (iterator.get(DAY_OF_WEEK)
+				== iterator.getActualMaximum(DAY_OF_WEEK)) {
+
+				builder.append("\n");
+			} else {
+				builder.append(" ");
+			}
+			if (iterator.get(MONTH) ==
+				calendar.get(MONTH) &&
+				iterator.get(DAY_OF_MONTH)
+			 	== iterator.getActualMaximum(DAY_OF_MONTH)) {
+			 	break;
+			 }
 			iterator.set(DAY_OF_MONTH,
 				iterator.get(DAY_OF_MONTH) + 1);
-			// if (i)
 		}
 	}
 
