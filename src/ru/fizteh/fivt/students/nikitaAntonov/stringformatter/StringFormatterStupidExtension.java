@@ -21,7 +21,7 @@ public class StringFormatterStupidExtension extends StringFormatterExtension {
         
         try {
             f = new Formatter();
-            f.format("%" + pattern, o);
+            buffer.append(f.format("%" + pattern, o));
         } catch (Throwable e) {
             throw new FormatterException("Incorrect pattern: \"" + pattern
                     + "\"", e);

@@ -118,6 +118,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                         selector.substring(lastPointPos + 1));
 
             }
+        } catch (FormatterException e) {
+            throw e;
         } catch (Throwable e) {
             throw new FormatterException(
                     "An error while extracting field occured", e);
@@ -141,7 +143,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             if (thereIsNoGoodFormatter) {
                 throw new FormatterException(
                         "There is no good formatter for class "
-                                + object.getClass());
+                                + object.getClass().getName());
             }
         }
 
@@ -151,18 +153,24 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             throws IllegalArgumentException, IllegalAccessException {
         Class<?> parent = object.getClass();
         Object result = null;
+        boolean wasSet = false;
 
         while (parent != null) {
             try {
                 Field f = parent.getDeclaredField(field);
                 f.setAccessible(true);
                 result = f.get(object);
+                wasSet = true;
                 break;
             } catch (NoSuchFieldException expt) {
                 parent = parent.getSuperclass();
             }
         }
 
+        if (!wasSet) {
+            throw new FormatterException("Field " + field + " not found");
+        }
+        
         return result;
     }
 
