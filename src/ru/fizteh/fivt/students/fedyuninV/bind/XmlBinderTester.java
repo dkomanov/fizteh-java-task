@@ -8,10 +8,7 @@ import ru.fizteh.fivt.bind.test.Permissions;
 import ru.fizteh.fivt.bind.test.User;
 import ru.fizteh.fivt.bind.test.UserName;
 import ru.fizteh.fivt.bind.test.UserType;
-import ru.fizteh.fivt.students.fedyuninV.bind.binderTestClasses.FieldsNameFail;
-import ru.fizteh.fivt.students.fedyuninV.bind.binderTestClasses.LinkToItself;
-import ru.fizteh.fivt.students.fedyuninV.bind.binderTestClasses.MethodsNameFail;
-import ru.fizteh.fivt.students.fedyuninV.bind.binderTestClasses.PairsWithSameNameFail;
+import ru.fizteh.fivt.students.fedyuninV.bind.binderTestClasses.*;
 
 /**
  * Fedyunin Valeriy
@@ -69,6 +66,7 @@ public class XmlBinderTester {
         XmlBinder<User> binder = new XmlBinder<User>(User.class);
         Permissions permissions = new Permissions();
         permissions.setQuota(100500);
+
         User user = new User(1, UserType.USER, new UserName("first", "last"), permissions);
         byte[] bytes = binder.serialize(user);
         User deserialized = binder.deserialize(bytes);
@@ -76,10 +74,8 @@ public class XmlBinderTester {
         bytes = binder.serialize(deserialized);
         user = binder.deserialize(bytes);
         Assert.assertEquals(user, deserialized);
-        /*
-        * UserType changed to null
-        * can't change
-        * */
+        Assert.assertEquals(user, deserialized);
+
         user = new User(1, null, new UserName("first", "last"), permissions);
         bytes = binder.serialize(user);
         deserialized = binder.deserialize(bytes);
@@ -87,5 +83,15 @@ public class XmlBinderTester {
         bytes = binder.serialize(deserialized);
         user = binder.deserialize(bytes);
         Assert.assertEquals(user, deserialized);
+    }
+
+    @Test
+    public void innerClassTest() {
+        XmlBinder<InnerClassTest.InnerClass> binder
+                = new XmlBinder<InnerClassTest.InnerClass>(InnerClassTest.InnerClass.class);
+        InnerClassTest.InnerClass innerClass = new InnerClassTest.InnerClass("Yah");
+        byte[] bytes = binder.serialize(innerClass);
+        InnerClassTest.InnerClass deserialized = binder.deserialize(bytes);
+        Assert.assertEquals(innerClass.getName(), deserialized.getName());
     }
 }

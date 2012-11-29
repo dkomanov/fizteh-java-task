@@ -266,7 +266,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         try {
             Document document = factory.newDocumentBuilder().newDocument();
             if (value != null) {
-                Element root = document.createElement(getElementName(value, value.getClass().getName()));
+                Element root = document.createElement(getElementName(value, value.getClass().getSimpleName()));
                 writeToDocument(document, value, root);
                 document.appendChild(root);
             }
