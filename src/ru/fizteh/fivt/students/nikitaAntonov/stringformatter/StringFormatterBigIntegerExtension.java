@@ -1,18 +1,11 @@
 package ru.fizteh.fivt.students.nikitaAntonov.stringformatter;
 
-import ru.fizteh.fivt.format.StringFormatterExtension;
+import java.math.BigInteger;
 
-public class StringFormatterBigIntegerExtension extends StringFormatterExtension {
+public class StringFormatterBigIntegerExtension extends StringFormatterStupidExtension {
 
-    protected StringFormatterBigIntegerExtension(Class<?> clazz) {
-        super(clazz);
-        // TODO Auto-generated constructor stub
-    }
-
-    @Override
-    public void format(StringBuilder buffer, Object o, String pattern) {
-        // TODO Auto-generated method stub
-        
+    public StringFormatterBigIntegerExtension() {
+        super(BigInteger.class);
     }
 
 }
