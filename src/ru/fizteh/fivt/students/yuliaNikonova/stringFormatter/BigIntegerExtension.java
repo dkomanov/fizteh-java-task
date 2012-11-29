@@ -8,7 +8,7 @@ import ru.fizteh.fivt.format.StringFormatterExtension;
 
 public class BigIntegerExtension extends StringFormatterExtension {
 
-    protected BigIntegerExtension() {
+    public BigIntegerExtension() {
         super(BigInteger.class);
 
     }
@@ -20,10 +20,10 @@ public class BigIntegerExtension extends StringFormatterExtension {
         try {
             Formatter formatter = new Formatter();
             buffer.append(formatter.format("%" + pattern, o));
-            // System.out.println(buffer.toString());
+
             formatter.close();
         } catch (Exception e) {
-            throw new FormatterException("wrong pattern");
+            throw new FormatterException("wrong pattern", e);
         }
     }
 

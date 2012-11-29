@@ -7,7 +7,7 @@ import ru.fizteh.fivt.format.StringFormatterExtension;
 
 public class DoubleExtension extends StringFormatterExtension {
 
-    protected DoubleExtension() {
+    public DoubleExtension() {
         super(Double.class);
 
     }
@@ -19,13 +19,12 @@ public class DoubleExtension extends StringFormatterExtension {
         }
         try {
             Formatter formatter = new Formatter();
-            // System.out.println("Object: " + o);
-            // System.out.println(formatter.format("%" + pattern, o));
+
             buffer.append(formatter.format("%" + pattern, o));
-            // System.out.println(buffer.toString());
+
             formatter.close();
         } catch (Exception e) {
-            throw new FormatterException("wrong pattern");
+            throw new FormatterException("wrong pattern", e);
         }
     }
 

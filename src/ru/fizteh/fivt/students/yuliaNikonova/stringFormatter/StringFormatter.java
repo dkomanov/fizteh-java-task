@@ -20,13 +20,13 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         try {
             extensions.add(ext);
         } catch (Exception e) {
-            throw new FormatterException(e.getMessage());
+            throw new FormatterException(e.getMessage(), e);
         }
     }
 
     @Override
     public String format(String format, Object... args) throws FormatterException {
-        // System.out.println("Format!!!");
+
         StringBuilder buffer = new StringBuilder();
         format(buffer, format, args);
         return buffer.toString();
@@ -43,7 +43,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         int end = format.indexOf("}", pos);
         if (start == -1 && end == -1) {
             buffer.append(format.substring(pos));
-            // System.out.println(buffer.toString());
+
             return;
         }
         int len = format.length();
@@ -57,7 +57,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         if (start < end) {
             if (start < len - 1 && format.charAt(start + 1) == '{') {
                 buffer.append(format.substring(pos, start + 1));
-                // System.out.println(buffer.toString());
+
                 startFormat(buffer, start + 2, format, args);
             } else {
                 if (end == start + 1) {
@@ -65,14 +65,14 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 }
 
                 buffer.append(format.substring(pos, start));
-                // System.out.println(buffer.toString());
+
                 getValue(buffer, format.substring(start + 1, end), args);
                 startFormat(buffer, end + 1, format, args);
             }
         } else {
             if (end < len - 1 && format.charAt(end + 1) == '}') {
                 buffer.append(format.substring(pos, end + 1));
-                // System.out.println(buffer.toString());
+
                 startFormat(buffer, end + 2, format, args);
             } else {
                 throw new FormatterException("something wrong with brackets");
@@ -90,10 +90,6 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
         String fields[] = strFormat.substring(0, pattern).split("\\.");
 
-        // System.out.println("Str: " + strFormat.substring(0, pattern));
-        /* for (int i = 0; i < fields.length; i++) {
-         * // System.out.println(fields[i]);
-         * } */
         int pos = 0;
         try {
             pos = Integer.parseInt(fields[0]);
@@ -102,13 +98,13 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             }
 
         } catch (Exception e) {
-            throw new FormatterException("bad index: " + fields[0]);
+            throw new FormatterException("bad index: " + fields[0], e);
         }
         result = args[pos];
         try {
             for (int i = 1; i < fields.length; i++) {
                 result = getField(result, fields[i]);
-                // System.out.println("Result: " + result);
+
             }
         } catch (FormatterException e) {
             throw e;
@@ -119,7 +115,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
         if (pattern == strFormat.length()) {
             buffer.append(result.toString());
-            // System.out.println(buffer.toString());
+
         } else {
             StringFormatterExtension extension = null;
 
@@ -139,7 +135,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     }
 
     private Object getField(Object result, String field) {
-        // System.out.println("I want field " + field);
+
         if (result == null) {
             return null;
         }
@@ -148,14 +144,14 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             Class clazz = result.getClass();
 
             while (clazz != null) {
-                // System.out.println(clazz.toString());
+
                 try {
                     Field f = clazz.getDeclaredField(field);
                     f.setAccessible(true);
-                    // System.out.println("Result is: " + f.get(result));
+
                     return f.get(result);
                 } catch (NoSuchFieldException e) {
-                    // System.out.println("Error:" + e.getMessage());
+
                     clazz = clazz.getSuperclass();
                 }
             }
@@ -163,7 +159,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             throw new FormatterException("Field " + field + " in " + result.getClass() + " is unaccessible");
 
         } catch (Exception e) {
-            throw new FormatterException("Field " + field + " in " + result.getClass() + " is unaccessible");
+            throw new FormatterException("Field " + field + " in " + result.getClass() + " is unaccessible", e);
         }
 
     }
