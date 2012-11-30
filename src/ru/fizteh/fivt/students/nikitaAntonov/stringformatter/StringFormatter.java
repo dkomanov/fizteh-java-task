@@ -165,9 +165,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             if (object != null) {
                 buffer.append(object.toString());
             }
-        } else if (object == null) {
-            throw new FormatterException("Null can't be formatted");
-        } else {
+        } else if (object != null) {
             boolean thereIsNoGoodFormatter = true;
 
             for (StringFormatterExtension ext : extensions) {
