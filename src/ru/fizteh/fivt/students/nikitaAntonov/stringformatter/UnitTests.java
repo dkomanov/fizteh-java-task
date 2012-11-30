@@ -296,8 +296,8 @@ public class UnitTests {
     
     @Test
     public void formatterFormatingOfNull() {
-        thrown.expectMessage("Null can't be formatted");
-        formatter.format("{0:f}", (Object) null);
+        String result = formatter.format("{0:f}", (Object) null);
+        Assert.assertEquals("", result);
     }
     
     @Test
