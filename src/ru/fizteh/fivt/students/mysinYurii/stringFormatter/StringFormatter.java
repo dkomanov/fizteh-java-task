@@ -9,24 +9,24 @@ import java.util.StringTokenizer;
 import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
-public class StringFormatter {
+public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     List<StringFormatterExtension> extentions;
     
-    StringFormatter() {
+    public StringFormatter() {
         extentions = Collections.synchronizedList(new ArrayList<StringFormatterExtension>());
     }
     
-    StringFormatter(List<StringFormatterExtension> newExtentions) {
+    public StringFormatter(List<StringFormatterExtension> newExtentions) {
         extentions = newExtentions;
     }
     
-    String format(String toFormat, Object... arguments) throws FormatterException {
+    public String format(String toFormat, Object... arguments) throws FormatterException {
         StringBuilder result = new StringBuilder();
         format(result, toFormat, arguments);
         return result.toString();
     }
     
-    void format(StringBuilder result, String toFormat, Object... arguments) throws FormatterException {
+    public void format(StringBuilder result, String toFormat, Object... arguments) throws FormatterException {
         formatFrom(result, toFormat, 0, arguments);
     }
 
