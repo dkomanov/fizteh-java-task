@@ -57,7 +57,6 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         if (start < end) {
             if (start < len - 1 && format.charAt(start + 1) == '{') {
                 buffer.append(format.substring(pos, start + 1));
-
                 startFormat(buffer, start + 2, format, args);
             } else {
                 if (end == start + 1) {
