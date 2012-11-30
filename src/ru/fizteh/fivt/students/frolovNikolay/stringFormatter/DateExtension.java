@@ -7,7 +7,7 @@ import ru.fizteh.fivt.format.StringFormatterExtension;
 
 public class DateExtension extends StringFormatterExtension {
     
-    DateExtension() {
+    public DateExtension() {
         super(Date.class);
     }
 
@@ -15,13 +15,12 @@ public class DateExtension extends StringFormatterExtension {
     public void format(StringBuilder buffer, Object obj, String pattern) throws FormatterException {
         if (pattern == null || pattern.isEmpty()) {
             throw new FormatterException("Bad pattern");
-        } else {
-            try {
-                SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-                buffer.append(formatter.format(obj));
-            } catch (Throwable exception) {
-                throw new FormatterException("Bad pattern", exception);
-            }
         }
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+            buffer.append(formatter.format(obj));
+        } catch (Throwable exception) {
+            throw new FormatterException("Bad pattern", exception);
+        }    
     }
 }

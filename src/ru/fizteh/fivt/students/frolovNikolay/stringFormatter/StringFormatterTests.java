@@ -41,6 +41,12 @@ public class StringFormatterTests {
         StringFormatter incorrectFormatter = new StringFormatterFactory().create(DateExtension.class.getName()
                 , IntegerExtension.class.getName(), DateExtension.class.getName());
     }
+    
+    @Test
+    public void nullExtension() {
+        expt.expectMessage("Can't create StringFormatter with these extensions");
+        StringFormatter incorrectFormatter = new StringFormatterFactory().create(null);
+    }
 
     @Test
     public void noExtension() {
@@ -82,6 +88,13 @@ public class StringFormatterTests {
     public void wrongBracketsExpression4() {
         expt.expectMessage("Incorrect expression in some brackets");
         formatter.format("{0..field}", new TestClass());
+    }
+    
+    
+    @Test
+    public void wrongBracketsExpression5() {
+        expt.expectMessage("Incorrect expression in some brackets");
+        formatter.format("{0.}", "1");
     }
  
     @Test
