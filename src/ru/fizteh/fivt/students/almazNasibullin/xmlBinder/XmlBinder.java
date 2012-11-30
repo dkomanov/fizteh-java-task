@@ -17,6 +17,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import sun.misc.Unsafe;
@@ -24,7 +25,7 @@ import ru.fizteh.fivt.bind.AsXmlAttribute;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
-
+import ru.fizteh.fivt.students.almazNasibullin.xmlBinder.FieldWithName;
 /**
  * 25.11.12
  * @author almaz
@@ -33,7 +34,7 @@ import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     private Map<Class, List<PairMethodsToSerialization> > methods = new 
             HashMap<Class, List<PairMethodsToSerialization> >();
-    private Map<Class, List<Field> > fields = new HashMap<Class, List<Field> >();
+    private Map<Class, List<FieldWithName> > fields = new HashMap<Class, List<FieldWithName> >();
     private String className;
 
     public XmlBinder(Class<T> clazz) {
@@ -64,11 +65,15 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 allFields.addAll(Arrays.asList(f));
                 parent = parent.getSuperclass();
             }
-            fields.put(clazz, allFields);
-            allFields = fields.get(clazz);
+            List<FieldWithName> allFieldWithName = new ArrayList<FieldWithName>();
             for (Field f : allFields) {
-                f.setAccessible(true);
-                addForSerialization(f.getType());
+                allFieldWithName.add(new FieldWithName(f));
+            }
+            fields.put(clazz, allFieldWithName);
+            allFieldWithName = fields.get(clazz);
+            for (FieldWithName f : allFieldWithName) {
+                f.f.setAccessible(true);
+                addForSerialization(f.f.getType());
             }
         }
     }
@@ -190,19 +195,21 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             serialized.add(o);
             BindingType bt = (BindingType)clazz.getAnnotation(BindingType.class);
             if (bt == null || bt.value().equals(MembersToBind.FIELDS)) {
-                List<Field> allFields = fields.get(clazz);
-                for (int i = 0; i < allFields.size(); ++i) {
-                    Field f = allFields.get(i);
+                List<FieldWithName> allFieldWithName = fields.get(clazz);
+                for (int i = 0; i < allFieldWithName.size(); ++i) {
+                    Field f = allFieldWithName.get(i).f;
                     if (f.get(o) != null) {
                         String name = getName(f);
+                        allFieldWithName.get(i).name = name;
                         if (f.getAnnotation(AsXmlAttribute.class) == null) {
                             xmlsw.writeStartElement(name);
                             int k = i + 1;
-                            while (k < allFields.size()) {
-                                Field field = allFields.get(k);
+                            while (k < allFieldWithName.size()) {
+                                Field field = allFieldWithName.get(k).f;
                                 if (field.get(o) != null) {
                                     if (field.getAnnotation(AsXmlAttribute.class) != null) {
                                         String s = getName(field);
+                                        allFieldWithName.get(k).name = name;
                                         writeFieldAsAttribute(field, xmlsw, o, s);
                                         ++k;
                                     } else {
@@ -351,31 +358,46 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         try {
             BindingType bt = (BindingType)clazz.getAnnotation(BindingType.class);
             if (bt == null || bt.value().equals(MembersToBind.FIELDS)) {
-                 List<Field> allFields = fields.get(clazz);
-                 Set<Field> nullFields = new HashSet<Field>(allFields);
-                 if (allFields != null) {
+                 List<FieldWithName> allFieldWithName = fields.get(clazz);
+                 Set<FieldWithName> nullFields = new HashSet<FieldWithName>(allFieldWithName);
+                 if (allFieldWithName != null) {
                      NodeList nl = e.getChildNodes();
                      for (int i = 0; i < nl.getLength(); ++i) {
                          Node n = nl.item(i);
                          if (n.getNodeType() == Node.ELEMENT_NODE) {
                              Element el = (Element)n;
-                             Field f = null;
-                             for (Field fi : allFields) {
-                                 if (fi.getName().equals(el.getTagName())) {
+                             FieldWithName f = null;
+                             for (FieldWithName fi : allFieldWithName) {
+                                 if (fi.name.equals(el.getTagName())) {
                                      f = fi;
                                      break;
                                  }
                              }
                              if (f != null) {
-                                 f.set(o, deserializeObject(el, f.getType()));
+                                 f.f.set(o, deserializeObject(el, f.f.getType()));
                                  nullFields.remove(f);
                              }
                          }
                      }
+                     NamedNodeMap nnm = e.getAttributes();
+                     for (int i = 0; i < nnm.getLength(); ++i) {
+                         Node n = nnm.item(i);
+                         FieldWithName f = null;
+                         for (FieldWithName fi : allFieldWithName) {
+                             if (fi.name.equals(n.getNodeName())) {
+                                 f = fi;
+                                 break;
+                             }
+                         }
+                         if (f != null) {
+                            f.f.set(o, getPrimitive(n.getNodeValue(), f.f.getType()));
+                            nullFields.remove(f);
+                         }
+                     }
                  }
-                 for (Field f : nullFields) {
+                 for (FieldWithName f : nullFields) {
                      if (f != null) {
-                         f.set(o, null);
+                         f.f.set(o, null);
                      }
                  }
             } else {
@@ -417,7 +439,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         T result = null;
         try {
             Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(bais);
-            if (!doc.getDocumentElement().getTagName().equals(className)) {
+            if (!doc.getDocumentElement().getTagName().equals(className )) {
                 throw new RuntimeException("Incompatible types");
             }
             result = (T)deserializeObject(doc.getDocumentElement(), getClazz());
