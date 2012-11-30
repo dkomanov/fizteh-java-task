@@ -22,12 +22,12 @@ public class InnerClassTest {
 
         private String name;
 
-
+        @AsXmlElement
         public String getName() {
             return name;
         }
 
-        @AsXmlElement(name = "OK")
+
         public void setName(String newName) {
             name = newName;
         }
