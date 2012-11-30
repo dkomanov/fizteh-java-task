@@ -18,11 +18,14 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     private List<StringFormatterExtension> extensions;
 
     StringFormatter() {
-        extensions = Collections.synchronizedList(new ArrayList<StringFormatterExtension>());
+        extensions = Collections
+                .synchronizedList(new ArrayList<StringFormatterExtension>());
     }
 
     public StringFormatter(List<StringFormatterExtension> others) {
-        extensions = Collections.synchronizedList(others);
+        extensions = (others == null) ? Collections
+                .synchronizedList(new ArrayList<StringFormatterExtension>())
+                : Collections.synchronizedList(others);
     }
 
     @Override
