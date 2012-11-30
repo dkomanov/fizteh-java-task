@@ -86,6 +86,18 @@ public class TestFormatter {
     }
 
     @Test(expected = FormatterException.class)
+    public void testExtn3() {
+        ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter formatterTest = new StringFormatterFactory()
+                .create(null);
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testNullToFabric() {
+        StringFormatterFactory stringFormatterFactory = new StringFormatterFactory();
+        stringFormatterFactory.create(null);
+    }
+
+    @Test(expected = FormatterException.class)
     public void testBadPatternBigInteger() {
         BigInteger b = new BigInteger("100500");
         formatter.format("{0:...}", b);
