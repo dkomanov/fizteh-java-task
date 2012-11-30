@@ -7,7 +7,7 @@ import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
 public class DateExtention extends StringFormatterExtension {
-    DateExtention() {
+    public DateExtention() {
         super(Date.class);
     }
     

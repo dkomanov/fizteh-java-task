@@ -7,7 +7,7 @@ import java.util.Collections;
 import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
-public class StringFormatterFactory {
+public class StringFormatterFactory implements ru.fizteh.fivt.format.StringFormatterFactory {
     public StringFormatter create(String... classNames) throws FormatterException {
         ArrayList<StringFormatterExtension> extentions = new ArrayList<StringFormatterExtension>();
         if (classNames == null) {

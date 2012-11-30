@@ -7,7 +7,7 @@ import ru.fizteh.fivt.format.StringFormatterExtension;
 import ru.fizteh.fivt.students.mysinYurii.*;
 
 public class IntegerExtention extends StringFormatterExtension {
-    IntegerExtention() {
+    public IntegerExtention() {
         super(Integer.class);
     }
     
