@@ -117,4 +117,25 @@ public class UnitTest {
          Assert.assertEquals(serialized, ic);
          Assert.assertTrue(serialized != ic);
     }
+    
+    @BindingType(MembersToBind.GETTERS_AND_SETTERS)
+    class DifferentAsXmlAttributeName {
+        int day = 30;
+
+        @AsXmlAttribute(name = "firstName")
+        public int getDay() {
+            return day;
+        }
+
+        @AsXmlAttribute(name = "secondName")
+        public void setDay(int day) {
+            this.day = day;
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testDifferentAsXmlAttributeName() {
+        new XmlBinder<DifferentAsXmlAttributeName>(DifferentAsXmlAttributeName.class).
+                serialize(new DifferentAsXmlAttributeName());
+    }
 }
