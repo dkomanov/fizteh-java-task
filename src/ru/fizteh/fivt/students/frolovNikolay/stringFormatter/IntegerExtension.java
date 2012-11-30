@@ -8,7 +8,7 @@ import ru.fizteh.fivt.format.StringFormatterExtension;
 
 public class IntegerExtension extends StringFormatterExtension {
     
-    IntegerExtension() {
+    public IntegerExtension() {
         super(Integer.class);
     }
 
@@ -16,17 +16,16 @@ public class IntegerExtension extends StringFormatterExtension {
     public void format(StringBuilder buffer, Object obj, String pattern) throws FormatterException {
         if (pattern == null || pattern.isEmpty()) {
             throw new FormatterException("Bad pattern");
-        } else {
-            Formatter formatter = null;
-            try {
-                formatter = new Formatter();
-                buffer.append(formatter.format("%" + pattern, obj));
-            } catch (Throwable exception) {
-                Closer.close(formatter);
-                throw new FormatterException("Bad pattern", exception);
-            } finally {
-                Closer.close(formatter);
-            }
         }
+        Formatter formatter = null;
+        try {
+            formatter = new Formatter();
+            buffer.append(formatter.format("%" + pattern, obj));
+        } catch (Throwable exception) {
+            Closer.close(formatter);
+            throw new FormatterException("Bad pattern", exception);
+        } finally {
+            Closer.close(formatter);
+        }   
     }
 }

@@ -18,13 +18,12 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     public void addExtension(StringFormatterExtension added) throws FormatterException {
         if (added == null) {
             throw new FormatterException("addExtension: null pointer");
-        } else {
-            try {
-                extensions.add(added);
-            } catch (Throwable exception) {
-                throw new FormatterException(exception);
-            }
         }
+        try {
+            extensions.add(added);
+        } catch (Throwable exception) {
+            throw new FormatterException(exception);
+        }    
     }
     
     private void insertArgInBuffer(StringBuilder buffer, String objName, Object... args)
@@ -35,6 +34,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         if (patternIdx != -1) {
             pattern = objName.substring(patternIdx + 1);
             objName = objName.substring(0, patternIdx);
+        }
+        if (objName.isEmpty() || objName.charAt(objName.length() - 1) == '.') {
+            throw new FormatterException("Incorrect expression in some brackets");
         }
         String[] fields = objName.split("\\.");
         if (fields.length == 0) {
