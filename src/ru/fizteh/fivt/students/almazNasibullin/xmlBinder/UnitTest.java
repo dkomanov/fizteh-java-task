@@ -105,4 +105,16 @@ public class UnitTest {
         Assert.assertEquals(BMW, serializedBMW);
         Assert.assertNotSame(serializedLada, serializedBMW);
     }
+    
+    @Test
+    public void testInnerClass() {
+         XmlBinder<TestClassSerializationFields.InnerClass> xb =
+                new XmlBinder<TestClassSerializationFields.InnerClass>
+                (TestClassSerializationFields.InnerClass.class);
+         TestClassSerializationFields.InnerClass ic = new
+                 TestClassSerializationFields.InnerClass();
+         TestClassSerializationFields.InnerClass serialized = xb.deserialize(xb.serialize(ic));
+         Assert.assertEquals(serialized, ic);
+         Assert.assertTrue(serialized != ic);
+    }
 }
