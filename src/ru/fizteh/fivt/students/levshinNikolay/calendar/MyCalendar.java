@@ -12,27 +12,27 @@ import java.util.Calendar;
  * MIPT FIVT 196
  */
 public class MyCalendar {
-    public static DateFormat date_format;
-    public static TimeZone time_zone;
+    public static DateFormat dateFormat;
+    public static TimeZone timeZone;
     public static Integer month;
     public static Integer year;
-    public static boolean weeks_needed;
+    public static boolean weeksNeeded;
     public static Calendar calendar;
-    public static String[] day_names = new DateFormatSymbols().getShortWeekdays();
-    public static int[] day_indexes = new int[]{Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
+    public static String[] dayNames = new DateFormatSymbols().getShortWeekdays();
+    public static int[] dayIndexes = new int[]{Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
             Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY};
-    public static int day_name_length;
+    public static int LenghtNameDay;
 
     public static void init() {
         calendar = Calendar.getInstance();
-        date_format = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-        time_zone = null;
+        dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+        timeZone = null;
         month = null;
         year = null;
-        weeks_needed = false;
+        weeksNeeded = false;
     }
 
-    public static void UError() {
+    public static void uError() {
         System.out.println("Usage: java MyCalendar [-m MONTH] [-y YEAR] [-w] [t TIMEZONE]");
         System.exit(1);
     }
@@ -42,19 +42,19 @@ public class MyCalendar {
             if (args[i].charAt(0) == '-') {
                 switch (args[i].charAt(1)) {
                     case 't':
-                        if (args.length == i + 1 || time_zone != null) {
-                            UError();
+                        if (args.length == i + 1 || timeZone != null) {
+                            uError();
                         } else {
                             i++;
                             String[] tzNames = TimeZone.getAvailableIDs();
                             String TZName = args[i];
                             for (int j = 0; j < tzNames.length; ++j) {
                                 if (TZName.equals(tzNames[j])) {
-                                    time_zone = TimeZone.getTimeZone(TZName);
-                                    calendar.setTimeZone(time_zone);
+                                    timeZone = TimeZone.getTimeZone(TZName);
+                                    calendar.setTimeZone(timeZone);
                                 }
                             }
-                            if (time_zone == null) {
+                            if (timeZone == null) {
                                 System.err.println("Incorrect time zone.");
                                 System.exit(1);
                             }
@@ -65,24 +65,24 @@ public class MyCalendar {
                         i++;
                         month = Integer.parseInt(args[i]) - 1;
                         if (calendar.getActualMinimum(Calendar.MONTH) > month || calendar.getActualMaximum(Calendar.MONTH) < month) {
-                            UError();
+                            uError();
                         }
                         break;
                     case 'y':
                         i++;
                         year = Integer.parseInt(args[i]) - 1;
                         if (calendar.getActualMinimum(Calendar.YEAR) > year || calendar.getActualMaximum(Calendar.YEAR) < year) {
-                            UError();
+                            uError();
                         }
                         break;
                     case 'w':
-                        weeks_needed = true;
+                        weeksNeeded = true;
                         break;
                     default:
-                        UError();
+                        uError();
                 }
             } else {
-                UError();
+                uError();
             }
         }
         if (month == null) {
@@ -97,31 +97,31 @@ public class MyCalendar {
     public static void printC() {
         calendar.set(year, month, 1);
         for (int i = 0; i < 7; ++i) {
-            if (day_name_length < day_names[i].length()) {
-                day_name_length = day_names[i].length();
+            if (LenghtNameDay < dayNames[i].length()) {
+                LenghtNameDay = dayNames[i].length();
             }
         }
-        if (weeks_needed) {
+        if (weeksNeeded) {
             System.out.print("   ");
         }
         System.out.println("   " + DateFormatSymbols.getInstance().getMonths()[month] + ' ' + year);
-        if (weeks_needed) {
+        if (weeksNeeded) {
             System.out.print("   ");
         }
-        for (int dayIndex : day_indexes) {
-            System.out.print(day_names[dayIndex]);
-            for (int j = 0; j < day_name_length - day_names[dayIndex].length() + 1; ++j) {
+        for (int dayIndex : dayIndexes) {
+            System.out.print(dayNames[dayIndex]);
+            for (int j = 0; j < LenghtNameDay - dayNames[dayIndex].length() + 1; ++j) {
                 System.out.print(' ');
             }
         }
-        if (day_name_length < 2) {
-            day_name_length = 2;
+        if (LenghtNameDay < 2) {
+            LenghtNameDay = 2;
         }
         System.out.println();
         int current_day = 1;
         int current_week = calendar.get(Calendar.WEEK_OF_YEAR);
         while (month == calendar.get(Calendar.MONTH)) {
-            if (weeks_needed) {
+            if (weeksNeeded) {
                 if (current_week < 10) {
                     System.out.print(" " + current_week + " ");
                 } else {
@@ -130,13 +130,13 @@ public class MyCalendar {
                 current_week++;
             }
 
-            for (int indx : day_indexes) {
+            for (int indx : dayIndexes) {
                 if (indx != calendar.get(Calendar.DAY_OF_WEEK) || month != calendar.get(Calendar.MONTH)) {
-                    for (int i = 0; i < day_name_length + 1; ++i) {
+                    for (int i = 0; i < LenghtNameDay + 1; ++i) {
                         System.out.print(' ');
                     }
                 } else {
-                    for (int i = 0; i < day_name_length - 2; ++i) {
+                    for (int i = 0; i < LenghtNameDay - 2; ++i) {
                         System.out.print(' ');
                     }
                     if (current_day < 10) {
@@ -152,10 +152,10 @@ public class MyCalendar {
     }
 
     public static void printCurrTime() {
-        if (time_zone != null) {
-            date_format.setTimeZone(time_zone);
+        if (timeZone != null) {
+            dateFormat.setTimeZone(timeZone);
             System.out.println();
-            System.out.println("Now: " + date_format.format(new Date().getTime()) + ' ' + time_zone.getDisplayName());
+            System.out.println("Now: " + dateFormat.format(new Date().getTime()) + ' ' + timeZone.getDisplayName());
         }
     }
 
