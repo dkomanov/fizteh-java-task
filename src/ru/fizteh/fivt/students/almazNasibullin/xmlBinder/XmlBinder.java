@@ -417,7 +417,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         T result = null;
         try {
             Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(bais);
-            if (!doc.getDocumentElement().getTagName().equals(className )) {
+            if (!doc.getDocumentElement().getTagName().equals(className)) {
                 throw new RuntimeException("Incompatible types");
             }
             result = (T)deserializeObject(doc.getDocumentElement(), getClazz());
