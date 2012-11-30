@@ -10,6 +10,7 @@ import ru.fizteh.fivt.bind.BindingType;
 
 @BindingType(MembersToBind.FIELDS)
 public class TestClassSerializationFields {
+    @AsXmlAttribute(name = "brand")
     private String carBrand = "BMW";
     private String carModel = "X6";
     protected String owner = "Somebody";
