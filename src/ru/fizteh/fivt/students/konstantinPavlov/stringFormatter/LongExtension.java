@@ -23,14 +23,10 @@ public class LongExtension extends StringFormatterExtension {
             throw new FormatterException("object is null");
         }
         try {
-            if (object != null
-                    && !Long.class.isAssignableFrom(object.getClass())) {
-                throw new FormatterException("incorrect object type");
-            }
             Formatter formatter = new Formatter().format("%" + pattern, object);
             buffer.append(formatter.toString());
         } catch (Throwable t) {
-            throw t;
+            throw new FormatterException(t.getMessage(), t);
         }
     }
 }
