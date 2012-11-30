@@ -35,6 +35,15 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             throw new FormatterException("Format musn't be null");
         }
 
+        if (buffer == null) {
+            throw new FormatterException("Buffer musn't be null");
+        }
+
+        if (args == null) {
+            args = new String[1];
+            args[0] = null;
+        }
+
         int pos = 0;
         int end = format.length();
 
@@ -85,7 +94,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     }
 
     private void doFormating(StringBuilder buffer, String substring,
-            Object... args) {
+            Object args[]) {
 
         String selector;
         String pattern;
@@ -101,13 +110,43 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         }
 
         int pointPos = selector.indexOf('.');
+        
+        checkIsSelectorCorrect(selector);
+        
         Object object;
 
         if (pointPos == -1) {
-            object = args[Integer.parseInt(selector)];
+            int index;
+
+            try {
+                index = Integer.parseInt(selector);
+            } catch (NumberFormatException e) {
+                throw new FormatterException("Incorrect number: " + selector, e);
+            }
+
+            if (index < 0 || index > args.length) {
+                throw new FormatterException("Index " + index
+                        + " is out of range");
+            }
+
+            object = args[index];
+
         } else {
             int lastPointPos = pointPos;
-            object = args[Integer.parseInt(selector.substring(0, pointPos))];
+            int index;
+            try {
+                index = Integer.parseInt(selector.substring(0, pointPos));
+            } catch (NumberFormatException e) {
+                throw new FormatterException("Incorrect number: "
+                        + selector.substring(0, pointPos), e);
+            }
+
+            if (index < 0 || index > args.length) {
+                throw new FormatterException("Index " + index
+                        + " is out of range");
+            }
+
+            object = args[index];
             pointPos = selector.indexOf('.', pointPos + 1);
 
             while (pointPos != -1) {
@@ -126,6 +165,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             if (object != null) {
                 buffer.append(object.toString());
             }
+        } else if (object == null) {
+            throw new FormatterException("Null can't be formatted");
         } else {
             boolean thereIsNoGoodFormatter = true;
 
@@ -146,10 +187,35 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     }
 
+    private static void checkIsSelectorCorrect(String selector) {
+        boolean isCorrect = false;
+        
+        for (int i = 0, e = selector.length(); i < e; ++i) {
+            char c = selector.charAt(i);
+            if (c == '.') {
+                break;
+            } else if (Character.isDigit(c)) {
+                isCorrect = true;
+            } else {
+                isCorrect = false;
+                break;
+            }
+        }
+        
+        if (!isCorrect) {
+            throw new FormatterException("Incorrect number: " + selector);
+        }
+        
+    }
+
     private Object extractField(Object object, String field) {
 
         if (object == null) {
             return null;
+        }
+        
+        if (field.isEmpty()) {
+            throw new FormatterException("Field of class can't have empty name");
         }
 
         Class<?> parent = object.getClass();
