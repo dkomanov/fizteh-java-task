@@ -99,6 +99,10 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             pattern = stringToFormat.length();
         }
 
+        if(pattern != 0 && stringToFormat.charAt(pattern - 1) == '.') {
+            throw new FormatterException("no field");
+        }
+
         StringTokenizer stringTokenizer = new StringTokenizer(
                 stringToFormat.substring(0, pattern), ".");
         try {
@@ -144,6 +148,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     private Object getFieldFromObject(Object object, String field)
             throws FormatterException {
+        if (field.length() == 0 || field == null) {
+            throw new FormatterException("no field");
+        }
         if (object == null) {
             return null;
         }
