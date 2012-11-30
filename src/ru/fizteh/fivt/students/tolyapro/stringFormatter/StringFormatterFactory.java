@@ -13,7 +13,7 @@ public class StringFormatterFactory implements
             ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter stringFormatter = new ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter();
             for (String className : extensionClassNames) {
                 if (className == null) {
-                    throw new FormatterException("Bad classname");
+                    throw new Exception("Bad classname");
                 }
                 stringFormatter
                         .addToExtensions((StringFormatterExtension) Class
