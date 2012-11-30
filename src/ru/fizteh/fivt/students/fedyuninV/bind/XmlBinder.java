@@ -12,7 +12,6 @@ import sun.misc.Unsafe;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -273,7 +272,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             Result result = new StreamResult(out);
             Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             transformer.transform(new DOMSource(document), result);
             return out.toByteArray();
         } catch (RuntimeException ex) {
