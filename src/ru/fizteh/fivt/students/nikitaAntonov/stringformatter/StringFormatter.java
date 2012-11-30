@@ -110,6 +110,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         }
 
         int pointPos = selector.indexOf('.');
+        
+        checkIsSelectorCorrect(selector);
+        
         Object object;
 
         if (pointPos == -1) {
@@ -162,6 +165,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             if (object != null) {
                 buffer.append(object.toString());
             }
+        } else if (object == null) {
+            throw new FormatterException("Null can't be formatted");
         } else {
             boolean thereIsNoGoodFormatter = true;
 
@@ -182,10 +187,35 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     }
 
+    private static void checkIsSelectorCorrect(String selector) {
+        boolean isCorrect = false;
+        
+        for (int i = 0, e = selector.length(); i < e; ++i) {
+            char c = selector.charAt(i);
+            if (c == '.') {
+                break;
+            } else if (Character.isDigit(c)) {
+                isCorrect = true;
+            } else {
+                isCorrect = false;
+                break;
+            }
+        }
+        
+        if (!isCorrect) {
+            throw new FormatterException("Incorrect number: " + selector);
+        }
+        
+    }
+
     private Object extractField(Object object, String field) {
 
         if (object == null) {
             return null;
+        }
+        
+        if (field.isEmpty()) {
+            throw new FormatterException("Field of class can't have empty name");
         }
 
         Class<?> parent = object.getClass();
