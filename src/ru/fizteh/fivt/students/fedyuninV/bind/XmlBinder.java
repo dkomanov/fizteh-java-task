@@ -159,7 +159,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
 
     private String getElementName(Object value, String defaultName) {
         AsXmlElement asXmlElement = value.getClass().getAnnotation(AsXmlElement.class);
-        if (asXmlElement == null) {
+        if (asXmlElement == null  ||  asXmlElement.name().equals("")) {
             return firstCharToLowerCase(defaultName);
         } else {
             return asXmlElement.name();
@@ -168,7 +168,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
 
     private String getFieldName(Field value) {
         AsXmlElement asXmlElement = value.getAnnotation(AsXmlElement.class);
-        if (asXmlElement == null) {
+        if (asXmlElement == null  ||  asXmlElement.name().equals("")) {
             return firstCharToLowerCase(value.getName());
         } else {
             return firstCharToLowerCase(asXmlElement.name());
@@ -178,8 +178,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     private void setComponentName(SerializeComponent component) {
         AsXmlElement getterAnnnotation = component.getter().getAnnotation(AsXmlElement.class);
         AsXmlElement setterAnnnotation = component.setter().getAnnotation(AsXmlElement.class);
-        if (setterAnnnotation != null) {
-            if (getterAnnnotation != null) {
+        if (setterAnnnotation != null  &&  !setterAnnnotation.name().equals("")) {
+            if (getterAnnnotation != null  &&  !getterAnnnotation.name().equals("")) {
                 if (setterAnnnotation.name().equals(getterAnnnotation.name())) {
                     component.setName(firstCharToLowerCase(setterAnnnotation.name()));
                 } else {
@@ -189,7 +189,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                 component.setName(firstCharToLowerCase(setterAnnnotation.name()));
             }
         } else {
-            if (getterAnnnotation != null) {
+            if (getterAnnnotation != null  &&  !getterAnnnotation.name().equals("")) {
                 component.setName(firstCharToLowerCase(getterAnnnotation.name()));
             } else {
                 component.setName(firstCharToLowerCase(component.getName()));
