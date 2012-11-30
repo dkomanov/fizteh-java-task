@@ -94,4 +94,14 @@ public class XmlBinderTester {
         InnerClassTest.InnerClass deserialized = binder.deserialize(bytes);
         Assert.assertEquals(innerClass.getName(), deserialized.getName());
     }
+
+    @Test
+    public void voidAnnotattionsTest() {
+        XmlBinder<VoidAnnotationsTest> binder
+                = new XmlBinder<VoidAnnotationsTest>(VoidAnnotationsTest.class);
+        VoidAnnotationsTest value = new VoidAnnotationsTest("Ivan", "Ivanov", 10);
+        byte[] bytes = binder.serialize(value);
+        VoidAnnotationsTest deserialized = binder.deserialize(bytes);
+        Assert.assertTrue(value.equals(deserialized));
+    }
 }
