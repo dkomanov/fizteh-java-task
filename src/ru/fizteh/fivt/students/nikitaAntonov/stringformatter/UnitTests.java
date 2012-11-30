@@ -41,19 +41,10 @@ public class UnitTests {
 
     @Test
     public void factoryNullPointerException() {
-        try {
-            StringFormatterFactory f = new StringFormatterFactory();
-            ru.fizteh.fivt.format.StringFormatter ff = f.create(
-                    StringFormatterDoubleExtension.class.getName(), null);
-        } catch (FormatterException e) {
-            Throwable c = e.getCause();
-            if (c != null) {
-                assertEquals(c.getClass(), NullPointerException.class);
-                return;
-            }
-        }
-
-        fail("No exception =(");
+        thrown.expectMessage("Name of the extension class can't be null");
+        StringFormatterFactory f = new StringFormatterFactory();
+        ru.fizteh.fivt.format.StringFormatter ff = f.create(
+                StringFormatterDoubleExtension.class.getName(), null);
     }
 
     @Test
@@ -69,7 +60,7 @@ public class UnitTests {
 
     @Test
     public void factoryIncorrectNameOfFormatter() {
-        thrown.expectMessage("Incorrect extension");
+        thrown.expectMessage("Can't create instance of blahblah");
 
         StringFormatterFactory f = new StringFormatterFactory();
         StringFormatter a = (StringFormatter) f.create("blahblah");
@@ -86,6 +77,12 @@ public class UnitTests {
     public void formatterNullPointer() {
         thrown.expectMessage("exList == null");
         StringFormatter f = new StringFormatter(null);
+    }
+    
+    @Test
+    public void formatterNullFormat() {
+        thrown.expectMessage("Format musn't be null");
+        formatter.format(null, 1,2,3);
     }
 
     @Test
@@ -139,9 +136,8 @@ public class UnitTests {
             public int a = 10;
         }
 
-        thrown.expectMessage("Field b not found");
         String result = formatter.format("Test {0.a}, {0.b}", new TestClass());
-
+        Assert.assertEquals("Test 10, ", result);
     }
 
     @Test
@@ -165,8 +161,8 @@ public class UnitTests {
             public Object a = null;
         }
 
-        thrown.expectMessage("An error while extracting field occurred");
         String result = formatter.format("Test {0.a.b}", new TestClass());
+        Assert.assertEquals("Test ", result);
     }
 
     @Test
