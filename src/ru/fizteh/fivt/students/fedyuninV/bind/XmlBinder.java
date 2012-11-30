@@ -229,10 +229,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
 
     private void writeToDocumentByMethods(Document document, Object value, Element root) throws Exception {
         for (SerializeComponent component: methods.get(value.getClass())) {
-            String name = firstCharToLowerCase(component.getName());
             Object newValue = component.getter().invoke(value);
             if (newValue != null) {
-                Element child = document.createElement(name);
+                Element child = document.createElement(component.getName());
                 root.appendChild(child);
                 if (possibleToString(newValue.getClass())) {
                     child.setTextContent(newValue.toString());
