@@ -25,7 +25,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     public StringFormatter(List<StringFormatterExtension> others) {
         extensions = (others == null) ? Collections
                 .synchronizedList(new ArrayList<StringFormatterExtension>())
-                : Collections.synchronizedList(others);
+                : Collections.synchronizedList(new ArrayList<StringFormatterExtension>(others));
     }
 
     @Override
