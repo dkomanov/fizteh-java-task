@@ -171,7 +171,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         if (asXmlElement == null) {
             return firstCharToLowerCase(value.getName());
         } else {
-            return asXmlElement.name();
+            return firstCharToLowerCase(asXmlElement.name());
         }
     }
 
@@ -181,16 +181,16 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         if (setterAnnnotation != null) {
             if (getterAnnnotation != null) {
                 if (setterAnnnotation.name().equals(getterAnnnotation.name())) {
-                    component.setName(setterAnnnotation.name());
+                    component.setName(firstCharToLowerCase(setterAnnnotation.name()));
                 } else {
                     throw new RuntimeException("Incorrect annotations of methods.");
                 }
             } else {
-                component.setName(setterAnnnotation.name());
+                component.setName(firstCharToLowerCase(setterAnnnotation.name()));
             }
         } else {
             if (getterAnnnotation != null) {
-                component.setName(getterAnnnotation.name());
+                component.setName(firstCharToLowerCase(getterAnnnotation.name()));
             } else {
                 component.setName(firstCharToLowerCase(component.getName()));
             }
@@ -229,10 +229,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
 
     private void writeToDocumentByMethods(Document document, Object value, Element root) throws Exception {
         for (SerializeComponent component: methods.get(value.getClass())) {
-            String name = firstCharToLowerCase(component.getName());
             Object newValue = component.getter().invoke(value);
             if (newValue != null) {
-                Element child = document.createElement(name);
+                Element child = document.createElement(component.getName());
                 root.appendChild(child);
                 if (possibleToString(newValue.getClass())) {
                     child.setTextContent(newValue.toString());
