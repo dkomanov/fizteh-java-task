@@ -4,15 +4,15 @@ import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collections;
+import java.util.Vector;
 import java.lang.reflect.Field;
 
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
-    private List<StringFormatterExtension> extensions;
+    private Vector<StringFormatterExtension> extensions;
     
     StringFormatter() {
-        extensions = Collections.synchronizedList(new ArrayList<StringFormatterExtension>());
+        extensions = new Vector<StringFormatterExtension>();
     }
     
     public void addExtension(StringFormatterExtension added) throws FormatterException {
