@@ -7,7 +7,7 @@ import ru.fizteh.fivt.bind.test.UserType;
 
 import org.junit.*;
 
-public class TestXML {
+public class TestXml {
 
     /**
      * @param args
@@ -71,7 +71,7 @@ public class TestXML {
     @Test
     public void testAnn() {
         Lol l = new Lol();
-        XmlBinder<Lol> binder = new XmlBinder<TestXML.Lol>(Lol.class);
+        XmlBinder<Lol> binder = new XmlBinder<TestXml.Lol>(Lol.class);
         byte[] bytes = binder.serialize(l);
         Lol deserialized = binder.deserialize(bytes);
         Assert.assertTrue((new String(bytes)).contains("olol"));
@@ -101,6 +101,30 @@ public class TestXML {
         byte[] bytes = binder.serialize(permissions);
         Permissions deserialized = binder.deserialize(bytes);
         Assert.assertEquals(deserialized, permissions);
+    }
+
+    @Test
+    public void test() {
+        XmlBinder binder = new XmlBinder(Permissions.class);
+        Permissions permissions = new Permissions();
+        permissions.setQuota(1);
+        permissions.setRoot(true);
+        byte[] bytes = binder.serialize(permissions);
+        Permissions deserialized = (Permissions) binder.deserialize(bytes);
+        Assert.assertEquals(deserialized, permissions);
+    }
+
+    @Test
+    public void testNoGenerics() {
+        boolean excep = false;
+        XmlBinder binder = null;
+        try {
+            binder = new XmlBinder(Object.class);
+        } catch (Exception e) {
+            excep = true;
+        }
+        Assert.assertFalse(excep);
+
     }
 
 }
