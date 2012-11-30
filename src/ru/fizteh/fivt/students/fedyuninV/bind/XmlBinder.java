@@ -171,7 +171,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         if (asXmlElement == null) {
             return firstCharToLowerCase(value.getName());
         } else {
-            return asXmlElement.name();
+            return firstCharToLowerCase(asXmlElement.name());
         }
     }
 
@@ -181,16 +181,16 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         if (setterAnnnotation != null) {
             if (getterAnnnotation != null) {
                 if (setterAnnnotation.name().equals(getterAnnnotation.name())) {
-                    component.setName(setterAnnnotation.name());
+                    component.setName(firstCharToLowerCase(setterAnnnotation.name()));
                 } else {
                     throw new RuntimeException("Incorrect annotations of methods.");
                 }
             } else {
-                component.setName(setterAnnnotation.name());
+                component.setName(firstCharToLowerCase(setterAnnnotation.name()));
             }
         } else {
             if (getterAnnnotation != null) {
-                component.setName(getterAnnnotation.name());
+                component.setName(firstCharToLowerCase(getterAnnnotation.name()));
             } else {
                 component.setName(firstCharToLowerCase(component.getName()));
             }
