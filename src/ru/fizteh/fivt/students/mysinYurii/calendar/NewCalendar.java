@@ -171,11 +171,11 @@ public class NewCalendar {
 		            if (available) {
 		                timeZone = TimeZone.getTimeZone(args[i]);
 		            } else {
-		                System.out.print("Timezone is not available: " + args[i]);
+		                System.out.println("Timezone is not available: " + args[i]);
 		                System.exit(1);
 		            }
 		        } else {
-		            System.out.print("No timezone for -t");
+		            System.out.println("No timezone for -t");
 		            System.exit(1);
 		        }
 		    } else {
