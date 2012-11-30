@@ -261,7 +261,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             throw new RuntimeException("This class is not supported by this binder!");
         }
         serialized = new IdentityHashMap<>();
-
         //Creating XML
         try {
             Document document = factory.newDocumentBuilder().newDocument();
