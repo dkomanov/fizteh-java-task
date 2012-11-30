@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.fedyuninV.bind.binderTestClasses;
 
+import ru.fizteh.fivt.bind.AsXmlElement;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
 
@@ -21,10 +22,12 @@ public class InnerClassTest {
 
         private String name;
 
+
         public String getName() {
             return name;
         }
 
+        @AsXmlElement(name = "OK")
         public void setName(String newName) {
             name = newName;
         }
