@@ -31,7 +31,7 @@ import sun.misc.Unsafe;
 
 public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     IdentityHashMap<Class, ArrayList<Field>> fieldsToSerialize;
-    IdentityHashMap<Class, ArrayList<GetterAndSetter>> methodsfieldsToSerialize;
+    IdentityHashMap<Class, ArrayList<GetterAndSetter>> methodsToSerialize;
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
     XMLEventWriter eventWriter;
@@ -45,7 +45,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     protected XmlBinder(Class<T> clazz) {
         super(clazz);
         fieldsToSerialize = new IdentityHashMap<Class, ArrayList<Field>>();
-        methodsfieldsToSerialize = new IdentityHashMap<Class, ArrayList<GetterAndSetter>>();
+        methodsToSerialize = new IdentityHashMap<Class, ArrayList<GetterAndSetter>>();
         selfName = getName(clazz);
         try {
             Field field = Unsafe.class.getDeclaredField("theUnsafe");
@@ -187,7 +187,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     }
                 }
             }
-            methodsfieldsToSerialize.put(valueClass, newMethods);
+            methodsToSerialize.put(valueClass, newMethods);
         } catch (Exception e) {
             throw new Exception("Troubles with parsing methods", e.getCause());
         }
@@ -254,12 +254,12 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 throw new Exception("No class in fieldsToSerialize");
             }
         } else {
-            if (methodsfieldsToSerialize.containsKey(clazz)) {
+            if (methodsToSerialize.containsKey(clazz)) {
                 StartElement configStartElement = eventFactory
                         .createStartElement("", "", title);
                 eventWriter.add(configStartElement);
                 eventWriter.add(end);
-                ArrayList<GetterAndSetter> methods = methodsfieldsToSerialize
+                ArrayList<GetterAndSetter> methods = methodsToSerialize
                         .get(clazz);
                 for (int i = 0; i < methods.size(); ++i) {
                     Object obj = methods.get(i).getter.invoke(value);
@@ -314,7 +314,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             byte[] result = byteArrayOutputStream.toByteArray();
             // System.out.println(new String(result));
             fieldsToSerialize.clear();
-            methodsfieldsToSerialize.clear();
+            methodsToSerialize.clear();
             byteArrayOutputStream.close();
             return result;
         } catch (Exception e) {
@@ -326,8 +326,11 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     @Override
     public T deserialize(byte[] bytes) {
         try {
+            if (bytes == null || bytes.length == 0) {
+                throw new Exception("Bad bytes");
+            }
             fieldsToSerialize = new IdentityHashMap<Class, ArrayList<Field>>();
-            methodsfieldsToSerialize = new IdentityHashMap<Class, ArrayList<GetterAndSetter>>();
+            methodsToSerialize = new IdentityHashMap<Class, ArrayList<GetterAndSetter>>();
             Object obj = parse(bytes);
             return (T) obj;
         } catch (Exception e) {
@@ -450,11 +453,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         } else {
             Object object = getNewInstance(clazz);
             NodeList nodeList = element.getChildNodes();
-            if (!methodsfieldsToSerialize.containsKey(clazz)) {
+            if (!methodsToSerialize.containsKey(clazz)) {
                 throw new Exception("No such class");
             }
-            ArrayList<GetterAndSetter> methods = methodsfieldsToSerialize
-                    .get(clazz);
+            ArrayList<GetterAndSetter> methods = methodsToSerialize.get(clazz);
             for (int i = 0; i < nodeList.getLength(); ++i) {
                 Node node = nodeList.item(i);
                 if (node.getNodeType() == Node.ELEMENT_NODE) {

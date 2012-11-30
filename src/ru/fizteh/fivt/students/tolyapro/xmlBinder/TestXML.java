@@ -56,6 +56,18 @@ public class TestXML {
         }
     }
 
+    @Test(expected = Exception.class)
+    public void testException1() {
+        XmlBinder<User> binder = new XmlBinder<User>(User.class);
+        binder.serialize(null);
+    }
+
+    @Test(expected = Exception.class)
+    public void testException2() {
+        XmlBinder<User> binder = new XmlBinder<User>(User.class);
+        binder.deserialize(null);
+    }
+
     @Test
     public void testAnn() {
         Lol l = new Lol();
