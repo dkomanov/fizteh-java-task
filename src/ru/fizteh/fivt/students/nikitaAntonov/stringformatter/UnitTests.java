@@ -266,14 +266,14 @@ public class UnitTests {
     
     @Test 
     public void formatterIncorrectIndex3() {
-        thrown.expectMessage("Index -1 is out of range");
-        formatter.format("test{-1}", 1);
+        thrown.expectMessage("Index 5 is out of range");
+        formatter.format("test{5}", 1);
     }
     
     @Test 
     public void formatterIncorrectIndex4() {
-        thrown.expectMessage("Index -1 is out of range");
-        formatter.format("test{-1.blah}", 1);
+        thrown.expectMessage("Index 5 is out of range");
+        formatter.format("test{5.blah}", 1);
     }
     
     @Test 
@@ -288,7 +288,23 @@ public class UnitTests {
         formatter.format("test{2.blah}", 1);
     }
     
+    @Test
+    public void formatterIncorrectIndex7() {
+        thrown.expectMessage("Incorrect number: +0");
+        formatter.format("{+0}", "1");
+    }
     
+    @Test
+    public void formatterFormatingOfNull() {
+        thrown.expectMessage("Null can't be formatted");
+        formatter.format("{0:f}", (Object) null);
+    }
+    
+    @Test
+    public void formatterEmptyFieldName() {
+        thrown.expectMessage("Field of class can't have empty name");
+        formatter.format("{0.}", 1);
+    }
     
 
 }
