@@ -280,7 +280,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         }
     }
 
-    private Document bytesToXml(byte[] xml) {
+    public Document bytesToXml(byte[] xml) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
