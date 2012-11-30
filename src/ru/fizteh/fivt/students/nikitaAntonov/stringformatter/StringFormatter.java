@@ -35,6 +35,15 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             throw new FormatterException("Format musn't be null");
         }
 
+        if (buffer == null) {
+            throw new FormatterException("Buffer musn't be null");
+        }
+
+        if (args == null) {
+            args = new String[1];
+            args[0] = null;
+        }
+
         int pos = 0;
         int end = format.length();
 
@@ -85,7 +94,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     }
 
     private void doFormating(StringBuilder buffer, String substring,
-            Object... args) {
+            Object args[]) {
 
         String selector;
         String pattern;
@@ -104,10 +113,37 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         Object object;
 
         if (pointPos == -1) {
-            object = args[Integer.parseInt(selector)];
+            int index;
+
+            try {
+                index = Integer.parseInt(selector);
+            } catch (NumberFormatException e) {
+                throw new FormatterException("Incorrect number: " + selector, e);
+            }
+
+            if (index < 0 || index > args.length) {
+                throw new FormatterException("Index " + index
+                        + " is out of range");
+            }
+
+            object = args[index];
+
         } else {
             int lastPointPos = pointPos;
-            object = args[Integer.parseInt(selector.substring(0, pointPos))];
+            int index;
+            try {
+                index = Integer.parseInt(selector.substring(0, pointPos));
+            } catch (NumberFormatException e) {
+                throw new FormatterException("Incorrect number: "
+                        + selector.substring(0, pointPos), e);
+            }
+
+            if (index < 0 || index > args.length) {
+                throw new FormatterException("Index " + index
+                        + " is out of range");
+            }
+
+            object = args[index];
             pointPos = selector.indexOf('.', pointPos + 1);
 
             while (pointPos != -1) {
