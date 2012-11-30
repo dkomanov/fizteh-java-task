@@ -28,6 +28,11 @@ public class UnitTests {
     }
 
     @Test(expected = FormatterException.class)
+    public void testEmptyField() {
+        new StringFormatter().format("{0.}", "1");
+    }
+
+    @Test(expected = FormatterException.class)
     public void testCalendarFormatIncorrectType() {
         new CalendarExtension().format(new StringBuilder(), new String(),
                 "yyyy.MM.dd HH:mm:ss");
