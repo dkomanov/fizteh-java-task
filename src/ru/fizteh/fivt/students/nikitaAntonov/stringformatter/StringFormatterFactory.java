@@ -24,9 +24,14 @@ public class StringFormatterFactory implements
 
         ArrayList<StringFormatterExtension> extensionsList = new ArrayList<>();
 
+        if (extensionClassNames == null) {
+            throw new FormatterException("Extensions list mustn't be null");
+        }
+
         for (String extensionName : extensionClassNames) {
             if (extensionName == null) {
-                throw new FormatterException("Name of the extension class can't be null");
+                throw new FormatterException(
+                        "Name of the extension class can't be null");
             }
 
             StringFormatterExtension extension = knownsExtensions

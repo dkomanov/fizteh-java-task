@@ -48,6 +48,14 @@ public class UnitTests {
     }
 
     @Test
+    public void factoryNullParamList() {
+        thrown.expectMessage("Extensions list mustn't be null");
+        StringFormatterFactory f = new StringFormatterFactory();
+        ru.fizteh.fivt.format.StringFormatter ff = f.create(null);
+
+    }
+    
+    @Test
     public void factoryGetFormatterFromHash() {
         StringFormatterFactory f = new StringFormatterFactory();
         StringFormatter a = (StringFormatter) f
@@ -78,11 +86,11 @@ public class UnitTests {
         thrown.expectMessage("exList == null");
         StringFormatter f = new StringFormatter(null);
     }
-    
+
     @Test
     public void formatterNullFormat() {
         thrown.expectMessage("Format musn't be null");
-        formatter.format(null, 1,2,3);
+        formatter.format(null, 1, 2, 3);
     }
 
     @Test
@@ -206,10 +214,82 @@ public class UnitTests {
         String result = formatter.format("{0:}", new BigInteger("31"));
     }
 
-    public void nullPattern() {
+    @Test
+    public void nullPatternInExt() {
+        
+        thrown.expectMessage("Pattern must be non empty string");
         StringFormatterDoubleExtension ext = new StringFormatterDoubleExtension();
         Double a = 0.0;
         ext.format(new StringBuilder(), a, null);
     }
+    
+    @Test
+    public void nullBufferInExt() {
+        
+        thrown.expectMessage("Buffer == null");
+        StringFormatterDoubleExtension ext = new StringFormatterDoubleExtension();
+        Double a = 0.0;
+        ext.format(null, a, ".2");
+    }
+    
+    @Test
+    public void nullObjectInExt() {
+        
+        thrown.expectMessage("Null isn't correct object to format");
+        StringFormatterDoubleExtension ext = new StringFormatterDoubleExtension();
+        ext.format(new StringBuilder(), null, ".2");
+    }
+    
+    @Test
+    public void formatterNullBuffer() {
+        thrown.expectMessage("Buffer musn't be null");
+        formatter.format((StringBuilder) null, "Test {0}", 1);
+    }
+    
+    @Test
+    public void formatterNullArgs() {
+        String result = formatter.format("test{0}test", null);
+        Assert.assertEquals("testtest", result);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex1() {
+        thrown.expectMessage("Incorrect number: blah");
+        formatter.format("test{blah}", 1);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex2() {
+        thrown.expectMessage("Incorrect number: blah");
+        formatter.format("test{blah.blah}", 1);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex3() {
+        thrown.expectMessage("Index -1 is out of range");
+        formatter.format("test{-1}", 1);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex4() {
+        thrown.expectMessage("Index -1 is out of range");
+        formatter.format("test{-1.blah}", 1);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex5() {
+        thrown.expectMessage("Index 2 is out of range");
+        formatter.format("test{2}", 1);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex6() {
+        thrown.expectMessage("Index 2 is out of range");
+        formatter.format("test{2.blah}", 1);
+    }
+    
+    
+    
 
 }
+
