@@ -124,7 +124,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 throw new FormatterException("Incorrect number: " + selector, e);
             }
 
-            if (index < 0 || index > args.length) {
+            if (index < 0 || index >= args.length) {
                 throw new FormatterException("Index " + index
                         + " is out of range");
             }
@@ -141,7 +141,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                         + selector.substring(0, pointPos), e);
             }
 
-            if (index < 0 || index > args.length) {
+            if (index < 0 || index >= args.length) {
                 throw new FormatterException("Index " + index
                         + " is out of range");
             }
