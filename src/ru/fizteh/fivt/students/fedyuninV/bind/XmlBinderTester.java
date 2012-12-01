@@ -126,4 +126,12 @@ public class XmlBinderTester {
         WithElement2 deserialized = binder.deserialize(bytes);
         Assert.assertTrue(deserialized.equals(withElement2));
     }
+
+    @Test
+    public void methodsAnnotationsFail() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Incorrect annotations of methods.");
+        XmlBinder<MethodsAnnotationsFail> binder
+                = new XmlBinder<MethodsAnnotationsFail>(MethodsAnnotationsFail.class);
+    }
 }
