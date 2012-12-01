@@ -84,10 +84,9 @@ public class CalendarView {
 
 		iterator.set(DAY_OF_WEEK, MONDAY);
 
-		while (iterator.get(MONTH) !=
-			calendar.get(MONTH) ||
-				iterator.get(DAY_OF_MONTH) <=
-					iterator.getActualMaximum(DAY_OF_MONTH)) {
+		while (iterator.get(MONTH) != calendar.get(MONTH)
+				|| iterator.get(DAY_OF_MONTH)
+					<= iterator.getActualMaximum(DAY_OF_MONTH)) {
 
 			if (settings.week
 				&& iterator.get(DAY_OF_WEEK)
