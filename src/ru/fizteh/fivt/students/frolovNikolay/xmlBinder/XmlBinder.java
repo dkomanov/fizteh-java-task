@@ -91,17 +91,21 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             return Double.parseDouble(value);
         } else if (clazz.equals(String.class)){
             return value;
-        }else {
+        } else {
             throw new RuntimeException("isn't writeable value");
         }
     }
     
-    XmlBinder(Class<T> clazz) throws Throwable {
+    public XmlBinder(Class<T> clazz) {
         super(clazz);
         cycleLinkInterrupter = new IdentityHashMap<Object, Object>();
         fields = new HashMap<Class<?>, HashMap<String, FieldMeta>>();
         methods = new HashMap<Class<?>, HashMap<String, MethodMeta>>();
-        recursiveBuildXmlBinder(clazz, new HashSet<Class<?>>());
+        try {
+            recursiveBuildXmlBinder(clazz, new HashSet<Class<?>>());
+        } catch (Throwable ignoringException) {
+            
+        }
     }
     
     private void recursiveBuildXmlBinder(Class<?> clazz, HashSet<Class<?>> alreadyAdded) throws Throwable {
@@ -172,7 +176,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
     
     @Override
-    public byte[] serialize(T value) {
+    public synchronized byte[] serialize(T value) {
         if (value == null) {
             throw new RuntimeException("null pointer");
         } else if (!getClazz().equals(value.getClass())) {
@@ -341,7 +345,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
     
     @Override
-    public T deserialize(byte[] bytes) {
+    public synchronized T deserialize(byte[] bytes) {
         if (bytes == null) {
             throw new RuntimeException("null pointer");
         }
