@@ -14,7 +14,7 @@ public class TestXml {
     public static class TestMe {
         private String val1;
 
-        @ru.fizteh.fivt.bind.AsXmlElement(name = "val1")
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "asdval1")
         String getVal1() {
             return val1;
         }
