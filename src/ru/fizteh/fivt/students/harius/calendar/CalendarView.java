@@ -76,14 +76,11 @@ public class CalendarView {
 	/* Writes the main part */
 	private void generateBody(StringBuilder builder) {
 		Calendar iterator = Calendar.getInstance(locale);
+		iterator.setFirstDayOfWeek(MONDAY);
 		iterator.setTime(calendar.getTime());
 
 		iterator.set(DAY_OF_MONTH,
 			iterator.getActualMinimum(DAY_OF_MONTH));
-
-		if (iterator.get(DAY_OF_WEEK) == SUNDAY) {
-			iterator.set(WEEK_OF_YEAR, iterator.get(WEEK_OF_YEAR) - 1);
-		}
 
 		iterator.set(DAY_OF_WEEK, MONDAY);
 
