@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.altimin.formatter;
 
 import ru.fizteh.fivt.format.FormatterException;
+import ru.fizteh.fivt.format.StringFormatterExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;

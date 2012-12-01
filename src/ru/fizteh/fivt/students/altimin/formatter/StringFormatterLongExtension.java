@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.altimin.formatter;
 
+import ru.fizteh.fivt.format.StringFormatterExtension;
+
 import java.util.Formatter;
 
 /**

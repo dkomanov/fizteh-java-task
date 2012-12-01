@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.altimin.formatter;
 
+import ru.fizteh.fivt.format.StringFormatterExtension;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -8,7 +10,7 @@ import java.util.Calendar;
  * Date: 11/30/12
  * Time: 10:53 PM
  */
-public class StringFormatterCalendarExtension extends  StringFormatterExtension {
+public class StringFormatterCalendarExtension extends StringFormatterExtension {
     public StringFormatterCalendarExtension() {
         super(Calendar.class);
     }
