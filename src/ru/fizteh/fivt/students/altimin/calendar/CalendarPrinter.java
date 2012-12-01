@@ -71,6 +71,9 @@ public class CalendarPrinter {
         if (this.year < calendar.getMinimum(Calendar.YEAR)) {
             throw new IllegalArgumentException("Year should not exceed " + calendar.getMinimum(Calendar.YEAR));
         }
+        if (this.year > calendar.getMaximum(Calendar.YEAR)) {
+            throw new IllegalArgumentException("Year should not be greater than " + calendar.getMaximum(Calendar.YEAR));
+        }
         calendar.set(this.year, this.month, 1);
         minimalWeekDayNumber = calendar.getActualMinimum(Calendar.DAY_OF_WEEK);
         maximalWeekDayNumber = calendar.getActualMaximum(Calendar.DAY_OF_WEEK);
