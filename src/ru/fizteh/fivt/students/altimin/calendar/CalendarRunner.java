@@ -17,13 +17,19 @@ public class CalendarRunner {
         return (string == null) ? null : Integer.parseInt(string);
     }
 
-    public static void main(String[] args) throws KeyException {
+    public static void main(String[] args) {
         ArgumentsParser argumentsParser = new ArgumentsParser();
         argumentsParser.addKey("w");
         argumentsParser.addKey("y", true);
         argumentsParser.addKey("m", true);
         argumentsParser.addKey("t", true);
-        ArgumentsParser.ParseResult parseResult = argumentsParser.parse(args);
+        ArgumentsParser.ParseResult parseResult = null;
+        try {
+            parseResult = argumentsParser.parse(args);
+        } catch (KeyException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
         if (parseResult.hasProperty("t")) {
             String[] availableTimeZones = TimeZone.getAvailableIDs();
             String timeZone = parseResult.getProperty("t");
