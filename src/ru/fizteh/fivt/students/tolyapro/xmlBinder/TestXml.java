@@ -9,6 +9,52 @@ import ru.fizteh.fivt.bind.test.UserType;
 import org.junit.*;
 
 public class TestXml {
+
+    @ru.fizteh.fivt.bind.BindingType(MembersToBind.FIELDS)
+    public static class TestMe {
+        private String val1;
+
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "val1")
+        String getVal1() {
+            return val1;
+        }
+
+        void setVal1(String x) {
+            val1 = x;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            TestMe t = (TestMe) o;
+            return val1.equals(t.val1);
+        }
+    }
+
+    @ru.fizteh.fivt.bind.BindingType(MembersToBind.GETTERS_AND_SETTERS)
+    public static class TestSmth100500 {
+        int a = 100500;
+        double c = 1.1;
+
+        double getC() {
+            return c;
+        }
+
+        void setC(double x) {
+            c = x;
+        }
+
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "OLOLOL")
+        int getA() {
+            return a;
+        }
+
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "OLOLOL")
+        void setA(int i) {
+            a = i;
+        }
+
+    }
+
     @ru.fizteh.fivt.bind.BindingType(MembersToBind.GETTERS_AND_SETTERS)
     public static class TestGetAndSet {
         int a = 100500;
@@ -184,6 +230,16 @@ public class TestXml {
         }
         Assert.assertFalse(excep);
 
+    }
+
+    @Test
+    public void testAgain() {
+        TestMe testMe = new TestMe();
+        XmlBinder<TestMe> binder = new XmlBinder<TestMe>(TestMe.class);
+        testMe.setVal1("asd");
+        byte[] bytes = binder.serialize(testMe);
+        TestMe deserialized = binder.deserialize(bytes);
+        Assert.assertEquals(testMe, deserialized);
     }
 
 }
