@@ -17,6 +17,7 @@ public class ZCalendar {
 
     public static void main(String[] args) {
         Calendar calendar = Calendar.getInstance();
+        calendar.setFirstDayOfWeek(MONDAY);
         Locale locale = Locale.getDefault();
 
         CalendarSettings settings = new CalendarSettings();
