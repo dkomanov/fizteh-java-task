@@ -138,4 +138,42 @@ public class UnitTest {
         new XmlBinder<DifferentAsXmlAttributeName>(DifferentAsXmlAttributeName.class).
                 serialize(new DifferentAsXmlAttributeName());
     }
+    
+    @BindingType(MembersToBind.GETTERS_AND_SETTERS)
+    private static class WithAttributeFields {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        @AsXmlAttribute(name = "name2")
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            WithAttributeFields wf = (WithAttributeFields)o;
+            return wf.getName().equals(name);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 41 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+    }
+
+    @Test
+    public void testWithAttributeMethods() {
+        XmlBinder<WithAttributeFields> x = new XmlBinder<WithAttributeFields>
+                (WithAttributeFields.class);
+        WithAttributeFields wf = new WithAttributeFields();
+        wf.setName("aaa");
+        WithAttributeFields serialized = x.deserialize(x.serialize(wf));
+        Assert.assertEquals(serialized, wf);
+        Assert.assertTrue(serialized != wf);
+    }
 }

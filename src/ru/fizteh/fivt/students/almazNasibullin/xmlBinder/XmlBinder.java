@@ -233,6 +233,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                      PairMethodsToSerialization pm = pairMethods.get(i);
                      String name = getName(pm.getter, pm.name);
                      name = getName(pm.setter, name);
+                     pm.name = name;
                      Object newObject = pm.getter.invoke(o);
                      if (newObject != null) {
                          if (pm.getter.getAnnotation(AsXmlAttribute.class) == null
@@ -419,6 +420,21 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                                 pm.setter.invoke(o, deserializeObject(el,
                                             pm.getter.getReturnType()));
                             }
+                        }
+                    }
+                    NamedNodeMap nnm = e.getAttributes();
+                    for (int i = 0; i < nnm.getLength(); ++i) {
+                        Node n = nnm.item(i);
+                        PairMethodsToSerialization pm = null;
+                        for (PairMethodsToSerialization pmm : pairMethods) {
+                            if (firstCharToLowerCase(pmm.name).equals(n.getNodeName())) {
+                                pm = pmm;
+                                break;
+                            }
+                         }
+                         if (pm != null) {
+                            pm.setter.invoke(o, getPrimitive(n.getNodeValue(),
+                                pm.getter.getReturnType()));
                         }
                     }
                 }
