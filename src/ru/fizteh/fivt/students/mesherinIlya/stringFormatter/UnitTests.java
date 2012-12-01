@@ -122,7 +122,7 @@ public class UnitTests {
 
     @Test(expected = FormatterException.class)
     public void testStringFormatterNullPointerExtension() {
-        new StringFormatter().addToListOfExtensions(null);
+        new StringFormatter().addExtension(null);
     }
 
     @Test(expected = FormatterException.class)
@@ -180,13 +180,14 @@ public class UnitTests {
                 "{0.testClass.fieldString}", new TestChildClass()));
         assertEquals("string content",
                 formatter.format("{0.fieldString}", new TestChildClass()));
-        formatter.addToListOfExtensions(new CalendarFormatter());
+        formatter.addExtension(new CalendarFormatter());
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, 1234);
         calendar.set(Calendar.MONTH, 9);
         calendar.set(Calendar.DAY_OF_MONTH, 12);
         assertEquals("1234.10.12", formatter.format("{0:yyyy.MM.dd}", calendar));
-        formatter.addToListOfExtensions(new LongFormatter());
+        formatter.addExtension(new LongFormatter());
         assertEquals("64", formatter.format("{0:x}", new Long(100)));
     }
+    
 }

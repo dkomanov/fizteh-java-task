@@ -9,8 +9,8 @@ import java.util.Vector;
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     Vector<StringFormatterExtension> extensions;
 
-    StringFormatter() {
-        extensions = new ArrayList<StringFormatterExtension>();
+    public StringFormatter() {
+        extensions = new Vector<StringFormatterExtension>();
     }
 
     public void addExtension(StringFormatterExtension extension) throws FormatterException {
@@ -159,7 +159,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                     thisIsField = false;
             
                     if (argument != null) {
-                        bool argumentIsSupported = false;
+                        boolean argumentIsSupported = false;
                         
                         for (StringFormatterExtension extension : extensions) {
                             if (extension.supports(argument.getClass())) {
