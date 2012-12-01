@@ -166,10 +166,14 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         String nameAnnotationSetter = getAsXmlElementName(getterAndSetter.setter);
                         if (nameAnnotationGetter != null
                                 && nameAnnotationSetter != null) {
-                            throw new Exception(
-                                    "Getter and setter have different names:"
-                                            + getterAndSetter.nameGetter + " "
-                                            + getterAndSetter.nameSetter);
+                            if (!nameAnnotationGetter
+                                    .equals(nameAnnotationSetter)) {
+                                throw new Exception(
+                                        "Getter and setter have different names:"
+                                                + getterAndSetter.nameGetter
+                                                + " "
+                                                + getterAndSetter.nameSetter);
+                            }
                         }
                         String name = null;
                         if (nameAnnotationGetter != null) {
