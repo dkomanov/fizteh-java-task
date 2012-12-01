@@ -165,7 +165,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         getterAndSetter.getter.setAccessible(true);
                         getterAndSetter.setter.setAccessible(true);
                         String name = null;
-                        name = isName.replaceFirst("get", "");
+                        name = isName.replaceFirst("is", "");
                         name = firstLetterLowerer(name);
                         getterAndSetter.name = name;
                         getterAndSetter.type = getter.getReturnType();
@@ -275,11 +275,24 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         pushAllMethods(obj.getClass());
                         serializeMe(obj.getClass(), obj, methods.get(i).name);
                     } else {
-                        String name = getAsXmlElementName(methods.get(i).getter);
-                        if (name == null || name == "") {
+                        String nameAnnotationGetter = getAsXmlElementName(methods
+                                .get(i).getter);
+                        String nameAnnotationSetter = getAsXmlElementName(methods
+                                .get(i).setter);
+                        if ((nameAnnotationGetter == null && nameAnnotationSetter != null)
+                                || (nameAnnotationGetter != null && nameAnnotationSetter == null)
+                                || (nameAnnotationGetter != null
+                                        && nameAnnotationSetter != null && !nameAnnotationGetter
+                                            .equals(nameAnnotationSetter))) {
+                            throw new Exception(
+                                    "Getter and setter have different names:"
+                                            + methods.get(i).name);
+                        }
+                        if (nameAnnotationGetter == null
+                                || nameAnnotationGetter == "") {
                             createNode(methods.get(i).name, obj.toString());
                         } else {
-                            createNode(name, obj.toString());
+                            createNode(nameAnnotationGetter, obj.toString());
                         }
                     }
                 }
