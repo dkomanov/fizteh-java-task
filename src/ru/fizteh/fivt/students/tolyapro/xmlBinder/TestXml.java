@@ -106,7 +106,6 @@ public class TestXml {
         TestGetAndSet testGetAndSet = new TestGetAndSet();
         XmlBinder<TestGetAndSet> binder = new XmlBinder<TestXml.TestGetAndSet>(
                 TestGetAndSet.class);
-        binder.serialize(testGetAndSet);
     }
 
     @Test(expected = Exception.class)
@@ -126,7 +125,6 @@ public class TestXml {
         BadAnnotations badAnnotations = new BadAnnotations();
         XmlBinder<BadAnnotations> binder = new XmlBinder<TestXml.BadAnnotations>(
                 BadAnnotations.class);
-        binder.serialize(badAnnotations);
     }
 
     @Test

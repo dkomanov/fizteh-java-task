@@ -56,6 +56,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             unsafeInstance = Unsafe.class.cast(field.get(null));
             eventWriter = xmlOutputFactory
                     .createXMLEventWriter(byteArrayOutputStream);
+            // #TODO initialize constructors
+            // #TODO initialize realNames
+            pushAllFields(clazz);
+            pushAllMethods(clazz);
         } catch (Exception e) {
             throw new RuntimeException("Can't create XmlBinder");
         }
@@ -102,12 +106,36 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
 
     private void pushAllFields(Class clazz) {
+        realNames.put(clazz, new ArrayList<String>());
         Field[] tmp = clazz.getDeclaredFields();
         ArrayList<Field> fields = new ArrayList<Field>();
+        for (int i = 0; i < tmp.length; ++i) {
+            String name = getAsXmlElementName(tmp[i]);
+            if (realNames.containsKey(clazz) && name != null) {
+                if (realNames.get(clazz).contains(name)) {
+                    throw new RuntimeException("Repeated annotation name: "
+                            + name);
+                } else if (name != null) {
+                    realNames.get(clazz).add(name);
+                }
+            }
+        }
         fields.addAll(Arrays.asList(tmp));
         Class parent = clazz.getSuperclass();
         while (parent != null) {
+            realNames.put(parent, new ArrayList<String>());
             tmp = parent.getDeclaredFields();
+            for (int i = 0; i < tmp.length; ++i) {
+                String name = getAsXmlElementName(tmp[i]);
+                if (realNames.containsKey(parent) && name != null) {
+                    if (realNames.get(parent).contains(name)) {
+                        throw new RuntimeException("Repeated annotation name: "
+                                + name);
+                    }
+                } else if (name != null) {
+                    realNames.get(parent).add(name);
+                }
+            }
             fields.addAll(Arrays.asList(tmp));
             parent = parent.getSuperclass();
         }
@@ -143,6 +171,17 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         getterAndSetter.setter = method;
                         getterAndSetter.getter.setAccessible(true);
                         getterAndSetter.setter.setAccessible(true);
+                        String nameAnnotationGetter = getAsXmlElementName(getterAndSetter.getter);
+                        String nameAnnotationSetter = getAsXmlElementName(getterAndSetter.setter);
+                        if ((nameAnnotationGetter == null && nameAnnotationSetter != null)
+                                || (nameAnnotationGetter != null && nameAnnotationSetter == null)
+                                || (nameAnnotationGetter != null
+                                        && nameAnnotationSetter != null && !nameAnnotationGetter
+                                            .equals(nameAnnotationSetter))) {
+                            throw new Exception(
+                                    "Getter and setter have different names:"
+                                            + getterAndSetter.name);
+                        }
                         String name = null;
                         name = getterName.replaceFirst("get", "");
                         name = firstLetterLowerer(name);
@@ -150,7 +189,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         getterAndSetter.type = getter.getReturnType();
                         newMethods.add(getterAndSetter);
                     } catch (Exception e) {
-
+                        if (e.getMessage().contains(
+                                "Getter and setter have different names:")) {
+                            throw new Exception(e);
+                        }
                     }
                     String isName = methodName.replaceFirst("set", "is");
                     try {
@@ -169,15 +211,29 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         name = firstLetterLowerer(name);
                         getterAndSetter.name = name;
                         getterAndSetter.type = getter.getReturnType();
+                        String nameAnnotationGetter = getAsXmlElementName(getterAndSetter.getter);
+                        String nameAnnotationSetter = getAsXmlElementName(getterAndSetter.setter);
+                        if ((nameAnnotationGetter == null && nameAnnotationSetter != null)
+                                || (nameAnnotationGetter != null && nameAnnotationSetter == null)
+                                || (nameAnnotationGetter != null
+                                        && nameAnnotationSetter != null && !nameAnnotationGetter
+                                            .equals(nameAnnotationSetter))) {
+                            throw new Exception(
+                                    "Getter and setter have different names:"
+                                            + getterAndSetter.name);
+                        }
                         newMethods.add(getterAndSetter);
                     } catch (Exception e) {
-
+                        if (e.getMessage().contains(
+                                "Getter and setter have different names")) {
+                            throw new Exception(e);
+                        }
                     }
                 }
             }
             methodsToSerialize.put(valueClass, newMethods);
         } catch (Exception e) {
-            throw new Exception("Troubles with parsing methods", e.getCause());
+            throw new Exception("Troubles with parsing methods", e);
         }
 
     }
@@ -192,8 +248,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
 
     public void serializeClass(T value, String name) throws Exception {
-        pushAllFields(value);
-        pushAllMethods(value.getClass());
         serializeMe(value.getClass(), value, getName(value.getClass()));
     }
 
@@ -235,19 +289,21 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         serializeMe(obj.getClass(), obj, tmpField.getName());
                     } else {
                         String name = getAsXmlElementName(tmpField);
-                        if (!realNames.containsKey(clazz)) {
-                            realNames.put(clazz, new ArrayList<String>());
-                        }
+                        /*
+                         * if (!realNames.containsKey(clazz)) {
+                         * realNames.put(clazz, new ArrayList<String>()); } if
+                         * (name == null || name == "") {
+                         * realNames.get(clazz).add(tmpField.getName());
+                         * createNode(tmpField.getName(), obj.toString()); }
+                         * else { if (realNames.get(clazz).contains(name)) {
+                         * throw new Exception(
+                         * "Two asXmlAnnotions with the same name"); } else {
+                         * realNames.get(clazz).add(name); } createNode(name,
+                         * obj.toString()); }
+                         */
                         if (name == null || name == "") {
-                            realNames.get(clazz).add(tmpField.getName());
                             createNode(tmpField.getName(), obj.toString());
                         } else {
-                            if (realNames.get(clazz).contains(name)) {
-                                throw new Exception(
-                                        "Two asXmlAnnotions with the same name");
-                            } else {
-                                realNames.get(clazz).add(name);
-                            }
                             createNode(name, obj.toString());
                         }
 
@@ -277,17 +333,19 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     } else {
                         String nameAnnotationGetter = getAsXmlElementName(methods
                                 .get(i).getter);
-                        String nameAnnotationSetter = getAsXmlElementName(methods
-                                .get(i).setter);
-                        if ((nameAnnotationGetter == null && nameAnnotationSetter != null)
-                                || (nameAnnotationGetter != null && nameAnnotationSetter == null)
-                                || (nameAnnotationGetter != null
-                                        && nameAnnotationSetter != null && !nameAnnotationGetter
-                                            .equals(nameAnnotationSetter))) {
-                            throw new Exception(
-                                    "Getter and setter have different names:"
-                                            + methods.get(i).name);
-                        }
+                        /*
+                         * String nameAnnotationSetter =
+                         * getAsXmlElementName(methods .get(i).setter);
+                         * 
+                         * if ((nameAnnotationGetter == null &&
+                         * nameAnnotationSetter != null) ||
+                         * (nameAnnotationGetter != null && nameAnnotationSetter
+                         * == null) || (nameAnnotationGetter != null &&
+                         * nameAnnotationSetter != null && !nameAnnotationGetter
+                         * .equals(nameAnnotationSetter))) { throw new
+                         * Exception( "Getter and setter have different names:"
+                         * + methods.get(i).name); }
+                         */
                         if (nameAnnotationGetter == null
                                 || nameAnnotationGetter == "") {
                             createNode(methods.get(i).name, obj.toString());
@@ -322,13 +380,13 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             eventWriter.add(eventFactory.createEndDocument());
             eventWriter.close();
             byte[] result = byteArrayOutputStream.toByteArray();
-            System.out.println(new String(result));
+            // System.out.println(new String(result));
             fieldsToSerialize.clear();
             methodsToSerialize.clear();
             byteArrayOutputStream.close();
             return result;
         } catch (Exception e) {
-            throw new RuntimeException("Can't serialize", e.getCause());
+            throw new RuntimeException("Can't serialize", e);
         }
     }
 
@@ -344,7 +402,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             Object obj = parse(bytes);
             return (T) obj;
         } catch (Exception e) {
-            throw new RuntimeException("Can't deserialize", e.getCause());
+            throw new RuntimeException("Can't deserialize", e);
         }
     }
 
