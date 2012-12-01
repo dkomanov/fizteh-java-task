@@ -5,15 +5,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
-    List<StringFormatterExtension> extentions;
+    Vector<StringFormatterExtension> extentions;
     
     public StringFormatter() {
-        extentions = Collections.synchronizedList(new ArrayList<StringFormatterExtension>());
+        extentions = new Vector<StringFormatterExtension>();
     }
     
     public void addNewExtension(StringFormatterExtension newExtension) throws FormatterException {
@@ -81,6 +82,9 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     private void getField(StringBuilder result, String toFormat,
             Object... arguments) throws FormatterException {
         Object tempObject = null;
+        if (arguments == null) {
+            return;
+        }
         int patternBegin = toFormat.indexOf(":");
         if (patternBegin == -1) {
             patternBegin = toFormat.length();
@@ -108,10 +112,11 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 tempObject = getFieldFrom(tempObject, tokens.nextToken());
             }
         }
+        if (tempObject == null) {
+            return;
+        }
         if (patternBegin == toFormat.length()) {
-            if (tempObject != null ) {
-                result.append(tempObject);
-            }
+            result.append(tempObject);
         } else {
             StringFormatterExtension goodExtension = null;
             for (StringFormatterExtension ext : extentions) {
