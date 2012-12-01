@@ -102,7 +102,7 @@ public class UnitTest {
         TestClassSerializationFields serializedLada = xb.deserialize(xb.serialize(Lada));
         TestClassSerializationFields serializedBMW = xb.deserialize(xb.serialize(BMW));
         Assert.assertEquals(Lada, serializedLada);
-        Assert.assertEquals(BMW, serializedBMW);
+        Assert.assertEquals(BMW, serializedBMW); // вот здесь тестируется это
         Assert.assertNotSame(serializedLada, serializedBMW);
     }
     
