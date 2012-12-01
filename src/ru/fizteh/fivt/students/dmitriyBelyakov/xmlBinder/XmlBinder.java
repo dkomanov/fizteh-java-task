@@ -176,6 +176,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 try {
                     Method methodIs = clazz.getMethod(nameIs);
                     if (!method.getParameterTypes()[0].equals(methodIs.getReturnType()) || !(methodIs.getReturnType().equals(boolean.class)
+
                             || methodIs.getReturnType().equals(Boolean.class))) {
                         continue;
                     }
@@ -224,6 +225,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                             xmlWriter.writeEndElement();
                         } else {
                             xmlWriter.writeStartElement(data.name);
+                            xmlWriter.
                             xmlWriter.writeCData(val.toString());
                             xmlWriter.writeEndElement();
                         }
