@@ -45,8 +45,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             }
             objectClass = objectClass.getSuperclass();
         }
-        throw new FormatterException("Object " + object.getClass() + " has no field " + fieldName);
-
+        return null;
     }
 
     private void formatArgument(StringBuilder buffer, String format, Object... args) throws FormatterException {
@@ -63,7 +62,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         int objectIndex;
         try {
             objectIndex = Integer.parseInt(splittedFormat[0]);
-            if (splittedFormat[0].startsWith("+")) {
+            if (splittedFormat[0].startsWith("+") || splittedFormat[0].startsWith("-")) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e){
