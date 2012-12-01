@@ -107,10 +107,12 @@ public class XmlBinderTester {
 
     @Test
     public void voidAnnotattionsTest() {
-        thrown.expect(RuntimeException.class);
-        thrown.expectMessage("Incorrect annotations of methods.");
         XmlBinder<VoidAnnotationsTest> binder
                 = new XmlBinder<VoidAnnotationsTest>(VoidAnnotationsTest.class);
+        VoidAnnotationsTest voidAnnotationsTest = new VoidAnnotationsTest("Valeriy", "Fedyunin", 18);
+        byte[] bytes = binder.serialize(voidAnnotationsTest);
+        VoidAnnotationsTest deserialized = binder.deserialize(bytes);
+        Assert.assertTrue(deserialized.equals(voidAnnotationsTest));
     }
 
     @Test
@@ -123,5 +125,13 @@ public class XmlBinderTester {
         byte[] bytes = binder.serialize(withElement2);
         WithElement2 deserialized = binder.deserialize(bytes);
         Assert.assertTrue(deserialized.equals(withElement2));
+    }
+
+    @Test
+    public void methodsAnnotationsFail() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Incorrect annotations of methods.");
+        XmlBinder<MethodsAnnotationsFail> binder
+                = new XmlBinder<MethodsAnnotationsFail>(MethodsAnnotationsFail.class);
     }
 }
