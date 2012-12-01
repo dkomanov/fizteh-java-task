@@ -97,8 +97,7 @@ public class CalendarView {
 					String.format("%3d  ", iterator.get(WEEK_OF_YEAR)));
 			}
 
-			if (iterator.get(MONTH) == 
-				calendar.get(MONTH)) {
+			if (iterator.get(MONTH) == calendar.get(MONTH)) {
 
 				builder.append(
 					String.format("%3d", iterator.get(DAY_OF_MONTH)));
@@ -106,9 +105,8 @@ public class CalendarView {
 				builder.append("   ");
 			}
 
-			if (iterator.get(MONTH) ==
-				calendar.get(MONTH) &&
-				iterator.get(DAY_OF_MONTH)
+			if (iterator.get(MONTH) == calendar.get(MONTH)
+				&& iterator.get(DAY_OF_MONTH)
 			 	== iterator.getActualMaximum(DAY_OF_MONTH)) {
 			 	break;
 			}

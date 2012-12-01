@@ -54,8 +54,8 @@ public class ZCalendar {
             }
         }
 
-        List<String> zones = 
-            Arrays.asList(TimeZone.getAvailableIDs());
+        List<String> zones
+            = Arrays.asList(TimeZone.getAvailableIDs());
         if (settings.zone != null
             && zones.indexOf(settings.zone) == -1) {
             
