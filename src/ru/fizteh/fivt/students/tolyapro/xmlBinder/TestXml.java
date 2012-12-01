@@ -56,6 +56,38 @@ public class TestXml {
         }
     }
 
+    public static class BadAnnotations {
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "bad")
+        int a = 1;
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "bad")
+        int b = 2;
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "bad")
+        int c = 3;
+
+        inLol in = new inLol();
+
+        int getA() {
+            return a;
+        }
+
+        void setA(int A) {
+            a = A;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            BadAnnotations other = (BadAnnotations) o;
+            return a == other.a && b == other.b && c == other.c;
+
+        }
+    }
+
     @Test(expected = Exception.class)
     public void testException1() {
         XmlBinder<User> binder = new XmlBinder<User>(User.class);
@@ -66,6 +98,14 @@ public class TestXml {
     public void testException2() {
         XmlBinder<User> binder = new XmlBinder<User>(User.class);
         binder.deserialize(null);
+    }
+
+    @Test(expected = Exception.class)
+    public void testBadAsXmlElement() {
+        BadAnnotations badAnnotations = new BadAnnotations();
+        XmlBinder<BadAnnotations> binder = new XmlBinder<TestXml.BadAnnotations>(
+                BadAnnotations.class);
+        binder.serialize(badAnnotations);
     }
 
     @Test
