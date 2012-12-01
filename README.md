@@ -11,7 +11,21 @@
 (http://yadi.sk/d/Ucj7jVOTuq82)
 3. [Механизм исключений, наследование, nested классы, интерфейсы, enum,
 generics, коллекции](http://yadi.sk/d/O-tmiXHIxuhs)
-4. Аннотации, Reflection, IO
+4. [final, Аннотации, IO, Начало reflection](http://yadi.sk/d/auiDAoma071pm)
+5. [Reflection: Class, ClassLoader. Многопоточность: Thread, wait/notify,
+spurious wake up](http://yadi.sk/d/IUVaBNVg0Eh1k)
+6. [Многопоточность: ThreadState, проблемы синхронизации, примитивы синхронизации]
+(http://yadi.sk/d/iLL3rXzm0LGE1)
+7. [Многопоточность: устройство коллекций, happens-before, Executor Framework,
+Thread.stop(), Shutdown hook. java.lang.reflect.Proxy]
+(http://yadi.sk/d/n9q6dYPI0QX67)
+8. [Сериализация, XML (DOM, SAX, StAX, JAXB), properties]
+(http://yadi.sk/d/RTEyqb3p0bsfP)
+9. [Метаданные, структура class-файла](http://yadi.sk/d/zvIHFjHa0icS5)
+10. [Байт-код: инструкции, пример генерации с помощью asm. JUnit]
+(http://yadi.sk/d/DkPrkdxp0q7LQ)
+11. [GUI, Swing, MVC](http://yadi.sk/d/sOG6YDQN0v6BQ)
+12. Spring, IoC
 
 ## Семинары
 В папке [tasks](fizteh-java-task/tree/master/tasks) находятся описания заданий на
