@@ -16,6 +16,11 @@ public class StringFormatterCalendarExtension extends StringFormatterExtension {
     }
 
     @Override
+    public boolean supports(Class clazz) {
+        return super.clazz.isAssignableFrom(clazz);
+    }
+
+    @Override
     public void format(StringBuilder buffer, Object object, String pattern) {
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         Calendar calendar = (Calendar) object;

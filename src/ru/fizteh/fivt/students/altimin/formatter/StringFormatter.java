@@ -63,9 +63,12 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         int objectIndex;
         try {
             objectIndex = Integer.parseInt(splittedFormat[0]);
+            if (splittedFormat[0].startsWith("+")) {
+                throw new NumberFormatException();
+            }
         } catch (NumberFormatException e){
             throw new FormatterException(
-                    String.format("Incorrect object index: %s is not an integer", splittedFormat[0]));
+                    String.format("Incorrect object index: %s is not a valid integer", splittedFormat[0]));
         }
         if (!(0 <= objectIndex && objectIndex < args.length)) {
             throw new FormatterException(String.format("Incorrect object index %d: index out of range", objectIndex));
