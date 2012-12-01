@@ -14,7 +14,8 @@ import java.util.Calendar;
  * Date: 29.11.12
  * Time: 15:19
  */
-public class myCalendar {
+
+public class MyCalendar {
     private static Locale myLocale = Locale.getDefault();
     private static DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
     private static TimeZone timeZone = null;
@@ -46,8 +47,7 @@ public class myCalendar {
                 System.exit(1);
             }
         }
-        if (calendar.getActualMinimum(Calendar.MONTH) > month ||
-                calendar.getActualMaximum(Calendar.MONTH) < month) {
+        if (calendar.getActualMinimum(Calendar.MONTH) > month || calendar.getActualMaximum(Calendar.MONTH) < month) {
             usageError("Incorrect arguments. Invalid month.");
         }
     }
@@ -63,8 +63,7 @@ public class myCalendar {
                 System.exit(1);
             }
         }
-        if (calendar.getActualMinimum(Calendar.YEAR) > year ||
-                calendar.getActualMaximum(Calendar.YEAR) < year) {
+        if (calendar.getActualMinimum(Calendar.YEAR) > year || calendar.getActualMaximum(Calendar.YEAR) < year) {
             usageError("Incorrect arguments. Invalid year.");
         }
     }
@@ -151,6 +150,7 @@ public class myCalendar {
         }
         System.out.println();
         int currDay = 1;
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
         calendar.set(year, month, currDay);
         int currWeek = calendar.get(Calendar.WEEK_OF_YEAR);
         while (month == calendar.get(Calendar.MONTH)) {
