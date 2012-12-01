@@ -23,7 +23,9 @@
             </bean>
         </constructor-arg>
         <constructor-arg index="3">
-            <bean class="ru.fizteh.fivt.bind.test.Permissions"/>
+            <bean class="ru.fizteh.fivt.bind.test.Permissions">
+                <property name="root" value="true"/>
+            </bean>
         </constructor-arg>
     </bean>
 
