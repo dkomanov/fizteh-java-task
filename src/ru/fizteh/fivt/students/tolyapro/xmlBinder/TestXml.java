@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.tolyapro.xmlBinder;
 
+import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.bind.test.Permissions;
 import ru.fizteh.fivt.bind.test.User;
 import ru.fizteh.fivt.bind.test.UserName;
@@ -8,11 +9,23 @@ import ru.fizteh.fivt.bind.test.UserType;
 import org.junit.*;
 
 public class TestXml {
+    @ru.fizteh.fivt.bind.BindingType(MembersToBind.GETTERS_AND_SETTERS)
+    public static class TestGetAndSet {
+        int a = 100500;
 
-    /**
-     * @param args
-     */
-    public static class inLol {
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "a")
+        int getA() {
+            return a;
+        }
+
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "b")
+        void setA(int i) {
+            a = i;
+        }
+
+    }
+
+    public static class InLol {
         double inMinus = -1.0;
         double inPlus = 1.0;
 
@@ -32,7 +45,7 @@ public class TestXml {
         int b = 2;
         int c = 3;
 
-        inLol in = new inLol();
+        InLol in = new InLol();
 
         int getA() {
             return a;
@@ -56,6 +69,46 @@ public class TestXml {
         }
     }
 
+    public static class BadAnnotations {
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "bad")
+        int a = 1;
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "bad")
+        int b = 2;
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "bad")
+        int c = 3;
+
+        InLol in = new InLol();
+
+        int getA() {
+            return a;
+        }
+
+        void setA(int A) {
+            a = A;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            BadAnnotations other = (BadAnnotations) o;
+            return a == other.a && b == other.b && c == other.c;
+
+        }
+    }
+
+    @Test(expected = Exception.class)
+    public void testBadGetterAndSetter() {
+        TestGetAndSet testGetAndSet = new TestGetAndSet();
+        XmlBinder<TestGetAndSet> binder = new XmlBinder<TestXml.TestGetAndSet>(
+                TestGetAndSet.class);
+        binder.serialize(testGetAndSet);
+    }
+
     @Test(expected = Exception.class)
     public void testException1() {
         XmlBinder<User> binder = new XmlBinder<User>(User.class);
@@ -66,6 +119,14 @@ public class TestXml {
     public void testException2() {
         XmlBinder<User> binder = new XmlBinder<User>(User.class);
         binder.deserialize(null);
+    }
+
+    @Test(expected = Exception.class)
+    public void testBadAsXmlElement() {
+        BadAnnotations badAnnotations = new BadAnnotations();
+        XmlBinder<BadAnnotations> binder = new XmlBinder<TestXml.BadAnnotations>(
+                BadAnnotations.class);
+        binder.serialize(badAnnotations);
     }
 
     @Test
