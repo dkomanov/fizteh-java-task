@@ -15,6 +15,9 @@ import java.util.List;
 public class StringFormatterFactory implements ru.fizteh.fivt.format.StringFormatterFactory {
     @Override
     public ru.fizteh.fivt.format.StringFormatter create(String... args) throws FormatterException {
+        if (args == null) {
+            throw new FormatterException("factory cannot produce from null");
+        }
         List<StringFormatterExtension> extensions = new ArrayList<StringFormatterExtension>();
         Arrays.sort(args);
         for (int i = 0; i < args.length; i ++) {
