@@ -16,8 +16,16 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         extentions = Collections.synchronizedList(new ArrayList<StringFormatterExtension>());
     }
     
-    public StringFormatter(List<StringFormatterExtension> newExtentions) {
-        extentions = newExtentions;
+    public void addNewExtension(StringFormatterExtension newExtension) throws FormatterException {
+        if (newExtension == null) {
+            return;
+        } else {
+            try {
+                extentions.add(newExtension);
+            } catch (FormatterException e) {
+                throw new FormatterException("Cannot add extension");
+            }
+        }
     }
     
     public String format(String toFormat, Object... arguments) throws FormatterException {
@@ -100,13 +108,31 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 tempObject = getFieldFrom(tempObject, tokens.nextToken());
             }
         }
+        if (patternBegin == toFormat.length()) {
+            if (tempObject != null ) {
+                result.append(tempObject);
+            }
+        } else {
+            StringFormatterExtension goodExtension = null;
+            for (StringFormatterExtension ext : extentions) {
+                if (ext.supports(tempObject.getClass())) {
+                    goodExtension = ext;
+                    break;
+                }
+            }
+            if (goodExtension != null) {
+                goodExtension.format(result, tempObject, toFormat.substring(patternBegin + 1));
+            } else {
+                throw new FormatterException("No suitable extesion : " + tempObject.getClass());
+            }
+        }
         if (tempObject == null) {
             return;
         }
     }
 
     private Object getFieldFrom(Object tempObject, String field) throws FormatterException {
-        try{
+        try {
             if (tempObject == null) { 
                 return null;
             }

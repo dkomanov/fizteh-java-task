@@ -1,14 +1,14 @@
 package ru.fizteh.fivt.students.mysinYurii.stringFormatter;
 
 import java.util.Date;
-
-import ru.fizteh.fivt.format.FormatterException;
+import ru.fizteh.fivt.format.*;
 
 public class UnitTest {
     static StringFormatter formatter;
     
     UnitTest() {
-        formatter = new StringFormatter();
+        StringFormatterFactory factory = new StringFormatterFactory();
+        formatter = factory.create(IntegerExtention.class.getName(), DateExtention.class.getName());
     }
     
     class Tester {
@@ -45,8 +45,12 @@ public class UnitTest {
     }
     
     public void exceptionTest2() {
-        String str = formatter.format("{0:strangepattern}", new Date());
-        System.out.println(str.equals(""));
+        try {
+            String str = formatter.format("{0:strangepattern}", new Date());
+            System.out.println("fail");
+        } catch (FormatterException e) {
+            System.out.println("success");
+        }
     }
     
     public void test3() {
@@ -60,7 +64,24 @@ public class UnitTest {
             System.out.println("fail");
         } catch (FormatterException e) {
             System.out.println("success");
+        }   
+    }
+    
+    public void test4() {
+        try {
+            String str = formatter.format("{0}", new Integer(10));
+            System.out.println(str.equals("10"));
+        } catch (FormatterException e) {
+            System.out.println("fail");
         }
-        
+    }
+    
+    public void test5() {
+        try {
+            String str = formatter.format("{0:05d}", new Integer(10));
+            System.out.println(str.equals("00010"));
+        } catch (FormatterException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
