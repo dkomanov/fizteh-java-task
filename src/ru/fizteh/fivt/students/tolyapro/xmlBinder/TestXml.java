@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.tolyapro.xmlBinder;
 
+import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.bind.test.Permissions;
 import ru.fizteh.fivt.bind.test.User;
 import ru.fizteh.fivt.bind.test.UserName;
@@ -8,11 +9,23 @@ import ru.fizteh.fivt.bind.test.UserType;
 import org.junit.*;
 
 public class TestXml {
+    @ru.fizteh.fivt.bind.BindingType(MembersToBind.GETTERS_AND_SETTERS)
+    public static class TestGetAndSet {
+        int a = 100500;
 
-    /**
-     * @param args
-     */
-    public static class inLol {
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "a")
+        int getA() {
+            return a;
+        }
+
+        @ru.fizteh.fivt.bind.AsXmlElement(name = "b")
+        void setA(int i) {
+            a = i;
+        }
+
+    }
+
+    public static class InLol {
         double inMinus = -1.0;
         double inPlus = 1.0;
 
@@ -32,7 +45,7 @@ public class TestXml {
         int b = 2;
         int c = 3;
 
-        inLol in = new inLol();
+        InLol in = new InLol();
 
         int getA() {
             return a;
@@ -64,7 +77,7 @@ public class TestXml {
         @ru.fizteh.fivt.bind.AsXmlElement(name = "bad")
         int c = 3;
 
-        inLol in = new inLol();
+        InLol in = new InLol();
 
         int getA() {
             return a;
@@ -86,6 +99,14 @@ public class TestXml {
             return a == other.a && b == other.b && c == other.c;
 
         }
+    }
+
+    @Test(expected = Exception.class)
+    public void testBadGetterAndSetter() {
+        TestGetAndSet testGetAndSet = new TestGetAndSet();
+        XmlBinder<TestGetAndSet> binder = new XmlBinder<TestXml.TestGetAndSet>(
+                TestGetAndSet.class);
+        binder.serialize(testGetAndSet);
     }
 
     @Test(expected = Exception.class)

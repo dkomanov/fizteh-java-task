@@ -322,7 +322,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             eventWriter.add(eventFactory.createEndDocument());
             eventWriter.close();
             byte[] result = byteArrayOutputStream.toByteArray();
-            // System.out.println(new String(result));
+            System.out.println(new String(result));
             fieldsToSerialize.clear();
             methodsToSerialize.clear();
             byteArrayOutputStream.close();
