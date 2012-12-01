@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.kashinYana.proxy;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -39,10 +40,12 @@ public class TestLoggingProxy {
     static public void main(String[] args) throws Exception {
         InterfaceToProxyImplementation target = new InterfaceToProxyImplementation();
         LoggingProxyFactory factory = new LoggingProxyFactory();
+        StringWriter writer = new StringWriter();
         InterfaceToProxy log = (InterfaceToProxy)
-                factory.createProxy(target, null, InterfaceToProxy.class);
+                factory.createProxy(target, writer, InterfaceToProxy.class);
 
         log.method(6);
         log.get("rtttr", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 7666);
+        System.out.println(writer.toString());
     }
 }
