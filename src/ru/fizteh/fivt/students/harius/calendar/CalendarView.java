@@ -5,6 +5,9 @@ import java.text.*;
 import static java.util.Calendar.*;
 
 public class CalendarView {
+	private final String newl
+		= System.lineSeparator();
+
 	private Calendar calendar;
 	private DateFormat header;
 	private DateFormatSymbols names;
@@ -38,7 +41,7 @@ public class CalendarView {
 			builder.append("     ");
 		}
 		builder.append(header.format(calendar.getTime()));
-		builder.append("\n");
+		builder.append(newl);
 	}
 
 	private void generateSubheader(StringBuilder builder) {
@@ -54,7 +57,7 @@ public class CalendarView {
 		for (int day : indices) {
 			builder.append(String.format("%3s ", days[day]));
 		}
-		builder.append("\n");
+		builder.append(newl);
 	}
 
 	private void generateBody(StringBuilder builder) {
@@ -88,19 +91,21 @@ public class CalendarView {
 				builder.append("   ");
 			}
 
-			if (iterator.get(DAY_OF_WEEK)
-				== SUNDAY) {
-
-				builder.append("\n");
-			} else {
-				builder.append(" ");
-			}
 			if (iterator.get(MONTH) ==
 				calendar.get(MONTH) &&
 				iterator.get(DAY_OF_MONTH)
 			 	== iterator.getActualMaximum(DAY_OF_MONTH)) {
 			 	break;
 			}
+
+			if (iterator.get(DAY_OF_WEEK)
+				== SUNDAY) {
+
+				builder.append(newl);
+			} else {
+				builder.append(" ");
+			}
+
 			iterator.set(DAY_OF_MONTH,
 				iterator.get(DAY_OF_MONTH) + 1);
 		}
@@ -108,7 +113,9 @@ public class CalendarView {
 
 	private void generateFooter(StringBuilder builder) {
 		if (footer != null) {
-			builder.append("\n\nNow: ");
+			builder.append(newl);
+			builder.append(newl);
+			builder.append("Now: ");
 			builder.append(
 				footer.format(Calendar.getInstance(locale).getTime()));
 		}
