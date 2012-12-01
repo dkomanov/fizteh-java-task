@@ -1,9 +1,19 @@
+/*
+ * CalendarView.java
+ * Dec 1, 2012
+ * By github.com/harius
+ */
+
 package ru.fizteh.fivt.students.harius.calendar;
 
 import java.util.*;
 import java.text.*;
 import static java.util.Calendar.*;
 
+
+/*
+ * Converts Calendar to human-readable String
+ */
 public class CalendarView {
 	private final String newl
 		= System.lineSeparator();
@@ -15,6 +25,7 @@ public class CalendarView {
 	private CalendarSettings settings;
 	private DateFormat footer = null;
 
+	/* Initializes the viewer */
 	public CalendarView(Calendar calendar, Locale locale,
 		CalendarSettings settings) {
 
@@ -36,6 +47,7 @@ public class CalendarView {
 		names = new DateFormatSymbols(locale);
 	}
 
+	/* Writes month and year */
 	private void generateHeader(StringBuilder builder) {
 		if (settings.week) {
 			builder.append("     ");
@@ -44,6 +56,7 @@ public class CalendarView {
 		builder.append(newl);
 	}
 
+	/* Writes week days */
 	private void generateSubheader(StringBuilder builder) {
 		if (settings.week) {
 			builder.append("     ");
@@ -60,6 +73,7 @@ public class CalendarView {
 		builder.append(newl);
 	}
 
+	/* Writes the main part */
 	private void generateBody(StringBuilder builder) {
 		Calendar iterator = Calendar.getInstance(locale);
 		iterator.setTime(calendar.getTime());
@@ -111,6 +125,7 @@ public class CalendarView {
 		}
 	}
 
+	/* Writes current time and date */
 	private void generateFooter(StringBuilder builder) {
 		if (footer != null) {
 			builder.append(newl);
@@ -121,6 +136,7 @@ public class CalendarView {
 		}
 	}
 
+	/* Returns a string representing given Calendar */
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();

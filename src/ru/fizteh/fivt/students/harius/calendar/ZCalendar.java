@@ -1,10 +1,20 @@
+/*
+ * ZCalendar.java
+ * Dec 1, 2012
+ * By github.com/harius
+ */
+
 package ru.fizteh.fivt.students.harius.calendar;
 
 import ru.fizteh.fivt.students.harius.argparse.*;
 import java.util.*;
 import static java.util.Calendar.*;
 
+/*
+ * Calendar console utility
+ */
 public class ZCalendar {
+    
     public static void main(String[] args) {
         Calendar calendar = Calendar.getInstance();
         Locale locale = Locale.getDefault();
