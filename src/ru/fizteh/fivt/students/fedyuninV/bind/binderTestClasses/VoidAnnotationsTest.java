@@ -25,7 +25,6 @@ public class VoidAnnotationsTest {
         return name;
     }
 
-    @AsXmlElement(name = "wtf")
     public String getSurname() {
         return surname;
     }
