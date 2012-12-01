@@ -7,6 +7,7 @@
 package ru.fizteh.fivt.students.harius.calendar;
 
 import ru.fizteh.fivt.students.harius.argparse.*;
+import java.util.List;
 
 /*
  * Settings for calendar viewer
@@ -23,4 +24,7 @@ public class CalendarSettings {
 
     @StrOpt(name = "-t")
     public String zone = null;
+
+    @TailOpt
+    public List<String> rubbish;
 }
