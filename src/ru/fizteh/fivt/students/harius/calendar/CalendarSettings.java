@@ -1,7 +1,16 @@
+/*
+ * CalendarSettings.java
+ * Dec 1, 2012
+ * By github.com/harius
+ */
+
 package ru.fizteh.fivt.students.harius.calendar;
 
 import ru.fizteh.fivt.students.harius.argparse.*;
 
+/*
+ * Settings for calendar viewer
+ */
 public class CalendarSettings {
     @IntOpt(name = "-m")
     public Integer month = null;
