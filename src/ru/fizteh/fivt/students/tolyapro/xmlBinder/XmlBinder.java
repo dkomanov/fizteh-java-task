@@ -93,16 +93,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
 
     private void pushAllFields(Object value) {
-        Field[] tmp = value.getClass().getDeclaredFields();
-        ArrayList<Field> fields = new ArrayList<Field>();
-        fields.addAll(Arrays.asList(tmp));
-        Class parent = value.getClass().getSuperclass();
-        while (parent != null) {
-            tmp = parent.getDeclaredFields();
-            fields.addAll(Arrays.asList(tmp));
-            parent = parent.getSuperclass();
-        }
-        fieldsToSerialize.put(value.getClass(), fields);
+        pushAllFields(value.getClass());
     }
 
     private void pushAllFields(Class clazz) {
@@ -123,17 +114,17 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         fields.addAll(Arrays.asList(tmp));
         Class parent = clazz.getSuperclass();
         while (parent != null) {
-            realNames.put(parent, new ArrayList<String>());
+            // realNames.put(parent, new ArrayList<String>());
             tmp = parent.getDeclaredFields();
             for (int i = 0; i < tmp.length; ++i) {
                 String name = getAsXmlElementName(tmp[i]);
-                if (realNames.containsKey(parent) && name != null) {
-                    if (realNames.get(parent).contains(name)) {
+                if (realNames.containsKey(clazz) && name != null) {
+                    if (realNames.get(clazz).contains(name)) {
                         throw new RuntimeException("Repeated annotation name: "
                                 + name);
                     }
                 } else if (name != null) {
-                    realNames.get(parent).add(name);
+                    realNames.get(clazz).add(name);
                 }
             }
             fields.addAll(Arrays.asList(tmp));
