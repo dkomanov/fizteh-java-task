@@ -42,6 +42,16 @@ public class XmlBinderTester {
     }
 
     @Test
+    public void incorrectMethodsNames2() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Incorrect annotations of methods.");
+        XmlBinder<WithElement1> binder = new XmlBinder<WithElement1>(WithElement1.class);
+        WithElement1 withElement1 = new WithElement1();
+        byte[] bytes = binder.serialize(withElement1);
+        WithElement1 deserialized = binder.deserialize(bytes);
+    }
+
+    @Test
     public void incorrectPairOfMethodsNames() {
         thrown.expect(RuntimeException.class);
         thrown.expectMessage("Two pairs of methods with the same names.");
@@ -111,5 +121,17 @@ public class XmlBinderTester {
         Assert.assertEquals(root.getElementsByTagName("name").getLength(), 1);
         Assert.assertEquals(root.getElementsByTagName("age").getLength(), 1);
         Assert.assertEquals(root.getElementsByTagName("nonExistingElement").getLength(), 0);
+    }
+
+    @Test
+    public void testWithElement() {
+        XmlBinder<WithElement2> binder = new XmlBinder<WithElement2>(WithElement2.class);
+        WithElement2 withElement2 = new WithElement2();
+        withElement2.setValue1("value-1");
+        withElement2.setValue2("value-2");
+        withElement2.setValue3("value-3");
+        byte[] bytes = binder.serialize(withElement2);
+        WithElement2 deserialized = binder.deserialize(bytes);
+        Assert.assertTrue(deserialized.equals(withElement2));
     }
 }
