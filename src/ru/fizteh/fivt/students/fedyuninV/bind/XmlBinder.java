@@ -178,22 +178,18 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     private void setComponentName(SerializeComponent component) {
         AsXmlElement getterAnnnotation = component.getter().getAnnotation(AsXmlElement.class);
         AsXmlElement setterAnnnotation = component.setter().getAnnotation(AsXmlElement.class);
-        if (setterAnnnotation != null  &&  !setterAnnnotation.name().equals("")) {
-            if (getterAnnnotation != null  &&  !getterAnnnotation.name().equals("")) {
-                if (setterAnnnotation.name().equals(getterAnnnotation.name())) {
-                    component.setName(firstCharToLowerCase(setterAnnnotation.name()));
-                } else {
-                    throw new RuntimeException("Incorrect annotations of methods.");
-                }
-            } else {
+        if (setterAnnnotation != null  &&  getterAnnnotation != null) {
+            if (setterAnnnotation.name().equals(getterAnnnotation.name())) {
                 component.setName(firstCharToLowerCase(setterAnnnotation.name()));
-            }
-        } else {
-            if (getterAnnnotation != null  &&  !getterAnnnotation.name().equals("")) {
-                component.setName(firstCharToLowerCase(getterAnnnotation.name()));
             } else {
-                component.setName(firstCharToLowerCase(component.getName()));
+                throw new RuntimeException("Incorrect annotations of methods.");
             }
+        } else if (setterAnnnotation != null  &&  !setterAnnnotation.name().equals("")) {
+                component.setName(firstCharToLowerCase(setterAnnnotation.name()));
+        } else if (getterAnnnotation != null  &&  !getterAnnnotation.name().equals("")) {
+                component.setName(firstCharToLowerCase(getterAnnnotation.name()));
+        } else {
+            component.setName(firstCharToLowerCase(component.getName()));
         }
     }
 

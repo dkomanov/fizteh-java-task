@@ -4,8 +4,6 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import ru.fizteh.fivt.bind.test.Permissions;
 import ru.fizteh.fivt.bind.test.User;
 import ru.fizteh.fivt.bind.test.UserName;
@@ -109,18 +107,10 @@ public class XmlBinderTester {
 
     @Test
     public void voidAnnotattionsTest() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Incorrect annotations of methods.");
         XmlBinder<VoidAnnotationsTest> binder
                 = new XmlBinder<VoidAnnotationsTest>(VoidAnnotationsTest.class);
-        VoidAnnotationsTest value = new VoidAnnotationsTest("Ivan", "Ivanov", 10);
-        byte[] bytes = binder.serialize(value);
-        VoidAnnotationsTest deserialized = binder.deserialize(bytes);
-        Assert.assertTrue(value.equals(deserialized));
-        Document document = binder.bytesToXml(bytes);
-        Element root = document.getDocumentElement();
-        Assert.assertEquals(root.getElementsByTagName("wtf").getLength(), 1);
-        Assert.assertEquals(root.getElementsByTagName("name").getLength(), 1);
-        Assert.assertEquals(root.getElementsByTagName("age").getLength(), 1);
-        Assert.assertEquals(root.getElementsByTagName("nonExistingElement").getLength(), 0);
     }
 
     @Test

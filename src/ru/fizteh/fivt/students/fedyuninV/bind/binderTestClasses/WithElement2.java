@@ -18,7 +18,7 @@ public class WithElement2 {
         return value1;
     }
 
-    @AsXmlElement(name = "value-1")
+    @AsXmlElement
     public void setValue1(String value1) {
         this.value1 = value1;
     }
