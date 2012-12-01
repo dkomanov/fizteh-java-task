@@ -37,11 +37,12 @@ public class UnitTest {
     
     public void test1() {
         try {
-            String str = formatter.format("a{1}a", new Integer(10));
+            String str = formatter.format("a{0:d}a", null);
             System.out.println(str.equals("aa"));
         } catch (FormatterException e) {
-            System.out.println(e.getMessage() + " is fail");
+            System.out.println("fail");
         }
+        
     }
     
     public void exceptionTest2() {
