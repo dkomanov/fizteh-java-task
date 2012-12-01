@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
-    public List<StringFormatterExtension> extensions = new ArrayList<StringFormatterExtension>();
+    private List<StringFormatterExtension> extensions = Collections.synchronizedList(new ArrayList<StringFormatterExtension>());
 
     public void addToExtensions(StringFormatterExtension ext) throws FormatterException {
         if (ext == null) {
@@ -32,7 +32,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         nextFormat(buffer, 0, format, args);
     }
     
-    public void nextFormat(StringBuilder buffer, int position, String format, Object... args) throws FormatterException {
+    private void nextFormat(StringBuilder buffer, int position, String format, Object... args) throws FormatterException {
         int start = format.indexOf('{', position);
         int stop = format.indexOf('}', position);
           
@@ -76,7 +76,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         }
     }
 
-    public void getField(StringBuilder buffer, String format, Object... args) throws FormatterException {
+    private void getField(StringBuilder buffer, String format, Object... args) throws FormatterException {
         Object result = null;
         int pattern = format.indexOf(':');
         if (pattern == -1) {
@@ -86,7 +86,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         StringTokenizer field = new StringTokenizer(format.substring(0, pattern), ".");
         try {
             String pos = field.nextToken();
-            if (pos.charAt(0) == '-' || (pos.charAt(0) == '+' && pos.equals("+0"))) {
+            if (pos.charAt(0) == '-' || pos.equals("+0")) {
                 throw new FormatterException("Bad index");
             }
                 
@@ -124,7 +124,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         
     }
 
-    public Object getFieldFromObject(Object obj, String field) throws FormatterException {
+    private Object getFieldFromObject(Object obj, String field) throws FormatterException {
         if (obj == null) {
             return null;
         }

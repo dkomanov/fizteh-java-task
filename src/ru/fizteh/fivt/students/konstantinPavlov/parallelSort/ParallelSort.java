@@ -2,7 +2,6 @@ package ru.fizteh.fivt.students.konstantinPavlov.parallelSort;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -12,23 +11,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import ru.fizteh.fivt.students.konstantinPavlov.Utils;
 
 public class ParallelSort {
     public static boolean flagOnlyUnique = false;
     public static boolean flagNoRegister = false;
     public static int countOfThreads = 0;
     public static String output = "";
-
-    static void closer(Closeable object) {
-        if (object != null) {
-            try {
-                object.close();
-            } catch (Exception e) {
-            }
-        }
-    }
 
     public static void setFlags(String[] args, List<String> stringsToSort) {
         boolean wasInputFiles = false;
@@ -56,7 +47,7 @@ public class ParallelSort {
                         break;
 
                     case 't':
-                        if (i > args.length) {
+                        if (i >= args.length) {
                             System.err
                                     .println("Error: invalid count of thread");
                             System.exit(1);
@@ -79,8 +70,8 @@ public class ParallelSort {
                         break;
 
                     case 'o':
-                        if (args[i + 1].charAt(0) == '-'
-                                || i + 1 >= args.length) {
+                        if (i + 1 >= args.length
+                                || args[i + 1].charAt(0) == '-') {
                             System.err
                                     .println("Error: invalid output filename");
                             System.exit(1);
@@ -109,11 +100,10 @@ public class ParallelSort {
                     System.exit(1);
                 }
             }
+        }
 
-            if (countOfThreads == 0) {
-                countOfThreads = Runtime.getRuntime().availableProcessors();
-            }
-
+        if (countOfThreads == 0) {
+            countOfThreads = Runtime.getRuntime().availableProcessors();
         }
 
         if (!wasInputFiles) {
@@ -150,7 +140,7 @@ public class ParallelSort {
                     fileWriter = new FileWriter(output);
                     out = new BufferedWriter(fileWriter);
                 } catch (Exception e) {
-                    closer(out);
+                    Utils.closer(out);
                     System.err.println("Can't write to file '" + output + "':"
                             + e.getMessage());
                     System.exit(1);
@@ -159,11 +149,18 @@ public class ParallelSort {
                 out = new BufferedWriter(new OutputStreamWriter(System.out));
             }
 
-            int portion = (stringsToSort.size() / countOfThreads);
+            int portion = (stringsToSort.size() / countOfThreads) + 1;
 
             int currentCountOfThreads = 0;
+
+            Comparator<String> comparator = new ComparatorForStrings();
+
+            if (flagNoRegister) {
+                comparator = String.CASE_INSENSITIVE_ORDER;
+            }
+
             if (countOfThreads > 1) {
-                Vector<Integer> mergeRange = new Vector<Integer>();
+                ArrayList<Integer> mergeRange = new ArrayList<Integer>();
                 int curFrom = 0;
                 int curTo = 0;
                 Object synchronizer = new Object();
@@ -202,11 +199,6 @@ public class ParallelSort {
                     synchronized (synchronizer) {
                         synchronizer.wait();
                     }
-                }
-                Comparator<String> comparator = new ComparatorForStrings();
-
-                if (flagNoRegister) {
-                    comparator = String.CASE_INSENSITIVE_ORDER;
                 }
 
                 if (currentCountOfThreads > 1) {
@@ -258,21 +250,16 @@ public class ParallelSort {
                 }
             }
 
-            for (int i = 0; i < stringsToSort.size() - 1; ++i) {
-                if (flagOnlyUnique && currentCountOfThreads <= 1) {
-                    if (flagNoRegister) {
-                        if (String.CASE_INSENSITIVE_ORDER.compare(
-                                stringsToSort.get(i + 1), stringsToSort.get(i)) != 0) {
-                            out.write(stringsToSort.get(i)
-                                    + System.lineSeparator());
-                        }
-                    } else {
-                        if (!stringsToSort.get(i).equals(
-                                stringsToSort.get(i - 1))) {
-                            out.write(stringsToSort.get(i)
-                                    + System.lineSeparator());
-                        }
+            String currentString = stringsToSort.get(0);
+            out.write(currentString + System.lineSeparator());
+            String nextString;
+            for (int i = 1; i < stringsToSort.size(); ++i) {
+                if (flagOnlyUnique) {
+                    nextString = stringsToSort.get(i);
+                    if (comparator.compare(nextString, currentString) != 0) {
+                        out.write(nextString + System.lineSeparator());
                     }
+                    currentString = nextString;
                 } else {
                     out.write(stringsToSort.get(i) + System.lineSeparator());
                 }
@@ -282,7 +269,7 @@ public class ParallelSort {
             System.err.println("Error: " + e.getMessage());
         } finally {
             if (!output.isEmpty()) {
-                closer(out);
+                Utils.closer(out);
             } else {
                 try {
                     out.flush();
@@ -290,7 +277,7 @@ public class ParallelSort {
                     System.err.println("Error: " + e.getMessage());
                 }
             }
-            closer(fileWriter);
+            Utils.closer(fileWriter);
         }
     }
 
@@ -311,7 +298,7 @@ public class ParallelSort {
                 while (rightIndex < right
                         && comparator.compare(
                                 mergedStrings.get(mergedStrings.size() - 1),
-                                mergedStrings.get(rightIndex)) == 0) {
+                                stringsToSort.get(rightIndex)) == 0) {
                     rightIndex++;
                 }
             }
@@ -379,8 +366,8 @@ public class ParallelSort {
                 stringsToSort.add(string);
             }
         } finally {
-            closer(fileReader);
-            closer(bufferedReader);
+            Utils.closer(fileReader);
+            Utils.closer(bufferedReader);
         }
     }
 }

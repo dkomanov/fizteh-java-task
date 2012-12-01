@@ -10,9 +10,11 @@ import java.util.*;
 public class ParallelSorter<T> {
     private final int OPTIMAL_ARRAY_LENGTH_PER_THREAD = 100000;
     private Comparator<T> comparator;
+    private Class elementType;
 
-    public ParallelSorter(Comparator<T> comparator) {
+    public ParallelSorter(Comparator<T> comparator, Class elementType) {
         this.comparator = comparator;
+        this.elementType = elementType;
     }
 
     private T[] merge(List<T[]> arrays) {
@@ -66,7 +68,7 @@ public class ParallelSorter<T> {
                 set.add(arrayWrapper);
             }
         }
-        return (T[])result.toArray();
+        return result.toArray((T[])java.lang.reflect.Array.newInstance(elementType, 0));
     }
 
     public T[] sort(T[] array, int threadsCount) {

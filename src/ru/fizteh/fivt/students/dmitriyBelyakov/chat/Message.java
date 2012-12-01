@@ -1,5 +1,9 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat;
 
+/**
+ * @author Dmitriy Belyakov
+ */
+
 public class Message {
     private final MessageType   type;
     private final String        name;

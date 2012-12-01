@@ -8,7 +8,7 @@ import java.util.Formatter;
 
 public class BigIntegerExtension extends StringFormatterExtension {
 
-    BigIntegerExtension() {
+    public BigIntegerExtension() {
         super(BigInteger.class);
     }
 

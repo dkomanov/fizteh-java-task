@@ -7,7 +7,7 @@ import java.util.Formatter;
 
 public class DoubleExtension extends StringFormatterExtension {
 
-    DoubleExtension() {
+    public DoubleExtension() {
         super(Double.class);
     }
 

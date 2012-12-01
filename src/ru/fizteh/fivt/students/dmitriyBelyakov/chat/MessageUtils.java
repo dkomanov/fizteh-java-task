@@ -1,5 +1,9 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.chat;
 
+/**
+ * @author Dmitriy Belyakov
+ */
+
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 

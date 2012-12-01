@@ -38,7 +38,10 @@ public class StringFormatterBigIntegerExtension
         try {
             buffer.append(formatter.format("%" + pattern, o));
         } catch (Exception ex) {
-            throw new FormatterException("Error while formatting BigInteger: " + ex.getMessage());
+            throw new FormatterException(
+                "Error while formatting BigInteger: "
+                    + ex.getMessage(),
+                ex);
         }
     }
 

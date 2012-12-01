@@ -84,7 +84,12 @@ public class ParallelSort {
                     caseSensitive = false;
                     onlyUnique = true;
                 } else if (arg.equals("-o")) {
-                    output = args[++i];
+                    if (args.length > i + 1) {
+                        output = args[++i];
+                    } else {
+                        System.err.println("Incorrect flag");
+                        System.exit(1);
+                    }
                 } else if (arg.equals("-t")) {
                     try {
                         numTreads = Integer.parseInt(args[++i]);
@@ -149,31 +154,26 @@ public class ParallelSort {
         LinkedBlockingQueue<ArrayList<String>> result = new LinkedBlockingQueue<ArrayList<String>>();
         ExecutorService sorters = Executors.newFixedThreadPool(numTreads);
         int blockSize = allStrings.size() / numTreads;
+        ArrayList<Sorter> s = new ArrayList<Sorter>();
         for (int i = 0; i < numTreads; ++i) {
             if (i != numTreads - 1) {
                 List<String> tmp = allStrings.subList(i * blockSize, (i + 1)
                         * blockSize);
                 ArrayList<String> someStrings = new ArrayList<String>(tmp);
-                Sorter sorter = new Sorter(someStrings, comparator, result);
-                sorters.execute(sorter);
+                s.add(new Sorter(someStrings, comparator, result));
+                sorters.execute(s.get(i));
             } else {
                 ArrayList<String> someStrings = new ArrayList<String>(
                         allStrings.subList(i * blockSize, allStrings.size()));
-                Sorter sorter = new Sorter(someStrings, comparator, result);
-                sorters.execute(sorter);
+                s.add(new Sorter(someStrings, comparator, result));
+                sorters.execute(s.get(i));
+                // System.out.println(prevSorter.toString());
             }
         }
-        if (numTreads > 1) {
-            ExecutorService mergers = Executors
-                    .newFixedThreadPool(numTreads - 1);
-            for (int i = 0; i < numTreads - 1; ++i) {
-                Merger merger = new Merger(comparator, result);
-                mergers.execute(merger);
-            }
-            mergers.shutdown();
-            mergers.awaitTermination(100500, TimeUnit.MINUTES);
-        }
+        sorters.shutdown();
+        sorters.awaitTermination(100500, TimeUnit.MINUTES);
+        Merger merger = new Merger(comparator, result, s);
+        merger.run();
         printFromDiffSources(output, result.take(), onlyUnique, comparator);
-        sorters.shutdownNow();
     }
 }

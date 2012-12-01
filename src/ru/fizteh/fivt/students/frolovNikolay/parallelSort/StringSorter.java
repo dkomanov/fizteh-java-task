@@ -1,17 +1,20 @@
 package ru.fizteh.fivt.students.frolovNikolay.parallelSort;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 
 /*
  * Поток сортировки строк.
  */
 public class StringSorter implements Runnable {
-    private ArrayList<String> sortStation;
+    private List<String> sortStation;
     private boolean withoutReg;
-    StringSorter(ArrayList<String> sortStation, boolean withoutReg) {
-        this.sortStation = sortStation;
+    private int currentPtr;
+    
+    StringSorter(List<String> sortStation, boolean withoutReg, int left, int right) {
+        this.sortStation = sortStation.subList(left, right);
         this.withoutReg = withoutReg;
+        currentPtr = 0;
     }
 
     // Супер примитив - собираем данные и сортируем на выходе.
@@ -22,5 +25,17 @@ public class StringSorter implements Runnable {
         } else {
             Collections.sort(sortStation, String.CASE_INSENSITIVE_ORDER);
         }
+    }
+    
+    public boolean hasValue() {
+        return currentPtr != sortStation.size();
+    }
+    
+    public void goNext() {
+        ++currentPtr;
+    }
+    
+    public String getValue() {
+        return sortStation.get(currentPtr);
     }
 }

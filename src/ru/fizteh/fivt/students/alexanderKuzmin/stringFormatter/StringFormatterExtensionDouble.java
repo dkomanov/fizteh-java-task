@@ -1,0 +1,39 @@
+package ru.fizteh.fivt.students.alexanderKuzmin.stringFormatter;
+
+import java.util.Formatter;
+import ru.fizteh.fivt.format.FormatterException;
+import ru.fizteh.fivt.format.StringFormatterExtension;
+
+/**
+ * @author Kuzmin A. group 196 Class StringFormatterExtensionDouble.
+ * 
+ */
+
+public class StringFormatterExtensionDouble extends StringFormatterExtension {
+
+    public StringFormatterExtensionDouble() {
+        super(Double.class);
+    }
+
+    @Override
+    public void format(StringBuilder buffer, Object o, String pattern)
+            throws FormatterException {
+
+        if (pattern == null || pattern.length() == 0) {
+            throw new FormatterException("NULL pattern.");
+        }
+        if (buffer == null) {
+            throw new FormatterException("NULL buffer.");
+        }
+        if (o == null) {
+            throw new FormatterException("NULL object.");
+        }
+        try {
+            Formatter format = new Formatter();
+            buffer.append(format.format("%" + pattern, o));
+            format.close();
+        } catch (Throwable e) {
+            throw new FormatterException(e.getMessage(), e);
+        }
+    }
+}
