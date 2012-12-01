@@ -14,7 +14,7 @@ import static java.util.Calendar.*;
  * Calendar console utility
  */
 public class ZCalendar {
-    
+
     public static void main(String[] args) {
         Calendar calendar = Calendar.getInstance();
         Locale locale = Locale.getDefault();
@@ -26,6 +26,12 @@ public class ZCalendar {
         } catch (ArgparseException parseEx) {
             System.err.println("Exception while parsing arguments:");
             System.err.println(parseEx.getMessage());
+            System.exit(1);
+        }
+
+        if (!settings.rubbish.isEmpty()) {
+            System.err.println("Unrecognized option: "
+                + settings.rubbish.get(0));
             System.exit(1);
         }
 
