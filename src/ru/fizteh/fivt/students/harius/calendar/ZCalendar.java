@@ -37,6 +37,15 @@ public class ZCalendar {
             }
         }
 
+        List<String> zones = 
+            Arrays.asList(TimeZone.getAvailableIDs());
+        if (settings.zone != null
+            && zones.indexOf(settings.zone) == -1) {
+            
+            System.err.println("Wrong time zone");
+            System.exit(1);
+        }
+
         calendar.set(DAY_OF_MONTH, 
                     calendar.getActualMinimum(DAY_OF_MONTH));
 
