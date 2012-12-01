@@ -52,6 +52,18 @@ public class Tests {
     }
 
     @Test
+    public void testBadIndex4() {
+        expt.expectMessage("bad index: +0");
+        formatter.format("start {{1}} {{{+0:.2f}}} end", 1.2345678);
+    }
+
+    @Test
+    public void testWrongFormat() {
+        expt.expectMessage("wrong format: 0.");
+        formatter.format("{0.}", "1");
+    }
+
+    @Test
     public void testBadExtension1() {
         expt.expectMessage("No extension for class java.lang.String");
         formatter.format("start {{1}} {{{0:.2f}}} end", "lalala");
@@ -61,13 +73,6 @@ public class Tests {
     public void testBadExtension2() {
         expt.expectMessage("No extension for class java.lang.Integer");
         formatter.format("start {{1}} {{{0:.2f}}} end", 1);
-    }
-
-    @Test
-    public void testBadField1() {
-        expt.expectMessage("Field lalala in class java.lang.Double is unaccessible");
-        formatter.format("start {{1}} {{{0.lalala:.2f}}} end", 1.123);
-
     }
 
     @Test
@@ -146,6 +151,10 @@ public class Tests {
         Assert.assertEquals(format.format("%.6f", 9.1) + "", testString);
         format.close();
 
+        format = new Formatter();
+        testString = formatter.format("start {{{0.lalala:.2f}}} end", 1.123);
+        Assert.assertEquals("start {} end", testString);
+        format.close();
     }
 
 }
