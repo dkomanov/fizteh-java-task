@@ -173,6 +173,14 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         getterAndSetter.setter.setAccessible(true);
                         String nameAnnotationGetter = getAsXmlElementName(getterAndSetter.getter);
                         String nameAnnotationSetter = getAsXmlElementName(getterAndSetter.setter);
+                        if (nameAnnotationSetter == null) {
+                            nameAnnotationSetter = firstLetterLowerer(methodName
+                                    .replaceFirst("set", ""));
+                        }
+                        if (nameAnnotationGetter == null) {
+                            nameAnnotationGetter = firstLetterLowerer(methodName
+                                    .replaceFirst("set", ""));
+                        }
                         if ((nameAnnotationGetter == null && nameAnnotationSetter != null)
                                 || (nameAnnotationGetter != null && nameAnnotationSetter == null)
                                 || (nameAnnotationGetter != null
