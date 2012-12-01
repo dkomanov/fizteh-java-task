@@ -30,6 +30,10 @@ public class CalendarRunner {
             System.err.println(e.getMessage());
             System.exit(1);
         }
+        if (parseResult.other.length != 0) {
+            System.err.println("Unnecessary arguments");
+            System.exit(1);
+        }
         if (parseResult.hasProperty("t")) {
             String[] availableTimeZones = TimeZone.getAvailableIDs();
             String timeZone = parseResult.getProperty("t");
