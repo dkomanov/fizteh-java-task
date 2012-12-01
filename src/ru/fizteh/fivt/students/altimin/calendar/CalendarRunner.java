@@ -45,12 +45,18 @@ public class CalendarRunner {
                 System.exit(1);
             }
         }
-        CalendarPrinter calendarPrinter = new CalendarPrinter(
-                parseInt(parseResult.getProperty("y")),
-                parseInt(parseResult.getProperty("m")),
-                parseResult.hasProperty("w"),
-                //TimeZone.getTimeZone(parseResult.getProperty("t")));
-                parseResult.hasProperty("t") ? TimeZone.getTimeZone(parseResult.getProperty("t")) : null);
+        CalendarPrinter calendarPrinter = null;
+        try {
+            calendarPrinter = new CalendarPrinter(
+                    parseInt(parseResult.getProperty("y")),
+                    parseInt(parseResult.getProperty("m")),
+                    parseResult.hasProperty("w"),
+                    //TimeZone.getTimeZone(parseResult.getProperty("t")));
+                    parseResult.hasProperty("t") ? TimeZone.getTimeZone(parseResult.getProperty("t")) : null);
+        } catch (NumberFormatException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
         calendarPrinter.print();
     }
 }
