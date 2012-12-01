@@ -2,11 +2,13 @@ package ru.fizteh.fivt.students.tolyapro.xmlBinder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,8 +43,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     XMLEventReader eventReader;
     String selfName;
     Unsafe unsafeInstance;
+    IdentityHashMap<Class, ArrayList<String>> realNames = new IdentityHashMap<Class, ArrayList<String>>();
 
-    protected XmlBinder(Class<T> clazz) {
+    public XmlBinder(Class<T> clazz) {
         super(clazz);
         fieldsToSerialize = new IdentityHashMap<Class, ArrayList<Field>>();
         methodsToSerialize = new IdentityHashMap<Class, ArrayList<GetterAndSetter>>();
@@ -141,15 +144,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         getterAndSetter.getter.setAccessible(true);
                         getterAndSetter.setter.setAccessible(true);
                         String name = null;
-                        if (getterName.length() - 3 > 1) {
-                            name = getterName.replaceFirst("get", "");
-                            name = Character.toLowerCase(name.charAt(0))
-                                    + name.substring(1);
-                        } else {
-                            name = getterName.replaceFirst("get", "");
-                            Character c = name.charAt(0);
-                            name = Character.toString(Character.toLowerCase(c));
-                        }
+                        name = getterName.replaceFirst("get", "");
+                        name = firstLetterLowerer(name);
                         getterAndSetter.name = name;
                         getterAndSetter.type = getter.getReturnType();
                         newMethods.add(getterAndSetter);
@@ -169,16 +165,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         getterAndSetter.getter.setAccessible(true);
                         getterAndSetter.setter.setAccessible(true);
                         String name = null;
-                        if (isName.length() - 3 > 1) {
-                            name = isName.replaceFirst("get", "");
-                            name = Character.toLowerCase(name.charAt(0))
-                                    + name.substring(1);
-                        } else {
-                            name = isName.replaceFirst("get", "");
-                            Character c = name.charAt(0);
-                            name = Character.toString(Character.toLowerCase(c));
-                        }
-                        // #TODO create method firstLetterLowerer
+                        name = isName.replaceFirst("is", "");
+                        name = firstLetterLowerer(name);
                         getterAndSetter.name = name;
                         getterAndSetter.type = getter.getReturnType();
                         newMethods.add(getterAndSetter);
@@ -192,6 +180,15 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             throw new Exception("Troubles with parsing methods", e.getCause());
         }
 
+    }
+
+    public String firstLetterLowerer(String string) {
+        if (string.length() > 1) {
+            return Character.toLowerCase(string.charAt(0))
+                    + string.substring(1);
+        } else {
+            return Character.toString(Character.toLowerCase(string.charAt(0)));
+        }
     }
 
     public void serializeClass(T value, String name) throws Exception {
@@ -237,13 +234,21 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         }
                         serializeMe(obj.getClass(), obj, tmpField.getName());
                     } else {
-                        AsXmlElement asXmlElement = tmpField
-                                .getAnnotation(ru.fizteh.fivt.bind.AsXmlElement.class);
-                        if (asXmlElement == null || asXmlElement.name() == null
-                                || asXmlElement.name() == "") {
+                        String name = getAsXmlElementName(tmpField);
+                        if (!realNames.containsKey(clazz)) {
+                            realNames.put(clazz, new ArrayList<String>());
+                        }
+                        if (name == null || name == "") {
+                            realNames.get(clazz).add(tmpField.getName());
                             createNode(tmpField.getName(), obj.toString());
                         } else {
-                            createNode(asXmlElement.name(), obj.toString());
+                            if (realNames.get(clazz).contains(name)) {
+                                throw new Exception(
+                                        "Two asXmlAnnotions with the same name");
+                            } else {
+                                realNames.get(clazz).add(name);
+                            }
+                            createNode(name, obj.toString());
                         }
 
                     }
@@ -270,13 +275,24 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         pushAllMethods(obj.getClass());
                         serializeMe(obj.getClass(), obj, methods.get(i).name);
                     } else {
-                        AsXmlElement asXmlElement = methods.get(i).getter
-                                .getAnnotation(ru.fizteh.fivt.bind.AsXmlElement.class);
-                        if (asXmlElement == null || asXmlElement.name() == null
-                                || asXmlElement.name() == "") {
+                        String nameAnnotationGetter = getAsXmlElementName(methods
+                                .get(i).getter);
+                        String nameAnnotationSetter = getAsXmlElementName(methods
+                                .get(i).setter);
+                        if ((nameAnnotationGetter == null && nameAnnotationSetter != null)
+                                || (nameAnnotationGetter != null && nameAnnotationSetter == null)
+                                || (nameAnnotationGetter != null
+                                        && nameAnnotationSetter != null && !nameAnnotationGetter
+                                            .equals(nameAnnotationSetter))) {
+                            throw new Exception(
+                                    "Getter and setter have different names:"
+                                            + methods.get(i).name);
+                        }
+                        if (nameAnnotationGetter == null
+                                || nameAnnotationGetter == "") {
                             createNode(methods.get(i).name, obj.toString());
                         } else {
-                            createNode(asXmlElement.name(), obj.toString());
+                            createNode(nameAnnotationGetter, obj.toString());
                         }
                     }
                 }
@@ -290,13 +306,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         String name = clazz.getSimpleName().replaceFirst(
                 clazz.getPackage().getName() + "\\.", "");
         try {
-            if (name.length() > 1) {
-                name = Character.toLowerCase(name.charAt(0))
-                        + name.substring(1);
-            } else {
-                Character c = Character.toLowerCase(name.charAt(0));
-                name = c.toString();
-            }
+            name = firstLetterLowerer(name);
         } catch (Exception e) {
             System.out.println("shit");
         }
@@ -312,7 +322,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             eventWriter.add(eventFactory.createEndDocument());
             eventWriter.close();
             byte[] result = byteArrayOutputStream.toByteArray();
-            // System.out.println(new String(result));
+            System.out.println(new String(result));
             fieldsToSerialize.clear();
             methodsToSerialize.clear();
             byteArrayOutputStream.close();
@@ -391,6 +401,24 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         return null;
     }
 
+    public String getAsXmlElementName(Field field) {
+        AsXmlElement asXmlElement = field.getAnnotation(AsXmlElement.class);
+        if (asXmlElement == null) {
+            return null;
+        } else {
+            return asXmlElement.name();
+        }
+    }
+
+    public String getAsXmlElementName(Method method) {
+        AsXmlElement asXmlElement = method.getAnnotation(AsXmlElement.class);
+        if (asXmlElement == null) {
+            return null;
+        } else {
+            return asXmlElement.name();
+        }
+    }
+
     @SuppressWarnings("restriction")
     public Object deserializeMe(Element element, Class clazz) throws Exception {
         if (isPrimitive(clazz)) {
@@ -430,11 +458,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                             thisField = field;
                             break;
                         } else {
-                            AsXmlElement asXmlElement = field
-                                    .getAnnotation(AsXmlElement.class);
-                            if (asXmlElement != null) {
-                                if (asXmlElement.name().equals(
-                                        ((Element) node).getTagName())) {
+                            String name = getAsXmlElementName(field);
+                            if (name != null) {
+                                if (name.equals(((Element) node).getTagName())) {
                                     thisField = field;
                                     break;
                                 }
@@ -466,11 +492,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                             thisMethod = method;
                             break;
                         } else {
-                            AsXmlElement asXmlElement = method.setter
-                                    .getAnnotation(AsXmlElement.class);
-                            if (asXmlElement != null) {
-                                if (asXmlElement.name().equals(
-                                        ((Element) node).getTagName())) {
+                            String name = getAsXmlElementName(method.setter);
+                            if (name != null) {
+                                if (name.equals(((Element) node).getTagName())) {
                                     thisMethod = method;
                                     break;
                                 }
