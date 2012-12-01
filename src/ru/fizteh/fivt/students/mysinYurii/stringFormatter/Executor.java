@@ -6,6 +6,8 @@ public class Executor {
         tester.test1();
         tester.test2();
         tester.test3();
+        tester.test4();
+        tester.test5();
         tester.exceptionTest1();
         tester.exceptionTest2();
         tester.exceptionTest3();
