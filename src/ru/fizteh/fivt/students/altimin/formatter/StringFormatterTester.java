@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.altimin.formatter;
 
+import ru.fizteh.fivt.format.FormatterException;
+
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -20,7 +22,7 @@ public class StringFormatterTester {
     }
 
     static void testCalendar() {
-        IStringFormatter formatter = null;
+        ru.fizteh.fivt.format.StringFormatter formatter = null;
         try {
             formatter = factory.create(StringFormatterCalendarExtension.class.getName());
         } catch (FormatterException e) {
@@ -39,7 +41,7 @@ public class StringFormatterTester {
     }
 
     static void testLong() {
-        IStringFormatter formatter = null;
+        ru.fizteh.fivt.format.StringFormatter formatter = null;
         try {
             formatter = factory.create(StringFormatterLongExtension.class.getName());
         } catch (FormatterException e) {
@@ -60,7 +62,7 @@ public class StringFormatterTester {
         }
     }
 
-    static void checkIncorrectCase(IStringFormatter stringFormatter, String format, Object... args) {
+    static void checkIncorrectCase(ru.fizteh.fivt.format.StringFormatter stringFormatter, String format, Object... args) {
         try {
             stringFormatter.format(format, args);
         } catch (FormatterException e) {
@@ -71,7 +73,7 @@ public class StringFormatterTester {
     }
 
     static void testBad() {
-        IStringFormatter formatter = null;
+        ru.fizteh.fivt.format.StringFormatter formatter = null;
         try {
             formatter = factory.create();
         } catch (FormatterException e) {
@@ -88,7 +90,7 @@ public class StringFormatterTester {
     }
 
     static void testBase() {
-        IStringFormatter formatter = null;
+        ru.fizteh.fivt.format.StringFormatter formatter = null;
         try {
             formatter = factory.create();
         } catch (FormatterException e) {

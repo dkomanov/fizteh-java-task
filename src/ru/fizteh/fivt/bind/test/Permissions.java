@@ -12,7 +12,7 @@ import java.util.Map;
 @BindingType(MembersToBind.GETTERS_AND_SETTERS)
 public final class Permissions {
 
-    private final Map<String, String> map = new HashMap<>();
+    private final Map<String, String> map = new HashMap<String, String>();
 
     public Permissions() {
         setRoot(false);

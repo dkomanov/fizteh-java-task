@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.altimin.formatter;
 
+import ru.fizteh.fivt.format.FormatterException;
+
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -8,7 +10,7 @@ import java.util.List;
  * Date: 11/30/12
  * Time: 11:05 PM
  */
-public class StringFormatter implements IStringFormatter {
+public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     private List<StringFormatterExtension> extensions;
 
     StringFormatter(List<StringFormatterExtension> extensions) {
