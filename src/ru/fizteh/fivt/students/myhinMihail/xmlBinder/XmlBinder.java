@@ -341,7 +341,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 return rtrn;
             }
         } catch (Exception expt) {
-            throw new RuntimeException("Error during deserialization");
+            throw new RuntimeException(expt);
         }
     }
 }
