@@ -21,7 +21,7 @@ public class MyCalendar {
     public static String[] dayNames = new DateFormatSymbols().getShortWeekdays();
     public static int[] dayIndexes = new int[]{Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
             Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY};
-    public static int LenghtNameDay;
+    public static int lenghtNameDay;
 
     public static void init() {
         calendar = Calendar.getInstance();
@@ -46,11 +46,11 @@ public class MyCalendar {
                             uError();
                         } else {
                             i++;
-                            String[] tzNames = TimeZone.getAvailableIDs();
-                            String TZName = args[i];
-                            for (int j = 0; j < tzNames.length; ++j) {
-                                if (TZName.equals(tzNames[j])) {
-                                    timeZone = TimeZone.getTimeZone(TZName);
+                            String[] timeZoneNames = TimeZone.getAvailableIDs();
+                            String timeZoneName = args[i];
+                            for (String timeZoneName1 : timeZoneNames) {
+                                if (timeZoneName.equals(timeZoneName1)) {
+                                    timeZone = TimeZone.getTimeZone(timeZoneName);
                                     calendar.setTimeZone(timeZone);
                                 }
                             }
@@ -63,7 +63,16 @@ public class MyCalendar {
                         break;
                     case 'm':
                         i++;
-                        month = Integer.parseInt(args[i]) - 1;
+                        if (args.length <= i || month != null) {
+                            uError();
+                        } else {
+                            try {
+                                month =  Integer.parseInt(args[i]) - 1;
+                            } catch (NumberFormatException exception) {
+                                System.err.println(exception.getMessage());
+                                System.exit(1);
+                            }
+                        }
                         if (calendar.getActualMinimum(Calendar.MONTH) > month || calendar.getActualMaximum(Calendar.MONTH) < month) {
                             uError();
                         }
@@ -95,11 +104,15 @@ public class MyCalendar {
     }
 
     public static void printC() {
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
         calendar.set(year, month, 1);
         for (int i = 0; i < 7; ++i) {
-            if (LenghtNameDay < dayNames[i].length()) {
-                LenghtNameDay = dayNames[i].length();
+            if (lenghtNameDay < dayNames[i].length()) {
+                lenghtNameDay = dayNames[i].length();
             }
+        }
+        if (lenghtNameDay < 2) {
+            lenghtNameDay = 2;
         }
         if (weeksNeeded) {
             System.out.print("   ");
@@ -110,41 +123,38 @@ public class MyCalendar {
         }
         for (int dayIndex : dayIndexes) {
             System.out.print(dayNames[dayIndex]);
-            for (int j = 0; j < LenghtNameDay - dayNames[dayIndex].length() + 1; ++j) {
+            for (int j = 0; j < lenghtNameDay - dayNames[dayIndex].length() + 1; ++j) {
                 System.out.print(' ');
             }
         }
-        if (LenghtNameDay < 2) {
-            LenghtNameDay = 2;
-        }
         System.out.println();
-        int current_day = 1;
-        int current_week = calendar.get(Calendar.WEEK_OF_YEAR);
+        int currentDay = 1;
+        int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
         while (month == calendar.get(Calendar.MONTH)) {
             if (weeksNeeded) {
-                if (current_week < 10) {
-                    System.out.print(" " + current_week + " ");
+                if (currentWeek < 10) {
+                    System.out.print(" " + currentWeek + " ");
                 } else {
-                    System.out.print(current_week + " ");
+                    System.out.print(currentWeek + " ");
                 }
-                current_week++;
+                currentWeek++;
             }
 
             for (int indx : dayIndexes) {
                 if (indx != calendar.get(Calendar.DAY_OF_WEEK) || month != calendar.get(Calendar.MONTH)) {
-                    for (int i = 0; i < LenghtNameDay + 1; ++i) {
+                    for (int i = 0; i < lenghtNameDay + 1; ++i) {
                         System.out.print(' ');
                     }
                 } else {
-                    for (int i = 0; i < LenghtNameDay - 2; ++i) {
+                    for (int i = 0; i < lenghtNameDay - 2; ++i) {
                         System.out.print(' ');
                     }
-                    if (current_day < 10) {
+                    if (currentDay < 10) {
                         System.out.print(' ');
                     }
-                    System.out.print(current_day + " ");
-                    current_day++;
-                    calendar.set(Calendar.DAY_OF_MONTH, current_day);
+                    System.out.print(currentDay + " ");
+                    currentDay++;
+                    calendar.set(Calendar.DAY_OF_MONTH, currentDay);
                 }
             }
             System.out.println();
