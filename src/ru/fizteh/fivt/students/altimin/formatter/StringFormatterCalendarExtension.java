@@ -22,6 +22,9 @@ public class StringFormatterCalendarExtension extends StringFormatterExtension {
 
     @Override
     public void format(StringBuilder buffer, Object object, String pattern) {
+        if (pattern == null || pattern.equals("")) {
+            throw new RuntimeException("Empty format");
+        }
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         Calendar calendar = (Calendar) object;
         buffer.append(formatter.format(calendar.getTime()));
