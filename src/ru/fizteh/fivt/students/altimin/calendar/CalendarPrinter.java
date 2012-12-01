@@ -104,6 +104,7 @@ public class CalendarPrinter {
     }
 
     private void printTable() {
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
         int weeksInCurrentMonth = calendar.getActualMaximum(Calendar.WEEK_OF_MONTH)
                 - calendar.get(Calendar.WEEK_OF_MONTH) + 1;
         Integer[][] buffer = new Integer[weeksInCurrentMonth][DAYS_IN_WEEK];
