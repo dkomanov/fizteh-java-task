@@ -4,10 +4,10 @@ package ru.fizteh.fivt.students.mesherinIlya.stringFormatter;
 import ru.fizteh.fivt.format.FormatterException;
 import ru.fizteh.fivt.format.StringFormatterExtension;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.Vector;
 
 public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
-    ArrayList<StringFormatterExtension> extensions;
+    Vector<StringFormatterExtension> extensions;
 
     StringFormatter() {
         extensions = new ArrayList<StringFormatterExtension>();
@@ -19,8 +19,8 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         }
         try {
             extensions.add(extension);
-        } catch (Throwable t) {
-            throw new FormatterException(t.getMessage(), t);
+        } catch (Exception e) {
+            throw new FormatterException(e.getMessage(), e);
         }
     }
 
@@ -55,7 +55,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         
         try {
             //разбор строки
-strAnalyse: for (int i = 0; i < format.length(); i++) {
+            for (int i = 0; i < format.length(); i++) {
                 char c = format.charAt(i);
                 if (!thisIsArgument) {
                     switch (c) {
@@ -159,16 +159,19 @@ strAnalyse: for (int i = 0; i < format.length(); i++) {
                     thisIsField = false;
             
                     if (argument != null) {
-                    
+                        bool argumentIsSupported = false;
+                        
                         for (StringFormatterExtension extension : extensions) {
                             if (extension.supports(argument.getClass())) {
                                 extension.format(buffer, argument, format.substring(patternIndex, i));
-                                continue strAnalyse;
+                                argumentIsSupported = true;
+                                break;
                             }
                         }
                         
-                        throw new FormatterException("The type isn't supported.");
-                        
+                        if (!argumentIsSupported) {
+                            throw new FormatterException("The type isn't supported.");
+                        }
                     }
                 }   
             }
