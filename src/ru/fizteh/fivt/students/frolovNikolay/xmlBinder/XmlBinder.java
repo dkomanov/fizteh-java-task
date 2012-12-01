@@ -1,16 +1,13 @@
 package ru.fizteh.fivt.students.frolovNikolay.xmlBinder;
 
 import java.io.ByteArrayInputStream;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Set;
 
 import sun.misc.*;
 
@@ -45,8 +42,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         public Class<?> type;
         public boolean asXmlAttribute;
     }
-    
-    private IdentityHashMap<Object, Object> cycleLinkInterrupter;
+
     private HashMap<Class<?>, HashMap<String, FieldMeta>> fields;
     private HashMap<Class<?>, HashMap<String, MethodMeta>> methods;
     
@@ -98,7 +94,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     
     public XmlBinder(Class<T> clazz) {
         super(clazz);
-        cycleLinkInterrupter = new IdentityHashMap<Object, Object>();
         fields = new HashMap<Class<?>, HashMap<String, FieldMeta>>();
         methods = new HashMap<Class<?>, HashMap<String, MethodMeta>>();
         try {
@@ -176,18 +171,18 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
     
     @Override
-    public synchronized byte[] serialize(T value) {
+    public byte[] serialize(T value) {
         if (value == null) {
             throw new RuntimeException("null pointer");
         } else if (!getClazz().equals(value.getClass())) {
             throw new RuntimeException("incorrect input type: " + value.getClass().getName());
         } else {
             try {
-                cycleLinkInterrupter.clear();
+                IdentityHashMap<Object, Object> cycleLinkInterrupter = new IdentityHashMap<Object, Object>();
                 StringWriter sWriter = new StringWriter();
                 XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(sWriter);
                 writer.writeStartElement(lowerFirstCharacter(getClazz().getSimpleName()));
-                recursiveSerialize(value, writer);
+                recursiveSerialize(value, writer, cycleLinkInterrupter);
                 writer.writeEndElement();
                 return sWriter.getBuffer().toString().getBytes();
             } catch (Throwable exception) {
@@ -230,7 +225,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                || clazz.equals(Boolean.class) || clazz.equals(Byte.class);
     }
     
-    private void recursiveSerialize(Object value, XMLStreamWriter writer) throws Throwable {
+    private void recursiveSerialize(Object value, XMLStreamWriter writer, IdentityHashMap<Object, Object> cycleLinkInterrupter) throws Throwable {
         if (value == null) {
             return;
         }
@@ -250,7 +245,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         if (iter.asXmlAttribute) {
                             writer.writeAttribute(getSpecificXmlName(iter), tempValue.toString());
                         } else {
-                            recursiveSerialize(tempValue, writer);
+                            recursiveSerialize(tempValue, writer, cycleLinkInterrupter);
                         }
                         writer.writeEndElement();
                     }
@@ -263,7 +258,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         if (iter.asXmlAttribute) {
                             writer.writeAttribute(getSpecificXmlName(iter), tempValue.toString());
                         } else {
-                            recursiveSerialize(tempValue, writer);
+                            recursiveSerialize(tempValue, writer, cycleLinkInterrupter);
                         }
                         writer.writeEndElement();
                     }
@@ -345,7 +340,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
     
     @Override
-    public synchronized T deserialize(byte[] bytes) {
+    public T deserialize(byte[] bytes) {
         if (bytes == null) {
             throw new RuntimeException("null pointer");
         }
