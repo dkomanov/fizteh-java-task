@@ -56,6 +56,9 @@ public class CalendarRunner {
         } catch (NumberFormatException e) {
             System.err.println(e.getMessage());
             System.exit(1);
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
         }
         calendarPrinter.print();
     }
