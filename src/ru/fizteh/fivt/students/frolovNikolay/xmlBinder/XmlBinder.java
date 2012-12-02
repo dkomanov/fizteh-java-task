@@ -5,6 +5,8 @@ import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -43,8 +45,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         public boolean asXmlAttribute;
     }
 
-    private HashMap<Class<?>, HashMap<String, FieldMeta>> fields;
-    private HashMap<Class<?>, HashMap<String, MethodMeta>> methods;
+    private HashMap<Class<?>, ArrayList<FieldMeta>> fields;
+    private HashMap<Class<?>, ArrayList<MethodMeta>> methods;
     
     private Object createNewObject(Class<?> clazz) {
         try {
@@ -94,8 +96,11 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     
     public XmlBinder(Class<T> clazz) {
         super(clazz);
-        fields = new HashMap<Class<?>, HashMap<String, FieldMeta>>();
-        methods = new HashMap<Class<?>, HashMap<String, MethodMeta>>();
+        if (clazz == null) {
+            throw new RuntimeException("null pointer");
+        }
+        fields = new HashMap<Class<?>, ArrayList<FieldMeta>>();
+        methods = new HashMap<Class<?>, ArrayList<MethodMeta>>();
         try {
             recursiveBuildXmlBinder(clazz, new HashSet<Class<?>>());
         } catch (Throwable ignoringException) {
@@ -109,45 +114,54 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             BindingType serializeFields = clazz.getAnnotation(BindingType.class);
             if (serializeFields == null || serializeFields.value().equals(MembersToBind.FIELDS)) {
                 Class<?> tempClazz = clazz;
-                HashMap<String, FieldMeta> classFields = new HashMap<String, FieldMeta>();
+                ArrayList<Field> tempClassFields = new ArrayList<Field>();
                 while (tempClazz != null) {
-                    Field[] tempFields = tempClazz.getDeclaredFields();
-                    for (Field iter : tempFields) {
-                        recursiveBuildXmlBinder(iter.getType(), alreadyAdded);
-                        FieldMeta fieldInfo = new FieldMeta();
-                        fieldInfo.name = lowerFirstCharacter(iter.getName());
-                        fieldInfo.field = iter;
-                        fieldInfo.field.setAccessible(true);
-                        fieldInfo.type = iter.getType();
-                        fieldInfo.asXmlAttribute = iter.getAnnotation(AsXmlAttribute.class) != null;
-                        classFields.put(fieldInfo.name, fieldInfo);
-                    }
+                    tempClassFields.addAll(Arrays.asList(tempClazz.getDeclaredFields()));
                     tempClazz = tempClazz.getSuperclass();
                 }
+                ArrayList<FieldMeta> classFields = new ArrayList<FieldMeta>();
+                for (Field iter : tempClassFields) {
+                    recursiveBuildXmlBinder(iter.getType(), alreadyAdded);
+                    FieldMeta fieldInfo = new FieldMeta();
+                    fieldInfo.name = lowerFirstCharacter(iter.getName());
+                    fieldInfo.field = iter;
+                    fieldInfo.field.setAccessible(true);
+                    fieldInfo.type = iter.getType();
+                    fieldInfo.asXmlAttribute = iter.getAnnotation(AsXmlAttribute.class) != null;
+                    classFields.add(fieldInfo);
+                }
                 fields.put(clazz, classFields);
+                for (FieldMeta iter : classFields) {
+                    recursiveBuildXmlBinder(iter.type, alreadyAdded);
+                }
             } else {
-                HashMap<String, MethodMeta> classMethods = new HashMap<String, MethodMeta>();
-                Method[] tempMethods = clazz.getMethods();
-                Class<?> temp = null;
-                for (Method iter : tempMethods) {
+                ArrayList<Method> tempClassMethods = new ArrayList<Method>();
+                ArrayList<MethodMeta> classMethods = new ArrayList<MethodMeta>();
+                tempClassMethods.addAll(Arrays.asList(clazz.getMethods()));
+                ArrayList<Class<?>> needToAddClasses = new ArrayList<Class<?>>();
+                for (Method iter : tempClassMethods) {
                     if (iter.getName().length() >= 3 && iter.getName().substring(0, 3).equals("set")
                        && iter.getReturnType().equals(void.class) && iter.getParameterTypes().length == 1) {
-                        temp = tryToAddMethods(clazz, iter, classMethods, "is");
-                        if (temp != null) {
-                            recursiveBuildXmlBinder(temp, alreadyAdded);
+                        Class<?> tempClass = null;
+                        tempClass = tryToAddMethods(clazz, iter, classMethods, "get");
+                        if (tempClass != null) {
+                            needToAddClasses.add(tempClass);
                         }
-                        temp = tryToAddMethods(clazz, iter, classMethods, "get");
-                        if (temp != null) {
-                            recursiveBuildXmlBinder(temp, alreadyAdded);
+                        tempClass = tryToAddMethods(clazz, iter, classMethods, "is");
+                        if (tempClass != null) {
+                            needToAddClasses.add(tempClass);
                         }
                     }
                 }
                 methods.put(clazz, classMethods);
+                for (Class<?> iter : needToAddClasses) {
+                    recursiveBuildXmlBinder(iter, alreadyAdded);
+                }
             }
         }
     }
     
-    private Class<?> tryToAddMethods(Class<?> clazz, Method setter, HashMap<String, MethodMeta> classMethods, String getterPrefix) {
+    private Class<?> tryToAddMethods(Class<?> clazz, Method setter, ArrayList<MethodMeta> classMethods, String getterPrefix) {
         Class<?> returnStatement = null;
         try {
             String getterName = getterPrefix + setter.getName().substring(3);
@@ -162,7 +176,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 added.type = getter.getReturnType();
                 added.asXmlAttribute = getter.getAnnotation(AsXmlAttribute.class) != null
                                        || setter.getAnnotation(AsXmlAttribute.class) != null;
-                classMethods.put(added.name, added);
+                classMethods.add(added);
                 returnStatement =  getter.getReturnType();
             }
         } catch (Throwable ignoringException) { 
@@ -208,12 +222,21 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
     
     private String getSpecificXmlName(MethodMeta methodMeta) throws Exception {
-        if (methodMeta.getter.getAnnotation(AsXmlAttribute.class) != null) {
+        if (methodMeta.getter.getAnnotation(AsXmlAttribute.class) != null
+            && methodMeta.setter.getAnnotation(AsXmlAttribute.class) != null
+            && methodMeta.getter.getAnnotation(AsXmlAttribute.class).name()
+                == methodMeta.setter.getAnnotation(AsXmlAttribute.class).name()) {
             return methodMeta.getter.getAnnotation(AsXmlAttribute.class).name(); 
-        } else if (methodMeta.setter.getAnnotation(AsXmlAttribute.class) != null) {
-            return methodMeta.setter.getAnnotation(AsXmlAttribute.class).toString();
-        } else {
+        } else if (methodMeta.setter.getAnnotation(AsXmlAttribute.class) == null
+                   && methodMeta.getter.getAnnotation(AsXmlAttribute.class) == null) {
             return methodMeta.name;
+        } else if (methodMeta.getter.getAnnotation(AsXmlAttribute.class) != null
+            && methodMeta.setter.getAnnotation(AsXmlAttribute.class) != null) {
+            throw new Exception("different annotation names");
+        } else if (methodMeta.getter.getAnnotation(AsXmlAttribute.class) != null) {
+            return methodMeta.getter.getAnnotation(AsXmlAttribute.class).name();
+        } else {
+            return methodMeta.setter.getAnnotation(AsXmlAttribute.class).name();
         }
     }
     
@@ -226,11 +249,11 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
     
     private void recursiveSerialize(Object value, XMLStreamWriter writer, IdentityHashMap<Object, Object> cycleLinkInterrupter) throws Throwable {
-        if (value == null) {
-            return;
-        }
         if (cycleLinkInterrupter.containsKey(value)) {
             throw new Exception("Can't serialize");
+        }
+        if (value == null) {
+            return;
         }
         cycleLinkInterrupter.put(value, null);
         if (isWriteable(value.getClass())) {
@@ -238,29 +261,47 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         } else {
             BindingType serializeFields = value.getClass().getAnnotation(BindingType.class);
             if (serializeFields == null || serializeFields.value().equals(MembersToBind.FIELDS)) {
-                for (FieldMeta iter : fields.get(value.getClass()).values()) {
-                    Object tempValue = iter.field.get(value);
+                ArrayList<FieldMeta> classFields = fields.get(value.getClass());
+                for (int i = 0; i < classFields.size(); ++i) {
+                    FieldMeta fieldInfo = classFields.get(i);
+                    Object tempValue = fieldInfo.field.get(value);
                     if (tempValue != null) {
-                        writer.writeStartElement(iter.name);
-                        if (iter.asXmlAttribute) {
-                            writer.writeAttribute(getSpecificXmlName(iter), tempValue.toString());
+                        if (fieldInfo.asXmlAttribute) {
+                            writer.writeAttribute(getSpecificXmlName(fieldInfo), tempValue.toString());
                         } else {
-                            recursiveSerialize(tempValue, writer, cycleLinkInterrupter);
+                            writer.writeStartElement(fieldInfo.name);
+                            int attributeSearchIdx = i + 1;
+                            while (attributeSearchIdx < classFields.size() && classFields.get(attributeSearchIdx).asXmlAttribute) {
+                                writer.writeAttribute(getSpecificXmlName(classFields.get(attributeSearchIdx)), 
+                                        classFields.get(attributeSearchIdx).field.get(value).toString());
+                                ++attributeSearchIdx;
+                            }
+                            i = --attributeSearchIdx;
+                            recursiveSerialize(fieldInfo.field.get(value), writer, cycleLinkInterrupter);
+                            writer.writeEndElement();
                         }
-                        writer.writeEndElement();
                     }
                 }
             } else {
-                for (MethodMeta iter : methods.get(value.getClass()).values()) {
-                    Object tempValue = iter.getter.invoke(value);
+                ArrayList<MethodMeta> classMethods = methods.get(value.getClass());
+                for (int i = 0; i < classMethods.size(); ++i) {
+                    MethodMeta methodInfo = classMethods.get(i);
+                    Object tempValue = methodInfo.getter.invoke(value);
                     if (tempValue != null) {
-                        writer.writeStartElement(iter.name);
-                        if (iter.asXmlAttribute) {
-                            writer.writeAttribute(getSpecificXmlName(iter), tempValue.toString());
+                        if (methodInfo.asXmlAttribute) {
+                            writer.writeAttribute(getSpecificXmlName(methodInfo), tempValue.toString());
                         } else {
+                            writer.writeStartElement(methodInfo.name);
+                            int attributeSearchIdx = i + 1;
+                            while (attributeSearchIdx < classMethods.size() && classMethods.get(attributeSearchIdx).asXmlAttribute) {
+                                writer.writeAttribute(getSpecificXmlName(methodInfo), tempValue.toString());
+                                ++attributeSearchIdx;
+                            }
+                            i = --attributeSearchIdx;
                             recursiveSerialize(tempValue, writer, cycleLinkInterrupter);
+                            writer.writeEndElement();
                         }
-                        writer.writeEndElement();
+                        
                     }
                 }
             }
@@ -274,14 +315,14 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         Object object = createNewObject(clazz);
         BindingType serializeFields = clazz.getAnnotation(BindingType.class);
         if (serializeFields != null && serializeFields.value().equals(MembersToBind.GETTERS_AND_SETTERS)) {
-            HashMap<String ,MethodMeta> classMethods = methods.get(clazz);
+            ArrayList<MethodMeta> classMethods = methods.get(clazz);
             if (classMethods != null) {
                 NodeList childNodes = element.getChildNodes();
                 for (int i = 0; i < childNodes.getLength(); ++i) {
                     Node node = childNodes.item(i);
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
                         Element newElement = (Element) node;
-                        for (MethodMeta method : classMethods.values()) {
+                        for (MethodMeta method : classMethods) {
                             if (method.name.equals(newElement.getTagName())) {
                                 method.setter.invoke(object, recursiveDeserialize(newElement, method.type));
                                 break;
@@ -292,8 +333,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 NamedNodeMap attributes = element.getAttributes();
                 for (int i = 0; i < attributes.getLength(); ++i) {
                     Node node = attributes.item(i);
-                    for (MethodMeta method : classMethods.values()) {
-                        if (method.name.equals(node.getNodeName())) {
+                    for (MethodMeta method : classMethods) {
+                        if (getSpecificXmlName(method).equals(node.getNodeName())) {
                             method.setter.invoke(object, getWriteableValue(node.getNodeValue(), method.type));
                             break;
                         }
@@ -301,15 +342,15 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 }
             }
         } else {
-            HashMap<String, FieldMeta> classFields = fields.get(clazz);
-            HashSet<FieldMeta> nullTestFields = new HashSet<FieldMeta>(classFields.values());
+            ArrayList<FieldMeta> classFields = fields.get(clazz);
+            HashSet<FieldMeta> nullTestFields = new HashSet<FieldMeta>(classFields);
             if (classFields != null) {
                 NodeList childNodes = element.getChildNodes();
                 for (int i = 0; i < childNodes.getLength(); ++i) {
                     Node node = childNodes.item(i);
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
                         Element newElement = (Element) node;
-                        for (FieldMeta field : classFields.values()) {
+                        for (FieldMeta field : classFields) {
                             if (field.name.equals(newElement.getTagName())) {
                                 field.field.set(object, recursiveDeserialize(newElement, field.type));
                                 nullTestFields.remove(field);
@@ -321,8 +362,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 NamedNodeMap attributes = element.getAttributes();
                 for (int i = 0; i < attributes.getLength(); ++i) {
                     Node node = attributes.item(i);
-                    for (FieldMeta field : classFields.values()) {
-                        if (field.name.equals(node.getNodeName())) {
+                    for (FieldMeta field : classFields) {
+                        if (getSpecificXmlName(field).equals(node.getNodeName())) {
                             field.field.set(object, getWriteableValue(node.getNodeValue(), field.type));
                             nullTestFields.remove(field);
                             break;
