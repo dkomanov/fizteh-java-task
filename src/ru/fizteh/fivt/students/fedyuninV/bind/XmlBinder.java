@@ -180,7 +180,11 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
         AsXmlElement setterAnnnotation = component.setter().getAnnotation(AsXmlElement.class);
         if (setterAnnnotation != null  &&  getterAnnnotation != null) {
             if (setterAnnnotation.name().equals(getterAnnnotation.name())) {
-                component.setName(firstCharToLowerCase(setterAnnnotation.name()));
+                if (setterAnnnotation.name().equals("")) {
+                    component.setName(firstCharToLowerCase(component.getName()));
+                } else {
+                    component.setName(firstCharToLowerCase(setterAnnnotation.name()));
+                }
             } else {
                 throw new RuntimeException("Incorrect annotations of methods.");
             }
