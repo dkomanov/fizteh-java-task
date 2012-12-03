@@ -248,6 +248,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             }
         } catch (Throwable t) {
             throw new RuntimeException("An exception occurred within serialization of " + value.getClass(), t);
+        } finally {
+            alreadySerialised.remove(value);
         }
     }
 
