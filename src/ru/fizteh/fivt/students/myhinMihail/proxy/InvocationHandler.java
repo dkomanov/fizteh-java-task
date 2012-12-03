@@ -13,14 +13,18 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
-        if (proxy == null || method == null) {
-            throw new NullPointerException();
+        if (proxy == null) {
+            throw new IllegalArgumentException("Null proxy");
+        }
+        
+        if (method == null) {
+            throw new IllegalArgumentException("Null method");
         }
         
         method.setAccessible(true);
         
         if (method.getAnnotation(DoNotProxy.class) != null) {
-            throw new IllegalArgumentException("Bad method");
+            throw new IllegalArgumentException("Method has DoNotProxy annotation");
         }
        
         if (method.getAnnotation(Collect.class) != null) {
