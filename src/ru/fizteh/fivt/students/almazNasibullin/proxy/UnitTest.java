@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.almazNasibullin.proxy;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import ru.fizteh.fivt.proxy.Collect;
@@ -71,10 +73,12 @@ public class UnitTest {
 
         @Collect
         public int getDay();
+
+        @Collect
+        public void addToList(List<Integer> l);
     }
 
     class MyTestClass implements MyInterface {
-
         @Override
         public int getNumber(int number) {
             return number;
@@ -90,17 +94,26 @@ public class UnitTest {
             return -1L;
         }
 
+        @Override
         public int sum(int num1, int num2) {
             return num1 + num2;
         }
 
+        @Override
         public Long multiplication(Long num1, Long num2) {
             return num1 * num2;
         }
 
+        @Override
         public int getDay() {
             return 1;
         }
+
+        @Override
+        public void addToList(List<Integer> l) {
+            l.add(1);
+        }
+
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -138,5 +151,8 @@ public class UnitTest {
         Assert.assertTrue(mi.multiplication(1L, 10L) == 10L);
         // сливаем результаты, getDay возвращает 1, targets.length == 3
         Assert.assertEquals(mi.getDay(), 3);
+        List<Integer> l = new ArrayList<Integer>();
+        mi.addToList(l);
+        Assert.assertEquals(l.size(), 3);
     }
 }
