@@ -30,12 +30,14 @@ public class MyInvocationHandler implements  InvocationHandler {
         }
         if (method.getAnnotation(Collect.class) == null) {
             for (Object o : args) {
-                if (o.getClass().equals(int.class) || o.getClass().equals(Integer.class)) {
-                    return method.invoke(targets[(Integer)o % targets.length], args);
-                }
-                if (o.getClass().equals(long.class) || o.getClass().equals(Long.class)) {
-                    Long l = (Long)o;
-                    return method.invoke(targets[(int)(l % targets.length)], args);
+                if (o != null) {
+                    if (o.getClass().equals(int.class) || o.getClass().equals(Integer.class)) {
+                        return method.invoke(targets[(Integer)o % targets.length], args);
+                    }
+                    if (o.getClass().equals(long.class) || o.getClass().equals(Long.class)) {
+                        Long l = (Long)o;
+                        return method.invoke(targets[(int)(l % targets.length)], args);
+                    }
                 }
             }
         } else {
@@ -44,6 +46,7 @@ public class MyInvocationHandler implements  InvocationHandler {
                 for (Object target : targets) {
                     method.invoke(target, args);
                 }
+                return null;
             }
             if (returnClass.equals(int.class) || returnClass.equals(Integer.class)) {
                 Integer obj = 0;
