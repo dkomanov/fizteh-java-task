@@ -76,6 +76,9 @@ public class UnitTest {
 
         @Collect
         public void addToList(List<Integer> l);
+
+        @Collect
+        void throwRuntimeException();
     }
 
     class MyTestClass implements MyInterface {
@@ -112,6 +115,11 @@ public class UnitTest {
         @Override
         public void addToList(List<Integer> l) {
             l.add(1);
+        }
+
+        @Override
+        public void throwRuntimeException() {
+            throw new RuntimeException("RuntimeException");
         }
 
     }
@@ -154,5 +162,16 @@ public class UnitTest {
         List<Integer> l = new ArrayList<Integer>();
         mi.addToList(l);
         Assert.assertEquals(l.size(), 3);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testThrowingRuntimeException() {
+        Object[] targets = new Object[1];
+        targets[0] = new MyTestClass();
+        Class[] interfaces = new Class[1];
+        interfaces[0] = MyInterface.class;
+        ShardingProxyFactory spf = new ShardingProxyFactory();
+        MyInterface mi = (MyInterface)spf.createProxy(targets, interfaces);
+        mi.throwRuntimeException();
     }
 }

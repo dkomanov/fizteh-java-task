@@ -63,21 +63,21 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                         if (m.getAnnotation(Collect.class) == null) {
                             Set<Class> parameters = new HashSet<Class>
                                     (Arrays.asList(m.getParameterTypes()));
-                            if (!parameters.contains(int.class) &&
-                                    !parameters.contains(long.class) &&
-                                    !parameters.contains(Integer.class) &&
-                                    !parameters.contains(Long.class)) {
+                            if (!parameters.contains(int.class)
+                                    && !parameters.contains(long.class)
+                                    && !parameters.contains(Integer.class)
+                                    && !parameters.contains(Long.class)) {
                                 throw new IllegalArgumentException
                                         ("Bad Parameter Types of method");
                             }
                         } else {
                             Class returnClass = m.getReturnType();
-                            if (!returnClass.equals(void.class) &&
-                                    !returnClass.equals(int.class) &&
-                                    !returnClass.equals(long.class) &&
-                                    !returnClass.equals(Integer.class) &&
-                                    !returnClass.equals(Long.class) &&
-                                    !returnClass.equals(List.class)) {
+                            if (!returnClass.equals(void.class)
+                                    && !returnClass.equals(int.class)
+                                    && !returnClass.equals(long.class)
+                                    && !returnClass.equals(Integer.class)
+                                    && !returnClass.equals(Long.class)
+                                    && !returnClass.equals(List.class)) {
                                 throw new IllegalArgumentException("Incorrect return type of method");
                             }
                         }
