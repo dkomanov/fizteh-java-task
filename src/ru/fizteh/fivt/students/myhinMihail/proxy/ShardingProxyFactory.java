@@ -43,7 +43,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
         
         for (Object target : targets) {
             if (target == null) {
-                throw new NullPointerException();
+                throw new IllegalArgumentException("Null target");
             }
             
             boolean found = false;

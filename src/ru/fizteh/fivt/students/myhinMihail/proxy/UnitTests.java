@@ -44,7 +44,7 @@ public class UnitTests extends Assert {
         new ShardingProxyFactory().createProxy(targets, interfaces);
     }
 
-    interface simpleInterface {
+    interface SimpleInterface {
         @DoNotProxy
         public int getInt(int n);
 
@@ -58,7 +58,7 @@ public class UnitTests extends Assert {
         public int get1();
     }
 
-    class TestClass implements simpleInterface {
+    class TestClass implements SimpleInterface {
         public int getInt(int n) {
             return n;
         }
@@ -99,20 +99,20 @@ public class UnitTests extends Assert {
         Class[] interfaces = new Class[1];
         interfaces[0] = TestClass.class;
         
-        simpleInterface inter = (simpleInterface) new ShardingProxyFactory().createProxy(targets, interfaces);
+        SimpleInterface inter = (SimpleInterface) new ShardingProxyFactory().createProxy(targets, interfaces);
         inter.getInt(3);
     }
 
     @Test
-    public void  goodTests() {
+    public void goodTests() {
         Object[] targets = new Object[2];
         targets[0] = new TestClass();
         targets[1] = new TestClass();
         
         Class[] interfaces = new Class[1];
-        interfaces[0] = simpleInterface.class;
+        interfaces[0] = SimpleInterface.class;
         
-        simpleInterface inter = (simpleInterface) new ShardingProxyFactory().createProxy(targets, interfaces);
+        SimpleInterface inter = (SimpleInterface) new ShardingProxyFactory().createProxy(targets, interfaces);
         
         assertTrue(inter.getLong(2L) == 2L);
         assertTrue(inter.sum(1, 2) == 3);

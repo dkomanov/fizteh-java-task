@@ -21,8 +21,6 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             throw new IllegalArgumentException("Null method");
         }
         
-        method.setAccessible(true);
-        
         if (method.getAnnotation(DoNotProxy.class) != null) {
             throw new IllegalArgumentException("Method has DoNotProxy annotation");
         }
@@ -60,7 +58,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 return result;
             }
             
-            throw new IllegalArgumentException("Bad method");
+            throw new IllegalArgumentException("Bad return type of metod");
         }
         
         if (args == null || args.length == 0) {
@@ -69,7 +67,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         
         for (Object arg : args) {
             if (arg == null) {
-                break;
+            	throw new IllegalArgumentException("Null argument");
             }
             
             Class<?> clazz = arg.getClass();
@@ -84,6 +82,6 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             break;
         }
         
-        throw new IllegalArgumentException("Bad arguments");
+        throw new IllegalArgumentException("Unsupported argument type");
     }
 }
