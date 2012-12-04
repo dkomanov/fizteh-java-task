@@ -96,17 +96,32 @@ public class CalendarPrinter {
     void printWeeks() {
         int curY = 0;
         Calendar t = (Calendar) calendar.clone();
+        t.set(Calendar.DAY_OF_MONTH, 1);
+        t.set(Calendar.MONTH, Calendar.JANUARY);
         t.setMinimalDaysInFirstWeek(7);
-        t.setFirstDayOfWeek(1);
-        while (calendar.get(Calendar.MONTH) == t.get(Calendar.MONTH)) {
-            String s = Integer.toString(t.get(Calendar.WEEK_OF_YEAR));
-            s = makeGoodLooking(s);
-            for (int j = 0; j < s.length(); j++) {
-                map.put(j - 3, curY, s.charAt(j));
+        t.setFirstDayOfWeek(Calendar.MONDAY);
+        boolean first = true;
+        boolean firstInMonth = true;
+        int week = 0;
+        while (t.get(Calendar.MONTH) <= calendar.get(Calendar.MONTH)) {
+            if (first || t.get(Calendar.DAY_OF_WEEK) == monday || (firstInMonth && t.get(Calendar.MONTH) == calendar.get(Calendar.MONTH))) {
+                week++;
+                if (t.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)) {
+                    if (firstInMonth && !first) {
+                        week--;
+                    }
+                    firstInMonth = false;
+                    String s = Integer.toString(week);
+                    s = makeGoodLooking(s);
+                    for (int j = 0; j < s.length(); j++) {
+                        map.put(j - 3, curY, s.charAt(j));
+                    }
+                    curY++;
+                }
+                first = false;
             }
 
-            t.set(Calendar.DAY_OF_MONTH, t.get(Calendar.DAY_OF_MONTH) + 7);
-            curY++;
+            t.set(Calendar.DAY_OF_YEAR, t.get(Calendar.DAY_OF_YEAR) + 1);
         }
     }
 
