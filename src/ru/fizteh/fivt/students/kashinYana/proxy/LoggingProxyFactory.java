@@ -68,7 +68,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 } else if (isPrimitiveType(args.getClass())) {
                     return args.toString();
                 } else if (args.getClass().equals(String.class)) {
-                    return "\"" + args + "\"";
+                    return "\\\"" + args + "\\\"";
                 } else if (args.getClass().isEnum()) {
                     Enum enumm = (Enum) args;
                     return enumm.name();
@@ -85,7 +85,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                     answer += "}";
                     return answer;
                 } else if (args.equals(Object.class)) {
-                    return "[" + args.toString() + "]";
+                    return "\\[" + args.toString() + "\\]";
                 } else {
                     throw new IllegalAccessException("unknown class");
                 }
