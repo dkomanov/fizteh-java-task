@@ -35,6 +35,8 @@ public enum MessageType {
             case (127):
                 result = ERROR;
                 break;
+            default:
+                result = null;
         }
         return result;
     }

@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.fedyuninV.chat;
+package ru.fizteh.fivt.students.fedyuninV.chat.server;
 
 import ru.fizteh.fivt.students.fedyuninV.CommandLineParser;
 

@@ -40,21 +40,12 @@ public final class MessageUtils {
 
     public static Message getMessage(ByteBuffer buffer) throws Exception{
         int initialPosition = buffer.position();
-        MessageType type = MessageType.getMessageType(buffer.get());
+        MessageType type = MessageType.getMessageType((byte) buffer.get());
         if (type == null) {
             buffer.position(initialPosition);
             throw new Exception("Error in getting message");
         }
-        switch (type) {
-            case HELLO:
-                break;
-            case MESSAGE:
-                break;
-            case BYE:
-                break;
-            case ERROR:
-                break;
-        }
+        getExpectedMessage(buffer, type);
         return null;
     }
 

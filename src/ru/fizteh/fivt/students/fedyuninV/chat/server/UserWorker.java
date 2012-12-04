@@ -1,7 +1,10 @@
-package ru.fizteh.fivt.students.fedyuninV.chat;
+package ru.fizteh.fivt.students.fedyuninV.chat.server;
 
+import ru.fizteh.fivt.students.fedyuninV.chat.message.MessageUtils;
+
+import java.io.InputStream;
 import java.net.Socket;
-import java.nio.*;
+import java.nio.ByteBuffer;
 
 /**
  * Fedyunin Valeriy
@@ -33,7 +36,14 @@ public class UserWorker implements Runnable{
 
     public void run() {
         try {
+            InputStream iStream = socket.getInputStream();
+            while (!userThread.isInterrupted()) {
+                try {
+                    MessageUtils.getMessage(buffer);
+                } catch (Exception ex) {
 
+                }
+            }
         } catch (Exception ex) {
 
         }
