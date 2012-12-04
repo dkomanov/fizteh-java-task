@@ -189,9 +189,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                 throw new RuntimeException("Incorrect annotations of methods.");
             }
         } else if (setterAnnnotation != null  &&  !setterAnnnotation.name().equals("")) {
-                component.setName(firstCharToLowerCase(setterAnnnotation.name()));
+            component.setName(firstCharToLowerCase(setterAnnnotation.name()));
         } else if (getterAnnnotation != null  &&  !getterAnnnotation.name().equals("")) {
-                component.setName(firstCharToLowerCase(getterAnnnotation.name()));
+            component.setName(firstCharToLowerCase(getterAnnnotation.name()));
         } else {
             component.setName(firstCharToLowerCase(component.getName()));
         }
@@ -351,9 +351,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                 List<SerializeComponent> components = methods.get(clazz);
                 for (SerializeComponent component: components) {
                     NodeList childs = root.getElementsByTagName(component.getName());
-                    if (childs.getLength() > 1) {
-                        throw new RuntimeException("Incorrect number of fields in XML");
-                    }
                     if (childs.getLength() > 0) {
                         Node child = childs.item(0);
                         try {
@@ -368,9 +365,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                 for (Field field: fieldList) {
                     field.setAccessible(true);
                     NodeList childs = root.getElementsByTagName(getFieldName(field));
-                    if (childs.getLength() > 1) {
-                        throw new RuntimeException("Incorrect number of fields in XML");
-                    }
                     if (childs.getLength() > 0) {
                         Node child = childs.item(0);
                         try {
