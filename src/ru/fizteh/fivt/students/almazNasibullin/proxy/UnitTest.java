@@ -3,7 +3,9 @@ package ru.fizteh.fivt.students.almazNasibullin.proxy;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
 
@@ -67,15 +69,21 @@ public class UnitTest {
 
         public Long getCount(Long count);
 
-        int sum(int num1, int num2);
+        public int sum(int num1, int num2);
 
-        Long multiplication(Long num1, Long num2);
+        public Long multiplication(Long num1, Long num2);
 
         @Collect
         public int getDay();
 
         @Collect
         public void addToList(List<Integer> l);
+
+        @Collect
+        public void throwRuntimeException();
+
+        @Collect
+        public void throwIllegalStateException();
     }
 
     class MyTestClass implements MyInterface {
@@ -114,8 +122,18 @@ public class UnitTest {
             l.add(1);
         }
 
-    }
+        @Override
+        public void throwRuntimeException() {
+            throw new RuntimeException("RuntimeException");
+        }
 
+        @Override
+        public void throwIllegalStateException() {
+            throw new IllegalStateException("IllegalStateException");
+        }
+
+    }
+    
     @Test(expected = IllegalArgumentException.class)
     public void testNullpointerInterface() {
         Object[] targets = new Object[1];
@@ -154,5 +172,34 @@ public class UnitTest {
         List<Integer> l = new ArrayList<Integer>();
         mi.addToList(l);
         Assert.assertEquals(l.size(), 3);
+    }
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
+    @Test
+    public void testThrowRuntimeException() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("RuntimeException");
+        Object[] targets = new Object[1];
+        targets[0] = new MyTestClass();
+        Class[] interfaces = new Class[1];
+        interfaces[0] = MyInterface.class;
+        ShardingProxyFactory spf = new ShardingProxyFactory();
+        MyInterface mi = (MyInterface)spf.createProxy(targets, interfaces);
+        mi.throwRuntimeException();
+    }
+
+    @Test
+    public void testThrowIllegalStateException() {
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage("IllegalStateException");
+        Object[] targets = new Object[1];
+        targets[0] = new MyTestClass();
+        Class[] interfaces = new Class[1];
+        interfaces[0] = MyInterface.class;
+        ShardingProxyFactory spf = new ShardingProxyFactory();
+        MyInterface mi = (MyInterface)spf.createProxy(targets, interfaces);
+        mi.throwIllegalStateException();
     }
 }
