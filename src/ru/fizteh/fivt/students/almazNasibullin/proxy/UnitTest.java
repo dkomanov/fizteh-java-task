@@ -3,7 +3,9 @@ package ru.fizteh.fivt.students.almazNasibullin.proxy;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
 
@@ -79,6 +81,9 @@ public class UnitTest {
 
         @Collect
         public void throwRuntimeException();
+
+        @Collect
+        public void throwIllegalStateException();
     }
 
     class MyTestClass implements MyInterface {
@@ -122,8 +127,13 @@ public class UnitTest {
             throw new RuntimeException("RuntimeException");
         }
 
-    }
+        @Override
+        public void throwIllegalStateException() {
+            throw new IllegalStateException("IllegalStateException");
+        }
 
+    }
+    
     @Test(expected = IllegalArgumentException.class)
     public void testNullpointerInterface() {
         Object[] targets = new Object[1];
@@ -164,20 +174,32 @@ public class UnitTest {
         Assert.assertEquals(l.size(), 3);
     }
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Test
-    public void negativeIndexShouldFail2() {
+    public void testThrowRuntimeException() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("RuntimeException");
         Object[] targets = new Object[1];
         targets[0] = new MyTestClass();
         Class[] interfaces = new Class[1];
         interfaces[0] = MyInterface.class;
         ShardingProxyFactory spf = new ShardingProxyFactory();
         MyInterface mi = (MyInterface)spf.createProxy(targets, interfaces);
-        try {
-            mi.throwRuntimeException();
-        } catch (Throwable t) {
-            Throwable th = t.getCause().getCause();
-            Assert.assertEquals(th.getClass(), RuntimeException.class);
-            Assert.assertEquals(th.getMessage(), "RuntimeException");
-        }
+        mi.throwRuntimeException();
+    }
+
+    @Test
+    public void testThrowIllegalStateException() {
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage("IllegalStateException");
+        Object[] targets = new Object[1];
+        targets[0] = new MyTestClass();
+        Class[] interfaces = new Class[1];
+        interfaces[0] = MyInterface.class;
+        ShardingProxyFactory spf = new ShardingProxyFactory();
+        MyInterface mi = (MyInterface)spf.createProxy(targets, interfaces);
+        mi.throwIllegalStateException();
     }
 }
