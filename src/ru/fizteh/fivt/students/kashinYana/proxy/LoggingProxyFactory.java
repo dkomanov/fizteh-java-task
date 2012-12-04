@@ -1,12 +1,11 @@
 package ru.fizteh.fivt.students.kashinYana.proxy;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * Kashinskaya Yana
@@ -18,51 +17,31 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
 
     }
 
-    boolean possibleToString(Class classExample) {
-        return (classExample.isPrimitive()
-                || classExample.equals(Integer.class)
-                || classExample.equals(Boolean.class)
-                || classExample.equals(Double.class)
-                || classExample.equals(Float.class)
-                || classExample.equals(Byte.class)
-                || classExample.equals(Long.class)
-                || classExample.equals(Short.class)
-                || classExample.equals(Character.class));
-    }
-
-    String print(Object args) {
-        if (args == null) {
-            return "null";
-        } else if (possibleToString(args.getClass())) {
-            return args.toString();
-        } else if (args.getClass().equals(String.class)) {
-            return "\"" + args + "\"";
-        } else if (args.getClass().isEnum()) {
-            Enum enumm = (Enum) args;
-            return enumm.name();
-        } else if (args.getClass().isArray()) {
-            Object[] list = (Object[]) args;
-            String answer;
-            answer = list.length + "{";
-            for (Object t : list) {
-                answer += print(t);
-            }
-            answer += "}";
-            return answer;
-        } else if (args.getClass().equals(Object.class)) {
-            return "[" + args.toString() + "]";
-        }
-        return "i don't know";
-    }
-
     public Object createProxy(Object target, Appendable writer, Class... interfaces) {
 
-        if (target == null || writer == null) {
-            throw new IllegalArgumentException("Don't give me null argv");
+        if (target == null) {
+            throw new IllegalArgumentException("Don't give me null targer, 1-args");
+        }
+        if (writer == null) {
+            throw new IllegalArgumentException("Don't give me null writer, 2-args");
+        }
+        if (interfaces == null) {
+            throw new IllegalArgumentException("Don't give me null interfaces, 3-args");
         }
 
-        class ConsoleLoggerInvocationHandler
-                implements InvocationHandler {
+        ArrayList<Class<?>> interfacesTarget = new ArrayList<Class<?>>(Arrays.asList(target.getClass().getInterfaces()));
+        HashSet<Class<?>> sortedInterfaces = new HashSet<Class<?>>(interfacesTarget);
+        for (Class<?> iterface : interfaces) {
+            if (iterface.getMethods().length == 0) {
+                throw new IllegalArgumentException("Interface have got several methods");
+            }
+            if (!sortedInterfaces.contains(iterface)) {
+                throw new IllegalArgumentException("target doesn't implement: " + iterface.getSimpleName());
+            }
+        }
+
+        class ConsoleLoggerInvocationHandler implements InvocationHandler {
+
             private final Object target;
             private Appendable append;
 
@@ -71,70 +50,124 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 append = writer;
             }
 
+            boolean isPrimitiveType(Class classExample) {
+                return (classExample.isPrimitive()
+                        || classExample.equals(Integer.class)
+                        || classExample.equals(Boolean.class)
+                        || classExample.equals(Double.class)
+                        || classExample.equals(Float.class)
+                        || classExample.equals(Byte.class)
+                        || classExample.equals(Long.class)
+                        || classExample.equals(Short.class)
+                        || classExample.equals(Character.class));
+            }
+
+            String print(Object args) throws IllegalAccessException {
+                if (args == null) {
+                    return "null";
+                } else if (isPrimitiveType(args.getClass())) {
+                    return args.toString();
+                } else if (args.getClass().equals(String.class)) {
+                    return "\"" + args + "\"";
+                } else if (args.getClass().isEnum()) {
+                    Enum enumm = (Enum) args;
+                    return enumm.name();
+                } else if (args.getClass().isArray()) {
+                    Object[] list = (Object[]) args;
+                    String answer;
+                    answer = list.length + "{";
+                    for (int i = 0; i < list.length; i++) {
+                        answer += print(list[i]);
+                        if (i < list.length - 1) {
+                            answer += ", ";
+                        }
+                    }
+                    answer += "}";
+                    return answer;
+                } else if (args.equals(Object.class)) {
+                    return "[" + args.toString() + "]";
+                } else {
+                    throw new IllegalAccessException("unknown class");
+                }
+            }
+
             @Override
             public Object invoke(Object proxy, Method method,
                                  Object[] args) throws Throwable {
+
+                if (method == null) {
+                    throw new IllegalArgumentException("method is null");
+                }
+                method.setAccessible(true);
+
                 String stringToLog = "";
-                String nameMethod = method.toString();
-                String forPrint = nameMethod.substring(0, nameMethod.indexOf("("));
-                String[] nameMethods = forPrint.split("[\\s.]+");
-                stringToLog += nameMethods[nameMethods.length - 2] + "." + nameMethods[nameMethods.length - 1];
-                stringToLog += "(";
+                stringToLog += method.getDeclaringClass().getSimpleName() + ".";
+                stringToLog += method.getName() + "(";
+
 
                 ArrayList<String> answer = new ArrayList<String>();
-                boolean isWide = false;
+                boolean isWiden = false;
+
                 for (int i = 0; i < args.length; i++) {
                     answer.add(print(args[i]));
                     if (answer.get(answer.size() - 1).length() > 60) {
-                        isWide = true;
+                        isWiden = true;
                     }
                 }
+
+                if (isWiden) {
+                    stringToLog += "\n";
+                }
+
                 for (int i = 0; i < answer.size(); i++) {
-                    if (i == 0 && isWide) {
-                        stringToLog += "\n";
-                    }
-                    if (isWide) {
+                    if (isWiden) {
                         stringToLog += "  ";
                     }
                     stringToLog += answer.get(i);
                     if (i < answer.size() - 1) {
                         stringToLog += ",";
                     }
-                    if (isWide) {
+                    if (isWiden) {
                         stringToLog += "\n";
-                    } else {
-                        if (i < answer.size() - 1) {
-                            stringToLog += " ";
-                        }
+                    } else if (i < answer.size() - 1) {
+                        stringToLog += " ";
                     }
                 }
-                if (isWide) {
+                if (isWiden) {
                     stringToLog += "  ";
                 }
                 stringToLog += ")";
+
+
                 Object returned = new Object();
                 try {
                     returned = method.invoke(target, args);
-                    if (returned != null) {
-                        if (isWide) {
+                    if (!method.getReturnType().equals(void.class) && !method.getReturnType().equals(Void.class)) {
+                        if (isWiden) {
                             stringToLog += "\n  ";
                         } else {
                             stringToLog += " ";
                         }
                         stringToLog += "returned ";
-                        stringToLog += print(returned);
+                        stringToLog += print(returned) + "\n";
+                    } else {
+                        stringToLog += "\n";
                     }
                 } catch (Exception e) {
-                    StringWriter writer = new StringWriter();
-                    e.printStackTrace(new PrintWriter((writer)));
-                    if (isWide) {
+                    if (isWiden) {
                         stringToLog += "\n  ";
                     } else {
                         stringToLog += " ";
                     }
-                    stringToLog += writer.toString();
-                } finally {
-                    stringToLog += "\n";
+                    stringToLog += e.getClass().getCanonicalName() + ": " + e.getMessage() + '\n';
+                    StackTraceElement[] traceElements = e.getStackTrace();
+                    for (StackTraceElement iterator : traceElements) {
+                        if (isWiden) {
+                            stringToLog += "  ";
+                        }
+                        stringToLog += "  ";
+                        stringToLog += iterator.toString() + "\n";
+                    }
                 }
                 append.append(stringToLog);
                 return returned;
