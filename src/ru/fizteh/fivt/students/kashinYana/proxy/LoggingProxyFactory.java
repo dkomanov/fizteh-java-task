@@ -13,7 +13,7 @@ import java.util.HashSet;
 
 public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFactory {
 
-    LoggingProxyFactory() {
+    public LoggingProxyFactory() {
 
     }
 
