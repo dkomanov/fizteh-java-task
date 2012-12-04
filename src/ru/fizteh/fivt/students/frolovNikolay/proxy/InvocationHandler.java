@@ -40,7 +40,9 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         } else if (isPrimitive(clazz)) {
             stream.append(arg.toString());
         } else if (clazz.equals(Object.class)) {
-            stream.append('[' + arg.toString() + ']');
+            stream.append("\\[" + arg.toString() + "\\]");
+        } else {
+            throw new IllegalArgumentException("unsuported class: " + clazz.getSimpleName());
         }
     }
     
