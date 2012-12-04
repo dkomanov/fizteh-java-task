@@ -10,8 +10,25 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Vector;
+import java.util.*;
+
+class UserNameComparator implements Comparator<Vector<Object>> {
+    @Override
+    public int compare(Vector<Object> v1, Vector<Object> v2) {
+        if (v1.get(2).equals(v2.get(2))) {
+            return ((String) v1.get(3)).compareTo((String) v2.get(3));
+        } else {
+            return ((String) v1.get(2)).compareTo((String) v2.get(2));
+        }
+    }
+}
+
+class UserTypeComparator implements Comparator<Vector<Object>> {
+    @Override
+    public int compare(Vector<Object> v1, Vector<Object> v2) {
+        return ((String) v1.get(1)).compareTo((String) v2.get(1));
+    }
+}
 
 public class UserList extends JFrame {
     private JMenuBar menu;
@@ -24,7 +41,8 @@ public class UserList extends JFrame {
     private class Listener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent event) {
-            if (event.getActionCommand().equals("OPEN")) {
+            String actionCommand = event.getActionCommand();
+            if (actionCommand.equals("OPEN")) {
                 String fileName = JOptionPane.showInputDialog("Enter file name.");
                 if (fileName != null) {
                     xmlFile = new File(fileName);
@@ -35,14 +53,44 @@ public class UserList extends JFrame {
                         updateTable(xmlUserList.loadUsers(xmlFile));
                     }
                 }
-            } else if (event.getActionCommand().equals("SAVE")) {
-                save();
-            } else if (event.getActionCommand().equals("SAVE_AS")) {
+            } else if (actionCommand.equals("SAVE")) {
+                try {
+                    save();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(frame, "Incorrect list: " + e.getMessage());
+                }
+            } else if (actionCommand.equals("SAVE_AS")) {
+                File last = xmlFile;
                 String fileName = JOptionPane.showInputDialog("Enter file name.");
                 if (fileName != null && !fileName.equals("")) {
                     xmlFile = new File(fileName);
-                    save();
+                    try {
+                        save();
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(frame, "Incorrect list: " + e.getMessage());
+                        xmlFile = last;
+                    }
                 }
+            } else if (actionCommand.equals("SORT_NAME")) {
+                Collections.sort(users, new UserNameComparator());
+            } else if (actionCommand.equals("SORT_TYPE")) {
+                Collections.sort(users, new UserTypeComparator());
+            } else if (actionCommand.equals("NEW_USER")) {
+                Vector<Object> vector = new Vector<>();
+                vector.add(0);
+                vector.add(new String());
+                vector.add(new String());
+                vector.add(new String());
+                vector.add(false);
+                vector.add(0);
+                users.add(vector);
+                table.updateUI();
+            } else if (actionCommand.equals("DELETE_USER")) {
+                int num = table.getSelectedRow();
+                if (num == -1) {
+                    JOptionPane.showMessageDialog(frame, "No row has been selected.");
+                }
+                ((DefaultTableModel) table.getModel()).removeRow(num);
             }
         }
 
@@ -53,13 +101,15 @@ public class UserList extends JFrame {
             }
             ArrayList<User> usersList = new ArrayList<>();
             for (Vector<Object> vector : users) {
-                int id = Integer.parseInt((String) vector.get(0));
+                int id = (Integer) vector.get(0);
                 UserType userType = UserType.valueOf((String) vector.get(1));
                 if (userType == null) {
                     throw new RuntimeException("Incorrect user type.");
                 }
                 UserName name = new UserName((String) vector.get(2), (String) vector.get(3));
                 Permissions permissions = new Permissions();
+                permissions.setRoot((Boolean) vector.get(4));
+                permissions.setQuota((Integer) vector.get(5));
                 User user = new User(id, userType, name, permissions);
                 usersList.add(user);
             }
@@ -69,13 +119,26 @@ public class UserList extends JFrame {
         public void updateTable(ArrayList<User> list) {
             users.clear();
             for (User user : list) {
+                if (user == null) {
+                    continue;
+                }
                 Vector row = new Vector();
-                row.add(Integer.toString(user.getId()));
-                row.add(user.getUserType().toString());
-                row.add(user.getName().getFirstName());
-                row.add(user.getName().getLastName());
-                row.add(Boolean.toString(user.getPermissions().isRoot()));
-                row.add(Integer.toString(user.getPermissions().getQuota()));
+                row.add(user.getId());
+                row.add(user.getUserType() == null ? new String() : user.getUserType().toString());
+                UserName name = user.getName();
+                if (name == null) {
+                    row.add(new String());
+                    row.add(new String());
+                } else {
+                    row.add(name == null ? new String() : name.getFirstName());
+                    row.add(name == null ? new String() : name.getLastName());
+                }
+                Permissions permissions = user.getPermissions();
+                if (permissions == null) {
+                    permissions = new Permissions();
+                }
+                row.add(permissions.isRoot());
+                row.add(permissions.getQuota());
                 users.add(row);
             }
             table.updateUI();
@@ -118,6 +181,26 @@ public class UserList extends JFrame {
         fileSaveAs.setActionCommand("SAVE_AS");
         fileSaveAs.addActionListener(listener);
         file.add(fileSaveAs);
+        JMenu sort = new JMenu("Sort");
+        JMenuItem sortName = new JMenuItem("Name");
+        sortName.setActionCommand("SORT_NAME");
+        sortName.addActionListener(listener);
+        sort.add(sortName);
+        JMenuItem sortType = new JMenuItem("Type");
+        sortType.setActionCommand("SORT_TYPE");
+        sortType.addActionListener(listener);
+        sort.add(sortType);
+        menu.add(sort);
+        JMenu edit = new JMenu("Edit");
+        JMenuItem editNewUser = new JMenuItem("New user");
+        editNewUser.setActionCommand("NEW_USER");
+        editNewUser.addActionListener(listener);
+        edit.add(editNewUser);
+        JMenuItem editDeleteUser = new JMenuItem("Delete user");
+        editDeleteUser.setActionCommand("DELETE_USER");
+        editDeleteUser.addActionListener(listener);
+        edit.add(editDeleteUser);
+        menu.add(edit);
         setJMenuBar(menu);
     }
 
@@ -132,7 +215,28 @@ public class UserList extends JFrame {
         table = new JTable(new DefaultTableModel(
                 users,
                 names
-        ));
+        )) {
+            @Override
+            public Class getColumnClass(int column) {
+                switch (column) {
+                    case 0:
+                        return Integer.class;
+                    case 1:
+                        return String.class;
+                    case 2:
+                        return String.class;
+                    case 3:
+                        return String.class;
+                    case 4:
+                        return Boolean.class;
+                    case 5:
+                        return Integer.class;
+                    default:
+                        return String.class;
+                }
+            }
+        };
+        //table.setRowSorter(new TableRowSorter<>(table.getModel()));
         add(new JScrollPane(table));
     }
 }

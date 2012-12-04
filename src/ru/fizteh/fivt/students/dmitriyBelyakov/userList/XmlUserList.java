@@ -44,7 +44,7 @@ public class XmlUserList {
             NodeList nodeList = root.getChildNodes();
             for (int i = 0; i < nodeList.getLength(); ++i) {
                 Node node = nodeList.item(i);
-                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                if (node.getNodeType() == Node.ELEMENT_NODE && ((Element) node).getTagName().equals("user")) {
                     Element childElement = (Element) node;
                     User user = (User) deserializer.invoke(binder, childElement, User.class);
                     users.add(user);
