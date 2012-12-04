@@ -116,6 +116,11 @@ public class StringFormatter
     private Object getFromChain(String chain, Object... args)
         throws FormatterException {
 
+        if (args == null) {
+            throw new FormatterException(
+                "Null arguments array");
+        }
+
         StringTokenizer tok = new StringTokenizer(chain, ".");
         if (!tok.hasMoreTokens()) {
             throw new FormatterException("Empty index string");
@@ -138,10 +143,6 @@ public class StringFormatter
             throw new FormatterException(
                 "Argument index out of bounds: " + index,
                 out);
-        } catch (NullPointerException nullEx) {
-            throw new FormatterException(
-                "Null arguments array",
-                nullEx);
         }
         while (tok.hasMoreTokens()) {
             String field = tok.nextToken();

@@ -17,13 +17,23 @@ public class CalendarRunner {
         return (string == null) ? null : Integer.parseInt(string);
     }
 
-    public static void main(String[] args) throws KeyException {
+    public static void main(String[] args) {
         ArgumentsParser argumentsParser = new ArgumentsParser();
         argumentsParser.addKey("w");
         argumentsParser.addKey("y", true);
         argumentsParser.addKey("m", true);
         argumentsParser.addKey("t", true);
-        ArgumentsParser.ParseResult parseResult = argumentsParser.parse(args);
+        ArgumentsParser.ParseResult parseResult = null;
+        try {
+            parseResult = argumentsParser.parse(args);
+        } catch (KeyException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+        if (parseResult.other.length != 0) {
+            System.err.println("Unnecessary arguments");
+            System.exit(1);
+        }
         if (parseResult.hasProperty("t")) {
             String[] availableTimeZones = TimeZone.getAvailableIDs();
             String timeZone = parseResult.getProperty("t");
@@ -39,12 +49,21 @@ public class CalendarRunner {
                 System.exit(1);
             }
         }
-        CalendarPrinter calendarPrinter = new CalendarPrinter(
-                parseInt(parseResult.getProperty("y")),
-                parseInt(parseResult.getProperty("m")),
-                parseResult.hasProperty("w"),
-                //TimeZone.getTimeZone(parseResult.getProperty("t")));
-                parseResult.hasProperty("t") ? TimeZone.getTimeZone(parseResult.getProperty("t")) : null);
+        CalendarPrinter calendarPrinter = null;
+        try {
+            calendarPrinter = new CalendarPrinter(
+                    parseInt(parseResult.getProperty("y")),
+                    parseInt(parseResult.getProperty("m")),
+                    parseResult.hasProperty("w"),
+                    //TimeZone.getTimeZone(parseResult.getProperty("t")));
+                    parseResult.hasProperty("t") ? TimeZone.getTimeZone(parseResult.getProperty("t")) : null);
+        } catch (NumberFormatException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
         calendarPrinter.print();
     }
 }

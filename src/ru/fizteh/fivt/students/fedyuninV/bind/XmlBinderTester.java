@@ -40,6 +40,16 @@ public class XmlBinderTester {
     }
 
     @Test
+    public void incorrectMethodsNames2() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Incorrect annotations of methods.");
+        XmlBinder<WithElement1> binder = new XmlBinder<WithElement1>(WithElement1.class);
+        WithElement1 withElement1 = new WithElement1();
+        byte[] bytes = binder.serialize(withElement1);
+        WithElement1 deserialized = binder.deserialize(bytes);
+    }
+
+    @Test
     public void incorrectPairOfMethodsNames() {
         thrown.expect(RuntimeException.class);
         thrown.expectMessage("Two pairs of methods with the same names.");
@@ -93,5 +103,35 @@ public class XmlBinderTester {
         byte[] bytes = binder.serialize(innerClass);
         InnerClassTest.InnerClass deserialized = binder.deserialize(bytes);
         Assert.assertEquals(innerClass.getName(), deserialized.getName());
+    }
+
+    @Test
+    public void voidAnnotattionsTest() {
+        XmlBinder<VoidAnnotationsTest> binder
+                = new XmlBinder<VoidAnnotationsTest>(VoidAnnotationsTest.class);
+        VoidAnnotationsTest voidAnnotationsTest = new VoidAnnotationsTest("Valeriy", "Fedyunin", 18);
+        byte[] bytes = binder.serialize(voidAnnotationsTest);
+        VoidAnnotationsTest deserialized = binder.deserialize(bytes);
+        Assert.assertTrue(deserialized.equals(voidAnnotationsTest));
+    }
+
+    @Test
+    public void testWithElement() {
+        XmlBinder<WithElement2> binder = new XmlBinder<WithElement2>(WithElement2.class);
+        WithElement2 withElement2 = new WithElement2();
+        withElement2.setValue1("value-1");
+        withElement2.setValue2("value-2");
+        withElement2.setValue3("value-3");
+        byte[] bytes = binder.serialize(withElement2);
+        WithElement2 deserialized = binder.deserialize(bytes);
+        Assert.assertTrue(deserialized.equals(withElement2));
+    }
+
+    @Test
+    public void methodsAnnotationsFail() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Incorrect annotations of methods.");
+        XmlBinder<MethodsAnnotationsFail> binder
+                = new XmlBinder<MethodsAnnotationsFail>(MethodsAnnotationsFail.class);
     }
 }

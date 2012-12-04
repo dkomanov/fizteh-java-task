@@ -9,18 +9,25 @@ public class StringFormatterFactory implements
     @Override
     public ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter create(
             String... extensionClassNames) throws FormatterException {
-        try {
-            ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter stringFormatter = new ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter();
-            for (String className : extensionClassNames) {
-                stringFormatter
-                        .addToExtensions((StringFormatterExtension) Class
-                                .forName(className).newInstance());
-            }
-            return stringFormatter;
-
-        } catch (Exception e) {
-            throw new FormatterException("Extension is not supported", e);
+        if (extensionClassNames == null) {
+            throw new FormatterException("No extensions");
         }
-    }
+        ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter stringFormatter = new ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter();
+        for (String className : extensionClassNames) {
+            if (className == null) {
+                throw new FormatterException("Bad classname");
+            }
 
+            try {
+                StringFormatterExtension ext = (StringFormatterExtension) Class
+                        .forName(className).newInstance();
+                stringFormatter.addToExtensions(ext);
+            } catch (Exception e) {
+                throw new FormatterException("Extension is not supported: "
+                        + className, e);
+            }
+        }
+        return stringFormatter;
+
+    }
 }

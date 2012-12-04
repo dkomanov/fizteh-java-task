@@ -7,6 +7,7 @@ import java.util.Formatter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import ru.fizteh.fivt.format.FormatterException;
 
@@ -73,6 +74,30 @@ public class TestFormatter {
     }
 
     @Test(expected = FormatterException.class)
+    public void testExtn1() {
+        ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter formatterTest = new StringFormatterFactory()
+                .create(testDouble.getClass().toString());
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testExtn2() {
+        ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter formatterTest = new StringFormatterFactory()
+                .create(int.class.toString());
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testExtn3() {
+        ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter formatterTest = new StringFormatterFactory()
+                .create(null);
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testNullToFabric() {
+        StringFormatterFactory stringFormatterFactory = new StringFormatterFactory();
+        stringFormatterFactory.create(null);
+    }
+
+    @Test(expected = FormatterException.class)
     public void testBadPatternBigInteger() {
         BigInteger b = new BigInteger("100500");
         formatter.format("{0:...}", b);
@@ -101,6 +126,21 @@ public class TestFormatter {
     @Test(expected = FormatterException.class)
     public void testBadIndex() {
         formatter.format("{-0}", testDouble.d1);
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testBadDots1() {
+        formatter.format("{0.}", "1");
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testBadDots2() {
+        formatter.format("{0.}", 1);
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testBadDots3() {
+        formatter.format("{0.d1.}", testDouble);
     }
 
     @Test
@@ -168,6 +208,7 @@ public class TestFormatter {
 
         result = formatter.format("{0.testNull.nullAgain.t.d3}", testNull2);
         Assert.assertEquals("", result);
+
     }
 
 }
