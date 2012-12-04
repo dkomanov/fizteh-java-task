@@ -67,9 +67,9 @@ public class UnitTest {
 
         public Long getCount(Long count);
 
-        int sum(int num1, int num2);
+        public int sum(int num1, int num2);
 
-        Long multiplication(Long num1, Long num2);
+        public Long multiplication(Long num1, Long num2);
 
         @Collect
         public int getDay();
@@ -78,7 +78,7 @@ public class UnitTest {
         public void addToList(List<Integer> l);
 
         @Collect
-        void throwRuntimeException();
+        public void throwRuntimeException();
     }
 
     class MyTestClass implements MyInterface {
@@ -164,14 +164,20 @@ public class UnitTest {
         Assert.assertEquals(l.size(), 3);
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testThrowingRuntimeException() {
+    @Test
+    public void negativeIndexShouldFail2() {
         Object[] targets = new Object[1];
         targets[0] = new MyTestClass();
         Class[] interfaces = new Class[1];
         interfaces[0] = MyInterface.class;
         ShardingProxyFactory spf = new ShardingProxyFactory();
         MyInterface mi = (MyInterface)spf.createProxy(targets, interfaces);
-        mi.throwRuntimeException();
+        try {
+            mi.throwRuntimeException();
+        } catch (Throwable t) {
+            Throwable th = t.getCause().getCause();
+            Assert.assertEquals(th.getClass(), RuntimeException.class);
+            Assert.assertEquals(th.getMessage(), "RuntimeException");
+        }
     }
 }

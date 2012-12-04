@@ -24,9 +24,8 @@ public class MyInvocationHandler implements  InvocationHandler {
             throw new IllegalArgumentException("Nullpointer method");
         }
 
-        method.setAccessible(true);
         if (method.getAnnotation(DoNotProxy.class) != null) {
-            throw new IllegalArgumentException("Bad method");
+            throw new IllegalArgumentException("Bad method: flag DoNotProxy is set");
         }
         if (method.getAnnotation(Collect.class) == null) {
             for (Object o : args) {
@@ -69,8 +68,8 @@ public class MyInvocationHandler implements  InvocationHandler {
                 }
                 return obj;
             }
-            throw new IllegalArgumentException("Bad method");
+            throw new IllegalArgumentException("Unsuitable method is found");
         }
-        throw new IllegalArgumentException("Bad args");
+        throw new IllegalArgumentException("No suitable arguments");
     }
 }
