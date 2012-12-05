@@ -15,7 +15,6 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
     private boolean tooLong;
     private final int ARG_MAX_LENGTH = 60;
     private Map<String, String> screenMap = new HashMap<>();
-    private Map<Object, Object> parsedObjects = new IdentityHashMap<>();
     private final Object PARSED = new Object();
 
     public InvocationHandler(Object target, Appendable writer) {
@@ -70,13 +69,13 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         return builder.toString();
     }
 
-    private String arrayToString(Object toPrint) {
+    private String arrayToString(Object toPrint, Map<Object, Object> parsedObjects) {
         StringBuilder builder = new StringBuilder();
         Object[] array = (Object[]) toPrint;
         builder.append(array.length);
         builder.append('{');
         for (int i = 0; i < array.length; i++) {
-            builder.append(wrapInQuotes(printObject(array[i])));
+            builder.append(wrapInQuotes(printObject(array[i], parsedObjects)));
             if (i != array.length - 1) {
                 builder.append(", ");
             }
@@ -85,7 +84,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         return builder.toString();
     }
 
-    private String printObject(Object toPrint) {
+    private String printObject(Object toPrint, Map<Object, Object> parsedObjects) {
         if (toPrint == null) {
             return "null";
         }
@@ -100,7 +99,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
             return ((Enum) toPrint).name();
         }
         if (clazz.isArray()) {
-            return arrayToString(toPrint);
+            return arrayToString(toPrint, parsedObjects);
         }
         if (clazz.equals(String.class)) {
             return wrapInQuotes(toPrint.toString());
@@ -112,12 +111,12 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         return builder.toString();
     }
 
-    private String parseArgs(Object[] args) {
+    private String parseArgs(Object[] args, Map<Object, Object> parsedObjects) {
         parsedObjects.clear();
         String[] parsedArgs = new String[args.length];
         for (int i = 0; i < args.length; i++) {
             parsedObjects.clear();
-            parsedArgs[i] = printObject(args[i]);
+            parsedArgs[i] = printObject(args[i], parsedObjects);
             if (parsedArgs[i].length() >= ARG_MAX_LENGTH) {
                 tooLong = true;
             }
@@ -146,6 +145,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        Map<Object, Object> parsedObjects = new IdentityHashMap<>();
         method.setAccessible(true);
         tooLong = false;
         StringBuilder logger = new StringBuilder();
@@ -154,7 +154,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         logger.append(method.getName());
         logger.append('(');
         if (args != null) {
-            logger.append(parseArgs(args));
+            logger.append(parseArgs(args, parsedObjects));
         }
         if (tooLong) {
             logger.append("  ");
@@ -167,7 +167,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
             Object result = method.invoke(target, args);
             logger.append(" returned ");
             parsedObjects.clear();
-            logger.append(printObject(result));
+            logger.append(printObject(result, parsedObjects));
             logger.append('\n');
             return result;
         } catch (Throwable ex) {
