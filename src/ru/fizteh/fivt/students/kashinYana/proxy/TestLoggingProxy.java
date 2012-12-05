@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.kashinYana.proxy;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -81,6 +82,7 @@ public class TestLoggingProxy {
         test1();
         test2();
         test3();
+        test4();
     }
 
     static void test1() {
@@ -118,7 +120,7 @@ public class TestLoggingProxy {
         log.getArray(num);
         Object all[] = {num, 3, Season.SPRING, "hihihhi"};
         log.getArray(all);
-        Object allWithLongString[] = {veryLongString, num, 3, Season.SPRING, "\f\'\"\b\rhihihhi\n\t"};
+        Object allWithLongString[] = {veryLongString, num, 3, Season.SPRING, "/\f'\"\b\rhihihhi\\\n\t"};
         log.getArray(allWithLongString);
         test(writer.toString(), "InterfaceToProxy.get2(5) returned 5\n" +
                 "InterfaceToProxy.getNull(77) returned null\n" +
@@ -128,10 +130,28 @@ public class TestLoggingProxy {
                 "InterfaceToProxy.getArray(4{6{\"dfg\", 20, 45, 82, 25, 63}, 3, SPRING, \"hihihhi\"}) returned 100\n" +
                 "InterfaceToProxy.getArray(\n" +
                 "  5{\"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\"," +
-                " 6{\"dfg\", 20, 45, 82, 25, 63}, 3, SPRING, \"\\f\\'\\\"\\b\\rhihihhi\\n\\t\"}\n" +
+                " 6{\"dfg\", 20, 45, 82, 25, 63}, 3, SPRING, \"/\\f'\\\"\\b\\rhihihhi\\\\\\n\\t\"}\n" +
                 "  )\n" +
                 "  returned 100\n");
     }
+
+    static void test4() {
+        StringWriter writer = new StringWriter();
+        try {
+            InterfaceToProxy log = (InterfaceToProxy)
+                    factory.createProxy(target, writer, null);
+        } catch (Exception e) {
+            test(e.getMessage(), "Don't give me null interfaces, 3-args");
+        }
+        InterfaceToProxy log = (InterfaceToProxy)
+                factory.createProxy(target, writer, InterfaceToProxy.class);
+        log.toString();
+        class SimpleClass {
+
+        }
+        Object log2 = factory.createProxy(new SimpleClass(), writer, new Class[0]);
+    }
+
 
     static void test(String answerProgram, String answerCorrent) {
         if (!answerCorrent.equals(answerProgram)) {

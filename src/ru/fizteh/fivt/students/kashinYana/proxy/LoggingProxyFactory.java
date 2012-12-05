@@ -6,7 +6,6 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.regex.Matcher;
 
 /**
  * Kashinskaya Yana
@@ -29,10 +28,18 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
         if (interfaces == null) {
             throw new IllegalArgumentException("Don't give me null interfaces, 3-args");
         }
-
-        ArrayList<Class<?>> interfacesTarget = new ArrayList<Class<?>>(Arrays.asList(target.getClass().getInterfaces()));
-        HashSet<Class<?>> sortedInterfaces = new HashSet<Class<?>>(interfacesTarget);
+        ArrayList<Class<?>> interfacesTarget;
+        HashSet<Class<?>> sortedInterfaces;
+        try {
+            interfacesTarget = new ArrayList<Class<?>>(Arrays.asList(target.getClass().getInterfaces()));
+            sortedInterfaces = new HashSet<Class<?>>(interfacesTarget);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Don't take interfaces");
+        }
         for (Class<?> iterface : interfaces) {
+            if(iterface == null) {
+                throw new IllegalArgumentException("interface null");
+            }
             if (iterface.getMethods().length == 0) {
                 throw new IllegalArgumentException("Interface have got several methods");
             }
@@ -63,18 +70,12 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                         || classExample.equals(Character.class));
             }
 
-            public String toHex(int c, int width) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(Integer.toHexString(c));
-                while (sb.length() < width) sb.insert(0, '0');
-                return sb.toString();
-            }
 
             String screening(String string) {
+                string = string.replaceAll("\\\\", "\\\\\\\\");    //это действительно так пишется, тестрировано
                 string = string.replaceAll("\n", "\\\\n");
                 string = string.replaceAll("\t", "\\\\t");
                 string = string.replaceAll("\f", "\\\\f");
-                string = string.replaceAll("\'", "\\\\'");
                 string = string.replaceAll("\"", "\\\\\"");
                 string = string.replaceAll("\b", "\\\\b");
                 string = string.replaceAll("\r", "\\\\r");
@@ -127,10 +128,12 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 ArrayList<String> answer = new ArrayList<String>();
                 boolean isWiden = false;
 
-                for (int i = 0; i < args.length; i++) {
-                    answer.add(print(args[i]));
-                    if (answer.get(answer.size() - 1).length() > 60) {
-                        isWiden = true;
+                if(args != null) {
+                    for (int i = 0; i < args.length; i++) {
+                        answer.add(print(args[i]));
+                        if (answer.get(answer.size() - 1).length() > 60) {
+                            isWiden = true;
+                        }
                     }
                 }
 
@@ -158,7 +161,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 stringToLog += ")";
 
 
-                Object returned = new Object();
+                Object returned;
                 try {
                     returned = method.invoke(target, args);
                     if (!method.getReturnType().equals(void.class) && !method.getReturnType().equals(Void.class)) {
