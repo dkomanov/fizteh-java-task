@@ -143,7 +143,7 @@ public class UnitTest {
         new ShardingProxyFactory().createProxy(targets, interfaces);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalStateException.class)
     public void  testDoNotProxyMethod() {
         Object[] targets = new Object[1];
         targets[0] = new MyTestClass();
