@@ -71,19 +71,44 @@ class InterfaceToProxyImplementation
 enum Season {WINTER, SPRING, SUMMER, AUTUMN};
 
 public class TestLoggingProxy {
+
+    static InterfaceToProxyImplementation target = new InterfaceToProxyImplementation();
+    static LoggingProxyFactory factory = new LoggingProxyFactory();
+    static String veryLongString = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+
     static public void main(String[] args) throws Exception {
-        InterfaceToProxyImplementation target = new InterfaceToProxyImplementation();
-        LoggingProxyFactory factory = new LoggingProxyFactory();
+
+        test1();
+        test2();
+        test3();
+    }
+
+    static void test1() {
         StringWriter writer = new StringWriter();
         InterfaceToProxy log = (InterfaceToProxy)
                 factory.createProxy(target, writer, InterfaceToProxy.class);
-
-        String veryLongString = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-        log.exception("somethink");
-        log.exception(veryLongString);
-
         log.get("one", "two", 6);
+        test(writer.toString(), "InterfaceToProxy.get(\"one\", \"two\", 6) returned \"one\"\n");
+    }
+
+    static void test2() {
+        StringWriter writer = new StringWriter();
+        InterfaceToProxy log = (InterfaceToProxy)
+                factory.createProxy(target, writer, InterfaceToProxy.class);
         log.get(veryLongString, "two", 6);
+        test(writer.toString(), "InterfaceToProxy.get(\n" +
+                "  \"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\n" +
+                "  \"two\",\n" +
+                "  6\n" +
+                "  )\n" +
+                "  returned \"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\"\n");
+
+    }
+
+    static void test3() {
+        StringWriter writer = new StringWriter();
+        InterfaceToProxy log = (InterfaceToProxy)
+                factory.createProxy(target, writer, InterfaceToProxy.class);
 
         log.get2(5);
         log.getNull(77);
@@ -93,9 +118,25 @@ public class TestLoggingProxy {
         log.getArray(num);
         Object all[] = {num, 3, Season.SPRING, "hihihhi"};
         log.getArray(all);
-        Object allWithLongString[] = {veryLongString, num, 3, Season.SPRING, "hihihhi"};
+        Object allWithLongString[] = {veryLongString, num, 3, Season.SPRING, "\f\'\"\b\rhihihhi\n\t"};
         log.getArray(allWithLongString);
+        test(writer.toString(), "InterfaceToProxy.get2(5) returned 5\n" +
+                "InterfaceToProxy.getNull(77) returned null\n" +
+                "InterfaceToProxy.getDouble(0.5, 0.6, 0.7) returned 0.5\n" +
+                "InterfaceToProxy.getEnum(WINTER)\n" +
+                "InterfaceToProxy.getArray(6{\"dfg\", 20, 45, 82, 25, 63}) returned 100\n" +
+                "InterfaceToProxy.getArray(4{6{\"dfg\", 20, 45, 82, 25, 63}, 3, SPRING, \"hihihhi\"}) returned 100\n" +
+                "InterfaceToProxy.getArray(\n" +
+                "  5{\"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\"," +
+                " 6{\"dfg\", 20, 45, 82, 25, 63}, 3, SPRING, \"\\f\\'\\\"\\b\\rhihihhi\\n\\t\"}\n" +
+                "  )\n" +
+                "  returned 100\n");
+    }
 
-        System.out.println(writer.toString());
+    static void test(String answerProgram, String answerCorrent) {
+        if (!answerCorrent.equals(answerProgram)) {
+            System.err.println("Don't correct. Correct:\n" + answerCorrent + "\n Your:\n" + answerProgram);
+            System.exit(1);
+        }
     }
 }

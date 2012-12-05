@@ -6,6 +6,7 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.regex.Matcher;
 
 /**
  * Kashinskaya Yana
@@ -62,13 +63,31 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                         || classExample.equals(Character.class));
             }
 
+            public String toHex(int c, int width) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(Integer.toHexString(c));
+                while (sb.length() < width) sb.insert(0, '0');
+                return sb.toString();
+            }
+
+            String screening(String string) {
+                string = string.replaceAll("\n", "\\\\n");
+                string = string.replaceAll("\t", "\\\\t");
+                string = string.replaceAll("\f", "\\\\f");
+                string = string.replaceAll("\'", "\\\\'");
+                string = string.replaceAll("\"", "\\\\\"");
+                string = string.replaceAll("\b", "\\\\b");
+                string = string.replaceAll("\r", "\\\\r");
+                return string;
+            }
+
             String print(Object args) throws IllegalAccessException {
                 if (args == null) {
                     return "null";
                 } else if (isPrimitiveType(args.getClass())) {
                     return args.toString();
                 } else if (args.getClass().equals(String.class)) {
-                    return "\\\"" + args + "\\\"";
+                    return "\"" + screening(args.toString()) + "\"";
                 } else if (args.getClass().isEnum()) {
                     Enum enumm = (Enum) args;
                     return enumm.name();
@@ -85,7 +104,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                     answer += "}";
                     return answer;
                 } else if (args.equals(Object.class)) {
-                    return "\\[" + args.toString() + "\\]";
+                    return "[" + screening(args.toString()) + "]";
                 } else {
                     throw new IllegalAccessException("unknown class");
                 }
@@ -168,6 +187,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                         stringToLog += "  ";
                         stringToLog += iterator.toString() + "\n";
                     }
+                    throw  e;
                 }
                 append.append(stringToLog);
                 return returned;
