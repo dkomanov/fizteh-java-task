@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.frolovNikolay.proxy;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 
 public class InvocationHandler implements java.lang.reflect.InvocationHandler {
     private Object target;
@@ -20,29 +21,81 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 || clazz.equals(Boolean.class) || clazz.equals(Byte.class);
     }
     
-    private void specialToString(Class<?> clazz, Object arg, StringBuilder stream) {
+    private void specialToString(Class<?> clazz, Object arg, StringBuilder stream,
+            IdentityHashMap<Object, Object> cycleInterrupter) throws Throwable {
+
         if (arg == null) {
             stream.append("null");
-        } else if (clazz.isArray()) {
+        } else {
+            if (cycleInterrupter.containsKey(arg)) {
+                throw new Exception("cyclical references");
+            }
+            cycleInterrupter.put(arg, null);
+            if (clazz.isArray()) {
             Object[] args = (Object[]) arg;
             stream.append(args.length + "{");
             for (int i = 0; i < args.length; ++i) {
-                specialToString(args[i].getClass(), args[i], stream);
+                specialToString(args[i].getClass(), args[i], stream, cycleInterrupter);
                 if (i + 1 != args.length) {
                     stream.append(", ");
                 }
             }
             stream.append("}");
-        } else if (clazz.equals(String.class)) {
-            stream.append("\\\"" + arg + "\\\"");
-        } else if (clazz.isEnum()) {
-            stream.append(((Enum) arg).name());
-        } else if (isPrimitive(clazz)) {
-            stream.append(arg.toString());
-        } else if (clazz.equals(Object.class)) {
-            stream.append("\\[" + arg.toString() + "\\]");
-        } else {
-            throw new IllegalArgumentException("unsuported class: " + clazz.getSimpleName());
+            } else if (clazz.equals(String.class)) {
+                stream.append("\"");
+                for (int i = 0; i < arg.toString().length(); ++i) {
+                    if (arg.toString().charAt(i) == '\t') {
+                        stream.append("\\t");
+                    } else if (arg.toString().charAt(i) == '\b') {
+                        stream.append("\\b");
+                    } else if (arg.toString().charAt(i) == '\n') {
+                        stream.append("\\n");
+                    } else if (arg.toString().charAt(i) == '\r') {
+                        stream.append("\\r");
+                    } else if (arg.toString().charAt(i) == '\f') {
+                        stream.append("\\f");
+                    } else if (arg.toString().charAt(i) == '\'') {
+                        stream.append("\\\'");
+                    } else if (arg.toString().charAt(i) == '\"') {
+                        stream.append("\\\"");
+                    } else if (arg.toString().charAt(i) == '\\') {
+                        stream.append("\\\\");
+                    } else {
+                        stream.append(arg.toString().charAt(i));
+                    }
+                }
+                stream.append("\"");
+            } else if (clazz.isEnum()) {
+                stream.append(((Enum) arg).name());
+            } else if (isPrimitive(clazz)) {
+                stream.append(arg.toString());
+            } else if (clazz.equals(Object.class)) {
+                stream.append("[");
+                for (int i = 0; i < arg.toString().length(); ++i) {
+                    if (arg.toString().charAt(i) == '\t') {
+                        stream.append("\\t");
+                    } else if (arg.toString().charAt(i) == '\b') {
+                        stream.append("\\b");
+                    } else if (arg.toString().charAt(i) == '\n') {
+                        stream.append("\\n");
+                    } else if (arg.toString().charAt(i) == '\r') {
+                        stream.append("\\r");
+                    } else if (arg.toString().charAt(i) == '\f') {
+                        stream.append("\\f");
+                    } else if (arg.toString().charAt(i) == '\'') {
+                        stream.append("\\\'");
+                    } else if (arg.toString().charAt(i) == '\"') {
+                        stream.append("\\\"");
+                    } else if (arg.toString().charAt(i) == '\\') {
+                        stream.append("\\\\");
+                    } else {
+                        stream.append(arg.toString().charAt(i));
+                    }
+                }
+                stream.append("]");
+            } else {
+                throw new IllegalArgumentException("unsupported class: " + clazz.getSimpleName());
+            }
         }
     }
     
@@ -56,8 +109,9 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         Class<?>[] parameters = method.getParameterTypes();
         ArrayList<String> parametersNames = new ArrayList<String>();
         for (int i = 0; i < parameters.length; ++i) {
+            IdentityHashMap<Object, Object> cycleInterrupter = new IdentityHashMap<Object, Object>(); 
             StringBuilder stream = new StringBuilder();
-            specialToString(parameters[i], args[i], stream);
+            specialToString(parameters[i], args[i], stream, cycleInterrupter);
             String currentName = stream.toString();
             if (currentName.length() > 60) {
                 isExtendedOutput = true;
@@ -65,10 +119,10 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             parametersNames.add(currentName);
         }
         
-        writer.append(method.getDeclaringClass().getSimpleName() + '.');
-        writer.append(method.getName() + '(');
+        writer.append(method.getDeclaringClass().getSimpleName() + ".");
+        writer.append(method.getName() + "(");
         if (isExtendedOutput) {
-            writer.append('\n');
+            writer.append("\n");
         }
         for (int i = 0; i < parametersNames.size(); ++i) {
             if (isExtendedOutput) {
@@ -76,22 +130,22 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             }
             writer.append(parametersNames.get(i));
             if (i + 1 != parametersNames.size()) {
-                writer.append(',');
+                writer.append(",");
             }
             if (isExtendedOutput) {
-                writer.append('\n');
+                writer.append("\n");
             } else if (i + 1 != parametersNames.size()) {
-                writer.append(' ');
+                writer.append(" ");
             }
         }
         if (isExtendedOutput) {
             writer.append("  ");
         }
-        writer.append(')');
+        writer.append(")");
         if (isExtendedOutput) {
-            writer.append('\n');
+            writer.append("\n");
         } else {
-            writer.append(' ');
+            writer.append(" ");
         }
         
         Object result = null;
@@ -102,25 +156,24 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 writer.append("  ");
             }
             writer.append(exception.getClass().getCanonicalName() + ": " + exception.getMessage() + '\n');
-            StackTraceElement[] traceElements = exception.getStackTrace();
-            for (StackTraceElement iter : traceElements) {
-                if (isExtendedOutput) {
-                    writer.append("  ");
-                }
+            if (isExtendedOutput) {
                 writer.append("  ");
-                writer.append(iter.toString() + '\n');
             }
-            return null;
+            writer.append("  ");
+            writer.append(exception.getStackTrace()[0].toString() + "\n");
+            throw exception;
+            
         }
         if (!method.getReturnType().equals(void.class) && !method.getReturnType().equals(Void.class)) {
             StringBuilder stream = new StringBuilder();
-            specialToString(result.getClass(), result, stream);
+            IdentityHashMap<Object, Object> cycleInterrupter = new IdentityHashMap<Object, Object>();
+            specialToString(result.getClass(), result, stream, cycleInterrupter);
             if (isExtendedOutput) {
                 writer.append("  ");
             }
             writer.append("returned " + stream.toString());
         }
-        writer.append('\n');
+        writer.append("\n");
         return result;
     }
 }

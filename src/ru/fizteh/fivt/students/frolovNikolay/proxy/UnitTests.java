@@ -17,7 +17,7 @@ public class UnitTests {
     
     private interface TestClassInterface2 {
         
-        public boolean method5(String firstArg, String secondArg);
+        public boolean method5(String firstArg, String secondArg) throws Throwable;
         
         public boolean method6(String[] firstArg, Integer secondArg);
     }
@@ -49,7 +49,10 @@ public class UnitTests {
         }
         
         @Override
-        public boolean method5(String firstArg, String secondArg) {
+        public boolean method5(String firstArg, String secondArg) throws Throwable {
+            if (firstArg == null || secondArg == null) {
+                throw new Exception("null pointer");
+            }
             return firstArg.equals(secondArg);
         }
         
@@ -60,19 +63,26 @@ public class UnitTests {
     }
 
     @Test
-    public void validityTest() {
+    public void validityTest() throws Throwable {
         StringBuffer stream = new StringBuffer();
         TestClass myClass = new TestClass();
         Class<?>[] interfaces = new Class<?>[2];
         interfaces[0] = TestClassInterface.class;
         interfaces[1] = TestClassInterface2.class;
         TestClassInterface2 myClass2 = (TestClassInterface2) new LoggingProxyFactory().createProxy(myClass, stream, interfaces);
-        myClass2.method5("hello", "hello");
+        myClass2.method5("hello" + "\t" + "my friend", "hello" + "\t" + "my friend");
         String[] stringArray = {"hello", "my", "friend"};
-        Assert.assertEquals("TestClassInterface2.method5(\\\"hello\\\", \\\"hello\\\") returned true\n", stream.toString());
+        Assert.assertEquals("TestClassInterface2.method5(\"hello\\tmy friend\", \"hello\\tmy friend\") returned true\n", stream.toString());
+        stream.setLength(0);
+        try {
+            myClass2.method5(null, null);
+        } catch (Throwable exception) {
+            Assert.assertEquals("TestClassInterface2.method5(null, null) java.lang.reflect.InvocationTargetException: null"
+                    + "\n" + "  sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)" + "\n", stream.toString());
+        }
         stream.setLength(0);
         myClass2.method6(stringArray, 3);
-        Assert.assertEquals("TestClassInterface2.method6(3{\\\"hello\\\", \\\"my\\\", \\\"friend\\\"}, 3) returned true\n", stream.toString());
+        Assert.assertEquals("TestClassInterface2.method6(3{\"hello\", \"my\", \"friend\"}, 3) returned true\n", stream.toString());
     }
     
     @Test(expected = IllegalArgumentException.class)
