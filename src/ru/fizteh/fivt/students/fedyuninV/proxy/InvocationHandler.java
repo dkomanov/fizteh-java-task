@@ -87,7 +87,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         }
         StringBuilder builder = new StringBuilder();
         builder.append('[');
-        builder.append(toPrint.toString());
+        builder.append(screen(toPrint.toString()));
         builder.append(']');
         return builder.toString();
     }
