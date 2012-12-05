@@ -1,6 +1,8 @@
 package ru.fizteh.fivt.students.fedyuninV.proxy;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Fedyunin Valeriy
@@ -11,12 +13,24 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
     private Object target;
     private boolean tooLong;
     private final int ARG_MAX_LENGTH = 60;
+    private Map<String, String> screenMap = new HashMap<>();
 
     public InvocationHandler(Object target, Appendable writer) {
         this.target = target;
         this.writer = writer;
+        screenMap.put("\n", "\\\n");
+        screenMap.put("\r", "\\\r");
+        screenMap.put("\b", "\\\b");
+        screenMap.put("\t", "\\\t");
+        screenMap.put("\f", "\\\f");
     }
 
+    private String screen(String s) {
+        for (Map.Entry<String, String> it: screenMap.entrySet()) {
+            s = s.replaceAll(it.getKey(), it.getValue());
+        }
+        return s;
+    }
 
     private boolean isPrimitive(Class classExample) {
         return (classExample.isPrimitive()
@@ -30,10 +44,11 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
                 ||  classExample.equals(Character.class));
     }
 
+
     private String wrapInQuotes(String s) {
         StringBuilder builder = new StringBuilder();
         builder.append('\"');
-        builder.append(s);
+        builder.append(screen(s));
         builder.append('\"');
         return builder.toString();
     }
@@ -112,6 +127,8 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         method.setAccessible(true);
         tooLong = false;
         StringBuilder logger = new StringBuilder();
+        logger.append(method.getDeclaringClass().getSimpleName());
+        logger.append('.');
         logger.append(method.getName());
         logger.append('(');
         logger.append(parseArgs(args));
