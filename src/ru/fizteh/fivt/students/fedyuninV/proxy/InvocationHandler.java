@@ -18,11 +18,11 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
     public InvocationHandler(Object target, Appendable writer) {
         this.target = target;
         this.writer = writer;
-        screenMap.put("\n", "\\\n");
-        screenMap.put("\r", "\\\r");
-        screenMap.put("\b", "\\\b");
-        screenMap.put("\t", "\\\t");
-        screenMap.put("\f", "\\\f");
+        screenMap.put("\n", "\\\\n");
+        screenMap.put("\r", "\\\\r");
+        screenMap.put("\b", "\\\\b");
+        screenMap.put("\t", "\\\\t");
+        screenMap.put("\f", "\\\\f");
     }
 
     private String screen(String s) {

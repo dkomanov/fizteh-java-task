@@ -82,4 +82,45 @@ public class ProxyTest {
         Assert.assertEquals(builder.toString(),
                 "SetArrays.setArray(3{\"3.1415\", \"1.02\", \"23.04\"}) returned 3{\"3.1415\", \"1.02\", \"23.04\"}\n");
     }
+
+    @Test
+    public void noTabExceptionTest() {
+        List<String> list = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
+        proxy.add(3, "wtf1");
+        String[] strings = builder.toString().split("\\n");
+        for (int i = 1; i < strings.length; i++) {  //starts from i=1 because first string doesn't have space prefix
+            Assert.assertTrue(strings[i].startsWith("  "));
+        }
+    }
+
+    @Test
+    public void tabExceptionTest() {
+        List<String> list = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
+        proxy.add(3, "too long too long too long too long too long too long too long too long too long too long");
+        String[] strings = builder.toString().split("\\n");
+        String prefix = "  ";
+        for (int i = 1; i < strings.length; i++) {
+            Assert.assertTrue(strings[i].startsWith(prefix));
+            if (strings[i].startsWith("  threw")) { //after "  threw  *** exception
+                prefix = "    ";                    //we have 4 spaces in front of string
+            }
+        }
+    }
+
+    @Test
+    public void screeningTest() {
+        List<String> list = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
+        proxy.add("wtf1\n" +
+                "wtf2");
+        Assert.assertEquals(builder.toString(), "List.add(\"wtf1\\nwtf2\") returned true\n");
+    }
 }
