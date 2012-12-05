@@ -36,6 +36,8 @@ public class TestProxy {
         void getException();
 
         String getHello();
+
+        Object testBadRef();
     }
 
     class SimpleClass implements SimpleInterface {
@@ -53,6 +55,13 @@ public class TestProxy {
         @Override
         public void getException() {
             throw new RuntimeException("I am an exception");
+        }
+
+        @Override
+        public Object testBadRef() {
+            Object[] array = new Object[1];
+            array[0] = array;
+            return array;
         }
 
     }
@@ -150,13 +159,13 @@ public class TestProxy {
         Assert.assertTrue(writer
                 .toString()
                 .contains(
-                        "ExtendedInterface.iAmJustVeryVeryBigMethodNameAndICanBeEvenBiggerExclamationMark(100500\n)"));
+                        "ExtendedInterface.iAmJustVeryVeryBigMethodNameAndICanBeEvenBiggerExclamationMark(100500)"));
         proxy.getException("This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end");
         Assert.assertTrue(writer
                 .toString()
                 .contains(
                         "ExtendedInterface.getException(\"This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end\"\n) \nthrew"));
-        System.out.println(writer);
+        // System.out.println(writer);
 
     }
 
@@ -169,6 +178,7 @@ public class TestProxy {
                 classTestEscape, writer, InterfaceTestEscape.class);
         proxy.testEscape("yet another string");
         String returned = writer.toString();
+        // System.out.println(returned);
         Assert.assertTrue(returned
                 .contains("\"\\n\\t String: \\nyet another string\\n\""));
     }
