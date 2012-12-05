@@ -18,19 +18,9 @@ import java.util.ArrayList;
 
 public class XmlUserList {
     private XmlBinder<User> binder;
-    private Method serializer;
-    private Method deserializer;
 
     public XmlUserList() {
         binder = new XmlBinder<User>(User.class);
-        try {
-            serializer = XmlBinder.class.getDeclaredMethod("serializeObjectToWriter", Object.class, XMLStreamWriter.class);
-            deserializer = XmlBinder.class.getDeclaredMethod("deserializeToValue", Element.class, Class.class);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException("Cannot create object.", e);
-        }
-        serializer.setAccessible(true);
-        deserializer.setAccessible(true);
     }
 
     public ArrayList<User> loadUsers(File file) {
@@ -46,7 +36,7 @@ public class XmlUserList {
                 Node node = nodeList.item(i);
                 if (node.getNodeType() == Node.ELEMENT_NODE && ((Element) node).getTagName().equals("user")) {
                     Element childElement = (Element) node;
-                    User user = (User) deserializer.invoke(binder, childElement, User.class);
+                    User user = (User) binder.deserializeToValue(childElement, User.class);
                     users.add(user);
                 }
             }
@@ -65,7 +55,7 @@ public class XmlUserList {
             xmlWriter.writeStartElement("users");
             for (User user : users) {
                 xmlWriter.writeStartElement("user");
-                serializer.invoke(binder, user, xmlWriter);
+                binder.serializeObjectToWriter(user, xmlWriter);
                 xmlWriter.writeEndElement();
             }
             xmlWriter.writeEndElement();
