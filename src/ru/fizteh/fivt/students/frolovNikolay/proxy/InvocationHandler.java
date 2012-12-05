@@ -146,9 +146,8 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             } else {
                 writer.append(" ");
             }
-            writer.append("returned " + stream.toString());
+            writer.append("returned " + stream.toString() + "\n");
         }
-        writer.append("\n");
         return result;
     }
 }
