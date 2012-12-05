@@ -1,7 +1,8 @@
 package ru.fizteh.fivt.students.myhinMihail.proxy;
 
 import ru.fizteh.fivt.proxy.*;
-import java.lang.reflect.Method;
+
+import java.lang.reflect.*;
 import java.util.*;
 
 public class InvocationHandler implements java.lang.reflect.InvocationHandler {
@@ -12,7 +13,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (proxy == null) {
             throw new IllegalArgumentException("Null proxy");
         }
@@ -21,41 +22,47 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             throw new IllegalArgumentException("Null method");
         }
         
+        method.setAccessible(true);
+        
         if (method.getAnnotation(DoNotProxy.class) != null) {
             throw new IllegalArgumentException("Method has DoNotProxy annotation");
         }
        
         if (method.getAnnotation(Collect.class) != null) {
             Class<?> type = method.getReturnType();
-            if (type.equals(void.class)) {
-                for (Object target : targets) {
-                    method.invoke(target, args);
+            try {
+                if (type.equals(void.class)) {
+                    for (Object target : targets) {
+                        method.invoke(target, args);
+                    }
+                    return null;
                 }
-                return null;
-            }
-            
-            if (type.equals(int.class) || type.equals(Integer.class)) {
-                int result = 0;
-                for (Object target : targets) {
-                    result += (int) method.invoke(target, args);
+                
+                if (type.equals(int.class) || type.equals(Integer.class)) {
+                    int result = 0;
+                    for (Object target : targets) {
+                        result += (int) method.invoke(target, args);
+                    }
+                    return result;
                 }
-                return result;
-            }
-            
-            if (type.equals(long.class) || type.equals(Long.class)) {
-                long result = 0;
-                for (Object target : targets) {
-                    result += (long) method.invoke(target, args);
+                
+                if (type.equals(long.class) || type.equals(Long.class)) {
+                    long result = 0;
+                    for (Object target : targets) {
+                        result += (long) method.invoke(target, args);
+                    }
+                    return result;
                 }
-                return result;
-            }
-            
-            if (type.isAssignableFrom(List.class)) {
-                List<?> result = new ArrayList<>();
-                for (Object target : targets) {
-                    result.addAll((List) method.invoke(target, args));
+                
+                if (type.isAssignableFrom(List.class)) {
+                    List<?> result = new ArrayList<>();
+                    for (Object target : targets) {
+                        result.addAll((List) method.invoke(target, args));
+                    }
+                    return result;
                 }
-                return result;
+            } catch (InvocationTargetException expt) {
+                throw expt.getTargetException();
             }
             
             throw new IllegalArgumentException("Bad return type of metod");
@@ -67,7 +74,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         
         for (Object arg : args) {
             if (arg == null) {
-            	throw new IllegalArgumentException("Null argument");
+                throw new IllegalArgumentException("Null argument");
             }
             
             Class<?> clazz = arg.getClass();

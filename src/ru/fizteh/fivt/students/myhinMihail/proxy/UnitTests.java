@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.myhinMihail.proxy;
 
 import java.io.*;
 import org.junit.*;
+import org.junit.rules.*;
 
 import ru.fizteh.fivt.proxy.*;
 
@@ -56,6 +57,9 @@ public class UnitTests extends Assert {
 
         @Collect
         public int get1();
+        
+        @Collect
+        public void throwException();
     }
 
     class TestClass implements SimpleInterface {
@@ -78,6 +82,10 @@ public class UnitTests extends Assert {
         public int get1() {
             return 1;
         }
+        
+        public void throwException() {
+            throw new RuntimeException("Exception");
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -92,15 +100,32 @@ public class UnitTests extends Assert {
     }
 
     @Test(expected = RuntimeException.class)
-    public void  doNotProxy() {
+    public void doNotProxy() {
         Object[] targets = new Object[1];
         targets[0] = new TestClass();
         
         Class[] interfaces = new Class[1];
-        interfaces[0] = TestClass.class;
+        interfaces[0] = SimpleInterface.class;
         
         SimpleInterface inter = (SimpleInterface) new ShardingProxyFactory().createProxy(targets, interfaces);
         inter.getInt(3);
+    }
+    
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+    
+    @Test
+    public void exceptionTest() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Exception");
+        Object[] targets = new Object[1];
+        targets[0] = new TestClass();
+        
+        Class[] interfaces = new Class[1];
+        interfaces[0] = SimpleInterface.class;
+        
+        SimpleInterface inter = (SimpleInterface) new ShardingProxyFactory().createProxy(targets, interfaces);
+        inter.throwException();
     }
 
     @Test
