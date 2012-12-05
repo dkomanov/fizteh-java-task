@@ -3,41 +3,43 @@ package ru.fizteh.fivt.students.alexanderKuzmin.proxy;
 import java.util.NoSuchElementException;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
 
 public class UnitTests {
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testProxyWithNullTargets() {
         new ShardingProxyFactory().createProxy(null, new Class[1]);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testProxyWithEmptyTargets() {
         new ShardingProxyFactory().createProxy(new Object[0], new Class[1]);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testProxyWithNullInterfaces() {
         new ShardingProxyFactory().createProxy(new Object[1], null);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testProxyWithEmptyInterfaces() {
         new ShardingProxyFactory().createProxy(new Object[1], new Class[0]);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testProxyWithOneEmptyInterface() {
         Class[] clazz = new Class[3];
         clazz[1] = null;
         new ShardingProxyFactory().createProxy(new Object[1], clazz);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testProxyWithOneNullTarget() {
         Object[] clazz = new Object[2];
         Class[] interf = new Class[1];
@@ -47,7 +49,7 @@ public class UnitTests {
         new ShardingProxyFactory().createProxy(clazz, interf);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testProxyWithOneNullInterface() {
         Object[] clazz = new Object[1];
         Class[] interf = new Class[2];
@@ -57,7 +59,7 @@ public class UnitTests {
         new ShardingProxyFactory().createProxy(clazz, interf);
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testProxyWithNoSuchClasses() {
         Object[] clazz = new Object[1];
         Class[] interf = new Class[1];
@@ -66,7 +68,7 @@ public class UnitTests {
         new ShardingProxyFactory().createProxy(clazz, interf);
     }
 
-    @Test(expected = NoSuchMethodError.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testProxyWithNoMethodInInterface() {
         Object[] clazz = new Object[1];
         Class[] interf = new Class[2];
@@ -87,15 +89,25 @@ public class UnitTests {
 
         public Long getA(Long a);
 
+        @Collect
+        public int getLength(String s);
+
+        @Collect
+        public int getSomething();
+
+        @Collect
+        public void throwException(String s);
     }
 
     class MyTestClass implements MyTestInterface {
         @Override
+        @DoNotProxy
         public int getI(int a) {
             return 124;
         }
 
         @Override
+        @Collect
         public Long getL(Long a) {
             return ++a;
         }
@@ -110,9 +122,27 @@ public class UnitTests {
             return -a;
         }
 
+        @Override
+        @Collect
+        public int getLength(String s) {
+            return s.length();
+        }
+
+        @Override
+        @Collect
+        public int getSomething() {
+            return 15;
+        }
+
+        @Override
+        @Collect
+        public void throwException(String s) {
+            throw new RuntimeException(s);
+        }
+
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalStateException.class)
     public void testProxyWithDoNotProxyAnnotation() {
         Object[] clazz = new Object[2];
         Class[] interf = new Class[1];
@@ -144,5 +174,25 @@ public class UnitTests {
         Assert.assertTrue(myInter.smth(2, 3) == 8);
         Assert.assertTrue(myInter.getA(3L) == -3L);
         Assert.assertEquals(myInter.getL(412L).longValue(), 826);
+        Assert.assertEquals(myInter.getSomething(), 30);
+        Assert.assertEquals(myInter.getLength("123456"), 12);
     }
+
+    @Rule
+    public ExpectedException e = ExpectedException.none();
+
+    @Test
+    public void exceptionTest() {
+        e.expect(RuntimeException.class);
+        e.expectMessage("testRuntimeException");
+        Object[] clazz = new Object[1];
+        Class[] interf = new Class[1];
+        clazz[0] = new MyTestClass();
+        interf[0] = MyTestInterface.class;
+        ShardingProxyFactory factory = new ShardingProxyFactory();
+        MyTestInterface myInter = (MyTestInterface) factory.createProxy(clazz,
+                interf);
+        myInter.throwException("testRuntimeException");
+    }
+
 }

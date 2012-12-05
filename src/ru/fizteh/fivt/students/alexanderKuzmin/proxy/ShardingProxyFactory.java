@@ -18,17 +18,16 @@ import ru.fizteh.fivt.proxy.DoNotProxy;
 public class ShardingProxyFactory implements
         ru.fizteh.fivt.proxy.ShardingProxyFactory {
 
-    @SuppressWarnings({ "rawtypes" })
     @Override
     public Object createProxy(Object[] targets, Class[] interfaces) {
         if (targets == null || targets.length == 0 || interfaces == null
                 || interfaces.length == 0) {
-            throw new NullPointerException("Incorrect input.");
+            throw new IllegalArgumentException("Incorrect input.");
         }
 
         for (Object target : targets) {
             if (target == null) {
-                throw new NullPointerException("A null target in targets.");
+                throw new IllegalArgumentException("A null target in targets.");
             }
             Set<Class> curInterfaces = new HashSet<Class>(
                     Arrays.asList(interfaces));
@@ -41,22 +40,23 @@ public class ShardingProxyFactory implements
                 }
             }
             if (!include) {
-                throw new NoSuchElementException(
+                throw new IllegalArgumentException(
                         "There are not interfaces for target.");
             }
         }
 
         for (Class interf : interfaces) {
             if (interf == null) {
-                throw new NullPointerException(
+                throw new IllegalArgumentException(
                         "A null interface in interfaces.");
             }
             Method[] methods = interf.getMethods();
             if (methods.length == 0) {
-                throw new NoSuchMethodError("Interface hasn't any method.");
+                throw new IllegalArgumentException(
+                        "Interface hasn't any method.");
             }
             if (!interf.isInterface()) {
-                throw new NoSuchElementException(
+                throw new IllegalArgumentException(
                         "There are not classes in interface.");
             }
             for (Method method : methods) {
@@ -79,7 +79,7 @@ public class ShardingProxyFactory implements
                                 || returnType.equals(long.class)
                                 || returnType.equals(Long.class) || returnType
                                     .equals(List.class))) {
-                            throw new IllegalArgumentException(
+                            throw new IllegalStateException(
                                     "Incorrect return type of method.");
                         }
                     }
