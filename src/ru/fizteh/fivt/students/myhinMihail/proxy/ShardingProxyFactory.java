@@ -16,8 +16,16 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
         }
         
         for (Class<?> clazz : interfaces) {
-            if (clazz == null || clazz.getMethods().length == 0 || !clazz.isInterface()) {
-                throw new IllegalArgumentException("Bad interface");
+            if (clazz == null) {
+                throw new IllegalArgumentException("Null interface");
+            }
+            
+            if (clazz.getMethods().length == 0) {
+                throw new IllegalArgumentException("Interface without methods");
+            }
+            
+            if (!clazz.isInterface()) {
+                throw new IllegalArgumentException("Not an interface");
             }
 
             for (Method method : clazz.getMethods()) {
@@ -29,7 +37,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                             continue;
                         }
                         
-                        throw new IllegalStateException("Bad annotation");
+                        throw new IllegalStateException("Bad method return type");
                     }
                     
                     Set<Class<?>> types = new HashSet<>(Arrays.asList(method.getParameterTypes()));
