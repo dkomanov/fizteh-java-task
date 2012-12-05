@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.fedyuninV.proxy;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
@@ -14,6 +15,8 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
     private boolean tooLong;
     private final int ARG_MAX_LENGTH = 60;
     private Map<String, String> screenMap = new HashMap<>();
+    private Map<Object, Object> parsedObjects = new IdentityHashMap<>();
+    private final Object PARSED = new Object();
 
     public InvocationHandler(Object target, Appendable writer) {
         this.target = target;
@@ -23,13 +26,27 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         screenMap.put("\b", "\\\\b");
         screenMap.put("\t", "\\\\t");
         screenMap.put("\f", "\\\\f");
+        screenMap.put("\"", "\\\"");
+        //screenMap.put("\\", "\\\\\\"); It doesn't work, need for backSlashScreen...
     }
 
     private String screen(String s) {
+        s = backslashScreen(s);
         for (Map.Entry<String, String> it: screenMap.entrySet()) {
             s = s.replaceAll(it.getKey(), it.getValue());
         }
         return s;
+    }
+
+    private String backslashScreen(String s) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '\\') {
+                builder.append("\\\\");
+            }
+            builder.append(s.charAt(i));
+        }
+        return builder.toString();
     }
 
     private boolean isPrimitive(Class classExample) {
@@ -72,6 +89,9 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         if (toPrint == null) {
             return "null";
         }
+        if (parsedObjects.put(toPrint, PARSED) != null) {
+            throw new RuntimeException("Object contains link to itself");
+        }
         Class clazz = toPrint.getClass();
         if (isPrimitive(clazz)) {
             return toPrint.toString();
@@ -93,8 +113,10 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
     }
 
     private String parseArgs(Object[] args) {
+        parsedObjects.clear();
         String[] parsedArgs = new String[args.length];
         for (int i = 0; i < args.length; i++) {
+            parsedObjects.clear();
             parsedArgs[i] = printObject(args[i]);
             if (parsedArgs[i].length() >= ARG_MAX_LENGTH) {
                 tooLong = true;
@@ -131,7 +153,9 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         logger.append('.');
         logger.append(method.getName());
         logger.append('(');
-        logger.append(parseArgs(args));
+        if (args != null) {
+            logger.append(parseArgs(args));
+        }
         if (tooLong) {
             logger.append("  ");
         }
@@ -142,10 +166,11 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         try {
             Object result = method.invoke(target, args);
             logger.append(" returned ");
+            parsedObjects.clear();
             logger.append(printObject(result));
             logger.append('\n');
             return result;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             logger.append(" threw ");
             logger.append(ex.getClass().getName());
             logger.append(": ");

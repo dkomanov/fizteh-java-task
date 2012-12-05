@@ -1,7 +1,9 @@
 package ru.fizteh.fivt.students.fedyuninV.proxy;
 
 import junit.framework.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import ru.fizteh.fivt.bind.test.Permissions;
 import ru.fizteh.fivt.bind.test.User;
 import ru.fizteh.fivt.bind.test.UserName;
@@ -26,8 +28,21 @@ class ArrayTest implements SetArrays{
     }
 }
 
+interface SetObjectArrays {
+    public Object[] setArray(Object[] newArray);
+}
+
+class ObjectArrayTest implements SetObjectArrays{
+    @Override
+    public Object[] setArray(Object[] array) {
+        return array;
+    }
+}
 
 public class ProxyTest {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void noExceptionTest() {
@@ -39,6 +54,7 @@ public class ProxyTest {
         proxy.add("wtf2");
         proxy.add(2, "too long too long too long too long too long too long too long too long too long too long");
         proxy.get(0);
+        proxy.toString();
         Assert.assertEquals(builder.toString(),
                 "List.add(\"wtf1\") returned true\n" +
                         "List.add(\"wtf2\") returned true\n" +
@@ -47,7 +63,9 @@ public class ProxyTest {
                         "  \"too long too long too long too long too long too long too long too long too long too long\"\n" +
                         "  )\n" +
                         "  returned null\n" +
-                        "List.get(0) returned \"wtf1\"\n");
+                        "List.get(0) returned \"wtf1\"\n" +
+                        "Object.toString() returned \"[wtf1, wtf2, too long too long too long too long too" +
+                        " long too long too long too long too long too long]\"\n");
     }
 
     @Test
@@ -119,7 +137,32 @@ public class ProxyTest {
         StringBuilder builder = new StringBuilder();
         LoggingProxyFactory factory = new LoggingProxyFactory();
         List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
-        proxy.add("wtf1\nwtf2");
-        Assert.assertEquals(builder.toString(), "List.add(\"wtf1\\nwtf2\") returned true\n");
+        proxy.add("wtf1 \n wtf2\\\"");
+        Assert.assertEquals(builder.toString(), "List.add(\"wtf1 \\n wtf2\\\\\\\"\") returned true\n"); // wtf2\\\"
+    }
+
+
+    @Test
+    public void voidArrayTest() {
+        ArrayTest arrayTest = new ArrayTest();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        SetArrays proxy = (SetArrays) factory.createProxy(arrayTest, builder, SetArrays.class);
+        proxy.setArray(new Double[]{});
+        Assert.assertEquals(builder.toString(),
+                "SetArrays.setArray(0{}) returned 0{}\n");
+    }
+
+    @Test
+    public void infiniteArrayTest() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Object contains link to itself");
+        ObjectArrayTest arrayTest = new ObjectArrayTest();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        SetObjectArrays proxy = (SetObjectArrays) factory.createProxy(arrayTest, builder, SetObjectArrays.class);
+        Object[] objects = new Object[1];
+        objects[0] = objects;
+        proxy.setArray(objects);
     }
 }
