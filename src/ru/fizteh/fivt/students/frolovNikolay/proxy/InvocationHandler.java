@@ -48,15 +48,15 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             }
             cycleInterrupter.put(arg, null);
             if (clazz.isArray()) {
-            Object[] args = (Object[]) arg;
-            stream.append(args.length + "{");
-            for (int i = 0; i < args.length; ++i) {
-                specialToString(args[i].getClass(), args[i], stream, cycleInterrupter);
-                if (i + 1 != args.length) {
-                    stream.append(", ");
+                Object[] args = (Object[]) arg;
+                stream.append(args.length + "{");
+                for (int i = 0; i < args.length; ++i) {
+                    specialToString(args[i].getClass(), args[i], stream, cycleInterrupter);
+                    if (i + 1 != args.length) {
+                        stream.append(", ");
+                    }
                 }
-            }
-            stream.append("}");
+                stream.append("}");
             } else if (clazz.equals(String.class)) {
                 stream.append("\"");
                 escapingString(arg.toString(), stream);
@@ -65,12 +65,10 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 stream.append(((Enum) arg).name());
             } else if (PrimitiveTester.isPrimitive(clazz)) {
                 stream.append(arg.toString());
-            } else if (clazz.equals(Object.class)) {
+            } else {
                 stream.append("[");
                 escapingString(arg.toString(), stream);
                 stream.append("]");
-            } else {
-                throw new RuntimeException("unsupported class: " + clazz.getSimpleName());
             }
         }
     }
@@ -87,7 +85,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         for (int i = 0; i < parameters.length; ++i) {
             IdentityHashMap<Object, Object> cycleInterrupter = new IdentityHashMap<Object, Object>(); 
             StringBuilder stream = new StringBuilder();
-            specialToString(parameters[i], args[i], stream, cycleInterrupter);
+            specialToString(args[i] == null ? parameters[i] : args[i].getClass(), args[i], stream, cycleInterrupter);
             String currentName = stream.toString();
             if (currentName.length() > 60) {
                 isExtendedOutput = true;
@@ -120,16 +118,15 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         writer.append(")");
         if (isExtendedOutput) {
             writer.append("\n");
-        } else {
-            writer.append(" ");
         }
-        
         Object result = null;
         try {
             result = method.invoke(target, args);
         } catch (Throwable exception) {
             if (isExtendedOutput) {
                 writer.append("  ");
+            } else {
+                writer.append(" ");
             }
             writer.append(exception.getClass().getCanonicalName() + ": " + exception.getMessage() + '\n');
             if (isExtendedOutput) {
@@ -146,6 +143,8 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             specialToString(result.getClass(), result, stream, cycleInterrupter);
             if (isExtendedOutput) {
                 writer.append("  ");
+            } else {
+                writer.append(" ");
             }
             writer.append("returned " + stream.toString());
         }
