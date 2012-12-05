@@ -119,8 +119,7 @@ public class ProxyTest {
         StringBuilder builder = new StringBuilder();
         LoggingProxyFactory factory = new LoggingProxyFactory();
         List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
-        proxy.add("wtf1\n" +
-                "wtf2");
+        proxy.add("wtf1\nwtf2");
         Assert.assertEquals(builder.toString(), "List.add(\"wtf1\\nwtf2\") returned true\n");
     }
 }
