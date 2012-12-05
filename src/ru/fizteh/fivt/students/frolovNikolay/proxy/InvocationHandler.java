@@ -3,6 +3,7 @@ package ru.fizteh.fivt.students.frolovNikolay.proxy;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import ru.fizteh.fivt.students.frolovNikolay.PrimitiveTester;
 
 public class InvocationHandler implements java.lang.reflect.InvocationHandler {
     private Object target;
@@ -13,22 +14,37 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         this.writer = writer;
     }
     
-    private boolean isPrimitive(Class<?> clazz) {
-        return clazz.isPrimitive()
-                || clazz.equals(Character.class) || clazz.equals(Short.class)
-                || clazz.equals(Integer.class) || clazz.equals(Long.class)
-                || clazz.equals(Float.class) || clazz.equals(Double.class)
-                || clazz.equals(Boolean.class) || clazz.equals(Byte.class);
+    private void escapingString(String arg, StringBuilder stream) {
+        for (int i = 0; i < arg.length(); ++i) {
+            if (arg.charAt(i) == '\t') {
+                stream.append("\\t");
+            } else if (arg.charAt(i) == '\b') {
+                stream.append("\\b");
+            } else if (arg.charAt(i) == '\n') {
+                stream.append("\\n");
+            } else if (arg.charAt(i) == '\r') {
+                stream.append("\\r");
+            } else if (arg.charAt(i) == '\f') {
+                stream.append("\\f");
+            } else if (arg.charAt(i) == '\'') {
+                stream.append("\\\'");
+            } else if (arg.charAt(i) == '\"') {
+                stream.append("\\\"");
+            } else if (arg.charAt(i) == '\\') {
+                stream.append("\\\\");
+            } else {
+                stream.append(arg.charAt(i));
+            }
+        }
     }
     
     private void specialToString(Class<?> clazz, Object arg, StringBuilder stream,
-            IdentityHashMap<Object, Object> cycleInterrupter) throws Throwable {
-
+            IdentityHashMap<Object, Object> cycleInterrupter) {
         if (arg == null) {
             stream.append("null");
         } else {
             if (cycleInterrupter.containsKey(arg)) {
-                throw new Exception("cyclical references");
+                throw new RuntimeException("cyclical references");
             }
             cycleInterrupter.put(arg, null);
             if (clazz.isArray()) {
@@ -43,58 +59,18 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             stream.append("}");
             } else if (clazz.equals(String.class)) {
                 stream.append("\"");
-                for (int i = 0; i < arg.toString().length(); ++i) {
-                    if (arg.toString().charAt(i) == '\t') {
-                        stream.append("\\t");
-                    } else if (arg.toString().charAt(i) == '\b') {
-                        stream.append("\\b");
-                    } else if (arg.toString().charAt(i) == '\n') {
-                        stream.append("\\n");
-                    } else if (arg.toString().charAt(i) == '\r') {
-                        stream.append("\\r");
-                    } else if (arg.toString().charAt(i) == '\f') {
-                        stream.append("\\f");
-                    } else if (arg.toString().charAt(i) == '\'') {
-                        stream.append("\\\'");
-                    } else if (arg.toString().charAt(i) == '\"') {
-                        stream.append("\\\"");
-                    } else if (arg.toString().charAt(i) == '\\') {
-                        stream.append("\\\\");
-                    } else {
-                        stream.append(arg.toString().charAt(i));
-                    }
-                }
+                escapingString(arg.toString(), stream);
                 stream.append("\"");
             } else if (clazz.isEnum()) {
                 stream.append(((Enum) arg).name());
-            } else if (isPrimitive(clazz)) {
+            } else if (PrimitiveTester.isPrimitive(clazz)) {
                 stream.append(arg.toString());
             } else if (clazz.equals(Object.class)) {
                 stream.append("[");
-                for (int i = 0; i < arg.toString().length(); ++i) {
-                    if (arg.toString().charAt(i) == '\t') {
-                        stream.append("\\t");
-                    } else if (arg.toString().charAt(i) == '\b') {
-                        stream.append("\\b");
-                    } else if (arg.toString().charAt(i) == '\n') {
-                        stream.append("\\n");
-                    } else if (arg.toString().charAt(i) == '\r') {
-                        stream.append("\\r");
-                    } else if (arg.toString().charAt(i) == '\f') {
-                        stream.append("\\f");
-                    } else if (arg.toString().charAt(i) == '\'') {
-                        stream.append("\\\'");
-                    } else if (arg.toString().charAt(i) == '\"') {
-                        stream.append("\\\"");
-                    } else if (arg.toString().charAt(i) == '\\') {
-                        stream.append("\\\\");
-                    } else {
-                        stream.append(arg.toString().charAt(i));
-                    }
-                }
+                escapingString(arg.toString(), stream);
                 stream.append("]");
             } else {
-                throw new IllegalArgumentException("unsupported class: " + clazz.getSimpleName());
+                throw new RuntimeException("unsupported class: " + clazz.getSimpleName());
             }
         }
     }
@@ -102,7 +78,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (method == null) {
-            throw new IllegalArgumentException("method: null pointer");
+            throw new RuntimeException("method: null pointer");
         }
         method.setAccessible(true);
         boolean isExtendedOutput = false;
