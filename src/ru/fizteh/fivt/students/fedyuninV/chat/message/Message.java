@@ -6,20 +6,15 @@ package ru.fizteh.fivt.students.fedyuninV.chat.message;
  */
 public class Message {
     private MessageType type;
-    private String sender;
-    private String receiver;
+    private String name;
     private String text;
 
     public Message(MessageType type) {
         this.type = type;
     }
 
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public void setReceiver(String receiver) {
-        this.receiver = receiver;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setText(String text) {
@@ -30,12 +25,8 @@ public class Message {
         return type;
     }
 
-    public String getSender() {
-        return sender;
-    }
-
-    public String getReceiver() {
-        return receiver;
+    public String getName() {
+        return name;
     }
 
     public String getText() {

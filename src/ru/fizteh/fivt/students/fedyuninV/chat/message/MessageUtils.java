@@ -1,10 +1,13 @@
 package ru.fizteh.fivt.students.fedyuninV.chat.message;
 
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 
 public final class MessageUtils {
+
+    private static final int MAX_LENGTH = 1024;
 
     private MessageUtils() {
     }
@@ -29,24 +32,58 @@ public final class MessageUtils {
         return getMessageBytes(MessageType.ERROR, message.getBytes());
     }
 
-    public static Message getExpectedMessage(ByteBuffer buffer, MessageType expectedType) throws Exception{
-        Message message = getMessage(buffer);
-        if (!message.getType().equals(expectedType)) {
-            throw new RuntimeException("Unexpectable type");
-        } else {
-            return message;
+    private static int getLength(InputStream inputStream) throws Exception {
+        ByteBuffer buffer = ByteBuffer.allocate(4);
+        int nextByte;
+        for (int i = 0; i < 4; i++) {
+            if ((nextByte = inputStream.read()) < 0) {
+                throw new Exception("Cannot get string length");
+            }
+            buffer.put((byte) nextByte);
         }
+        return buffer.getInt();
     }
 
-    public static Message getMessage(ByteBuffer buffer) throws Exception{
-        int initialPosition = buffer.position();
-        MessageType type = MessageType.getMessageType((byte) buffer.get());
-        if (type == null) {
-            buffer.position(initialPosition);
-            throw new Exception("Error in getting message");
+    private static String getString(InputStream inputStream) throws Exception{
+        int length = getLength(inputStream);
+        if (length <= 0  ||  length > MAX_LENGTH) {
+            throw new Exception("Incorrect length of message");
         }
-        getExpectedMessage(buffer, type);
-        return null;
+        byte[] text = new byte[length];
+        int nextByte;
+        for (int i = 0; i < length; i++) {
+            if ((nextByte = inputStream.read()) < 0) {
+                throw new Exception("Can't get message");
+            }
+            text[i] = (byte) nextByte;
+        }
+        return new String(text);
+    }
+
+    public static Message getMessage(InputStream inputStream) throws Exception {
+        int typeInt;
+        if ((typeInt = inputStream.read()) < 0) {
+            throw new Exception("Can't get type of message");
+        }
+        Message message = new Message(MessageType.getMessageType((byte) typeInt));
+        if (message.getType() == null) {
+            throw new Exception("Incorrect type of message");
+        }
+        switch (message.getType()) {
+            case MESSAGE:
+                message.setName(getString(inputStream));
+                message.setText(getString(inputStream));
+                break;
+            case BYE:
+                break;
+            case ERROR:
+                message.setText(getString(inputStream));
+                break;
+            case HELLO:
+                message.setName(getString(inputStream));
+                break;
+        }
+        return message;
     }
 
     private static byte[] getMessageBytes(MessageType type, byte[]... messages) {

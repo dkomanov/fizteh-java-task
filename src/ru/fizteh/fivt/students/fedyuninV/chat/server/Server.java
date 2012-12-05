@@ -7,6 +7,7 @@ import ru.fizteh.fivt.students.fedyuninV.IOUtils;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,12 +18,14 @@ import java.util.Set;
 public class Server implements CommandLine, Runnable{
 
     private ServerSocket serverSocket;
-    private volatile Map <String, UserWorker> users = new HashMap<>();
-    private Object usersLock;
+    private Set <UserWorker> connectedUsers = new HashSet<>();
+    private Map <String, UserWorker> usersOnline = new HashMap<>();
+    private final String myName = "server";
     private final Thread serverThread;
 
     public Server() {
         serverThread = new Thread(this);
+        usersOnline.add(myName, null);
     }
 
     private void printUsage() {
@@ -30,14 +33,15 @@ public class Server implements CommandLine, Runnable{
     }
 
     private void kill(String... userNames) {
-        synchronized (users) {
+        synchronized (connectedUsers) {
             for(String userName: userNames) {
-                UserWorker userWorker = users.remove(userName);
+                UserWorker userWorker = connectedUsers.remove(userName);
                 if (userWorker == null) {
                     System.err.println("No user with name " + userName);
                 } else {
                     userWorker.kill();
                 }
+                usersOnline.remove(userName);
             }
         }
     }
@@ -60,7 +64,7 @@ public class Server implements CommandLine, Runnable{
             if (args.length != 1) {
                 printUsage();
             } else {
-                kill((String[]) users.keySet().toArray());
+                kill((String[]) usersOnline.keySet().toArray());
                 IOUtils.tryClose(serverSocket);
                 try {
                     serverSocket.bind(new InetSocketAddress(Integer.parseInt(args[0])));
