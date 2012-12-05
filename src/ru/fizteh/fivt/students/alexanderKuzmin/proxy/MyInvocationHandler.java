@@ -48,9 +48,6 @@ public class MyInvocationHandler implements java.lang.reflect.InvocationHandler 
                                     .invoke(targets[(int) ((Long) arg % targets.length)],
                                             args);
                         }
-                    } else {
-                        throw new IllegalArgumentException(
-                                "A null argument in args.");
                     }
                 }
             } else {
