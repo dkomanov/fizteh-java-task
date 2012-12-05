@@ -58,10 +58,6 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 append = writer;
             }
 
-            public String toString() {
-                return append.toString();
-            }
-
             boolean isPrimitiveType(Class classExample) {
                 return (classExample.isPrimitive()
                         || classExample.equals(Integer.class)
