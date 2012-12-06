@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.mysinYurii.proxy;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +30,17 @@ public class ProxyInvocationHandler implements InvocationHandler {
             for (int i = 0; i < arguments.length; ++i) {
                 if (arguments[i] != null) {
                     if (arguments[i].getClass().equals(int.class) || arguments[i].getClass().equals(Integer.class)) {
-                        return method.invoke(targets[(int) i % arguments.length], arguments);
+                        try {
+                            return method.invoke(targets[(int) i % arguments.length], arguments);
+                        } catch (InvocationTargetException e) {
+                            throw e.getCause();                            
+                        }
                     } else if (arguments[i].getClass().equals(long.class) || arguments[i].getClass().equals(Long.class)) {
-                        return method.invoke(targets[(int) ((long) i % arguments.length)], arguments);
+                        try {
+                            return method.invoke(targets[(int) ((long) i % arguments.length)], arguments);
+                        } catch (InvocationTargetException e) {
+                            throw e.getCause();
+                        }
                     }
                 }
             }

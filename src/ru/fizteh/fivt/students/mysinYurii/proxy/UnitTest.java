@@ -66,12 +66,15 @@ public class UnitTest {
         Class[] interfaces = new Class[1];
         Object[] target = new Object[1];
         target[0] = new ExampleClass();
+        interfaces[0] = ExampleInterface.class;
         try {
-            ExampleClass temp = (ExampleClass) new ShardingProxyFactory().createProxy(target, interfaces);
-            temp.throwException();
+            ExampleInterface temp = (ExampleInterface) new ShardingProxyFactory().createProxy(target, interfaces);
+            temp.throwException(0);
         } catch (IllegalArgumentException e) {
-            System.out.println("Success");
-        } 
+            System.out.println("Expected: Catch me, if you can. Got: " + e.getMessage());
+        } catch (Throwable e) {
+            System.out.println("Fail");
+        }
     }
     
     static void test6() {
@@ -108,7 +111,7 @@ public class UnitTest {
         public long mul(long i, long j);
         @Collect
         public List<Integer> assign(int i, int j);
-        public void throwException();
+        public void throwException(int j);
     }
     
     public static class ExampleClass implements ExampleInterface {
@@ -117,7 +120,7 @@ public class UnitTest {
             return i * j;
         }
         
-        public void throwException() throws IllegalArgumentException {
+        public void throwException(int j) throws IllegalArgumentException {
             throw new IllegalArgumentException("Catch me, if you can");
         }
 
