@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.fedyuninV.proxy;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -71,7 +72,15 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
 
     private String arrayToString(Object toPrint, Map<Object, Object> parsedObjects) {
         StringBuilder builder = new StringBuilder();
-        Object[] array = (Object[]) toPrint;
+        Object[] array;
+        try {
+            array = (Object[]) toPrint;
+        } catch (ClassCastException primitiveArray) {
+            array = new Object[Array.getLength(toPrint)];
+            for (int i = 0; i < array.length; i++) {
+                array[i] = Array.get(toPrint, i);
+            }
+        }
         builder.append(array.length);
         builder.append('{');
         for (int i = 0; i < array.length; i++) {
@@ -147,6 +156,12 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Map<Object, Object> parsedObjects = new IdentityHashMap<>();
         method.setAccessible(true);
+        if (method.getDeclaringClass().equals(Object.class)) {
+            try {
+                return method.invoke(target, args);
+            } catch (Throwable ignored) {
+            }
+        }
         tooLong = false;
         StringBuilder logger = new StringBuilder();
         logger.append(method.getDeclaringClass().getSimpleName());
@@ -161,16 +176,26 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         }
         logger.append(')');
         if (tooLong) {
-            logger.append("\n ");
+            logger.append("\n");
         }
         try {
             Object result = method.invoke(target, args);
-            logger.append(" returned ");
-            parsedObjects.clear();
-            logger.append(printObject(result, parsedObjects));
-            logger.append('\n');
+            if (!method.getReturnType().equals(void.class)) {
+                if (tooLong) {
+                    logger.append(' ');
+                }
+                logger.append(" returned ");
+                parsedObjects.clear();
+                logger.append(printObject(result, parsedObjects));
+            }
+            if (!tooLong) {
+                logger.append('\n');
+            }
             return result;
         } catch (Throwable ex) {
+            if (tooLong) {
+                logger.append(' ');
+            }
             logger.append(" threw ");
             logger.append(ex.getClass().getName());
             logger.append(": ");
