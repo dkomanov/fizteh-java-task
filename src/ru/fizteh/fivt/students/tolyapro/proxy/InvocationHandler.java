@@ -76,6 +76,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable {
         IdentityHashMap<Object, Object> circularRefDetector = new IdentityHashMap<Object, Object>();
+        method.setAccessible(true);
         Class clazz = method.getDeclaringClass();
         if (clazz.equals(Object.class)) {
             return method.invoke(target, args);
@@ -111,7 +112,9 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 writer.append(toString(returned, circularRefDetector));
             }
         } catch (Throwable e) {
-            writer.append('\n');
+            if (extendedMode) {
+                writer.append('\n');
+            }
             StackTraceElement[] elements = e.getStackTrace();
             writer.append("threw"
                     + e.getClass().toString().replaceFirst("class", "")
