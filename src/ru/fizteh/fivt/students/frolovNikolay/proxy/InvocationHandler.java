@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.frolovNikolay.proxy;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -53,7 +54,8 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     Object[] args = (Object[]) arg;
                     stream.append(args.length + "{");
                     for (int i = 0; i < args.length; ++i) {
-                        specialToString(args[i].getClass(), args[i], stream, cycleInterrupter);
+                        IdentityHashMap<Object, Object> arrayCycleInterrupter = new IdentityHashMap<Object, Object>(cycleInterrupter);
+                        specialToString(args[i].getClass(), args[i], stream, arrayCycleInterrupter);
                         if (i + 1 != args.length) {
                             stream.append(", ");
                         }
@@ -62,7 +64,8 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     int size = Array.getLength(arg);
                     stream.append(size + "{");
                     for (int i = 0; i < size; ++i) {
-                        specialToString(Array.get(arg, i).getClass(), Array.get(arg, i), stream, cycleInterrupter);
+                        IdentityHashMap<Object, Object> arrayCycleInterrupter = new IdentityHashMap<Object, Object>(cycleInterrupter);
+                        specialToString(Array.get(arg, i).getClass(), Array.get(arg, i), stream, arrayCycleInterrupter);
                         if (i + 1 != size) {
                             stream.append(", ");
                         }
@@ -107,63 +110,73 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             }
             parametersNames.add(currentName);
         }
-        
-        writer.append(method.getDeclaringClass().getSimpleName() + ".");
-        writer.append(method.getName() + "(");
-        if (isExtendedOutput) {
-            writer.append("\n");
-        }
-        for (int i = 0; i < parametersNames.size(); ++i) {
+        try {
+            writer.append(method.getDeclaringClass().getSimpleName() + ".");
+            writer.append(method.getName() + "(");
+            if (isExtendedOutput) {
+                writer.append("\n");
+            }
+            for (int i = 0; i < parametersNames.size(); ++i) {
+                if (isExtendedOutput) {
+                    writer.append("  ");
+                }
+                writer.append(parametersNames.get(i));
+                if (i + 1 != parametersNames.size()) {
+                    writer.append(",");
+                }
+                if (isExtendedOutput) {
+                    writer.append("\n");
+                } else if (i + 1 != parametersNames.size()) {
+                    writer.append(" ");
+                }
+            }
             if (isExtendedOutput) {
                 writer.append("  ");
             }
-            writer.append(parametersNames.get(i));
-            if (i + 1 != parametersNames.size()) {
-                writer.append(",");
-            }
+            writer.append(")");
             if (isExtendedOutput) {
                 writer.append("\n");
-            } else if (i + 1 != parametersNames.size()) {
-                writer.append(" ");
             }
-        }
-        if (isExtendedOutput) {
-            writer.append("  ");
-        }
-        writer.append(")");
-        if (isExtendedOutput) {
-            writer.append("\n");
+        } catch (Throwable ignoringException) {
+            
         }
         Object result = null;
         try {
             result = method.invoke(target, args);
-        } catch (Throwable exception) {
-            if (isExtendedOutput) {
+        } catch (InvocationTargetException exception) {
+            try {
+                if (isExtendedOutput) {
+                    writer.append("  ");
+                } else {
+                    writer.append(" ");
+                }
+                writer.append(exception.getTargetException().getClass().getCanonicalName() + ": " + exception.getTargetException().getMessage() + '\n');
+                if (isExtendedOutput) {
+                    writer.append("  ");
+                }
                 writer.append("  ");
-            } else {
-                writer.append(" ");
+                writer.append(exception.getTargetException().getStackTrace()[0].toString() + "\n");
+            } catch (Throwable ignoringException) {
+                
             }
-            writer.append(exception.getClass().getCanonicalName() + ": " + exception.getMessage() + '\n');
-            if (isExtendedOutput) {
-                writer.append("  ");
+            throw exception.getTargetException();
+        }
+        try {
+            if (!method.getReturnType().equals(void.class) && !method.getReturnType().equals(Void.class)) {
+                StringBuilder stream = new StringBuilder();
+                IdentityHashMap<Object, Object> cycleInterrupter = new IdentityHashMap<Object, Object>();
+                specialToString(result.getClass(), result, stream, cycleInterrupter);
+                if (isExtendedOutput) {
+                    writer.append("  ");
+                } else {
+                    writer.append(" ");
+                }
+                writer.append("returned " + stream.toString());
             }
-            writer.append("  ");
-            writer.append(exception.getStackTrace()[0].toString() + "\n");
-            throw exception;
+            writer.append("\n");
+        } catch (Throwable ignoringException) {
             
         }
-        if (!method.getReturnType().equals(void.class) && !method.getReturnType().equals(Void.class)) {
-            StringBuilder stream = new StringBuilder();
-            IdentityHashMap<Object, Object> cycleInterrupter = new IdentityHashMap<Object, Object>();
-            specialToString(result.getClass(), result, stream, cycleInterrupter);
-            if (isExtendedOutput) {
-                writer.append("  ");
-            } else {
-                writer.append(" ");
-            }
-            writer.append("returned " + stream.toString());
-        }
-        writer.append("\n");
         return result;
     }
 }
