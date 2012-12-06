@@ -26,27 +26,15 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         screenMap.put("\b", "\\\\b");
         screenMap.put("\t", "\\\\t");
         screenMap.put("\f", "\\\\f");
-        screenMap.put("\"", "\\\"");
-        //screenMap.put("\\", "\\\\\\"); It doesn't work, need for backSlashScreen...
+        screenMap.put("\"", "\\\\\"");
     }
 
     private String screen(String s) {
-        s = backslashScreen(s);
+        s = s.replaceAll("\\\\", "\\\\\\\\");
         for (Map.Entry<String, String> it: screenMap.entrySet()) {
             s = s.replaceAll(it.getKey(), it.getValue());
         }
         return s;
-    }
-
-    private String backslashScreen(String s) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) == '\\') {
-                builder.append("\\\\");
-            }
-            builder.append(s.charAt(i));
-        }
-        return builder.toString();
     }
 
     private boolean isPrimitive(Class classExample) {
@@ -102,29 +90,33 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         }
         Class clazz = toPrint.getClass();
         if (isPrimitive(clazz)) {
+            parsedObjects.remove(toPrint);
             return toPrint.toString();
         }
         if (clazz.isEnum()) {
+            parsedObjects.remove(toPrint);
             return ((Enum) toPrint).name();
         }
         if (clazz.isArray()) {
-            return arrayToString(toPrint, parsedObjects);
+            String ans = arrayToString(toPrint, parsedObjects);
+            parsedObjects.remove(toPrint);
+            return ans;
         }
         if (clazz.equals(String.class)) {
+            parsedObjects.remove(toPrint);
             return wrapInQuotes(toPrint.toString());
         }
         StringBuilder builder = new StringBuilder();
         builder.append('[');
         builder.append(screen(toPrint.toString()));
         builder.append(']');
+        parsedObjects.remove(toPrint);
         return builder.toString();
     }
 
     private String parseArgs(Object[] args, Map<Object, Object> parsedObjects) {
-        parsedObjects.clear();
         String[] parsedArgs = new String[args.length];
         for (int i = 0; i < args.length; i++) {
-            parsedObjects.clear();
             parsedArgs[i] = printObject(args[i], parsedObjects);
             if (parsedArgs[i].length() >= ARG_MAX_LENGTH) {
                 tooLong = true;
@@ -187,6 +179,9 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
                 logger.append(" returned ");
                 parsedObjects.clear();
                 logger.append(printObject(result, parsedObjects));
+                if (tooLong) {
+                    logger.append('\n');
+                }
             }
             if (!tooLong) {
                 logger.append('\n');
@@ -210,7 +205,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
                 logger.append(traceElement.toString());
                 logger.append('\n');
             }
-            return null;
+            throw ex.getCause();
         } finally {
             writer.append(logger.toString());
         }
