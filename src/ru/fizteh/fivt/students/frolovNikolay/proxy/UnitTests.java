@@ -117,17 +117,31 @@ public class UnitTests {
         EmptyInterface proxy = (EmptyInterface) factory.createProxy(new WithEmptyInterface(), sf, EmptyInterface.class);
     }
     
-    private interface CycleInterface {
+    private interface TestInterface {
         public void print(Object array);
     }
     
-    private class CycleClass implements CycleInterface {
+    private class TestClass2 implements TestInterface {
         
         @Override
         public void print(Object array) {
             Object[] array2 = (Object[]) array;
             for (Object iter : array2) {
-                System.out.println(array2.toString());
+                System.out.println(iter.toString());
+            }
+        }
+    }
+    
+    private interface TestInterface2 {
+        public void print(int[] array);
+    }
+    
+    private class TestClass3 implements TestInterface2 {
+        
+        @Override
+        public void print(int[] array) {
+            for (int iter : array) {
+                System.out.println(iter);
             }
         }
     }
@@ -138,7 +152,19 @@ public class UnitTests {
         StringBuffer sf = new StringBuffer();
         Object[] array = new Object[1];
         array[0] = array;
-        CycleInterface object = (CycleInterface) factory.createProxy(new CycleClass(), sf, CycleInterface.class);
+        TestInterface object = (TestInterface) factory.createProxy(new TestClass2(), sf, TestInterface.class);
         object.print(array);
+    }
+    
+    @Test
+    public void primitiveArray() {
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        StringBuffer sf = new StringBuffer();
+        int[] array = new int[2];
+        array[0] = 1;
+        array[1] = 0;
+        TestInterface2 object = (TestInterface2) factory.createProxy(new TestClass3(), sf, TestInterface2.class);
+        object.print(array);
+        Assert.assertEquals("TestInterface2.print(2{1, 0})" + "\n", sf.toString());
     }
 }
