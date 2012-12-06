@@ -4,14 +4,12 @@ import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyFactory {
-    @Override
-    public Object createProxy(Object[] targets, Class[] interfaces) {
+public class ProxyUtils {
+    public static void throwExceptionIsArgumentsIsIncorrect(Object[] targets, Class[] interfaces) {
         if (targets == null || targets.length == 0) {
             throw new IllegalArgumentException("No one target found.");
         }
@@ -64,6 +62,25 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                 throw new IllegalArgumentException("One of targets doesn't implement interface from interfaces.");
             }
         }
-        return Proxy.newProxyInstance(interfaces[0].getClassLoader(), interfaces, new InvocationHandler(targets));
+    }
+
+    public static boolean isDoNotProxy(Method method) {
+        return method.getAnnotation(DoNotProxy.class) != null;
+    }
+
+    public static boolean isCollect(Method method) {
+        return method.getAnnotation(Collect.class) != null;
+    }
+
+    public static long getFirstIntOrLongArgument(Object... args) {
+        for (Object arg : args) {
+            Class clazz = arg.getClass();
+            if (clazz.equals(int.class) || clazz.equals(Integer.class)) {
+                return (long) ((Integer)arg);
+            } else if (clazz.equals(long.class) || clazz.equals(Long.class)) {
+                return (Long) arg;
+            }
+        }
+        throw new IllegalArgumentException("Incorrect arguments.");
     }
 }

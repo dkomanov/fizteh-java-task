@@ -1,8 +1,9 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.proxy;
+package ru.fizteh.fivt.students.dmitriyBelyakov.proxy.proxy;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.fizteh.fivt.students.dmitriyBelyakov.proxy.proxy.test.*;
 
 import java.util.ArrayList;
 import java.util.List;

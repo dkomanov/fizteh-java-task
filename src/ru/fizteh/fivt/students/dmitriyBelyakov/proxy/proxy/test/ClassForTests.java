@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.proxy;
+package ru.fizteh.fivt.students.dmitriyBelyakov.proxy.proxy.test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 public class ClassForTests implements InterfaceForTests {
     public int number;
 
-    ClassForTests(int num) {
+    public ClassForTests(int num) {
         number = num;
     }
 
