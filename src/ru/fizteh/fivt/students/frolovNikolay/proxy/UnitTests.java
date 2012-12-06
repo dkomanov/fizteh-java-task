@@ -78,8 +78,8 @@ public class UnitTests {
         try {
             myClass2.method5(null, null);
         } catch (Throwable exception) {
-            Assert.assertEquals("TestClassInterface3.method5(null, null) java.lang.reflect.InvocationTargetException: null"
-                    + "\n" + "  sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)" + "\n", stream.toString());
+            Assert.assertEquals("TestClassInterface3.method5(null, null) java.lang.Exception: null pointer"
+                    + "\n" + "  ru.fizteh.fivt.students.frolovNikolay.proxy.UnitTests$TestClass.method5(UnitTests.java:56)" + "\n", stream.toString());
         }
         stream.setLength(0);
         myClass2.method6(stringArray, 3);
@@ -166,5 +166,45 @@ public class UnitTests {
         TestInterface2 object = (TestInterface2) factory.createProxy(new TestClass3(), sf, TestInterface2.class);
         object.print(array);
         Assert.assertEquals("TestInterface2.print(2{1, 0})" + "\n", sf.toString());
+    }
+    
+    @Test
+    public void copyInArray() {
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        StringBuffer sf = new StringBuffer();
+        Long element = 1L;
+        Long[] array = new Long[2];
+        array[0] = element;
+        array[1] = element;
+        TestInterface object = (TestInterface) factory.createProxy(new TestClass2(), sf, TestInterface.class);
+        object.print(array);
+        Assert.assertEquals("TestInterface.print(2{1, 1})" + "\n", sf.toString());
+    }
+    
+    
+    private interface Thrower {
+        
+        public void throwE() throws NullPointerException;
+    }
+    
+    private class ThrowTest implements Thrower {
+        
+        @Override
+        public void throwE() throws NullPointerException {
+            throw new NullPointerException("Hello");
+        }
+    }
+    
+    @Test
+    public void throwTest() {
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        StringBuffer sf = new StringBuffer();
+        Thrower object = (Thrower) factory.createProxy(new ThrowTest(), sf, Thrower.class);
+        try {
+            object.throwE();
+        } catch (Throwable ignoringException) {
+            Assert.assertEquals("Thrower.throwE() java.lang.NullPointerException: Hello" + "\n"
+                                 + "  ru.fizteh.fivt.students.frolovNikolay.proxy.UnitTests$ThrowTest.throwE(UnitTests.java:194)" + "\n", sf.toString());
+        }
     }
 }
