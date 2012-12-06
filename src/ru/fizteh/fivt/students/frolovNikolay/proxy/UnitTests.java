@@ -78,7 +78,7 @@ public class UnitTests {
         try {
             myClass2.method5(null, null);
         } catch (Throwable exception) {
-            Assert.assertEquals("TestClassInterface3.method5(null, null) java.lang.Exception: null pointer"
+            Assert.assertEquals("TestClassInterface3.method5(null, null) threw java.lang.Exception: null pointer"
                     + "\n" + "  ru.fizteh.fivt.students.frolovNikolay.proxy.UnitTests$TestClass.method5(UnitTests.java:56)" + "\n", stream.toString());
         }
         stream.setLength(0);
@@ -203,8 +203,25 @@ public class UnitTests {
         try {
             object.throwE();
         } catch (Throwable ignoringException) {
-            Assert.assertEquals("Thrower.throwE() java.lang.NullPointerException: Hello" + "\n"
+            Assert.assertEquals("Thrower.throwE() threw java.lang.NullPointerException: Hello" + "\n"
                                  + "  ru.fizteh.fivt.students.frolovNikolay.proxy.UnitTests$ThrowTest.throwE(UnitTests.java:194)" + "\n", sf.toString());
+        }
+    }
+    
+    @Test
+    public void npeTest() {
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        StringBuffer sf = new StringBuffer();
+        Long element = 1L;
+        Long[] array = new Long[2];
+        array[0] = element;
+        array[1] = null;
+        TestInterface object = (TestInterface) factory.createProxy(new TestClass2(), sf, TestInterface.class);
+        try {
+            object.print(array);
+        } catch (Throwable ignoringException) {
+            Assert.assertEquals("TestInterface.print(2{1, null}) threw java.lang.NullPointerException: null" + "\n"
+                                + "  ru.fizteh.fivt.students.frolovNikolay.proxy.UnitTests$TestClass2.print(UnitTests.java:130)" + "\n", sf.toString());
         }
     }
 }

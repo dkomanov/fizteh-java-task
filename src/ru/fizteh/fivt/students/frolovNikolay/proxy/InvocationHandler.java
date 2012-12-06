@@ -55,7 +55,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     stream.append(args.length + "{");
                     for (int i = 0; i < args.length; ++i) {
                         IdentityHashMap<Object, Object> arrayCycleInterrupter = new IdentityHashMap<Object, Object>(cycleInterrupter);
-                        specialToString(args[i].getClass(), args[i], stream, arrayCycleInterrupter);
+                        specialToString(clazz.getComponentType(), args[i], stream, arrayCycleInterrupter);
                         if (i + 1 != args.length) {
                             stream.append(", ");
                         }
@@ -65,7 +65,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     stream.append(size + "{");
                     for (int i = 0; i < size; ++i) {
                         IdentityHashMap<Object, Object> arrayCycleInterrupter = new IdentityHashMap<Object, Object>(cycleInterrupter);
-                        specialToString(Array.get(arg, i).getClass(), Array.get(arg, i), stream, arrayCycleInterrupter);
+                        specialToString(clazz.getComponentType(), Array.get(arg, i), stream, arrayCycleInterrupter);
                         if (i + 1 != size) {
                             stream.append(", ");
                         }
@@ -150,7 +150,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 } else {
                     writer.append(" ");
                 }
-                writer.append(exception.getTargetException().getClass().getCanonicalName() + ": " + exception.getTargetException().getMessage() + '\n');
+                writer.append("threw " + exception.getTargetException().getClass().getCanonicalName() + ": " + exception.getTargetException().getMessage() + '\n');
                 if (isExtendedOutput) {
                     writer.append("  ");
                 }
