@@ -22,20 +22,20 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
         } else if (interfaces.length == 0) {
             throw new IllegalArgumentException("Interfaces array is empty");
         }
-        Set<Class> setOfInterfaces = new HashSet<Class>(Arrays.asList(interfaces));
         for (Object targ : targets) {
             if (targ == null) {
                 throw new IllegalArgumentException("Null target");
             }
             boolean implementsSomething = false;
-            for (Class currInterface : interfaces) {
-                if (setOfInterfaces.contains(currInterface)) {
-                    implementsSomething = true;
-                    break;
+            Set<Class> setOfInterfaces = new HashSet<Class>();
+            setOfInterfaces.addAll(Arrays.asList(targ.getClass().getInterfaces()));
+            for (Class inter : interfaces) {
+                if (inter == null) {
+                    throw new IllegalArgumentException("Null interface");
                 }
-            }
-            if (!implementsSomething) {
-                throw new IllegalArgumentException(targ.getClass().getName() + "doesn't implement any of given interfaces");
+                if (!setOfInterfaces.contains(inter)) {
+                    throw new IllegalArgumentException(inter.getName() + " has no implementation");
+                }
             }
         }
         for (Class currInterface : interfaces) {
@@ -52,7 +52,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                 }
                 if (currMethod.getAnnotation(Collect.class) != null) {
                     if (!isSupported(currMethod.getReturnType())) {
-                        throw new IllegalArgumentException("Return type of " + currMethod.getName() + " doesn't supported");
+                        throw new IllegalStateException("Return type of " + currMethod.getName() + " doesn't supported");
                     } else {
                         Set<Class> argSet = new HashSet<Class>(Arrays.asList(currMethod.getParameterTypes()));
                         if (!argSet.contains(int.class) 

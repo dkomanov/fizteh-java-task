@@ -46,6 +46,12 @@ public class ProxyInvocationHandler implements InvocationHandler {
             }
             throw new IllegalArgumentException("Int or long variable not found");
         } else {
+            for (Class param : method.getParameterTypes()) {
+                if (param.getClass().equals(int.class) || param.getClass().equals(long.class)) {
+                    throw new IllegalArgumentException("Method " + method.getName() + 
+                            "has annotation @Collect and numeric parameter");
+                }
+            }
             Class<?> returnType = method.getReturnType();
             if (returnType.equals(void.class)) {
                 for (Object targ : targets) {
