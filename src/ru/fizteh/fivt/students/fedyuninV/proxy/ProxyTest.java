@@ -225,4 +225,14 @@ public class ProxyTest {
         LoggingProxyFactory factory = new LoggingProxyFactory();
         VoidInterface proxy = (VoidInterface) factory.createProxy(null, builder, VoidInterface.class);
     }
+
+    @Test
+    public void indexOfTest() {
+        List<Object> list = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        List<Object> proxy = (List<Object>) factory.createProxy(list, builder, list.getClass().getInterfaces());
+        proxy.indexOf((Object) new int[]{1, 2});
+        Assert.assertEquals(builder.toString(), "List.indexOf(2{\"1\", \"2\"}) returned -1\n");
+    }
 }

@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.fedyuninV.proxy;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -71,7 +72,15 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
 
     private String arrayToString(Object toPrint, Map<Object, Object> parsedObjects) {
         StringBuilder builder = new StringBuilder();
-        Object[] array = (Object[]) toPrint;
+        Object[] array;
+        try {
+            array = (Object[]) toPrint;
+        } catch (ClassCastException primitiveArray) {
+            array = new Object[Array.getLength(toPrint)];
+            for (int i = 0; i < array.length; i++) {
+                array[i] = Array.get(toPrint, i);
+            }
+        }
         builder.append(array.length);
         builder.append('{');
         for (int i = 0; i < array.length; i++) {
