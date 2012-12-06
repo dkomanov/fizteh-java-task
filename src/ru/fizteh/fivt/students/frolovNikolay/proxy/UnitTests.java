@@ -4,6 +4,10 @@ import org.junit.*;
 
 public class UnitTests {
     
+    private interface TestClassInterface3 {
+        public boolean method5(String firstArg, String secondArg) throws Throwable;
+    }
+    
     private interface TestClassInterface {
         
         public void method1(Integer firstArg, Integer secondArg);
@@ -15,9 +19,7 @@ public class UnitTests {
         public String[] method4(String firstArg, int secondArg); 
     }
     
-    private interface TestClassInterface2 {
-        
-        public boolean method5(String firstArg, String secondArg) throws Throwable;
+    private interface TestClassInterface2 extends TestClassInterface3 {
         
         public boolean method6(String[] firstArg, Integer secondArg);
     }
@@ -65,19 +67,18 @@ public class UnitTests {
     @Test
     public void validityTest() throws Throwable {
         StringBuffer stream = new StringBuffer();
-        TestClass myClass = new TestClass();
         Class<?>[] interfaces = new Class<?>[2];
-        interfaces[0] = TestClassInterface.class;
+        interfaces[0] = TestClassInterface3.class;
         interfaces[1] = TestClassInterface2.class;
-        TestClassInterface2 myClass2 = (TestClassInterface2) new LoggingProxyFactory().createProxy(myClass, stream, interfaces);
+        TestClassInterface2 myClass2 = (TestClassInterface2) new LoggingProxyFactory().createProxy(new TestClass(), stream, interfaces);
         myClass2.method5("hello" + "\t" + "my friend", "hello" + "\t" + "my friend");
         String[] stringArray = {"hello", "my", "friend"};
-        Assert.assertEquals("TestClassInterface2.method5(\"hello\\tmy friend\", \"hello\\tmy friend\") returned true\n", stream.toString());
+        Assert.assertEquals("TestClassInterface3.method5(\"hello\\tmy friend\", \"hello\\tmy friend\") returned true\n", stream.toString());
         stream.setLength(0);
         try {
             myClass2.method5(null, null);
         } catch (Throwable exception) {
-            Assert.assertEquals("TestClassInterface2.method5(null, null) java.lang.reflect.InvocationTargetException: null"
+            Assert.assertEquals("TestClassInterface3.method5(null, null) java.lang.reflect.InvocationTargetException: null"
                     + "\n" + "  sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)" + "\n", stream.toString());
         }
         stream.setLength(0);
@@ -114,5 +115,30 @@ public class UnitTests {
         LoggingProxyFactory factory = new LoggingProxyFactory();
         StringBuffer sf = new StringBuffer();
         EmptyInterface proxy = (EmptyInterface) factory.createProxy(new WithEmptyInterface(), sf, EmptyInterface.class);
+    }
+    
+    private interface CycleInterface {
+        public void print(Object array);
+    }
+    
+    private class CycleClass implements CycleInterface {
+        
+        @Override
+        public void print(Object array) {
+            Object[] array2 = (Object[]) array;
+            for (Object iter : array2) {
+                System.out.println(array2.toString());
+            }
+        }
+    }
+    
+    @Test(expected = RuntimeException.class)
+    public void cycleReferences() {
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        StringBuffer sf = new StringBuffer();
+        Object[] array = new Object[1];
+        array[0] = array;
+        CycleInterface object = (CycleInterface) factory.createProxy(new CycleClass(), sf, CycleInterface.class);
+        object.print(array);
     }
 }
