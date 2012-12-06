@@ -6,7 +6,7 @@ import ru.fizteh.fivt.proxy.ShardingProxyFactory;
 import ru.fizteh.fivt.students.dmitriyBelyakov.proxy.ProxyUtils;
 import ru.fizteh.fivt.students.dmitriyBelyakov.proxy.proxy.test.ClassForTests;
 
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,29 +75,25 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
                                 ga.push("Hello, World!");
                                 ga.invokeVirtual(printStreamType, new org.objectweb.asm.commons.Method("println", "(Ljava/lang/String;)V"));
                                 ga.getStatic(Type.getType(System.class), "out", printStreamType);
-                                ga.push(Type.getType(interfc));
+                                //ga.push(Type.getType(interfc));
                                 ga.loadThis();
                                 ga.getField(Type.getType("Proxy"), "targets", Type.getType(ArrayList.class));
                                 ga.push(0);
                                 ga.invokeVirtual(Type.getType(ArrayList.class), new org.objectweb.asm.commons.Method("get",
                                         "(" + Type.getDescriptor(int.class) + ")" + Type.getDescriptor(Object.class)));
-                                /*try {
-                                    ga.invokeVirtual(Type.getType(interfc.getClass()), new org.objectweb.asm.commons.Method("cast",
-                                            Type.getMethodDescriptor(interfc.getClass().getDeclaredMethod("cast", Object.class))));
-                                } catch (Exception e) {
-                                    while(true); // for signal
-                                }*/
-                                ga.cast(Type.getType(Object.class), Type.getType(targets[0].getClass()));
-                                //ga.invokeVirtual(Type.getType(Object.class), new org.objectweb.asm.commons.Method("hashCode",
-                                //        "()I"));
+                                ga.checkCast(Type.getType(targets[0].getClass()));
                                 ga.invokeVirtual(Type.getType(targets[0].getClass()), new org.objectweb.asm.commons.Method(method.getName(),
-                                        Type.getMethodDescriptor(method)));
+                                        Type.getMethodDescriptor(method))); // Something bad happening :(
                                 ga.returnValue();
                             }
                         });
             }
         }
         cw.visitEnd();
+        File file = new File("classBytes.class");
+        try {
+            new FileOutputStream(file).write(cw.toByteArray());
+        } catch (Exception e) {}
         try {
             Class clazz = loadClass(cw.toByteArray());
             Object obj = clazz.newInstance();
