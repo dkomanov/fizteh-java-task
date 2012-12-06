@@ -49,6 +49,7 @@ public class ServerThread extends Thread {
                 } else {
                     if (message[0] == 1) { // сообщение с ником
                         if (!userName.isEmpty()) {
+                            dout.writeInt(MessageUtils.error("You can't change your nick").length);
                             dout.write(MessageUtils.error("You can't change your nick"));
                         } else {
                             String nick = "";
@@ -120,6 +121,7 @@ public class ServerThread extends Thread {
 
     private void sendErrorandStop(DataOutputStream dout, String errorMessage) throws IOException {
         if (work) {
+            dout.writeInt(MessageUtils.error(errorMessage).length);
             dout.write(MessageUtils.error(errorMessage));
             // dout.write(MessageUtils.bye());
             if (!userName.isEmpty() || users.containsKey(userName)) {
@@ -131,10 +133,13 @@ public class ServerThread extends Thread {
     }
 
     private byte[] getMessage(DataInputStream din) {
-        byte[] message = new byte[1024];
+        byte[] message; // = new byte[1024];
         // message = new byte[];
         try {
             // System.out.println("server try to get message");
+            int len = din.readInt();
+            message = new byte[len];
+            // System.out.println("Length: " + len);
             int count = din.read(message);
             // System.out.println(count);
             if (count == -1) {

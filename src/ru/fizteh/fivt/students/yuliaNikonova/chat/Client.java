@@ -45,6 +45,10 @@ public class Client extends Thread {
         try {
             // System.out.println("Message: "+message);
             // Send it to the server
+            byte[] byteMessage = MessageUtils.message(userName, message);
+            int len = byteMessage.length;
+            // System.out.println("Length: " + len);
+            dout.writeInt(len);
             dout.write(MessageUtils.message(userName, message));
             // System.out.println("Sended message \"" + message +
             // "\" to server");
@@ -59,6 +63,7 @@ public class Client extends Thread {
         servers.put(key, this);
         try {
             // System.out.println("Want to say hello to server");
+            dout.writeInt(MessageUtils.hello(userName).length);
             dout.write(MessageUtils.hello(userName));
             // System.out.println("Username: " + userName);
             // System.out.println("I said hello to server");
@@ -112,8 +117,10 @@ public class Client extends Thread {
 
     private byte[] getMessage(DataInputStream din) {
         // System.out.println("GET MESSAGE");
-        byte[] message = new byte[1024];
+        byte[] message; // = new byte[1024];
         try {
+            int n = din.readInt();
+            message = new byte[n];
             int count = din.read(message);
             if (count == -1) {
                 if (work) {
