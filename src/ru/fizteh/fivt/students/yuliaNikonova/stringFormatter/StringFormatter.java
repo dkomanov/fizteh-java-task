@@ -87,7 +87,15 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             pattern = len;
         }
 
+        String substrFormat = strFormat.substring(0, pattern);
+        if (substrFormat.charAt(substrFormat.length() - 1) == '.') {
+            throw new FormatterException("wrong format: " + substrFormat);
+        }
         String fields[] = strFormat.substring(0, pattern).split("\\.");
+
+        if (fields[0].equals("+0") || fields[0].equals("-0")) {
+            throw new FormatterException("bad index: " + fields[0]);
+        }
 
         int pos = 0;
         try {
@@ -155,7 +163,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
                 }
             }
 
-            throw new FormatterException("Field " + field + " in " + result.getClass() + " is unaccessible");
+            return null;
 
         } catch (Exception e) {
             throw new FormatterException("Field " + field + " in " + result.getClass() + " is unaccessible", e);

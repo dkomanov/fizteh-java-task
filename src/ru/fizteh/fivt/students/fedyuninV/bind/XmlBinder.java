@@ -178,22 +178,22 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     private void setComponentName(SerializeComponent component) {
         AsXmlElement getterAnnnotation = component.getter().getAnnotation(AsXmlElement.class);
         AsXmlElement setterAnnnotation = component.setter().getAnnotation(AsXmlElement.class);
-        if (setterAnnnotation != null  &&  !setterAnnnotation.name().equals("")) {
-            if (getterAnnnotation != null  &&  !getterAnnnotation.name().equals("")) {
-                if (setterAnnnotation.name().equals(getterAnnnotation.name())) {
-                    component.setName(firstCharToLowerCase(setterAnnnotation.name()));
+        if (setterAnnnotation != null  &&  getterAnnnotation != null) {
+            if (setterAnnnotation.name().equals(getterAnnnotation.name())) {
+                if (setterAnnnotation.name().equals("")) {
+                    component.setName(firstCharToLowerCase(component.getName()));
                 } else {
-                    throw new RuntimeException("Incorrect annotations of methods.");
+                    component.setName(firstCharToLowerCase(setterAnnnotation.name()));
                 }
             } else {
-                component.setName(firstCharToLowerCase(setterAnnnotation.name()));
+                throw new RuntimeException("Incorrect annotations of methods.");
             }
+        } else if (setterAnnnotation != null  &&  !setterAnnnotation.name().equals("")) {
+            component.setName(firstCharToLowerCase(setterAnnnotation.name()));
+        } else if (getterAnnnotation != null  &&  !getterAnnnotation.name().equals("")) {
+            component.setName(firstCharToLowerCase(getterAnnnotation.name()));
         } else {
-            if (getterAnnnotation != null  &&  !getterAnnnotation.name().equals("")) {
-                component.setName(firstCharToLowerCase(getterAnnnotation.name()));
-            } else {
-                component.setName(firstCharToLowerCase(component.getName()));
-            }
+            component.setName(firstCharToLowerCase(component.getName()));
         }
     }
 
@@ -351,9 +351,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                 List<SerializeComponent> components = methods.get(clazz);
                 for (SerializeComponent component: components) {
                     NodeList childs = root.getElementsByTagName(component.getName());
-                    if (childs.getLength() > 1) {
-                        throw new RuntimeException("Incorrect number of fields in XML");
-                    }
                     if (childs.getLength() > 0) {
                         Node child = childs.item(0);
                         try {
@@ -368,9 +365,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
                 for (Field field: fieldList) {
                     field.setAccessible(true);
                     NodeList childs = root.getElementsByTagName(getFieldName(field));
-                    if (childs.getLength() > 1) {
-                        throw new RuntimeException("Incorrect number of fields in XML");
-                    }
                     if (childs.getLength() > 0) {
                         Node child = childs.item(0);
                         try {

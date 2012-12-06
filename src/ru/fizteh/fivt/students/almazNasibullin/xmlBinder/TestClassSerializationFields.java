@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.almazNasibullin.xmlBinder;
 
 import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.bind.BindingType;
+import ru.fizteh.fivt.bind.AsXmlAttribute;
 
 /**
  * 28.11.12
@@ -10,6 +11,7 @@ import ru.fizteh.fivt.bind.BindingType;
 
 @BindingType(MembersToBind.FIELDS)
 public class TestClassSerializationFields {
+    @AsXmlAttribute(name = "brand")
     private String carBrand = "BMW";
     private String carModel = "X6";
     protected String owner = "Somebody";
