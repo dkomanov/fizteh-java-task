@@ -176,20 +176,26 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         }
         logger.append(')');
         if (tooLong) {
-            logger.append("\n ");
+            logger.append("\n");
         }
         try {
             Object result = method.invoke(target, args);
-            logger.append(" returned ");
-            if (method.getReturnType().equals(void.class)) {
-                logger.append("void");
-            } else {
+            if (!method.getReturnType().equals(void.class)) {
+                if (tooLong) {
+                    logger.append(' ');
+                }
+                logger.append(" returned ");
                 parsedObjects.clear();
                 logger.append(printObject(result, parsedObjects));
             }
-            logger.append('\n');
+            if (!tooLong) {
+                logger.append('\n');
+            }
             return result;
         } catch (Throwable ex) {
+            if (tooLong) {
+                logger.append(' ');
+            }
             logger.append(" threw ");
             logger.append(ex.getClass().getName());
             logger.append(": ");

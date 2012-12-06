@@ -71,7 +71,6 @@ public class ProxyTest {
                         "  2,\n" +
                         "  \"too long too long too long too long too long too long too long too long too long too long\"\n" +
                         "  )\n" +
-                        "  returned void\n" +
                         "List.get(0) returned \"wtf1\"\n");
     }
 
@@ -110,7 +109,7 @@ public class ProxyTest {
         proxy.equals(null); //don't proxy
         Assert.assertEquals(builder.toString(),
                 "SetArrays.setArray(3{\"3.1415\", \"1.02\", \"23.04\"}) returned 3{\"3.1415\", \"1.02\", \"23.04\"}\n" +
-                "SetArrays.voidMethod(0{}) returned void\n");
+                "SetArrays.voidMethod(0{})\n");
     }
 
     @Test
