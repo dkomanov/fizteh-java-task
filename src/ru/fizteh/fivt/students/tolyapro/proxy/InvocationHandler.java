@@ -18,13 +18,13 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
     private String escapeString(String string) {
         String result = string;
+        result = result.replaceAll("\\\\", "\\\\\\\\");
         result = result.replaceAll("\t", "\\\\t");
         result = result.replaceAll("\b", "\\\\b");
         result = result.replaceAll("\n", "\\\\n");
         result = result.replaceAll("\r", "\\\\r");
         result = result.replaceAll("\f", "\\\\f");
         result = result.replaceAll("\"", "\\\"");
-        result = result.replaceAll("\\\\[^tbnrf]", "\\\\\\\\");
         return result;
     }
 
@@ -81,6 +81,10 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable {
         IdentityHashMap<Object, Object> circularRefDetector = new IdentityHashMap<Object, Object>();
+        if (method.getName().equals("hashCode")
+                || method.getName().equals("equals")) {
+            return method.invoke(target, args);
+        }
         final int magicConst = 60;
         boolean extendedMode = false;
         ArrayList<String> argsAsStrings = new ArrayList<String>();

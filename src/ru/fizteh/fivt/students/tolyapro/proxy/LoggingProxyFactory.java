@@ -22,6 +22,9 @@ public class LoggingProxyFactory implements
             throw new IllegalArgumentException("interfaces are empty");
         }
         for (int i = 0; i < interfaces.length; ++i) {
+            if (interfaces[i] == null) {
+                throw new IllegalArgumentException(i + " interface is null");
+            }
             if (!implementsInterface(target, interfaces[i])) {
                 throw new IllegalArgumentException(
                         "target doesn't implement interface "
