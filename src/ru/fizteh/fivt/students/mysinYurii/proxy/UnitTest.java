@@ -97,7 +97,7 @@ public class UnitTest {
         interfaces[0] = ExampleInterface.class;
         try {
             ExampleInterface temp = (ExampleInterface) new ShardingProxyFactory().createProxy(target, interfaces);
-            System.out.println(temp.assign(5, 5));
+            System.out.println(temp.assign(Long.valueOf(5), Long.valueOf(5)));
         } catch (IllegalArgumentException e) {
             System.out.println("Fail " + e.getMessage());
         }
@@ -109,7 +109,7 @@ public class UnitTest {
         @Collect
         public long mul(long i, long j);
         @Collect
-        public List<Integer> assign(int i, int j);
+        public List<Long> assign(Long i, Long j);
         public void throwException(int j);
     }
     
@@ -128,8 +128,9 @@ public class UnitTest {
             return i * j;
         }
         
-        public List<Integer> assign(int i, int j) {
-            List<Integer> returnVal = new ArrayList<Integer>();
+        @Collect
+        public List<Long> assign(Long i, Long j) {
+            List<Long> returnVal = new ArrayList<Long>();
             for (int i1 = 0; i1 < i; ++i1) {
                 returnVal.add(j);
             }

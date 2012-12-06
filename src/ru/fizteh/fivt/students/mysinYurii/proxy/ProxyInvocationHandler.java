@@ -18,9 +18,7 @@ public class ProxyInvocationHandler implements InvocationHandler {
     
     boolean isNumber(Class<?> someClass) {
         return (someClass.equals(int.class)
-                || someClass.equals(Integer.class)
-                || someClass.equals(long.class)
-                || someClass.equals(Long.class));
+                || someClass.equals(long.class));
     }
 
     @Override
