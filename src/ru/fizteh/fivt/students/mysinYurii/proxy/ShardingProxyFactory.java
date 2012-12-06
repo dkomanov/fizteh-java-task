@@ -53,12 +53,12 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                 if (currMethod.getAnnotation(Collect.class) != null) {
                     if (!isSupported(currMethod.getReturnType())) {
                         throw new IllegalStateException("Return type of " + currMethod.getName() + " doesn't supported");
-                    } else {
-                        Set<Class> argSet = new HashSet<Class>(Arrays.asList(currMethod.getParameterTypes()));
-                        if (!argSet.contains(int.class) 
-                                && !argSet.contains(long.class)) {
-                            throw new IllegalArgumentException("No int or long parameter");
-                        }
+                    }
+                } else {
+                    Set<Class> argSet = new HashSet<Class>(Arrays.asList(currMethod.getParameterTypes()));
+                    if (!argSet.contains(int.class) 
+                            && !argSet.contains(long.class)) {
+                        throw new IllegalArgumentException("No int or long parameter");
                     }
                 }
             }
