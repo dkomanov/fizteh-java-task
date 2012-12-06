@@ -190,4 +190,13 @@ public class TestProxy {
 
     }
 
+    @Test
+    public void testL() {
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        SimpleClass simpleClass = new SimpleClass();
+        StringBuffer writer = new StringBuffer();
+        SimpleInterface proxy = (SimpleInterface) factory.createProxy(
+                simpleClass, writer, SimpleInterface.class);
+        System.out.println(writer);
+    }
 }
