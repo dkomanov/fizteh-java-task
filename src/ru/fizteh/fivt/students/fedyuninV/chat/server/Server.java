@@ -114,8 +114,10 @@ public class Server implements Runnable{
         switch (message.getType()) {
             case HELLO:
                 String newName = message.getName();
-                if (name != null  ||  usersOnline.containsKey(newName)  ||  newName.matches("[ \n\t]+")) {
-                    worker.sendMessage(MessageUtils.message("server", "Can't authorize"));
+                if (name != null) {
+                    worker.sendMessage(MessageUtils.message("server", "Already authorized"));
+                } else if (usersOnline.containsKey(newName)  ||  newName.matches("[ \n\t]+")) {
+                    worker.sendMessage(MessageUtils.error("Cannot authorize with this name"));
                 } else {
                     synchronized (unauthorizedUsers) {
                         unauthorizedUsers.remove(worker);
@@ -124,6 +126,7 @@ public class Server implements Runnable{
                     synchronized (usersOnline) {
                         usersOnline.put(newName, worker);
                     }
+                    System.out.println(newName + " suddenly appeared");
                 }
                 break;
             case BYE:
@@ -156,13 +159,13 @@ public class Server implements Runnable{
     public void run() {
         try {
             while (!serverThread.isInterrupted()) {
+                System.out.println("here");
                 Socket socket = serverSocket.accept();
+                System.out.println(socket);
                 synchronized (unauthorizedUsers) {
                     UserWorker userWorker = new UserWorker(socket, this);
-                    synchronized (unauthorizedUsers) {
-                        unauthorizedUsers.add(userWorker);
-                    }
-                    userWorker.run();
+                    unauthorizedUsers.add(userWorker);
+                    userWorker.start();
                 }
             }
         } catch (SocketTimeoutException ignored) {

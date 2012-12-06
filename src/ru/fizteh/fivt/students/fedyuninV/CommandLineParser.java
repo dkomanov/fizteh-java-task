@@ -28,7 +28,7 @@ public class CommandLineParser implements Runnable{
         while (true) {
             try {
                 String incomingData = reader.readLine();
-                if (incomingData.length() > 0) {
+                if (incomingData != null  &&  incomingData.length() > 0) {
                     String[] tokens = incomingData.split("[ ]+");
                     if (incomingData.charAt(0) == '/') {
                         owner.execute(tokens[0], Arrays.copyOfRange(tokens, 1, tokens.length));
@@ -36,7 +36,7 @@ public class CommandLineParser implements Runnable{
                             break;
                         }
                     } else {
-                        owner.execute("", tokens);
+                        owner.execute("", new String[]{incomingData});
                     }
                 }
             } catch (IOException ignored) {
