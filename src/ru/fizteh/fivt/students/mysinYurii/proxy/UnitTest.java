@@ -16,11 +16,10 @@ public class UnitTest {
         interfaces[0] = ExampleInterface.class;
         try {
             ExampleInterface pr = (ExampleInterface) new ShardingProxyFactory().createProxy(target, interfaces);
-            System.out.print("Expected 18. Answer is : ");
-            System.out.println(pr.mul(2, 3));
+            System.out.print(pr.mul(2, 3));
+            System.out.print(".Fail, exception is expected");
         } catch (IllegalArgumentException e) {
-            System.out.println("Fail");
-            System.out.println(e.getMessage());
+            System.out.println("Success");
         }
     }
     
