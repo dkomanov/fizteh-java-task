@@ -1,6 +1,5 @@
 package ru.fizteh.fivt.students.mysinYurii.proxy;
 
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,10 +55,49 @@ public class UnitTest {
         Object[] target = new Object[1];
         target[0] = new ExampleClass();
         try {
-            new ShardingProxyFactory().createProxy(null, interfaces);
+            new ShardingProxyFactory().createProxy(target, interfaces);
             System.out.println("Fail");
         } catch (IllegalArgumentException e) {
             System.out.println("Success");
+        }
+    }
+    
+    static void test5() {
+        Class[] interfaces = new Class[1];
+        Object[] target = new Object[1];
+        target[0] = new ExampleClass();
+        try {
+            ExampleClass temp = (ExampleClass) new ShardingProxyFactory().createProxy(target, interfaces);
+            temp.throwException();
+        } catch (IllegalArgumentException e) {
+            System.out.println("Success");
+        } 
+    }
+    
+    static void test6() {
+        Class[] interfaces = new Class[1];
+        Object[] target = new Object[1];
+        target[0] = new ExampleClass();
+        try {
+            ExampleClass temp = (ExampleClass) new ShardingProxyFactory().createProxy(target, interfaces);
+            System.out.println(temp.sum(0, 5));
+        } catch (IllegalArgumentException e) {
+            System.out.println("Success");
+        } 
+    }
+    
+    static void test7() {
+        Class[] interfaces = new Class[1];
+        Object[] target = new Object[3];
+        for (int i = 0; i < target.length; ++i) {
+            target[i] = new ExampleClass();
+        }
+        interfaces[0] = ExampleInterface.class;
+        try {
+            ExampleInterface temp = (ExampleInterface) new ShardingProxyFactory().createProxy(target, interfaces);
+            System.out.println(temp.assign(5, 5));
+        } catch (IllegalArgumentException e) {
+            System.out.println("Fail " + e.getMessage());
         }
     }
     
@@ -68,7 +106,9 @@ public class UnitTest {
         public int sum(int i, int j);
         @Collect
         public long mul(long i, long j);
+        @Collect
         public List<Integer> assign(int i, int j);
+        public void throwException();
     }
     
     public static class ExampleClass implements ExampleInterface {
@@ -77,6 +117,10 @@ public class UnitTest {
             return i * j;
         }
         
+        public void throwException() throws IllegalArgumentException {
+            throw new IllegalArgumentException("Catch me, if you can");
+        }
+
         @Collect
         public long mul(long i, long j) {
             return i * j;

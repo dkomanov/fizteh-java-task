@@ -1,6 +1,6 @@
 package ru.fizteh.fivt.students.mysinYurii.proxy;
 
-import java.awt.List;
+import java.util.List;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
@@ -52,7 +52,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                 }
                 if (currMethod.getAnnotation(Collect.class) != null) {
                     if (!isSupported(currMethod.getReturnType())) {
-                        throw new IllegalArgumentException("Return type of " + currMethod.getName() + "doesn't supported");
+                        throw new IllegalArgumentException("Return type of " + currMethod.getName() + " doesn't supported");
                     } else {
                         Set<Class> argSet = new HashSet<Class>(Arrays.asList(currMethod.getParameterTypes()));
                         if (!argSet.contains(int.class) 
@@ -67,7 +67,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
     }
 
     private boolean isSupported(Class<?> returnType) {
-        return (returnType.equals(int.class) 
+        return (returnType.equals(int.class)
                 || returnType.equals(long.class)
                 || returnType.equals(List.class)
                 || returnType.equals(void.class));

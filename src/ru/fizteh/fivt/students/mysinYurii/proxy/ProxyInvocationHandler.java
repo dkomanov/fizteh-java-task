@@ -19,17 +19,15 @@ public class ProxyInvocationHandler implements InvocationHandler {
     public Object invoke(Object object, Method method, Object[] arguments)
             throws Throwable {
         if (object == null) {
-            throw new NullPointerException("Object is null");
+            throw new IllegalArgumentException("Object is null");
         } else if (method == null) {
-            throw new NullPointerException("Method is null");
+            throw new IllegalArgumentException("Method is null");
         }
         if (method.getAnnotation(DoNotProxy.class) != null) {
             throw new IllegalArgumentException(method.getName() + ": has annotation DoNotProxy");
         } else if (method.getAnnotation(Collect.class) == null) {
             for (int i = 0; i < arguments.length; ++i) {
-                if (arguments[i] == null) {
-                    throw new IllegalArgumentException("Null argument for " + method.getName());
-                } else {
+                if (arguments[i] != null) {
                     if (arguments[i].getClass().equals(int.class) || arguments[i].getClass().equals(Integer.class)) {
                         return method.invoke(targets[(int) i % arguments.length], arguments);
                     } else if (arguments[i].getClass().equals(long.class) || arguments[i].getClass().equals(Long.class)) {
