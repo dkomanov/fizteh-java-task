@@ -1,8 +1,8 @@
 package ru.fizteh.fivt.students.yushkevichAnton.chat.server;
 
-import misc.chat.Message;
-import misc.chat.MessageType;
-import misc.chat.MessageUtils;
+import ru.fizteh.fivt.chat.Message;
+import ru.fizteh.fivt.chat.MessageType;
+import ru.fizteh.fivt.chat.MessageUtils;
 
 import java.io.*;
 import java.net.ProtocolException;
