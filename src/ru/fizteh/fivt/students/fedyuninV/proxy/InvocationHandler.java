@@ -180,10 +180,10 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         }
         try {
             Object result = method.invoke(target, args);
+            logger.append(" returned ");
             if (method.getReturnType().equals(void.class)) {
-                logger.append(" is void");
+                logger.append("void");
             } else {
-                logger.append(" returned ");
                 parsedObjects.clear();
                 logger.append(printObject(result, parsedObjects));
             }
