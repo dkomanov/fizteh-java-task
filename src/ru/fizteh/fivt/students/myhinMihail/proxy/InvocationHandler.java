@@ -73,17 +73,17 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         }
         
         for (Object arg : args) {
-            if (arg == null) {
-                throw new IllegalArgumentException("Null argument");
-            }
-            
-            Class<?> clazz = arg.getClass();
-            if (clazz.equals(int.class) || clazz.equals(Integer.class)) {
-                return method.invoke(targets[(int) arg % targets.length], args);
-            }
-            
-            if (clazz.equals(long.class) || clazz.equals(Long.class)) {
-                return method.invoke(targets[(int) ((Long) arg % targets.length)], args);
+            try {
+                Class<?> clazz = arg.getClass();
+                if (clazz.equals(int.class) || clazz.equals(Integer.class)) {
+                    return method.invoke(targets[(int) arg % targets.length], args);
+                }
+                
+                if (clazz.equals(long.class) || clazz.equals(Long.class)) {
+                    return method.invoke(targets[(int) ((Long) arg % targets.length)], args);
+                }
+            } catch (InvocationTargetException expt) {
+                throw expt.getTargetException();
             }
             
             break;
