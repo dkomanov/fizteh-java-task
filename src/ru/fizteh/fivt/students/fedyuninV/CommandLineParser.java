@@ -28,14 +28,16 @@ public class CommandLineParser implements Runnable{
         while (true) {
             try {
                 String incomingData = reader.readLine();
-                String[] tokens = incomingData.split("[ ]+");
-                if (incomingData.charAt(0) == '/') {
-                    owner.execute(tokens[0], Arrays.copyOfRange(tokens, 1, tokens.length));
-                    if (tokens[0].equals(exitCommand)) {
-                        break;
+                if (incomingData.length() > 0) {
+                    String[] tokens = incomingData.split("[ ]+");
+                    if (incomingData.charAt(0) == '/') {
+                        owner.execute(tokens[0], Arrays.copyOfRange(tokens, 1, tokens.length));
+                        if (tokens[0].equals(exitCommand)) {
+                            break;
+                        }
+                    } else {
+                        owner.execute("", tokens);
                     }
-                } else {
-                    owner.execute("", tokens);
                 }
             } catch (IOException ignored) {
                 //TODO: bad code

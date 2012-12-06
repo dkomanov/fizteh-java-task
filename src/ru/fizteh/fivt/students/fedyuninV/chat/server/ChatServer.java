@@ -13,7 +13,7 @@ public class ChatServer implements CommandLine {
     Server server = null;
 
     private void printUsage() {
-        System.err.println("Incorrect usage of command");
+        System.out.println("Incorrect usage of command");
     }
 
     public static void main(String[] args) {
@@ -31,7 +31,7 @@ public class ChatServer implements CommandLine {
                 return;
             }
             try {
-                Integer.parseInt(args[0]);
+                portNum = Integer.parseInt(args[0]);
             } catch (Exception ex) {
                 printUsage();
                 return;
@@ -40,11 +40,16 @@ public class ChatServer implements CommandLine {
                 printUsage();
                 return;
             }
-            if (server != null) {
-                server.stop();
+            try {
+                Server newServer = new Server(portNum); //if creating server fails, previous server is still working
+                if (server != null) {
+                    server.stop();
+                }
+                server = newServer;
+                server.start();
+            } catch (Exception ex) {
+                System.out.println("Cannot start new server");
             }
-            server = new Server(portNum);
-            server.start();
         } else if (command.equals("/stop")) {
             if (args != null  &&  args.length != 0) {
                 printUsage();
@@ -52,9 +57,11 @@ public class ChatServer implements CommandLine {
             }
             if (server != null) {
                 server.stop();
+                server.join();
             } else {
                 System.out.println("You need to start listening port.");
             }
+            server = null;
         } else if (command.equals("/list")) {
             if (args != null  &&  args.length != 0) {
                 printUsage();
@@ -84,7 +91,7 @@ public class ChatServer implements CommandLine {
                 return;
             }
             if (server != null) {
-                server.sendAll(MessageType.MESSAGE, args[0]);
+                server.sendAll(MessageType.MESSAGE, "server", args[0]);
             } else {
                 System.out.println("You need to start listening port.");
             }
@@ -94,13 +101,14 @@ public class ChatServer implements CommandLine {
                 return;
             }
             if (server != null) {
-                server.kill(args[0]);
+                server.kill(new Message(MessageType.BYE), args[0]);
             } else {
                 System.out.println("You need to start listening port.");
             }
         } else if (command.equals("/exit")) {
             if (server != null) {
                 server.stop();
+                server.join();
             }
         }
     }

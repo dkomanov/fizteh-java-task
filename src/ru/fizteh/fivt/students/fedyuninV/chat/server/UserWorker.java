@@ -32,7 +32,20 @@ public class UserWorker implements Runnable{
     }
 
     public void kill() {
+        try {
+            socket.close();
+        } catch (Exception ignored) {
+
+        }
         userThread.interrupt();
+    }
+
+    public void join() {
+        try {
+            userThread.join();
+        } catch (Exception ignored) {
+
+        }
     }
 
     public void sendMessage(byte[] bytes) {
@@ -49,12 +62,20 @@ public class UserWorker implements Runnable{
             while (!userThread.isInterrupted()) {
                 try {
                     Message message = MessageUtils.getMessage(iStream);
-                    server.processMessage(message);
+                    server.processMessage(message, this);
                 } catch (Exception ex) {
                 }
             }
         } catch (Exception ex) {
 
         }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
