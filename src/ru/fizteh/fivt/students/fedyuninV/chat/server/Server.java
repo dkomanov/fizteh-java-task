@@ -1,10 +1,9 @@
 package ru.fizteh.fivt.students.fedyuninV.chat.server;
 
 
-import ru.fizteh.fivt.students.fedyuninV.CommandLine;
-import ru.fizteh.fivt.students.fedyuninV.IOUtils;
+import ru.fizteh.fivt.students.fedyuninV.chat.message.Message;
+import ru.fizteh.fivt.students.fedyuninV.chat.message.MessageType;
 
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,34 +14,41 @@ import java.util.Set;
  * Fedyunin Valeriy
  * MIPT FIVT 195
  */
-public class Server implements CommandLine, Runnable{
+public class Server implements Runnable{
 
     private ServerSocket serverSocket;
-    private Set <UserWorker> connectedUsers = new HashSet<>();
+    private Set <UserWorker> unauthorizedUsers = new HashSet<>();
     private Map <String, UserWorker> usersOnline = new HashMap<>();
-    private final String myName = "server";
     private final Thread serverThread;
 
     public Server() {
         serverThread = new Thread(this);
-        usersOnline.add(myName, null);
-    }
-
-    private void printUsage() {
-        System.err.println("Incorrect usage of command");
+        usersOnline.put("server", null);
     }
 
     private void kill(String... userNames) {
-        synchronized (connectedUsers) {
+        synchronized (usersOnline) {
             for(String userName: userNames) {
-                UserWorker userWorker = connectedUsers.remove(userName);
-                if (userWorker == null) {
-                    System.err.println("No user with name " + userName);
+                if (usersOnline.containsKey(userName)) {
+                    if (userName.equals("server")) {
+                        System.out.println("If you want to stop server, type \"/stop\"");
+                    } else {
+                        usersOnline.remove(userName).kill();
+                    }
                 } else {
-                    userWorker.kill();
+                    System.out.println("No user with name " + userName);
                 }
-                usersOnline.remove(userName);
             }
+        }
+    }
+
+    public void list() {
+        Set<String> userNames = null;
+        synchronized (usersOnline) {
+            userNames = usersOnline.keySet();
+        }
+        for (String userName: userNames) {
+            System.out.println(userName);
         }
     }
 
@@ -58,40 +64,13 @@ public class Server implements CommandLine, Runnable{
         }
     }
 
-    @Override
-    public void execute(String command, String[] args) {
-        if (command.equals("/listen")) {
-            if (args.length != 1) {
-                printUsage();
-            } else {
-                kill((String[]) usersOnline.keySet().toArray());
-                IOUtils.tryClose(serverSocket);
-                try {
-                    serverSocket.bind(new InetSocketAddress(Integer.parseInt(args[0])));
-                } catch (Exception ex) {
-                    System.err.println("Unable to bind.");
-                }
-            }
-        } else if (command.equals("/stop")) {
-            stop();
-        } else if (command.equals("/list")) {
-            Set<String> userNames= users.keySet();
-            for (String userName: userNames) {
-                System.out.println(userName);
-            }
-        } else if (command.equals("/send")) {
+    public void send(Message message, String address) {
+    }
 
-        } else if (command.equals("/sendall")) {
+    public void sendAll(MessageType type, String text) {
+    }
 
-        } else if (command.equals("/kill")) {
-            for (String userName: args) {
-                kill(userName);
-            }
-        } else if (command.equals("/exit")) {
-            stop();
-        } else {
-            printUsage();
-        }
+    public void kill(String userName) {
     }
 
     public void run() {
