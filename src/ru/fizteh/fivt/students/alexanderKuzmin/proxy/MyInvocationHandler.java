@@ -28,6 +28,7 @@ public class MyInvocationHandler implements java.lang.reflect.InvocationHandler 
             throw new IllegalArgumentException("Incorrect input.");
         }
 
+        method.setAccessible(true);
         if (method.getAnnotation(DoNotProxy.class) != null) {
             throw new IllegalStateException(
                     "This method has DoNotProxy annotation.");
