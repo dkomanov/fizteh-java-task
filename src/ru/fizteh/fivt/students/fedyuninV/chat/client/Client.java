@@ -1,12 +1,12 @@
 package ru.fizteh.fivt.students.fedyuninV.chat.client;
 
+import ru.fizteh.fivt.students.fedyuninV.IOUtils;
 import ru.fizteh.fivt.students.fedyuninV.chat.message.Message;
 import ru.fizteh.fivt.students.fedyuninV.chat.message.MessageUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
@@ -16,28 +16,23 @@ import java.net.Socket;
 public class Client implements Runnable{
     private final Socket socket;
     private final ChatClient chatClient;
-    private final Thread clientThread;
+    private Thread clientThread;
     private boolean active;
     private final String name;
 
     public Client(ChatClient chatClient, String name, String host, int port) throws IOException{
         this.chatClient = chatClient;
-        this.socket = new Socket();
-        socket.connect(new InetSocketAddress(host, port));
-        clientThread = new Thread(this);
+        this.socket = new Socket(host, port);
         this.name = name;
     }
 
     public void start() {
+        clientThread = new Thread(this);
         clientThread.start();
     }
 
     public void kill() {
-        try {
-            socket.close();
-        } catch (Exception ignored) {
-
-        }
+        IOUtils.tryClose(socket);
         clientThread.interrupt();
     }
 

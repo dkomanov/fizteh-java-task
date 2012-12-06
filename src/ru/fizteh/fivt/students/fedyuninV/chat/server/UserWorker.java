@@ -57,7 +57,6 @@ public class UserWorker implements Runnable{
 
     public void run() {
         try {
-            System.out.println("Started!");
             InputStream iStream = socket.getInputStream();
             while (!userThread.isInterrupted()) {
                 try {

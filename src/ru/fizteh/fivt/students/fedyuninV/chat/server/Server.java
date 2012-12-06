@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.fedyuninV.chat.server;
 
 
+import ru.fizteh.fivt.students.fedyuninV.IOUtils;
 import ru.fizteh.fivt.students.fedyuninV.chat.message.Message;
 import ru.fizteh.fivt.students.fedyuninV.chat.message.MessageType;
 import ru.fizteh.fivt.students.fedyuninV.chat.message.MessageUtils;
@@ -23,13 +24,12 @@ public class Server implements Runnable{
     private ServerSocket serverSocket;
     private Set <UserWorker> unauthorizedUsers = new HashSet<>();
     private Map <String, UserWorker> usersOnline = new HashMap<>();
-    private final Thread serverThread;
+    private Thread serverThread;
+    private int portNum;
 
     public Server(int portNum) throws IOException{
-        serverThread = new Thread(this);
         usersOnline.put("server", null);
-        serverSocket = new ServerSocket(portNum);
-        serverSocket.setSoTimeout(5000);
+        this.portNum = portNum;
     }
 
     public void kill(Message message, String... userNames) {
@@ -60,29 +60,34 @@ public class Server implements Runnable{
     }
 
     public void start() {
+        try {
+            serverSocket = new ServerSocket(portNum);
+        } catch (IOException ex) {
+            System.out.println("Can't start the server");
+            System.out.println(ex.getMessage());
+            return;
+        }
+        serverThread = new Thread(this);
         serverThread.start();
     }
 
     public void stop() {
-        try {
-            Set<String> userNames;
-            synchronized (usersOnline) {
-                userNames = usersOnline.keySet();
-            }
-            kill(new Message(MessageType.BYE), userNames.toArray(new String[0]));
-            synchronized (unauthorizedUsers) {
-                for (UserWorker worker: unauthorizedUsers) {
-                    worker.sendMessage(MessageUtils.bye());
-                    worker.kill();
-                    worker.join();
-                }
-            }
-            serverSocket.close();
-        } catch (IOException ignored) {
-            System.out.println(ignored.getMessage());
-            System.out.println("here");
+        Set<String> userNames;
+        synchronized (usersOnline) {
+            userNames = usersOnline.keySet();
         }
-        serverThread.interrupt();
+        kill(new Message(MessageType.BYE), userNames.toArray(new String[0]));
+        synchronized (unauthorizedUsers) {
+            for (UserWorker worker: unauthorizedUsers) {
+                worker.sendMessage(MessageUtils.bye());
+                worker.kill();
+                worker.join();
+            }
+        }
+        IOUtils.tryClose(serverSocket);
+        if (serverThread != null) {
+            serverThread.interrupt();
+        }
     }
 
     public void send(Message message, String address) {
@@ -131,6 +136,20 @@ public class Server implements Runnable{
                 break;
             case BYE:
                 text = " left the chat";
+                if (name != null) {
+                    System.out.println("User " + name + text);
+                    kill(null, name);
+                    synchronized (usersOnline) {
+                        usersOnline.remove(name);
+                    }
+                } else {
+                    System.out.println("Unauthorized user " + text);
+                    synchronized (unauthorizedUsers) {
+                        unauthorizedUsers.remove(worker);
+                    }
+                }
+                worker.kill();
+                break;
             case ERROR:
                 text = " left because of error";
                 if (name != null) {
@@ -159,14 +178,12 @@ public class Server implements Runnable{
     public void run() {
         try {
             while (!serverThread.isInterrupted()) {
-                System.out.println("here");
                 Socket socket = serverSocket.accept();
-                System.out.println(socket);
+                UserWorker userWorker = new UserWorker(socket, this);
                 synchronized (unauthorizedUsers) {
-                    UserWorker userWorker = new UserWorker(socket, this);
                     unauthorizedUsers.add(userWorker);
-                    userWorker.start();
                 }
+                userWorker.start();
             }
         } catch (SocketTimeoutException ignored) {
         } catch(Exception ex) {

@@ -43,11 +43,14 @@ public class ChatServer implements CommandLine {
             try {
                 Server newServer = new Server(portNum); //if creating server fails, previous server is still working
                 if (server != null) {
+                    System.out.println(server);
                     server.stop();
+                    server.join();
                 }
+                newServer.start();
                 server = newServer;
-                server.start();
             } catch (Exception ex) {
+                System.out.println(ex.getClass());
                 System.out.println("Cannot start new server");
             }
         } else if (command.equals("/stop")) {

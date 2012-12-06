@@ -34,18 +34,22 @@ public final class MessageUtils {
 
     private static int getLength(InputStream inputStream) throws Exception {
         ByteBuffer buffer = ByteBuffer.allocate(4);
+        buffer.position(0);
         int nextByte;
         for (int i = 0; i < 4; i++) {
             if ((nextByte = inputStream.read()) < 0) {
                 throw new Exception("Cannot get string length");
             }
             buffer.put((byte) nextByte);
+            System.out.println(i);
         }
+        buffer.position(0);
         return buffer.getInt();
     }
 
     private static String getString(InputStream inputStream) throws Exception{
         int length = getLength(inputStream);
+        System.out.println("WTF!!?!?");
         if (length <= 0  ||  length > MAX_LENGTH) {
             throw new Exception("Incorrect length of message");
         }
@@ -71,18 +75,23 @@ public final class MessageUtils {
         }
         switch (message.getType()) {
             case MESSAGE:
+                inputStream.read();
                 message.setName(getString(inputStream));
                 message.setText(getString(inputStream));
                 break;
             case BYE:
                 break;
             case ERROR:
+                inputStream.read();
                 message.setText(getString(inputStream));
                 break;
             case HELLO:
+                System.out.println(inputStream.read());
+                System.out.println("HELLO");
                 message.setName(getString(inputStream));
                 break;
         }
+        System.out.println(message.getName());
         return message;
     }
 

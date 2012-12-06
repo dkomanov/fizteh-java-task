@@ -6,7 +6,6 @@ import ru.fizteh.fivt.students.fedyuninV.CommandLineParser;
 import ru.fizteh.fivt.students.fedyuninV.chat.message.Message;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -22,6 +21,7 @@ public class ChatClient implements CommandLine {
     public ChatClient(String name) {
         this.name = name;
         connections = new TreeMap<>();
+        System.out.println(name);
     }
 
     public void printUsage() {
@@ -132,6 +132,8 @@ public class ChatClient implements CommandLine {
             case BYE:
                 System.out.println("You were kicked from server " + name + ", try next time");
                 connections.remove(name);
+                client.kill();
+                client.join();
                 break;
             case ERROR:
                 System.out.println("An error occured: " + message.getText());
