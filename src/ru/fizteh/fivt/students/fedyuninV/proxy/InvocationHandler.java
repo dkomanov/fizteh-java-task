@@ -147,6 +147,12 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Map<Object, Object> parsedObjects = new IdentityHashMap<>();
         method.setAccessible(true);
+        if (method.getDeclaringClass().equals(Object.class)) {
+            try {
+                return method.invoke(target, args);
+            } catch (Throwable ignored) {
+            }
+        }
         tooLong = false;
         StringBuilder logger = new StringBuilder();
         logger.append(method.getDeclaringClass().getSimpleName());
@@ -165,9 +171,13 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         }
         try {
             Object result = method.invoke(target, args);
-            logger.append(" returned ");
-            parsedObjects.clear();
-            logger.append(printObject(result, parsedObjects));
+            if (method.getReturnType().equals(void.class)) {
+                logger.append(" is void");
+            } else {
+                logger.append(" returned ");
+                parsedObjects.clear();
+                logger.append(printObject(result, parsedObjects));
+            }
             logger.append('\n');
             return result;
         } catch (Throwable ex) {
