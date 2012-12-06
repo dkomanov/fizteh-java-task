@@ -1,6 +1,6 @@
 package ru.fizteh.fivt.students.yushkevichAnton.chat.server;
 
-import ru.fizteh.fivt.chat.Message;
+import ru.fizteh.fivt.students.yushkevichAnton.chat.Message;
 import ru.fizteh.fivt.chat.MessageType;
 import ru.fizteh.fivt.chat.MessageUtils;
 

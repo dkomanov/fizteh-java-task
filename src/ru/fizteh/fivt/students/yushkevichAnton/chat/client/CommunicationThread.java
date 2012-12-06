@@ -1,6 +1,6 @@
 package ru.fizteh.fivt.students.yushkevichAnton.chat.client;
 
-import ru.fizteh.fivt.chat.Message;
+import ru.fizteh.fivt.students.yushkevichAnton.chat.Message;
 import ru.fizteh.fivt.chat.MessageUtils;
 
 import java.io.*;

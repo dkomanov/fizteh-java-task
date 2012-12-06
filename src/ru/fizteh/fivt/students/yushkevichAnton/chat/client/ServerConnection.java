@@ -78,11 +78,3 @@ class ServerConnection {
         return this == obj;
     }
 }
-It works
-latest commit 1c89d0506f
- Abrackadabra authored 3 hours ago
-..		
-ClientConnection.java	3 hours ago	It works [Abrackadabra]
-CommunicationThread.java	3 hours ago	It's alive! [Abrackadabra]
-ListeningThread.java	3 hours ago	It works [Abrackadabra]
-Server.java	3 hours ago	It works [Abrackadabra]
