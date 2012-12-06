@@ -86,7 +86,6 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 throw expt.getTargetException();
             }
             
-            break;
         }
         
         throw new IllegalArgumentException("Unsupported argument type");

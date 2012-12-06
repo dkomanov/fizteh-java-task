@@ -52,6 +52,7 @@ public class UnitTests extends Assert {
         public Long getLong(Long l);
 
         int sum(int num1, int num2);
+        public int sumS(String n1, int n2);
 
         Long div(Long num1, Long num2);
 
@@ -73,6 +74,10 @@ public class UnitTests extends Assert {
 
         public int sum(int n1, int n2) {
             return n1 + n2;
+        }
+        
+        public int sumS(String n1, int n2) {
+            return n2;
         }
 
         public Long div(Long l1, Long l2) {
@@ -141,6 +146,7 @@ public class UnitTests extends Assert {
         
         assertTrue(inter.getLong(2L) == 2L);
         assertTrue(inter.sum(1, 2) == 3);
+        assertTrue(inter.sumS("aa", 2) == 2);
         assertTrue(inter.div(10L, 2L) == 5L);
         assertTrue(inter.get1() == 2);
     }
