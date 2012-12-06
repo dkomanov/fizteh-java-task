@@ -4,6 +4,7 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import ru.fizteh.fivt.proxy.ShardingProxyFactory;
 import ru.fizteh.fivt.students.dmitriyBelyakov.proxy.ProxyUtils;
+import ru.fizteh.fivt.students.dmitriyBelyakov.proxy.proxy.test.ClassForTests;
 
 import java.io.PrintStream;
 import java.lang.reflect.Method;
@@ -80,12 +81,15 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
                                 ga.push(0);
                                 ga.invokeVirtual(Type.getType(ArrayList.class), new org.objectweb.asm.commons.Method("get",
                                         "(" + Type.getDescriptor(int.class) + ")" + Type.getDescriptor(Object.class)));
-                                try {
+                                /*try {
                                     ga.invokeVirtual(Type.getType(interfc.getClass()), new org.objectweb.asm.commons.Method("cast",
-                                        Type.getMethodDescriptor(interfc.getClass().getDeclaredMethod("cast", Object.class))));
+                                            Type.getMethodDescriptor(interfc.getClass().getDeclaredMethod("cast", Object.class))));
                                 } catch (Exception e) {
                                     while(true); // for signal
-                                }
+                                }*/
+                                ga.cast(Type.getType(Object.class), Type.getType(targets[0].getClass()));
+                                //ga.invokeVirtual(Type.getType(Object.class), new org.objectweb.asm.commons.Method("hashCode",
+                                //        "()I"));
                                 ga.invokeVirtual(Type.getType(targets[0].getClass()), new org.objectweb.asm.commons.Method(method.getName(),
                                         Type.getMethodDescriptor(method)));
                                 ga.returnValue();
