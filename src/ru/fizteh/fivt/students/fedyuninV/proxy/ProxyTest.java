@@ -61,17 +61,22 @@ public class ProxyTest {
         List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
         proxy.add("wtf1");
         proxy.add("wtf2");
-        proxy.add(2, "too long too long too long too long too long too long too long too long too long too long");
         proxy.get(0);
+        proxy.add(2, "too long too long too long too long too long too long too long too long too long too long");
+        proxy.add("too long too long too long too long too long too long too long too long too long too long");
         proxy.toString();
         Assert.assertEquals(builder.toString(),
                 "List.add(\"wtf1\") returned true\n" +
                         "List.add(\"wtf2\") returned true\n" +
+                        "List.get(0) returned \"wtf1\"\n" +
                         "List.add(\n" +
                         "  2,\n" +
                         "  \"too long too long too long too long too long too long too long too long too long too long\"\n" +
                         "  )\n" +
-                        "List.get(0) returned \"wtf1\"\n");
+                        "List.add(\n" +
+                        "  \"too long too long too long too long too long too long too long too long too long too long\"\n" +
+                        "  )\n" +
+                        "  returned true\n");  //вот он \n моей мечты!
     }
 
     @Test
@@ -118,7 +123,10 @@ public class ProxyTest {
         StringBuilder builder = new StringBuilder();
         LoggingProxyFactory factory = new LoggingProxyFactory();
         List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
-        proxy.add(3, "wtf1");
+        try {
+            proxy.add(3, "wtf1");
+        } catch (Throwable ex) {
+        }
         String[] strings = builder.toString().split("\\n");
         for (int i = 1; i < strings.length; i++) {  //starts from i=1 because first string doesn't have space prefix
             Assert.assertTrue(strings[i].startsWith("  "));
@@ -131,7 +139,11 @@ public class ProxyTest {
         StringBuilder builder = new StringBuilder();
         LoggingProxyFactory factory = new LoggingProxyFactory();
         List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
-        proxy.add(3, "too long too long too long too long too long too long too long too long too long too long");
+        try {
+            proxy.add(3, "too long too long too long too long too long too long too long too long too long too long");
+        } catch (Exception ex) {
+            Assert.assertEquals(ex.getClass(), IndexOutOfBoundsException.class);
+        }
         String[] strings = builder.toString().split("\\n");
         String prefix = "  ";
         for (int i = 1; i < strings.length; i++) {
@@ -140,6 +152,7 @@ public class ProxyTest {
                 prefix = "    ";                    //we have 4 spaces in front of string
             }
         }
+        Assert.assertEquals(builder.toString().charAt(builder.toString().length() - 1), '\n');
     }
 
     @Test
@@ -148,8 +161,8 @@ public class ProxyTest {
         StringBuilder builder = new StringBuilder();
         LoggingProxyFactory factory = new LoggingProxyFactory();
         List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
-        proxy.add("wtf1 \n wtf2\\\"");
-        Assert.assertEquals(builder.toString(), "List.add(\"wtf1 \\n wtf2\\\\\\\"\") returned true\n"); // wtf2\\\"
+        proxy.add("wtf1\\\\ \n wtf2\\\"");
+        Assert.assertEquals(builder.toString(), "List.add(\"wtf1\\\\\\\\ \\n wtf2\\\\\\\"\") returned true\n"); // wtf2\\\"
     }
 
 
@@ -231,7 +244,10 @@ public class ProxyTest {
         StringBuilder builder = new StringBuilder();
         LoggingProxyFactory factory = new LoggingProxyFactory();
         List<Object> proxy = (List<Object>) factory.createProxy(list, builder, list.getClass().getInterfaces());
+        Integer x = 3;
+        proxy.indexOf(new Integer[]{x, x});  //test for similar elements in array
         proxy.indexOf(new int[]{1, 2});  //primitive array
-        Assert.assertEquals(builder.toString(), "List.indexOf(2{\"1\", \"2\"}) returned -1\n");
+        Assert.assertEquals(builder.toString(), "List.indexOf(2{\"3\", \"3\"}) returned -1\n" +
+                "List.indexOf(2{\"1\", \"2\"}) returned -1\n");
     }
 }
