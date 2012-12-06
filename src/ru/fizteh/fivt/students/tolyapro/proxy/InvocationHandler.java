@@ -29,7 +29,9 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             return "null";
         } else if (object.getClass().isArray()) {
             if (!object.getClass().getComponentType().isPrimitive()) {
-                if (circularRefDetector.containsKey(object)) {
+                if (circularRefDetector.containsKey(object)
+                        && !ru.fizteh.fivt.students.tolyapro.proxy.DetecterOfPrimitiveTypes
+                                .isPrimitive(object)) {
                     throw new RuntimeException("Circular reference in: "
                             + object.toString());
                 } else {

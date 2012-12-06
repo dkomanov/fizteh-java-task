@@ -140,7 +140,7 @@ public class TestProxy {
         proxy.getHello();
         Assert.assertTrue(writer.toString().contains(
                 "SimpleInterface.getHello() returned \"Hello world!\""));
-        proxy.getException();
+        //proxy.getException();
         proxy.testBadRef();
         proxy.toString();
     }
