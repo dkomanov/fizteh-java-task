@@ -26,6 +26,9 @@ public class Client {
             String command = null;
             try {
                 command = input.readLine();
+                if (command == null) {
+                    throw new IOException();
+                }
             } catch (IOException e) {
                 System.err.println("Cannot read from cin");
                 System.exit(1);
