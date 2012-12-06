@@ -3,13 +3,7 @@ package ru.fizteh.fivt.students.tolyapro.proxy;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Set;
-
-import javax.management.RuntimeErrorException;
-
-import org.omg.CORBA.IdentifierHelper;
 
 public class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
@@ -34,7 +28,8 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             return "null";
         } else if (object.getClass().isArray()) {
             if (!object.getClass().getComponentType().isPrimitive()) {
-                if (circularRefDetector.containsKey(object)) {
+                if (circularRefDetector.containsKey(object)
+                        && object.getClass().isArray()) {
                     throw new RuntimeException("Circular reference in: "
                             + object.toString());
                 } else {
@@ -81,8 +76,8 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable {
         IdentityHashMap<Object, Object> circularRefDetector = new IdentityHashMap<Object, Object>();
-        if (method.getName().equals("hashCode")
-                || method.getName().equals("equals")) {
+        Class clazz = method.getDeclaringClass();
+        if (clazz.equals(Object.class)) {
             return method.invoke(target, args);
         }
         final int magicConst = 60;
@@ -90,7 +85,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         ArrayList<String> argsAsStrings = new ArrayList<String>();
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
-                if (args[i].toString().length() > magicConst) {
+                if (args[i] != null && args[i].toString().length() > magicConst) {
                     extendedMode = true;
                 }
                 argsAsStrings.add(toString(args[i], circularRefDetector));
@@ -107,12 +102,12 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 writer.append('\n');
             }
         }
-        writer.append(") ");
+        writer.append(")");
         Object returned = null;
         try {
             returned = method.invoke(target, args);
             if (returned != null) {
-                writer.append("returned ");
+                writer.append(" returned ");
                 writer.append(toString(returned, circularRefDetector));
             }
         } catch (Throwable e) {
@@ -131,8 +126,10 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     writer.append('\n');
                 }
             }
+            throw e;
         }
         writer.append('\n');
         return returned;
     }
+
 }
