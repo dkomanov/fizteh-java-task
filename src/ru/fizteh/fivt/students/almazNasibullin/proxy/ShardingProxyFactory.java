@@ -78,7 +78,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                                     && !returnClass.equals(Integer.class)
                                     && !returnClass.equals(Long.class)
                                     && !returnClass.equals(List.class)) {
-                                throw new IllegalArgumentException("Incorrect return type of method");
+                                throw new IllegalStateException("Incorrect return type of method");
                             }
                         }
                     }
