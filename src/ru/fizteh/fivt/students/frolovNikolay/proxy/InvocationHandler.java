@@ -78,6 +78,9 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         if (method == null) {
             throw new RuntimeException("method: null pointer");
         }
+        if (method.getName().equals("equals") || method.getName().equals("hashCode")) {
+            return method.invoke(target, args);
+        }
         method.setAccessible(true);
         boolean isExtendedOutput = false;
         Class<?>[] parameters = method.getParameterTypes();
