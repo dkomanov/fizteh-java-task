@@ -9,7 +9,6 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
     Object target;
     Appendable writer;
-    Class[] interfaces;
 
     private String escapeString(String string) {
         String result = string;
@@ -69,32 +68,17 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         }
     }
 
-    public InvocationHandler(Object target, Appendable writer,
-            Class[] interfaces) {
+    public InvocationHandler(Object target, Appendable writer) {
         this.target = target;
         this.writer = writer;
-        this.interfaces = interfaces;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable {
         IdentityHashMap<Object, Object> circularRefDetector = new IdentityHashMap<Object, Object>();
-        boolean implemented = false;
-        for (int i = 0; i < interfaces.length; ++i) {
-            Method[] methods = interfaces[i].getDeclaredMethods();
-            for (Method m : methods) {
-                if (m.equals(method)) {
-                    implemented = true;
-                    break;
-                }
-            }
-            if (implemented) {
-                break;
-            }
-        }
-
-        if (!implemented) {
+        Class clazz = method.getDeclaringClass();
+        if (clazz.equals(Object.class)) {
             return method.invoke(target, args);
         }
         final int magicConst = 60;
@@ -143,7 +127,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     writer.append('\n');
                 }
             }
-            throw new Throwable(e);
+            throw e;
         }
         writer.append('\n');
         return returned;

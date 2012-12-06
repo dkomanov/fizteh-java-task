@@ -1,9 +1,14 @@
 package ru.fizteh.fivt.students.tolyapro.proxy;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class TestProxy {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     interface InterfaceTestEscape {
         public String testEscape(String string);
@@ -126,9 +131,10 @@ public class TestProxy {
                 InterfaceWithoutMethods.class);
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testSimple() {
-
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Circular reference in:");
         LoggingProxyFactory factory = new LoggingProxyFactory();
         SimpleClass simpleClass = new SimpleClass();
         StringBuffer writer = new StringBuffer();
@@ -140,9 +146,7 @@ public class TestProxy {
         proxy.getHello();
         Assert.assertTrue(writer.toString().contains(
                 "SimpleInterface.getHello() returned \"Hello world!\""));
-        //proxy.getException();
         proxy.testBadRef();
-        proxy.toString();
     }
 
     @Test(expected = Exception.class)

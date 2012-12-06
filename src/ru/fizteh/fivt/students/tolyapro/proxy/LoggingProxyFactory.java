@@ -38,7 +38,7 @@ public class LoggingProxyFactory implements
         return Proxy.newProxyInstance(interfaces[0].getClassLoader(),
                 interfaces,
                 new ru.fizteh.fivt.students.tolyapro.proxy.InvocationHandler(
-                        target, writer, interfaces));
+                        target, writer));
     }
 
 }
