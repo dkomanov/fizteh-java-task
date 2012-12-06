@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.frolovNikolay.proxy;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -48,12 +49,23 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             }
             cycleInterrupter.put(arg, null);
             if (clazz.isArray()) {
-                Object[] args = (Object[]) arg;
-                stream.append(args.length + "{");
-                for (int i = 0; i < args.length; ++i) {
-                    specialToString(args[i].getClass(), args[i], stream, cycleInterrupter);
-                    if (i + 1 != args.length) {
-                        stream.append(", ");
+                if (!clazz.getComponentType().isPrimitive()) {
+                    Object[] args = (Object[]) arg;
+                    stream.append(args.length + "{");
+                    for (int i = 0; i < args.length; ++i) {
+                        specialToString(args[i].getClass(), args[i], stream, cycleInterrupter);
+                        if (i + 1 != args.length) {
+                            stream.append(", ");
+                        }
+                    }
+                } else {
+                    int size = Array.getLength(arg);
+                    stream.append(size + "{");
+                    for (int i = 0; i < size; ++i) {
+                        specialToString(Array.get(arg, i).getClass(), Array.get(arg, i), stream, cycleInterrupter);
+                        if (i + 1 != size) {
+                            stream.append(", ");
+                        }
                     }
                 }
                 stream.append("}");
@@ -78,7 +90,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         if (method == null) {
             throw new RuntimeException("method: null pointer");
         }
-        if (method.getName().equals("equals") || method.getName().equals("hashCode")) {
+        if (method.getName().equals("equals") || method.getName().equals("hashCode") || method.getName().equals("toString")) {
             return method.invoke(target, args);
         }
         method.setAccessible(true);
@@ -149,8 +161,9 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             } else {
                 writer.append(" ");
             }
-            writer.append("returned " + stream.toString() + "\n");
+            writer.append("returned " + stream.toString());
         }
+        writer.append("\n");
         return result;
     }
 }
