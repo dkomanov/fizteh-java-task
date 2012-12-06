@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.proxy;
+package ru.fizteh.fivt.students.dmitriyBelyakov.proxy.proxy.test;
 
 import ru.fizteh.fivt.proxy.Collect;
 

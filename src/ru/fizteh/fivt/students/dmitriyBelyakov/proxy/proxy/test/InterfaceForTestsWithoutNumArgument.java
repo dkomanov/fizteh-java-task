@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.proxy;
+package ru.fizteh.fivt.students.dmitriyBelyakov.proxy.proxy.test;
 
 public interface InterfaceForTestsWithoutNumArgument {
     void incorrectMethod();
