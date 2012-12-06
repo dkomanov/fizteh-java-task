@@ -15,6 +15,13 @@ public class ProxyInvocationHandler implements InvocationHandler {
     public ProxyInvocationHandler(Object[] newTargets) {
         targets = newTargets;
     }
+    
+    boolean isNumber(Class<?> someClass) {
+        return (someClass.equals(int.class)
+                || someClass.equals(Integer.class)
+                || someClass.equals(long.class)
+                || someClass.equals(Long.class));
+    }
 
     @Override
     public Object invoke(Object object, Method method, Object[] arguments)
@@ -46,6 +53,12 @@ public class ProxyInvocationHandler implements InvocationHandler {
             }
             throw new IllegalArgumentException("Int or long variable not found");
         } else {
+            for (Class<?> param : method.getParameterTypes()) {
+                if (isNumber(param)) {
+                    throw new IllegalArgumentException("Method " + method.getName() + 
+                            " has annotation @Collect and numeric parameter");
+                }
+            }
             Class<?> returnType = method.getReturnType();
             if (returnType.equals(void.class)) {
                 for (Object targ : targets) {
