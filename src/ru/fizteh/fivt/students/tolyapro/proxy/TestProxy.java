@@ -1,8 +1,8 @@
 package ru.fizteh.fivt.students.tolyapro.proxy;
 
-import java.lang.reflect.Array;
-
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
+import java.util.*;
 
 public class TestProxy {
 
@@ -38,6 +38,7 @@ public class TestProxy {
         String getHello();
 
         Object testBadRef();
+
     }
 
     class SimpleClass implements SimpleInterface {
@@ -126,7 +127,7 @@ public class TestProxy {
                 InterfaceWithoutMethods.class);
     }
 
-    @Test
+    @Test(expected = Exception.class)
     public void testSimple() {
 
         LoggingProxyFactory factory = new LoggingProxyFactory();
@@ -142,9 +143,10 @@ public class TestProxy {
                 "SimpleInterface.getHello() returned \"Hello world!\""));
         proxy.getException();
         proxy.testBadRef();
+        proxy.toString();
     }
 
-    @Test
+    @Test(expected = Exception.class)
     public void testExtended() {
 
         LoggingProxyFactory factory = new LoggingProxyFactory();
@@ -179,9 +181,22 @@ public class TestProxy {
                 classTestEscape, writer, InterfaceTestEscape.class);
         proxy.testEscape("yet another string");
         String returned = writer.toString();
-        // System.out.println(returned);
         Assert.assertTrue(returned
                 .contains("\"\\n\\t String: \\nyet another string\\n\""));
+        proxy.testEscape(null);
+        returned = writer.toString();
+        Assert.assertTrue(returned
+                .contains("InterfaceTestEscape.testEscape(null)"));
+
     }
 
+    @Test
+    public void testL() {
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        SimpleClass simpleClass = new SimpleClass();
+        StringBuffer writer = new StringBuffer();
+        SimpleInterface proxy = (SimpleInterface) factory.createProxy(
+                simpleClass, writer, SimpleInterface.class);
+        System.out.println(writer);
+    }
 }

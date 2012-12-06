@@ -1,20 +1,16 @@
 package ru.fizteh.fivt.students.tolyapro.proxy;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Set;
-
-import javax.management.RuntimeErrorException;
-
-import org.omg.CORBA.IdentifierHelper;
 
 public class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
     Object target;
     Appendable writer;
+    Class[] interfaces;
 
     private String escapeString(String string) {
         String result = string;
@@ -72,17 +68,32 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         }
     }
 
-    public InvocationHandler(Object target, Appendable writer) {
+    public InvocationHandler(Object target, Appendable writer,
+            Class[] interfaces) {
         this.target = target;
         this.writer = writer;
+        this.interfaces = interfaces;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable {
         IdentityHashMap<Object, Object> circularRefDetector = new IdentityHashMap<Object, Object>();
-        if (method.getName().equals("hashCode")
-                || method.getName().equals("equals")) {
+        boolean implemented = false;
+        for (int i = 0; i < interfaces.length; ++i) {
+            Method[] methods = interfaces[i].getDeclaredMethods();
+            for (Method m : methods) {
+                if (m.equals(method)) {
+                    implemented = true;
+                    break;
+                }
+            }
+            if (implemented) {
+                break;
+            }
+        }
+
+        if (!implemented) {
             return method.invoke(target, args);
         }
         final int magicConst = 60;
@@ -90,7 +101,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         ArrayList<String> argsAsStrings = new ArrayList<String>();
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
-                if (args[i].toString().length() > magicConst) {
+                if (args[i] != null && args[i].toString().length() > magicConst) {
                     extendedMode = true;
                 }
                 argsAsStrings.add(toString(args[i], circularRefDetector));
@@ -107,12 +118,12 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 writer.append('\n');
             }
         }
-        writer.append(") ");
+        writer.append(")");
         Object returned = null;
         try {
             returned = method.invoke(target, args);
             if (returned != null) {
-                writer.append("returned ");
+                writer.append(" returned ");
                 writer.append(toString(returned, circularRefDetector));
             }
         } catch (Throwable e) {
@@ -131,8 +142,10 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     writer.append('\n');
                 }
             }
+            throw new Throwable(e);
         }
         writer.append('\n');
         return returned;
     }
+
 }
