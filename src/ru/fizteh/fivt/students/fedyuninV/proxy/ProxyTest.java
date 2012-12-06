@@ -16,9 +16,15 @@ import java.util.List;
  * Fedyunin Valeriy
  * MIPT FIVT 195
  */
+interface VoidInterface{}
 
+class VoidInterfaceClass implements VoidInterface{
+    public void func() {}
+}
 interface SetArrays {
     public Double[] setArray(Double[] newArray);
+
+    public void voidMethod(Double[] newArray);
 }
 
 class ArrayTest implements SetArrays{
@@ -26,6 +32,9 @@ class ArrayTest implements SetArrays{
     public Double[] setArray(Double[] array) {
         return array;
     }
+
+    @Override
+    public void voidMethod(Double[] newArray) {}
 }
 
 interface SetObjectArrays {
@@ -62,10 +71,7 @@ public class ProxyTest {
                         "  2,\n" +
                         "  \"too long too long too long too long too long too long too long too long too long too long\"\n" +
                         "  )\n" +
-                        "  returned null\n" +
-                        "List.get(0) returned \"wtf1\"\n" +
-                        "Object.toString() returned \"[wtf1, wtf2, too long too long too long too long too" +
-                        " long too long too long too long too long too long]\"\n");
+                        "List.get(0) returned \"wtf1\"\n");
     }
 
     @Test
@@ -97,8 +103,13 @@ public class ProxyTest {
         LoggingProxyFactory factory = new LoggingProxyFactory();
         SetArrays proxy = (SetArrays) factory.createProxy(arrayTest, builder, SetArrays.class);
         proxy.setArray(new Double[]{3.1415, 1.02, 23.04});
+        proxy.voidMethod(new Double[]{});
+        proxy.toString(); //don't proxy
+        proxy.hashCode(); //don't proxy
+        proxy.equals(null); //don't proxy
         Assert.assertEquals(builder.toString(),
-                "SetArrays.setArray(3{\"3.1415\", \"1.02\", \"23.04\"}) returned 3{\"3.1415\", \"1.02\", \"23.04\"}\n");
+                "SetArrays.setArray(3{\"3.1415\", \"1.02\", \"23.04\"}) returned 3{\"3.1415\", \"1.02\", \"23.04\"}\n" +
+                "SetArrays.voidMethod(0{})\n");
     }
 
     @Test
@@ -164,5 +175,63 @@ public class ProxyTest {
         Object[] objects = new Object[1];
         objects[0] = objects;
         proxy.setArray(objects);
+    }
+
+    @Test
+    public void voidInterfaceTest() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("No methods in interfaces");
+        VoidInterfaceClass obj = new VoidInterfaceClass();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        VoidInterface proxy = (VoidInterface) factory.createProxy(obj, builder, VoidInterface.class);
+    }
+
+    @Test
+    public void nullInterfaceTest() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Null parameter found");
+        VoidInterfaceClass obj = new VoidInterfaceClass();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        VoidInterface proxy = (VoidInterface) factory.createProxy(obj, builder, VoidInterface.class, null);
+    }
+
+    @Test
+    public void nullInterfacesTest() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Null parameter found");
+        VoidInterfaceClass obj = new VoidInterfaceClass();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        VoidInterface proxy = (VoidInterface) factory.createProxy(obj, builder);
+    }
+
+    @Test
+    public void nullBuilderTest() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Null parameter found");
+        VoidInterfaceClass obj = new VoidInterfaceClass();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        VoidInterface proxy = (VoidInterface) factory.createProxy(obj, null, VoidInterface.class);
+    }
+
+    @Test
+    public void nullTargetTes() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Null parameter found");
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        VoidInterface proxy = (VoidInterface) factory.createProxy(null, builder, VoidInterface.class);
+    }
+
+    @Test
+    public void indexOfTest() {
+        List<Object> list = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        List<Object> proxy = (List<Object>) factory.createProxy(list, builder, list.getClass().getInterfaces());
+        proxy.indexOf(new int[]{1, 2});  //primitive array
+        Assert.assertEquals(builder.toString(), "List.indexOf(2{\"1\", \"2\"}) returned -1\n");
     }
 }

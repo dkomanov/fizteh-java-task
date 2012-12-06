@@ -10,13 +10,18 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
 
     @Override
     public Object createProxy(Object target, Appendable writer, Class... interfaces) {
-        if (target == null  ||  writer == null  ||  interfaces == null) {
-            throw new RuntimeException("Null parameter found");
+        if (target == null  ||  writer == null  ||  interfaces == null  ||  interfaces.length == 0) {
+            throw new IllegalArgumentException("Null parameter found");
         }
+        int methodsNum = 0;
         for (int i = 0; i < interfaces.length; i++) {
             if (interfaces[i] == null) {
-                throw new RuntimeException("Null parameter found");
+                throw new IllegalArgumentException("Null parameter found");
             }
+            methodsNum += interfaces[i].getMethods().length;
+        }
+        if (methodsNum == 0) {
+            throw new IllegalArgumentException("No methods in interfaces");
         }
         return Proxy.newProxyInstance(target.getClass().getClassLoader(),
                 interfaces,
