@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.almazNasibullin.proxy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -201,5 +202,28 @@ public class UnitTest {
         ShardingProxyFactory spf = new ShardingProxyFactory();
         MyInterface mi = (MyInterface)spf.createProxy(targets, interfaces);
         mi.throwIllegalStateException();
+    }
+    
+    interface BadCollectShardingInterface {
+        @Collect
+        Map collect(int a);
+    }
+
+    class BadCollectShardingClass implements BadCollectShardingInterface {
+        @Override
+        public Map collect(int a) {
+            return null;
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testBadAnnotation() {
+        Object[] targets = new Object[1];
+        targets[0] = new BadCollectShardingClass();
+        Class[] interfaces = new Class[1];
+        interfaces[0] = BadCollectShardingInterface.class;
+        ShardingProxyFactory spf = new ShardingProxyFactory();
+        BadCollectShardingInterface bsi =
+                (BadCollectShardingInterface)spf.createProxy(targets, interfaces);
     }
 }
