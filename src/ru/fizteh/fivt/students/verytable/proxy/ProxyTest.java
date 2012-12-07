@@ -158,10 +158,10 @@ public class ProxyTest {
             logger.someMethod7(list);
         } catch (Throwable ex) {
             Assert.assertEquals("SomeInterface.someMethod7(2{0, null})"
-                    + " threw NullPointerException:  null\n"
+                    + " threw java.lang.NullPointerException:  null\n"
                     + "  ru.fizteh.fivt.students.verytable.proxy.SomeInterfaceImpl"
                     + ".someMethod7(ProxyTest.java:74)",
-                    writer.toString().substring(0, 162));
+                    writer.toString().substring(0, 172));
         }
     }
 
