@@ -234,6 +234,6 @@ public class TestProxy {
                         "SimpleInterface.manyArgsExtended(\n  1,\n  2,\n  3,\n  4,\n  \"more than"));
         Assert.assertTrue(writer.toString().contains(
                 "chars\"\n  )\n  returned \"10"));
-        System.out.println(writer);
+        //System.out.println(writer);
     }
 }
