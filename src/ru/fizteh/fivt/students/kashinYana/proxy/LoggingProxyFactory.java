@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.kashinYana.proxy;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -175,6 +176,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 Object returned;
                 try {
                     returned = method.invoke(target, args);
+
                     if (!method.getReturnType().equals(void.class) && !method.getReturnType().equals(Void.class)) {
                         if (isWiden) {
                             stringToLog += "\n  ";
@@ -186,22 +188,24 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                     } else {
                         stringToLog += "\n";
                     }
-                } catch (Exception e) {
+                } catch (InvocationTargetException e) {
                     if (isWiden) {
                         stringToLog += "\n  ";
                     } else {
                         stringToLog += " ";
                     }
-                    stringToLog += e.getClass().getCanonicalName() + ": " + e.getMessage() + '\n';
-                    StackTraceElement[] traceElements = e.getStackTrace();
-                    for (StackTraceElement iterator : traceElements) {
+                    stringToLog += e.getTargetException().getClass().getCanonicalName() + ": "
+                            + e.getTargetException().getMessage() + '\n';
+                    StackTraceElement[] traceElements = e.getTargetException().getStackTrace();
+                    for (int i = 0; i < Math.min(2, traceElements.length); i++) {
                         if (isWiden) {
                             stringToLog += "  ";
                         }
                         stringToLog += "  ";
-                        stringToLog += iterator.toString() + "\n";
+                        stringToLog += traceElements[i].toString() + "\n";
                     }
-                    throw e;
+                    append.append(stringToLog);
+                    throw e.getTargetException();
                 }
                 append.append(stringToLog);
                 return returned;
