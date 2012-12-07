@@ -5,9 +5,7 @@ import org.junit.Assert;
 import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -40,6 +38,29 @@ public class ShardingProxyFactoryTest {
 
         @Collect
         ArrayList collectArrayList();
+
+        @Collect
+        LinkedList collectLinkedList();
+    }
+
+    private static interface EmptyInterface {
+    }
+
+    private static class EmptyClass implements EmptyInterface {
+    }
+
+    private static interface IncorrectInterface {
+        @Collect
+        Map collectMap();
+    }
+
+    private static class IncorrectClass implements IncorrectInterface {
+        @Override
+        public Map collectMap() {
+            Map map = new HashMap();
+            map.put(1, 1);
+            return map;
+        }
     }
 
     private static class TestClass implements Interface {
@@ -59,6 +80,13 @@ public class ShardingProxyFactoryTest {
         @Override
         public List collectList() {
             List list = new LinkedList();
+            list.add(v);
+            return list;
+        }
+
+        @Override
+        public LinkedList collectLinkedList() {
+            LinkedList list = new LinkedList();
             list.add(v);
             return list;
         }
@@ -92,15 +120,59 @@ public class ShardingProxyFactoryTest {
         }
     }
 
-    @Test
-    public void testProxy() {
+    private Interface getProxy() {
         Object[] objects = new Object[3];
         objects[0] = new TestClass(1);
         objects[1] = new TestClass(2);
         objects[2] = new TestClass(3);
         Class[] interfaces = new Class[1];
         interfaces[0] = Interface.class;
+        return (Interface) new ShardingProxyFactory().createProxy(objects, interfaces);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEmptyInterface() {
+        Object[] objects = new Object[3];
+        objects[0] = new TestClass(1);
+        objects[1] = new TestClass(2);
+        objects[2] = new TestClass(3);
+        Class[] interfaces = new Class[2];
+        interfaces[0] = Interface.class;
+        interfaces[1] = EmptyInterface.class;
         Interface proxy = (Interface) new ShardingProxyFactory().createProxy(objects, interfaces);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testClassWithNoInterface() {
+        Object[] objects = new Object[3];
+        objects[0] = new EmptyClass();
+        objects[1] = new EmptyClass();
+        objects[2] = new EmptyClass();
+        Class[] interfaces = new Class[1];
+        interfaces[0] = Interface.class;
+        Interface proxy = (Interface) new ShardingProxyFactory().createProxy(objects, interfaces);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testIncorrectCollection() {
+        Object[] objects = new Object[2];
+        objects[0] = new IncorrectClass();
+        objects[1] = new IncorrectClass();
+        Class[] interfaces = new Class[1];
+        interfaces[0] = IncorrectInterface.class;
+        Interface proxy = (Interface) new ShardingProxyFactory().createProxy(objects, interfaces);
+    }
+
+
+    @Test(expected = RuntimeException.class)
+    public void doNotProxyTest() {
+        Interface proxy = getProxy();
+        proxy.methodNotForProxy();
+    }
+
+    @Test
+    public void testProxy() {
+        Interface proxy = getProxy();
         proxy.collectVoid();
         for (int i = 0; i < 3; i ++) {
             assertEquals(i + 1, proxy.takeInt(i));
@@ -114,6 +186,7 @@ public class ShardingProxyFactoryTest {
         list.add(3);
         assertEquals(list, proxy.collectList());
         assertEquals(list, proxy.collectArrayList());
+        assertEquals(list, proxy.collectLinkedList());
     }
 
 }

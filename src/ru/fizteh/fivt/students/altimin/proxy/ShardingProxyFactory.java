@@ -137,9 +137,13 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                         return result;
                     }
                     if (List.class.isAssignableFrom(returnType)) {
-                        List result = new ArrayList();
+                        List result = null;
                         for (Object target: targets) {
-                            result.addAll((List) method.invoke(target, objects));
+                            if (result == null) {
+                                result = (List) returnType.cast(method.invoke(target, objects));
+                            } else {
+                                result.addAll((List) method.invoke(target, objects));
+                            }
                         }
                         return result;
                     }
