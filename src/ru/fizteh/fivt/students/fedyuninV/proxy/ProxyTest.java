@@ -74,6 +74,7 @@ public class ProxyTest {
         proxy.add("wtf2");
         proxy.get(0);
         proxy.add(2, "too long too long too long too long too long too long too long too long too long too long");
+        proxy.add("0123456789012345678901234567890123456789012345678901234567");
         proxy.add("too long too long too long too long too long too long too long too long too long too long");
         proxy.toString();
         Assert.assertEquals(builder.toString(),
@@ -84,6 +85,7 @@ public class ProxyTest {
                         "  2,\n" +
                         "  \"too long too long too long too long too long too long too long too long too long too long\"\n" +
                         "  )\n" +
+                        "List.add(\"0123456789012345678901234567890123456789012345678901234567\") returned true\n" +
                         "List.add(\n" +
                         "  \"too long too long too long too long too long too long too long too long too long too long\"\n" +
                         "  )\n" +
@@ -280,5 +282,18 @@ public class ProxyTest {
         InnerInterface proxy = (InnerInterface) factory.createProxy(externalInterface, builder, InnerInterface.class);
         proxy.go();
         Assert.assertEquals(builder.toString(), "InnerInterface.go()\n");
+    }
+
+    @Test
+    public void exceptionTypeTest() {
+        List<String> list = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
+        try {
+            proxy.add(3, "wtf");
+        } catch (Exception ignored) {
+        }
+        Assert.assertTrue(builder.toString().lastIndexOf("IndexOutOfBounds") != -1);
     }
 }
