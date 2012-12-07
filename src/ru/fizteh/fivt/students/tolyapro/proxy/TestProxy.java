@@ -172,14 +172,14 @@ public class TestProxy {
         ExtendedInterface proxy = (ExtendedInterface) factory.createProxy(
                 extendedClass, writer, ExtendedInterface.class);
         proxy.fillTheArray(10);
-        // Assert.assertEquals(
-        // "ExtendedInterface.fillTheArray(10) returned 10{10, 10, 10, 10, 10, 10, 10, 10, 10, 10}\n",
-        // writer.toString());
-        // proxy.iAmJustVeryVeryBigMethodNameAndICanBeEvenBiggerExclamationMark(100500);
-        // Assert.assertTrue(writer
-        // .toString()
-        // .contains(
-        // "ExtendedInterface.iAmJustVeryVeryBigMethodNameAndICanBeEvenBiggerExclamationMark(100500)"));
+        Assert.assertEquals(
+                "ExtendedInterface.fillTheArray(10) returned 10{10, 10, 10, 10, 10, 10, 10, 10, 10, 10}\n",
+                writer.toString());
+        proxy.iAmJustVeryVeryBigMethodNameAndICanBeEvenBiggerExclamationMark(100500);
+        Assert.assertTrue(writer
+                .toString()
+                .contains(
+                        "ExtendedInterface.iAmJustVeryVeryBigMethodNameAndICanBeEvenBiggerExclamationMark(100500)"));
         proxy.getException("This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end");
 
     }
