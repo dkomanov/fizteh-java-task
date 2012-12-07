@@ -142,7 +142,7 @@ public class ProxyTest {
         array[0] = 1;
         array[1] = 0;
         logger.someMethod8(array);
-        Assert.assertEquals("SomeInterface.someMethod8(2{\"1\", \"0\"})\n", writer.toString());
+        Assert.assertEquals("SomeInterface.someMethod8(2{1, 0})\n", writer.toString());
     }
 
     @Test
@@ -157,12 +157,25 @@ public class ProxyTest {
         try {
             logger.someMethod7(list);
         } catch (Throwable ex) {
-            Assert.assertEquals("SomeInterface.someMethod7(2{\"0\", \"null\"})"
+            Assert.assertEquals("SomeInterface.someMethod7(2{0, null})"
                     + " threw NullPointerException:  null\n"
                     + "  ru.fizteh.fivt.students.verytable.proxy.SomeInterfaceImpl"
                     + ".someMethod7(ProxyTest.java:74)",
-                    writer.toString().substring(0, 166));
+                    writer.toString().substring(0, 162));
         }
+    }
+
+    @Test
+    public void indexOf() {
+        List<Object> list = new ArrayList<>();
+        StringBuffer writer = new StringBuffer();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        List<Object> logger = (List<Object>) factory.createProxy(list, writer, list.getClass().getInterfaces());
+        Integer x = 0;
+        logger.indexOf(new Integer[]{x, x});
+        logger.indexOf(new int[]{1, 2});
+        Assert.assertEquals("List.indexOf(2{0, 0}) returned -1\n" +
+                            "List.indexOf(2{1, 2}) returned -1\n", writer.toString());
     }
 
     @Test(expected = NullPointerException.class)
@@ -236,12 +249,12 @@ public class ProxyTest {
 
         Object[] list = {1, 2};
         logger.someMethod6(list);
-        Assert.assertEquals("SomeInterface.someMethod6(2{\"1\", \"2\"}) returned true\n", writer.toString());
+        Assert.assertEquals("SomeInterface.someMethod6(2{1, 2}) returned true\n", writer.toString());
         writer.setLength(0);
 
         Object[] extended = {list, 3};
         logger.someMethod6(extended);
-        Assert.assertEquals("SomeInterface.someMethod6(2{\"2{\\\"1\\\", \\\"2\\\"}\", \"3\"}) returned true\n", writer.toString());
+        Assert.assertEquals("SomeInterface.someMethod6(2{2{1, 2}, 3}) returned true\n", writer.toString());
         writer.setLength(0);
 
         logger.someVeryBigOrEvenEnormousMethodReturningFloatOfSomeInterface(0);
