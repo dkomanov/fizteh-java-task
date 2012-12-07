@@ -102,6 +102,8 @@ public class UserList extends JFrame {
                     Collections.sort(users, new UserNameComparatorRev());
                     namesSortedAscending = false;
                 }
+                menu.getMenu(3).setText("Names sorted: " + (namesSortedAscending ? "ascending." : "descending."));
+                menu.updateUI();
                 table.updateUI();
             } else if (actionCommand.equals("SORT_TYPE")) {
                 if (!typesSortedAscending) {
@@ -111,6 +113,8 @@ public class UserList extends JFrame {
                     Collections.sort(users, new UserTypeComparatorRev());
                     typesSortedAscending = false;
                 }
+                menu.getMenu(4).setText("Types sorted: " + (typesSortedAscending ? "ascending." : "descending."));
+                menu.updateUI();
                 table.updateUI();
             } else if (actionCommand.equals("NEW_USER")) {
                 Vector<Object> vector = new Vector<>();
@@ -121,6 +125,9 @@ public class UserList extends JFrame {
                 vector.add(false);
                 vector.add(0);
                 users.add(vector);
+                menu.getMenu(3).setText("Not sorted by names.");
+                menu.getMenu(4).setText("Not sorted by types.");
+                menu.updateUI();
                 table.updateUI();
             } else if (actionCommand.equals("DELETE_USER")) {
                 int num = table.getSelectedRow();
@@ -237,6 +244,10 @@ public class UserList extends JFrame {
         editDeleteUser.addActionListener(listener);
         edit.add(editDeleteUser);
         menu.add(edit);
+        JMenu sortedByNames = new JMenu("Not sorted by names.");
+        menu.add(sortedByNames);
+        JMenu sortedByTypes = new JMenu("Not sorted by types.");
+        menu.add(sortedByTypes);
         setJMenuBar(menu);
     }
 
