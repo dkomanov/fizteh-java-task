@@ -132,7 +132,6 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     writer.append('\n');
                 }
             }
-            System.out.println(writer);
             throw e;
         }
         writer.append('\n');
