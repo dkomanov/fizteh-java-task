@@ -56,6 +56,8 @@ public class UserList extends JFrame {
     private XmlUserList xmlUserList;
     private File xmlFile;
     private Vector<Vector<Object>> users;
+    private boolean namesSortedAscending;
+    private boolean typesSortedAscending;
 
     private class Listener implements ActionListener {
         @Override
@@ -93,16 +95,22 @@ public class UserList extends JFrame {
                     }
                 }
             } else if (actionCommand.equals("SORT_NAME")) {
-                Collections.sort(users, new UserNameComparator());
+                if (!namesSortedAscending) {
+                    Collections.sort(users, new UserNameComparator());
+                    namesSortedAscending = true;
+                } else {
+                    Collections.sort(users, new UserNameComparatorRev());
+                    namesSortedAscending = false;
+                }
                 table.updateUI();
             } else if (actionCommand.equals("SORT_TYPE")) {
-                Collections.sort(users, new UserTypeComparator());
-                table.updateUI();
-            } else if (actionCommand.equals("SORT_NAME_REV")) {
-                Collections.sort(users, new UserNameComparatorRev());
-                table.updateUI();
-            } else if (actionCommand.equals("SORT_TYPE_REV")) {
-                Collections.sort(users, new UserTypeComparatorRev());
+                if (!typesSortedAscending) {
+                    Collections.sort(users, new UserTypeComparator());
+                    typesSortedAscending = true;
+                } else {
+                    Collections.sort(users, new UserTypeComparatorRev());
+                    typesSortedAscending = false;
+                }
                 table.updateUI();
             } else if (actionCommand.equals("NEW_USER")) {
                 Vector<Object> vector = new Vector<>();
@@ -173,6 +181,8 @@ public class UserList extends JFrame {
 
     UserList() {
         super("UserList");
+        namesSortedAscending = false;
+        typesSortedAscending = false;
         xmlUserList = new XmlUserList();
         users = new Vector<>();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -216,14 +226,6 @@ public class UserList extends JFrame {
         sortType.setActionCommand("SORT_TYPE");
         sortType.addActionListener(listener);
         sort.add(sortType);
-        JMenuItem sortNameRev = new JMenuItem("Name reversed");
-        sortNameRev.setActionCommand("SORT_NAME_REV");
-        sortNameRev.addActionListener(listener);
-        sort.add(sortNameRev);
-        JMenuItem sortTypeRev = new JMenuItem("Type reversed");
-        sortTypeRev.setActionCommand("SORT_TYPE_REV");
-        sortTypeRev.addActionListener(listener);
-        sort.add(sortTypeRev);
         menu.add(sort);
         JMenu edit = new JMenu("Edit");
         JMenuItem editNewUser = new JMenuItem("New user");
