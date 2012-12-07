@@ -141,6 +141,10 @@ public class UserList extends JFrame {
                     JOptionPane.showMessageDialog(frame, "No row has been selected.");
                 }
                 ((DefaultTableModel) table.getModel()).removeRow(num);
+                sortByNames();
+                sortByTypes();
+                table.updateUI();
+                menu.updateUI();
             }
         }
 
