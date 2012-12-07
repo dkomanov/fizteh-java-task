@@ -147,7 +147,7 @@ public class HandlerUtils {
                                                ) throws Throwable {
 
         ex = ex.getCause();
-        sb.append(Constants.threw).append(ex.getClass().getSimpleName());
+        sb.append(Constants.threw).append(ex.toString());
         sb.append(Constants.colon).append(Constants.smallIndent);
         sb.append(ex.getMessage()).append(Constants.endl);
 
