@@ -16,10 +16,9 @@ public class UnitTest {
         interfaces[0] = ExampleInterface.class;
         try {
             ExampleInterface pr = (ExampleInterface) new ShardingProxyFactory().createProxy(target, interfaces);
-            System.out.print(pr.mul(2, 3));
-            System.out.print(".Fail, exception is expected");
+            System.out.println("Expected 18. Answer is : " + pr.mul(2, 3));
         } catch (IllegalArgumentException e) {
-            System.out.println("Success");
+            System.out.println("Fail" + e.getMessage());
         }
     }
     
@@ -97,19 +96,19 @@ public class UnitTest {
         interfaces[0] = ExampleInterface.class;
         try {
             ExampleInterface temp = (ExampleInterface) new ShardingProxyFactory().createProxy(target, interfaces);
-            System.out.println(temp.assign(Long.valueOf(5), Long.valueOf(5)));
+            System.out.println(temp.assign(5, 5));
         } catch (IllegalArgumentException e) {
             System.out.println("Fail " + e.getMessage());
         }
     }
     
-    public static interface ExampleInterface {
+    private static interface ExampleInterface {
         @DoNotProxy
         public int sum(int i, int j);
         @Collect
         public long mul(long i, long j);
         @Collect
-        public List<Long> assign(Long i, Long j);
+        public List<Integer> assign(int i, int j);
         public void throwException(int j);
     }
     
@@ -129,8 +128,8 @@ public class UnitTest {
         }
         
         @Collect
-        public List<Long> assign(Long i, Long j) {
-            List<Long> returnVal = new ArrayList<Long>();
+        public List<Integer> assign(int i, int j) {
+            List<Integer> returnVal = new ArrayList<Integer>();
             for (int i1 = 0; i1 < i; ++i1) {
                 returnVal.add(j);
             }

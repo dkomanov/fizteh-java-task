@@ -58,7 +58,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                     Set<Class> argSet = new HashSet<Class>(Arrays.asList(currMethod.getParameterTypes()));
                     if (!argSet.contains(int.class) 
                             && !argSet.contains(long.class)) {
-                        throw new IllegalArgumentException("No int or long parameter");
+                        throw new IllegalArgumentException("No int or long parameter in " + currMethod.getName());
                     }
                 }
             }
