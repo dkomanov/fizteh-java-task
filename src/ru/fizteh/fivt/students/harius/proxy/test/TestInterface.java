@@ -37,5 +37,7 @@ public interface TestInterface {
 
     int intFromLong(long arg);
 
+    void voidFromIntFail(int arg);
+
     int intFromStringAndLong(String arg, long arg2);
 }

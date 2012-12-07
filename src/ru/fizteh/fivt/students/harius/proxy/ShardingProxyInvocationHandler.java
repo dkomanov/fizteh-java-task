@@ -31,10 +31,14 @@ public class ShardingProxyInvocationHandler
         if (method.getAnnotation(DoNotProxy.class) != null) {
             throw new IllegalStateException("'Do-not-proxy' method called");
         }
-        if (method.getAnnotation(Collect.class) != null) {
-            return invokeCollect(proxy, method, args);
-        } else {
-            return invokeSingle(proxy, method, args);
+        try {
+            if (method.getAnnotation(Collect.class) != null) {
+                return invokeCollect(proxy, method, args);
+            } else {
+                return invokeSingle(proxy, method, args);
+            }
+        } catch (InvocationTargetException wrapped) {
+            throw wrapped.getCause();
         }
     }
 

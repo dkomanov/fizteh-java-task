@@ -15,6 +15,9 @@ public class TestClass implements TestInterface {
 
     private final String yell;
 
+    public final static RuntimeException EXCEPT
+        = new RuntimeException("Hello-hello!");
+
     public TestClass(String yell) {
         this.yell = yell;
     } 
@@ -55,6 +58,11 @@ public class TestClass implements TestInterface {
     @Override
     public int intFromLong(long arg) {
         return 43;
+    }
+
+    @Override
+    public void voidFromIntFail(int arg) {
+        throw EXCEPT;
     }
 
     @Override

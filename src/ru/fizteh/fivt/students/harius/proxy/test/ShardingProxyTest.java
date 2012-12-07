@@ -129,6 +129,23 @@ public class ShardingProxyTest {
             }
         }
 
+        crashed = false;
+        try {
+            proxy.voidFromIntFail(0);
+        } catch (Exception ex) {
+            crashed = true;
+            if (ex != TestClass.EXCEPT) {
+                String log = ex.toString();
+                throw new RuntimeException(
+                    "Wrong exception was thrown:\n" + log);
+            }
+        } finally {
+            if (!crashed) {
+                throw new RuntimeException(
+                    "Not crashed while calling throwing method");
+            }
+        }
+
         System.out.println("Proxy fails correctly");
     }
 
