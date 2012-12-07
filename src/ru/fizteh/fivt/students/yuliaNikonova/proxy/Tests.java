@@ -3,6 +3,7 @@ package ru.fizteh.fivt.students.yuliaNikonova.proxy;
 import static org.junit.Assert.*;
 
 import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -77,6 +78,12 @@ public class Tests extends Assert {
 
         @Collect
         public void addList(List<Integer> list);
+
+        @Collect
+        public List getList();
+
+        @Collect
+        public List<String> getStrList(long uid);
     }
 
     public class MClass implements MInterface {
@@ -112,6 +119,19 @@ public class Tests extends Assert {
 
         public void addList(List<Integer> list) {
             list.add(1);
+
+        }
+
+        public List getList() {
+            List l = new ArrayList();
+            l.add(2);
+            return l;
+        }
+
+        public List<String> getStrList(long uid) {
+            List<String> l = new ArrayList<String>();
+            l.add("Hello");
+            return l;
 
         }
     }
@@ -169,7 +189,27 @@ public class Tests extends Assert {
         interfaces[0] = MInterface.class;
 
         MInterface inter = (MInterface) new ShardingProxyFactory().createProxy(targets, interfaces);
+        List l = new ArrayList();
+        List lTest = new ArrayList();
+        lTest.add(1);
+        lTest.add(1);
+        inter.addList(l);
 
+        assertEquals(l, lTest);
+
+        List l1 = inter.getList();
+
+        List lTest1 = new ArrayList();
+        lTest1.add(2);
+        lTest1.add(2);
+
+        List<String> l3 = inter.getStrList(0);
+
+        List<String> lTest3 = new ArrayList<String>();
+        lTest3.add("Hello");
+        lTest3.add("Hello");
+        assertEquals(l3, lTest3);
+        assertEquals(l1, lTest1);
         assertTrue(inter.getLong(2L) == 2L);
         assertTrue(inter.sum(1, 2) == 3);
         assertTrue(inter.div(10L, 2L) == 5L);
