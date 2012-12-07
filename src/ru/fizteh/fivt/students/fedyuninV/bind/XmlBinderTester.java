@@ -4,6 +4,8 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import ru.fizteh.fivt.bind.test.Permissions;
 import ru.fizteh.fivt.bind.test.User;
 import ru.fizteh.fivt.bind.test.UserName;
@@ -84,7 +86,6 @@ public class XmlBinderTester {
         bytes = binder.serialize(deserialized);
         user = binder.deserialize(bytes);
         Assert.assertEquals(user, deserialized);
-        Assert.assertEquals(user, deserialized);
 
         user = new User(1, null, new UserName("first", "last"), permissions);
         bytes = binder.serialize(user);
@@ -93,6 +94,14 @@ public class XmlBinderTester {
         bytes = binder.serialize(deserialized);
         user = binder.deserialize(bytes);
         Assert.assertEquals(user, deserialized);
+
+        Permissions adminPermissions = new Permissions();
+        adminPermissions.setQuota(100);
+        adminPermissions.setRoot(true);
+        User anotherUser = new User(2, UserType.MODERATOR, new UserName("adminFirst", "adminLast"), adminPermissions, user);
+        bytes = binder.serialize(anotherUser);
+        deserialized = binder.deserialize(bytes);
+        Assert.assertEquals(anotherUser, deserialized);
     }
 
     @Test
@@ -113,7 +122,13 @@ public class XmlBinderTester {
         byte[] bytes = binder.serialize(voidAnnotationsTest);
         VoidAnnotationsTest deserialized = binder.deserialize(bytes);
         Assert.assertTrue(deserialized.equals(voidAnnotationsTest));
+        Document document = binder.bytesToXml(bytes);
+        Element root = document.getDocumentElement();
+        Assert.assertEquals(root.getElementsByTagName("name").getLength(), 1);
+        Assert.assertEquals(root.getElementsByTagName("age").getLength(), 1);
+        Assert.assertEquals(root.getElementsByTagName("surname").getLength(), 1);
     }
+
 
     @Test
     public void testWithElement() {
