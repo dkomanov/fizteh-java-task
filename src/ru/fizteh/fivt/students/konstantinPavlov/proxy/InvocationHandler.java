@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.konstantinPavlov.proxy;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args)
-            throws Exception {
+            throws Throwable {
 
         if (method == null) {
             throw new RuntimeException("null method");
@@ -29,40 +30,47 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         method.setAccessible(true);
 
         if (method.getAnnotation(Collect.class) != null) {
-            Class<?> returningType = method.getReturnType();
-            if (returningType.equals(void.class)) {
-                for (Object target : targets) {
-                    method.invoke(target, args);
-                }
-                return null;
-            } else
-                if (returningType.equals(Long.class)
-                        || returningType.equals(long.class)) {
-                    long result = 0;
+            try {
+                Class<?> returningType = method.getReturnType();
+                if (returningType.equals(void.class)) {
                     for (Object target : targets) {
-                        result += (Long) method.invoke(target, args);
+                        method.invoke(target, args);
                     }
-                    return result;
-                } else
-                    if (returningType.equals(Integer.class)
-                            || returningType.equals(int.class)) {
-                        int result = 0;
+                    return null;
+                } else {
+                    if (returningType.equals(Long.class)
+                            || returningType.equals(long.class)) {
+                        long result = 0;
                         for (Object target : targets) {
-                            result += (Integer) method.invoke(target, args);
+                            result += (Long) method.invoke(target, args);
                         }
                         return result;
-                    } else
-                        if (returningType.isAssignableFrom(List.class)) {
-                            List<?> result = new ArrayList<>();
+                    } else {
+                        if (returningType.equals(Integer.class)
+                                || returningType.equals(int.class)) {
+                            int result = 0;
                             for (Object target : targets) {
-                                result.addAll((List) method
-                                        .invoke(target, args));
+                                result += (Integer) method.invoke(target, args);
                             }
                             return result;
                         } else {
-                            throw new IllegalArgumentException(
-                                    "invalid method return type");
+                            if (returningType.isAssignableFrom(List.class)) {
+                                List<?> result = new ArrayList<>();
+                                for (Object target : targets) {
+                                    result.addAll((List) method.invoke(target,
+                                            args));
+                                }
+                                return result;
+                            } else {
+                                throw new IllegalArgumentException(
+                                        "invalid method return type");
+                            }
                         }
+                    }
+                }
+            } catch (InvocationTargetException expt) {
+                throw expt.getTargetException();
+            }
         }
 
         if (proxy == null) {
@@ -75,15 +83,21 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         }
 
         for (Object arg : args) {
-            Class<?> clazz = arg.getClass();
-            if (clazz.equals(int.class) || clazz.equals(Integer.class)) {
-                return method.invoke(targets[(Integer) arg % targets.length],
-                        args);
-            } else
-                if (clazz.equals(long.class) || clazz.equals(Long.class)) {
+            try {
+                Class<?> clazz = arg.getClass();
+                if (clazz.equals(int.class) || clazz.equals(Integer.class)) {
                     return method.invoke(
-                            targets[(int) ((Long) arg % targets.length)], args);
+                            targets[(Integer) arg % targets.length], args);
+                } else {
+                    if (clazz.equals(long.class) || clazz.equals(Long.class)) {
+                        return method.invoke(
+                                targets[(int) ((Long) arg % targets.length)],
+                                args);
+                    }
                 }
+            } catch (InvocationTargetException expt) {
+                throw expt.getTargetException();
+            }
         }
 
         throw new IllegalArgumentException("invalid type of the argument");

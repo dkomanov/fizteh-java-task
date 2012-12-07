@@ -43,6 +43,9 @@ public class UnitTests extends Assert {
 
         @Collect
         List<?> numCollectList();
+
+        @Collect
+        void throwException();
     }
 
     interface InterfaceWithoutMethods {
@@ -104,6 +107,11 @@ public class UnitTests extends Assert {
                 returnList.add(number + 2);
                 return returnList;
             }
+
+            @Override
+            public void throwException() {
+                throw new RuntimeException("SubException");
+            }
         }
 
         ClassForTests(int num) {
@@ -147,6 +155,11 @@ public class UnitTests extends Assert {
             returnList.add(number + 1);
             returnList.add(number + 2);
             return returnList;
+        }
+
+        @Override
+        public void throwException() {
+            throw new RuntimeException("Exception");
         }
     }
 
@@ -279,5 +292,20 @@ public class UnitTests extends Assert {
         InterfaceForTests testInterface = (InterfaceForTests) new ShardingProxyFactory()
                 .createProxy(targets, interfaces);
 
+    }
+
+    @Test
+    public void exceptionTest() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Exception");
+        Object[] targets = new Object[1];
+        targets[0] = new ClassForTests(0);
+
+        Class[] interfaces = new Class[1];
+        interfaces[0] = InterfaceForTests.class;
+
+        InterfaceForTests inter = (InterfaceForTests) new ShardingProxyFactory()
+                .createProxy(targets, interfaces);
+        inter.throwException();
     }
 }
