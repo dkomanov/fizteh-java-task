@@ -95,14 +95,27 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         }
         writer.append(method.getDeclaringClass().getSimpleName() + '.');
         writer.append(method.getName() + '(');
+        if (extendedMode) {
+            writer.append('\n');
+        }
         for (int i = 0; i < argsAsStrings.size(); ++i) {
+            if (extendedMode) {
+                writer.append("  ");
+            }
             writer.append(argsAsStrings.get(i));
             if (i != argsAsStrings.size() - 1) {
-                writer.append(", ");
+                writer.append(",");
             }
             if (extendedMode) {
                 writer.append('\n');
+            } else {
+                if (i != argsAsStrings.size() - 1) {
+                    writer.append(" ");
+                }
             }
+        }
+        if (extendedMode) {
+            writer.append("  ");
         }
         writer.append(")");
         Object returned = null;
@@ -121,10 +134,9 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             }
             StackTraceElement[] elements = e.getTargetException()
                     .getStackTrace();
-            writer.append("threw"
-                    + e.getTargetException().getClass().toString()
-                            .replaceFirst("class", "") + " Message:"
-                    + e.getTargetException().getMessage() + '\n');
+            writer.append("threw "
+                    + e.getTargetException().getClass().getCanonicalName()
+                    + ": " + e.getTargetException().getMessage() + '\n');
             for (int i = 0; i < elements.length; ++i) {
                 if (extendedMode) {
                     writer.append("  ");
@@ -135,11 +147,12 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     writer.append('\n');
                 }
             }
-            //System.out.println(writer);
-            throw e;
+            // System.out.println(writer);
+            throw e.getTargetException();
         } catch (Throwable e) {
             throw e;
         }
+
         writer.append('\n');
         return returned;
     }

@@ -43,6 +43,10 @@ public class TestProxy {
 
         Object testBadRef();
 
+        public String manyArgs(int a, int b, int c, int d);
+
+        public String manyArgsExtended(int a, int b, int c, int d,
+                String extended);
     }
 
     class SimpleClass implements SimpleInterface {
@@ -50,6 +54,10 @@ public class TestProxy {
         @Override
         public int getOne() {
             return 1;
+        }
+
+        public String manyArgs(int a, int b, int c, int d) {
+            return new Integer(a + b + c + d).toString();
         }
 
         @Override
@@ -67,6 +75,12 @@ public class TestProxy {
             Object[] array = new Object[1];
             array[0] = array;
             return array;
+        }
+
+        @Override
+        public String manyArgsExtended(int a, int b, int c, int d,
+                String extended) {
+            return new Integer(a + b + c + d).toString() + extended;
         }
 
     }
@@ -167,11 +181,6 @@ public class TestProxy {
                 .contains(
                         "ExtendedInterface.iAmJustVeryVeryBigMethodNameAndICanBeEvenBiggerExclamationMark(100500)"));
         proxy.getException("This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end");
-        Assert.assertTrue(writer
-                .toString()
-                .contains(
-                        "ExtendedInterface.getException(\"This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end\"\n) \nthrew"));
-        System.out.println(writer);
 
     }
 
@@ -193,4 +202,35 @@ public class TestProxy {
 
     }
 
+    @Test
+    public void testFormat() {
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        SimpleClass simpleClass = new SimpleClass();
+        StringBuffer writer = new StringBuffer();
+        SimpleInterface proxy = (SimpleInterface) factory.createProxy(
+                simpleClass, writer, SimpleInterface.class);
+        proxy.manyArgs(1, 2, 3, 4);
+        Assert.assertTrue(writer.toString().contains(
+                "SimpleInterface.manyArgs(1, 2, 3, 4) returned \"10\""));
+    }
+
+    @Test
+    public void testFormat2() {
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        SimpleClass simpleClass = new SimpleClass();
+        StringBuffer writer = new StringBuffer();
+        SimpleInterface proxy = (SimpleInterface) factory.createProxy(
+                simpleClass, writer, SimpleInterface.class);
+        // writer = new StringBuffer();
+        proxy.manyArgsExtended(
+                1,
+                2,
+                3,
+                4,
+                "more than sixty chars more than sixty chars more than sixty chars more than sixty chars more than sixty chars");
+        Assert.assertTrue(writer
+                .toString()
+                .contains(
+                        "SimpleInterface.manyArgsExtended(\n  1,\n  2,\n  3,\n  4,\n  \"more than"));
+    }
 }
