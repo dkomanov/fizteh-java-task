@@ -114,6 +114,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         } catch (Throwable e) {
             if (extendedMode) {
                 writer.append('\n');
+                writer.append("  ");
             }
             StackTraceElement[] elements = e.getStackTrace();
             writer.append("threw"
