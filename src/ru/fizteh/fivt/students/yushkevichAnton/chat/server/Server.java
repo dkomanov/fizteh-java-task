@@ -76,7 +76,6 @@ public class Server {
         for (ClientConnection client : clients) {
             client.disconnect("Server is shutting down");
         }
-        validateClients();
     }
 
     private void list() {
@@ -149,6 +148,7 @@ public class Server {
         return !takenNickNames.contains(nickName);
     }
 
+    // autovalidated by clients
     void validateClients() {
         ArrayList<ClientConnection> newClients = new ArrayList<ClientConnection>();
         for (ClientConnection client : clients) {
