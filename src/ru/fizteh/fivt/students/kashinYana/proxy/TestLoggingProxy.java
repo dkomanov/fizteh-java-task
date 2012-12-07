@@ -85,7 +85,7 @@ public class TestLoggingProxy {
         test4();
     }
 
-    static public void testExeption() throws  Exception{
+    static public void testExeption() throws Exception {
         StringWriter writer = new StringWriter();
         InterfaceToProxy log = (InterfaceToProxy)
                 factory.createProxy(target, writer, InterfaceToProxy.class);
@@ -95,7 +95,7 @@ public class TestLoggingProxy {
             test(writer.toString(), "InterfaceToProxy.exception(\n" +
                     "  \"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\"\n" +
                     "  )\n" +
-                    "  java.lang.IndexOutOfBoundsException: Index: 100, Size: 0\n" +
+                    "  threw java.lang.IndexOutOfBoundsException: Index: 100, Size: 0\n" +
                     "    java.util.ArrayList.rangeCheck(ArrayList.java:604)\n" +
                     "    java.util.ArrayList.get(ArrayList.java:382)\n");
         }
@@ -166,8 +166,11 @@ public class TestLoggingProxy {
         class SimpleClass {
 
         }
-        Object log4 = factory.createProxy(new SimpleClass(), writer, new Class[0]);
-
+        try {
+            Object log4 = factory.createProxy(new SimpleClass(), writer, new Class[0]);
+        } catch (Exception e) {
+            test(e.getMessage(), "Don't give me empty interfaces");
+        }
         InterfaceToProxy log2 = (InterfaceToProxy)
                 factory.createProxy(target, writer, InterfaceToProxy.class);
         Object[] array = new Object[1];

@@ -1,9 +1,6 @@
 package ru.fizteh.fivt.students.kashinYana.proxy;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,6 +16,16 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
 
     }
 
+    private void recursionGetInterfaces(HashSet<Class<?>> sortedInterfaces, ArrayList<Class<?>> interfaces) {
+        for (Class<?> iterface : interfaces) {
+            if (!sortedInterfaces.contains(iterface)) {
+                sortedInterfaces.add(iterface);
+                recursionGetInterfaces(sortedInterfaces,
+                        new ArrayList<Class<?>>(Arrays.asList(iterface.getInterfaces())));
+            }
+        }
+    }
+
     public Object createProxy(Object target, Appendable writer, Class... interfaces) {
 
         if (target == null) {
@@ -30,11 +37,15 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
         if (interfaces == null) {
             throw new IllegalArgumentException("Don't give me null interfaces, 3-args");
         }
+        if (interfaces.length == 0) {
+            throw new IllegalArgumentException("Don't give me empty interfaces");
+        }
         ArrayList<Class<?>> interfacesTarget;
         HashSet<Class<?>> sortedInterfaces;
         try {
             interfacesTarget = new ArrayList<Class<?>>(Arrays.asList(target.getClass().getInterfaces()));
-            sortedInterfaces = new HashSet<Class<?>>(interfacesTarget);
+            sortedInterfaces = new HashSet<Class<?>>();
+            recursionGetInterfaces(sortedInterfaces, interfacesTarget);
         } catch (Exception e) {
             throw new IllegalArgumentException("Don't take interfaces");
         }
@@ -101,12 +112,14 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                     Enum enumm = (Enum) args;
                     return enumm.name();
                 } else if (args.getClass().isArray()) {
-                    Object[] list = (Object[]) args;
+                    int size = Array.getLength(args);
                     String answer;
-                    answer = list.length + "{";
-                    for (int i = 0; i < list.length; i++) {
-                        answer += print(list[i], cycle);
-                        if (i < list.length - 1) {
+                    answer = size + "{";
+                    for (int i = 0; i < size; i++) {
+                        IdentityHashMap<Object, Object> arrayCycleForChildren =
+                                new IdentityHashMap<Object, Object>(cycle);
+                        answer += print(Array.get(args, i), arrayCycleForChildren);
+                        if (i < size - 1) {
                             answer += ", ";
                         }
                     }
@@ -194,6 +207,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                     } else {
                         stringToLog += " ";
                     }
+                    stringToLog += "threw ";
                     stringToLog += e.getTargetException().getClass().getCanonicalName() + ": "
                             + e.getTargetException().getMessage() + '\n';
                     StackTraceElement[] traceElements = e.getTargetException().getStackTrace();
