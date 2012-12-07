@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.tolyapro.proxy;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -86,10 +87,10 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         ArrayList<String> argsAsStrings = new ArrayList<String>();
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
-                if (args[i] != null && args[i].toString().length() > magicConst) {
+                argsAsStrings.add(toString(args[i], circularRefDetector));
+                if (argsAsStrings.get(i).length() > magicConst) {
                     extendedMode = true;
                 }
-                argsAsStrings.add(toString(args[i], circularRefDetector));
             }
         }
         writer.append(method.getDeclaringClass().getSimpleName() + '.');
@@ -111,17 +112,19 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 writer.append(" returned ");
                 writer.append(toString(returned, circularRefDetector));
             }
-        } catch (Throwable e) {
+        } catch (InvocationTargetException e) {
             if (extendedMode) {
                 writer.append('\n');
                 writer.append("  ");
             } else {
                 writer.append(" ");
             }
-            StackTraceElement[] elements = e.getStackTrace();
+            StackTraceElement[] elements = e.getTargetException()
+                    .getStackTrace();
             writer.append("threw"
-                    + e.getClass().toString().replaceFirst("class", "")
-                    + " Message:" + e.getMessage() + '\n');
+                    + e.getTargetException().getClass().toString()
+                            .replaceFirst("class", "") + " Message:"
+                    + e.getTargetException().getMessage() + '\n');
             for (int i = 0; i < elements.length; ++i) {
                 if (extendedMode) {
                     writer.append("  ");
@@ -132,6 +135,9 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     writer.append('\n');
                 }
             }
+            //System.out.println(writer);
+            throw e;
+        } catch (Throwable e) {
             throw e;
         }
         writer.append('\n');
