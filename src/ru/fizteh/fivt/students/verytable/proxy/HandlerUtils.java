@@ -90,7 +90,6 @@ public class HandlerUtils {
             throw new RuntimeException("Error: " + objectToPrint
                                        + " has cyclic reference.");
         }
-        prepared.put(objectToPrint, null);
         Class objectToPrintClass = objectToPrint.getClass();
 
         if (isPrimitiveOrWrappedType(objectToPrintClass)) {
@@ -101,6 +100,7 @@ public class HandlerUtils {
         } else if (objectToPrintClass.isEnum()) {
             return ((Enum) objectToPrint).name();
         } else if (objectToPrintClass.isArray()) {
+            prepared.put(objectToPrint, null);
             return prepareArrayToPrint(objectToPrint, prepared);
         } else {
             return wrap(objectToPrint.toString(), Constants.leftSquareBracket,

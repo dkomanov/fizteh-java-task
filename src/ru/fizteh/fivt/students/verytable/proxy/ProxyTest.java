@@ -27,6 +27,8 @@ interface SomeInterface {
     void someMethod8(int[] array);
 
     void someMethod9(List list);
+
+    String someMethod10(String s, String t, String u);
 }
 
 class SomeInterfaceImpl implements SomeInterface {
@@ -80,6 +82,11 @@ class SomeInterfaceImpl implements SomeInterface {
     @Override
     public void someMethod9(List list) {
         list.clear();
+    }
+
+    @Override
+    public String someMethod10(String s, String t, String u) {
+        return s + t + u;
     }
 }
 
@@ -153,7 +160,7 @@ public class ProxyTest {
             Assert.assertEquals("SomeInterface.someMethod7(2{\"0\", \"null\"})"
                     + " threw NullPointerException:  null\n"
                     + "  ru.fizteh.fivt.students.verytable.proxy.SomeInterfaceImpl"
-                    + ".someMethod7(ProxyTest.java:63)",
+                    + ".someMethod7(ProxyTest.java:74)",
                     writer.toString().substring(0, 166));
         }
     }
@@ -176,6 +183,17 @@ public class ProxyTest {
         List<String> proxy = (List<String>) factory.createProxy(list, writer, list.getClass().getInterfaces());
         proxy.add("hello\\\\ \n world\\\"");
         Assert.assertEquals(writer.toString(), "List.add(\"hello\\\\\\\\ \\n world\\\\\\\"\") returned true\n");
+    }
+
+    @Test
+    public void similarToCycle() {
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        StringBuffer writer = new StringBuffer();
+        SomeInterfaceImpl sii = new SomeInterfaceImpl();
+        SomeInterface logger = (SomeInterface) factory.createProxy(sii, writer, SomeInterface.class);
+        String s = "1";
+        logger.someMethod10(s, s, s);
+        Assert.assertEquals("SomeInterface.someMethod10(\"1\", \"1\", \"1\") returned \"111\"\n", writer.toString());
     }
 
     @Test
