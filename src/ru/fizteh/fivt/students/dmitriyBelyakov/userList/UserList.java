@@ -7,6 +7,7 @@ import ru.fizteh.fivt.bind.test.UserType;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -26,7 +27,7 @@ class UserNameComparator implements Comparator<Vector<Object>> {
 class UserTypeComparator implements Comparator<Vector<Object>> {
     @Override
     public int compare(Vector<Object> v1, Vector<Object> v2) {
-        return ((String) v1.get(1)).compareTo((String) v2.get(1));
+        return ((UserType) v1.get(1)).compareTo((UserType) v2.get(1));
     }
 }
 
@@ -43,11 +44,12 @@ public class UserList extends JFrame {
         public void actionPerformed(ActionEvent event) {
             String actionCommand = event.getActionCommand();
             if (actionCommand.equals("OPEN")) {
-                String fileName = JOptionPane.showInputDialog("Enter file name.");
-                if (fileName != null) {
-                    xmlFile = new File(fileName);
+                JFileChooser fileOpen = new JFileChooser();
+                int ret = fileOpen.showDialog(frame, "Open");
+                if (ret == JFileChooser.APPROVE_OPTION) {
+                    xmlFile = fileOpen.getSelectedFile();
                     if (!xmlFile.exists()) {
-                        JOptionPane.showMessageDialog(frame, "Cannot find file '" + fileName + "'");
+                        JOptionPane.showMessageDialog(frame, "Cannot find file '" + xmlFile.getName() + "'");
                         xmlFile = null;
                     } else {
                         updateTable(xmlUserList.loadUsers(xmlFile));
@@ -61,9 +63,10 @@ public class UserList extends JFrame {
                 }
             } else if (actionCommand.equals("SAVE_AS")) {
                 File last = xmlFile;
-                String fileName = JOptionPane.showInputDialog("Enter file name.");
-                if (fileName != null && !fileName.equals("")) {
-                    xmlFile = new File(fileName);
+                JFileChooser fileSave = new JFileChooser();
+                int ret = fileSave.showDialog(frame, "Save as");
+                if (ret == JFileChooser.APPROVE_OPTION) {
+                    xmlFile = fileSave.getSelectedFile();
                     try {
                         save();
                     } catch (Exception e) {
@@ -73,8 +76,10 @@ public class UserList extends JFrame {
                 }
             } else if (actionCommand.equals("SORT_NAME")) {
                 Collections.sort(users, new UserNameComparator());
+                table.updateUI();
             } else if (actionCommand.equals("SORT_TYPE")) {
                 Collections.sort(users, new UserTypeComparator());
+                table.updateUI();
             } else if (actionCommand.equals("NEW_USER")) {
                 Vector<Object> vector = new Vector<>();
                 vector.add(0);
@@ -102,10 +107,7 @@ public class UserList extends JFrame {
             ArrayList<User> usersList = new ArrayList<>();
             for (Vector<Object> vector : users) {
                 int id = (Integer) vector.get(0);
-                UserType userType = UserType.valueOf((String) vector.get(1));
-                if (userType == null) {
-                    throw new RuntimeException("Incorrect user type.");
-                }
+                UserType userType = (UserType) vector.get(1);
                 UserName name = new UserName((String) vector.get(2), (String) vector.get(3));
                 Permissions permissions = new Permissions();
                 permissions.setRoot((Boolean) vector.get(4));
@@ -124,7 +126,7 @@ public class UserList extends JFrame {
                 }
                 Vector row = new Vector();
                 row.add(user.getId());
-                row.add(user.getUserType() == null ? new String() : user.getUserType().toString());
+                row.add(user.getUserType() == null ? UserType.USER : user.getUserType());
                 UserName name = user.getName();
                 if (name == null) {
                     row.add(new String());
@@ -212,6 +214,9 @@ public class UserList extends JFrame {
         names.add("Last name");
         names.add("Root");
         names.add("Quota");
+        UserType[] types = UserType.values();
+        JComboBox typeCombo = new JComboBox(types);
+        final DefaultCellEditor editor = new DefaultCellEditor(typeCombo);
         table = new JTable(new DefaultTableModel(
                 users,
                 names
@@ -222,7 +227,7 @@ public class UserList extends JFrame {
                     case 0:
                         return Integer.class;
                     case 1:
-                        return String.class;
+                        return UserType.class;
                     case 2:
                         return String.class;
                     case 3:
@@ -235,8 +240,17 @@ public class UserList extends JFrame {
                         return String.class;
                 }
             }
+
+            @Override
+            public TableCellEditor getCellEditor(int row, int column) {
+                int modelColumn = convertColumnIndexToModel(column);
+
+                if (modelColumn == 1)
+                    return editor;
+                else
+                    return super.getCellEditor(row, column);
+            }
         };
-        //table.setRowSorter(new TableRowSorter<>(table.getModel()));
         add(new JScrollPane(table));
     }
 }
