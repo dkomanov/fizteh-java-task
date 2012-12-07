@@ -81,6 +81,9 @@ public class Tests extends Assert {
 
         @Collect
         public List getList();
+
+        @Collect
+        public List<String> getStrList(long uid);
     }
 
     public class MClass implements MInterface {
@@ -123,6 +126,13 @@ public class Tests extends Assert {
             List l = new ArrayList();
             l.add(2);
             return l;
+        }
+
+        public List<String> getStrList(long uid) {
+            List<String> l = new ArrayList<String>();
+            l.add("Hello");
+            return l;
+
         }
     }
 
@@ -192,6 +202,13 @@ public class Tests extends Assert {
         List lTest1 = new ArrayList();
         lTest1.add(2);
         lTest1.add(2);
+
+        List<String> l3 = inter.getStrList(0);
+
+        List<String> lTest3 = new ArrayList<String>();
+        lTest3.add("Hello");
+        lTest3.add("Hello");
+        assertEquals(l3, lTest3);
         assertEquals(l1, lTest1);
         assertTrue(inter.getLong(2L) == 2L);
         assertTrue(inter.sum(1, 2) == 3);
