@@ -138,7 +138,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             //System.out.println(writer);
             throw e;
         } catch (Throwable e) {
-
+            throw e;
         }
         writer.append('\n');
         return returned;
