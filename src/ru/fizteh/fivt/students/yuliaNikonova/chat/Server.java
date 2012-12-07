@@ -69,6 +69,7 @@ public class Server extends Thread {
             for (Enumeration e = getOutputStreams(); e.hasMoreElements();) {
                 DataOutputStream dout = (DataOutputStream) e.nextElement();
                 try {
+                    dout.writeInt(message.length);
                     dout.write(message);
                 } catch (IOException ie) {
                     System.out.println(ie);
@@ -176,6 +177,7 @@ public class Server extends Thread {
                 DataOutputStream dout = outputStreams.get(s);
                 if (dout != null) {
                     try {
+                        dout.writeInt(MessageUtils.message("server", message).length);
                         dout.write(MessageUtils.message("server", message));
                         return;
                     } catch (Exception e) {
