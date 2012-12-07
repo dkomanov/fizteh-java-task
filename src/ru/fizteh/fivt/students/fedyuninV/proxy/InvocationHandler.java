@@ -198,16 +198,12 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
             logger.append(ex.getMessage());
             logger.append('\n');
             StackTraceElement[] traceElements = ex.getStackTrace();
-            int stackTraceLength = 2; //const gained from javadoc samples
-            if (traceElements.length < stackTraceLength) {
-                stackTraceLength = traceElements.length;
-            }
-            for (int i = 0; i < stackTraceLength; i++) {
+            for (StackTraceElement traceElement: traceElements) {
                 if (tooLong) {
                     logger.append("  ");
                 }
                 logger.append("  ");
-                logger.append(traceElements[i].toString());
+                logger.append(traceElement.toString());
                 logger.append('\n');
             }
             throw ex;

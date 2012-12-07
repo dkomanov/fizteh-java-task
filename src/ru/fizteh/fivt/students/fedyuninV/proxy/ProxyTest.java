@@ -294,9 +294,9 @@ public class ProxyTest {
             proxy.add(3, "wtf");
         } catch (Exception ignored) {
         }
-        Assert.assertEquals(builder.toString(), "List.add(3, \"wtf\") threw java.lang.IndexOutOfBoundsException: Index: 3, Size: 0\n" +
+        Assert.assertTrue(builder.toString().startsWith("List.add(3, \"wtf\") threw java.lang.IndexOutOfBoundsException: Index: 3, Size: 0\n" +
                 "  java.util.ArrayList.rangeCheckForAdd(ArrayList.java:612)\n" +
-                "  java.util.ArrayList.add(ArrayList.java:426)\n");
+                "  java.util.ArrayList.add(ArrayList.java:426)\n"));
     }
 
 }
