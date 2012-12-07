@@ -14,6 +14,8 @@ import org.junit.rules.ExpectedException;
 
 import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
+import ru.fizteh.fivt.students.yuliaNikonova.common.ClassForTest;
+import ru.fizteh.fivt.students.yuliaNikonova.common.InterfaceTest;
 
 public class Tests extends Assert {
 
@@ -168,14 +170,27 @@ public class Tests extends Assert {
 
         MInterface inter = (MInterface) new ShardingProxyFactory().createProxy(targets, interfaces);
 
-        try {
-            assertTrue(inter.getLong(2L) == 2L);
-            assertTrue(inter.sum(1, 2) == 3);
-            assertTrue(inter.div(10L, 2L) == 5L);
-            assertTrue(inter.get1() == 2);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        assertTrue(inter.getLong(2L) == 2L);
+        assertTrue(inter.sum(1, 2) == 3);
+        assertTrue(inter.div(10L, 2L) == 5L);
+        assertTrue(inter.get1() == 2);
+
     }
 
+    @Test
+    public void nestedTests() {
+        ShardingProxyFactory factory = new ShardingProxyFactory();
+
+        Object[] targets = new Object[2];
+        targets[0] = new ClassForTest(0).newInstanceOfSubClass();
+        targets[1] = new ClassForTest(1).newInstanceOfSubClass();
+
+        Class[] interfaces = new Class[1];
+        interfaces[0] = InterfaceTest.class;
+
+        InterfaceTest inter = (InterfaceTest) new ShardingProxyFactory().createProxy(targets, interfaces);
+        assertTrue(inter.numInt(2) == 1);
+        assertTrue(inter.numLong(5L) == 2);
+
+    }
 }

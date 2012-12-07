@@ -23,6 +23,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         if (method == null) {
             throw new IllegalArgumentException("Null method");
         }
+        method.setAccessible(true);
         if (method.getAnnotation(DoNotProxy.class) != null) {
             throw new IllegalArgumentException("Method has DoNotProxy annotation");
         }
