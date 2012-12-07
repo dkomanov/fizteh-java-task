@@ -171,7 +171,7 @@ public class TestProxy {
                 .toString()
                 .contains(
                         "ExtendedInterface.getException(\"This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end This string is so big that nobody will read it till the end\"\n) \nthrew"));
-        // System.out.println(writer);
+        System.out.println(writer);
 
     }
 
