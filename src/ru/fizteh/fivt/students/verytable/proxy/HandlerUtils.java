@@ -68,8 +68,7 @@ public class HandlerUtils {
         sb.append(Constants.leftBrace);
 
         for (int i = 0; i < array.length; ++i) {
-            sb.append(wrap(prepareObjectToPrint(array[i], prepared),
-                           Constants.doubleQuote, Constants.doubleQuote));
+            sb.append(prepareObjectToPrint(array[i], prepared));
             if (i != array.length - 1) {
                 sb.append(Constants.comma).append(Constants.smallIndent);
             }
