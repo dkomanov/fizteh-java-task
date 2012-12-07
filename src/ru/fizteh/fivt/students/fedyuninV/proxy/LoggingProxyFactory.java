@@ -1,9 +1,9 @@
 package ru.fizteh.fivt.students.fedyuninV.proxy;
 
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Fedyunin Valeriy
@@ -11,21 +11,28 @@ import java.util.Set;
  */
 public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFactory{
 
-    @Override
     public Object createProxy(Object target, Appendable writer, Class... interfaces) {
-        if (target == null  ||  writer == null  ||  interfaces == null  ||  interfaces.length == 0) {
+        if (target == null  ||  writer == null  ||  interfaces == null  ||  interfaces.length == 0
+                || Arrays.asList(interfaces).contains(null)) {
             throw new IllegalArgumentException("Null parameter found");
         }
-        Set<Class<?>> declaredInterfaces = new HashSet<>(Arrays.asList(target.getClass().getInterfaces()));
+        List<Class> declaredInterfaces = new ArrayList<>();
+        declaredInterfaces.addAll(Arrays.asList(target.getClass().getInterfaces()));
+        for (int i = 0; i < declaredInterfaces.size(); i++) {
+            Class clazz = declaredInterfaces.get(i);
+            if (clazz != null) {
+                declaredInterfaces.addAll(Arrays.asList(clazz.getInterfaces()));
+            }
+        }
+        if (!declaredInterfaces.containsAll(Arrays.asList(interfaces))) {
+            throw new IllegalArgumentException("target doesn't support interface");
+        }
         int methodsNum = 0;
         for (int i = 0; i < interfaces.length; i++) {
             if (interfaces[i] == null) {
                 throw new IllegalArgumentException("Null parameter found");
             }
             methodsNum += interfaces[i].getMethods().length;
-        }
-        if (!declaredInterfaces.containsAll(Arrays.asList(interfaces))) {
-            throw new IllegalAccessError("target doesn't support interface");
         }
         if (methodsNum == 0) {
             throw new IllegalArgumentException("No methods in interfaces");
