@@ -1,9 +1,7 @@
 package ru.fizteh.fivt.students.fedyuninV.proxy;
 
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Fedyunin Valeriy
@@ -16,21 +14,10 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 || Arrays.asList(interfaces).contains(null)) {
             throw new IllegalArgumentException("Null parameter found");
         }
-        List<Class> declaredInterfaces = new ArrayList<>();
-        declaredInterfaces.addAll(Arrays.asList(target.getClass().getInterfaces()));
-        for (int i = 0; i < declaredInterfaces.size(); i++) {
-            Class clazz = declaredInterfaces.get(i);
-            if (clazz != null) {
-                declaredInterfaces.addAll(Arrays.asList(clazz.getInterfaces()));
-            }
-        }
-        if (!declaredInterfaces.containsAll(Arrays.asList(interfaces))) {
-            throw new IllegalArgumentException("target doesn't support interface");
-        }
         int methodsNum = 0;
         for (int i = 0; i < interfaces.length; i++) {
-            if (interfaces[i] == null) {
-                throw new IllegalArgumentException("Null parameter found");
+            if (!interfaces[i].isAssignableFrom(target.getClass())) {
+                throw new IllegalArgumentException("target doesn't support interface");
             }
             methodsNum += interfaces[i].getMethods().length;
         }
