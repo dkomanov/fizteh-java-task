@@ -29,6 +29,7 @@ public class ProxyInvocationHandler implements InvocationHandler {
         } else if (method == null) {
             throw new IllegalArgumentException("Method is null");
         }
+        method.setAccessible(true);
         if (method.getAnnotation(DoNotProxy.class) != null) {
             throw new IllegalArgumentException(method.getName() + ": has annotation DoNotProxy");
         } else if (method.getAnnotation(Collect.class) == null) {
@@ -51,12 +52,6 @@ public class ProxyInvocationHandler implements InvocationHandler {
             }
             throw new IllegalArgumentException("Int or long variable not found");
         } else {
-            for (Class<?> param : method.getParameterTypes()) {
-                if (isNumber(param)) {
-                    throw new IllegalArgumentException("Method " + method.getName() + 
-                            " has annotation @Collect and numeric parameter");
-                }
-            }
             Class<?> returnType = method.getReturnType();
             if (returnType.equals(void.class)) {
                 for (Object targ : targets) {
