@@ -115,6 +115,8 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             if (extendedMode) {
                 writer.append('\n');
                 writer.append("  ");
+            } else {
+                writer.append(" ");
             }
             StackTraceElement[] elements = e.getStackTrace();
             writer.append("threw"
@@ -130,6 +132,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     writer.append('\n');
                 }
             }
+            System.out.println(writer);
             throw e;
         }
         writer.append('\n');
