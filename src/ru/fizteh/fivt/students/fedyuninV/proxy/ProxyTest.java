@@ -294,6 +294,6 @@ public class ProxyTest {
             proxy.add(3, "wtf");
         } catch (Exception ignored) {
         }
-        Assert.assertTrue(builder.toString().lastIndexOf("IndexOutOfBounds") != -1);
+        Assert.assertTrue(builder.toString().lastIndexOf("threw java.lang.IndexOutOfBoundsException") != -1);
     }
 }
