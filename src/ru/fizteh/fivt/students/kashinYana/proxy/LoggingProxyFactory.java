@@ -1,11 +1,10 @@
 package ru.fizteh.fivt.students.kashinYana.proxy;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 
 /**
  * Kashinskaya Yana
@@ -15,6 +14,16 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
 
     public LoggingProxyFactory() {
 
+    }
+
+    private void recursionGetInterfaces(HashSet<Class<?>> sortedInterfaces, ArrayList<Class<?>> interfaces) {
+        for (Class<?> iterface : interfaces) {
+            if (!sortedInterfaces.contains(iterface)) {
+                sortedInterfaces.add(iterface);
+                recursionGetInterfaces(sortedInterfaces,
+                        new ArrayList<Class<?>>(Arrays.asList(iterface.getInterfaces())));
+            }
+        }
     }
 
     public Object createProxy(Object target, Appendable writer, Class... interfaces) {
@@ -28,16 +37,20 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
         if (interfaces == null) {
             throw new IllegalArgumentException("Don't give me null interfaces, 3-args");
         }
+        if (interfaces.length == 0) {
+            throw new IllegalArgumentException("Don't give me empty interfaces");
+        }
         ArrayList<Class<?>> interfacesTarget;
         HashSet<Class<?>> sortedInterfaces;
         try {
             interfacesTarget = new ArrayList<Class<?>>(Arrays.asList(target.getClass().getInterfaces()));
-            sortedInterfaces = new HashSet<Class<?>>(interfacesTarget);
+            sortedInterfaces = new HashSet<Class<?>>();
+            recursionGetInterfaces(sortedInterfaces, interfacesTarget);
         } catch (Exception e) {
             throw new IllegalArgumentException("Don't take interfaces");
         }
         for (Class<?> iterface : interfaces) {
-            if(iterface == null) {
+            if (iterface == null) {
                 throw new IllegalArgumentException("interface null");
             }
             if (iterface.getMethods().length == 0) {
@@ -82,10 +95,16 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 return string;
             }
 
-            String print(Object args) throws IllegalAccessException {
+            String print(Object args, IdentityHashMap<Object, Object> cycle) throws IllegalAccessException {
                 if (args == null) {
                     return "null";
-                } else if (isPrimitiveType(args.getClass())) {
+                }
+                if (cycle.containsKey(args)) {
+                    throw new RuntimeException("I found cycle indent.");
+                } else {
+                    cycle.put(args, null);
+                }
+                if (isPrimitiveType(args.getClass())) {
                     return args.toString();
                 } else if (args.getClass().equals(String.class)) {
                     return "\"" + screening(args.toString()) + "\"";
@@ -93,12 +112,14 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                     Enum enumm = (Enum) args;
                     return enumm.name();
                 } else if (args.getClass().isArray()) {
-                    Object[] list = (Object[]) args;
+                    int size = Array.getLength(args);
                     String answer;
-                    answer = list.length + "{";
-                    for (int i = 0; i < list.length; i++) {
-                        answer += print(list[i]);
-                        if (i < list.length - 1) {
+                    answer = size + "{";
+                    for (int i = 0; i < size; i++) {
+                        IdentityHashMap<Object, Object> arrayCycleForChildren =
+                                new IdentityHashMap<Object, Object>(cycle);
+                        answer += print(Array.get(args, i), arrayCycleForChildren);
+                        if (i < size - 1) {
                             answer += ", ";
                         }
                     }
@@ -118,6 +139,10 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 if (method == null) {
                     throw new IllegalArgumentException("method is null");
                 }
+                if (method.getName().equals("equals") || method.getName().equals("hashCode") ||
+                        method.getName().equals("toString")) {
+                    return method.invoke(target, args);
+                }
                 method.setAccessible(true);
 
                 String stringToLog = "";
@@ -128,9 +153,9 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 ArrayList<String> answer = new ArrayList<String>();
                 boolean isWiden = false;
 
-                if(args != null) {
+                if (args != null) {
                     for (int i = 0; i < args.length; i++) {
-                        answer.add(print(args[i]));
+                        answer.add(print(args[i], new IdentityHashMap<Object, Object>()));
                         if (answer.get(answer.size() - 1).length() > 60) {
                             isWiden = true;
                         }
@@ -164,6 +189,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 Object returned;
                 try {
                     returned = method.invoke(target, args);
+
                     if (!method.getReturnType().equals(void.class) && !method.getReturnType().equals(Void.class)) {
                         if (isWiden) {
                             stringToLog += "\n  ";
@@ -171,26 +197,29 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                             stringToLog += " ";
                         }
                         stringToLog += "returned ";
-                        stringToLog += print(returned) + "\n";
+                        stringToLog += print(returned, new IdentityHashMap<Object, Object>()) + "\n";
                     } else {
                         stringToLog += "\n";
                     }
-                } catch (Exception e) {
+                } catch (InvocationTargetException e) {
                     if (isWiden) {
                         stringToLog += "\n  ";
                     } else {
                         stringToLog += " ";
                     }
-                    stringToLog += e.getClass().getCanonicalName() + ": " + e.getMessage() + '\n';
-                    StackTraceElement[] traceElements = e.getStackTrace();
-                    for (StackTraceElement iterator : traceElements) {
+                    stringToLog += "threw ";
+                    stringToLog += e.getTargetException().getClass().getCanonicalName() + ": "
+                            + e.getTargetException().getMessage() + '\n';
+                    StackTraceElement[] traceElements = e.getTargetException().getStackTrace();
+                    for (int i = 0; i < Math.min(2, traceElements.length); i++) {
                         if (isWiden) {
                             stringToLog += "  ";
                         }
                         stringToLog += "  ";
-                        stringToLog += iterator.toString() + "\n";
+                        stringToLog += traceElements[i].toString() + "\n";
                     }
-                    throw  e;
+                    append.append(stringToLog);
+                    throw e.getTargetException();
                 }
                 append.append(stringToLog);
                 return returned;
