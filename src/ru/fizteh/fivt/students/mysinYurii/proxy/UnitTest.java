@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.mysinYurii.proxy;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -102,10 +104,22 @@ public class UnitTest {
         }
     }
     
+    static void test8() {
+        Object[] target = new Object[1];
+        target[0] = abcd.geth1();
+        Class[] inter = new Class[1];
+        inter[0] = a.class;
+        try {
+            a temp = (a) new ShardingProxyFactory().createProxy(target, inter);
+            temp.h();
+        } catch (IllegalArgumentException e) {
+            System.out.println("Fail " + e.getMessage());
+        }
+    }
+    
     private static interface ExampleInterface {
         @DoNotProxy
         public int sum(int i, int j);
-        @Collect
         public long mul(long i, long j);
         @Collect
         public List<Integer> assign(int i, int j);
@@ -135,5 +149,32 @@ public class UnitTest {
             }
             return returnVal;
         }
+    }
+    
+    public interface a {
+        @Collect
+        public void h();
+    }
+    
+    public static class abcd implements a {
+
+        @Override
+        public void h() {
+            System.out.println(1);
+        }
+        
+        public static h1 geth1() {
+            return new h1();
+        }
+        
+        private static class h1 implements a {
+
+            @Override
+            public void h() {
+                System.out.println(1);
+            }
+            
+        }
+        
     }
 }

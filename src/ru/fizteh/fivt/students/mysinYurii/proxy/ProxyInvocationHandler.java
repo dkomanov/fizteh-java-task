@@ -37,13 +37,13 @@ public class ProxyInvocationHandler implements InvocationHandler {
                 if (arguments[i] != null) {
                     if (arguments[i].getClass().equals(int.class) || arguments[i].getClass().equals(Integer.class)) {
                         try {
-                            return method.invoke(targets[(int) i % arguments.length], arguments);
+                            return method.invoke(targets[(Integer) arguments[i] % arguments.length], arguments);
                         } catch (InvocationTargetException e) {
                             throw e.getCause();                            
                         }
                     } else if (arguments[i].getClass().equals(long.class) || arguments[i].getClass().equals(Long.class)) {
                         try {
-                            return method.invoke(targets[(int) ((long) i % arguments.length)], arguments);
+                            return method.invoke(targets[(int) ((Long) arguments[i] % arguments.length)], arguments);
                         } catch (InvocationTargetException e) {
                             throw e.getCause();
                         }
@@ -61,17 +61,17 @@ public class ProxyInvocationHandler implements InvocationHandler {
             } else if (returnType.equals(int.class)) {
                 int resValue = 0;
                 for (Object targ : targets) {
-                    resValue += (int) method.invoke(targ, arguments);
+                    resValue += (Integer) method.invoke(targ, arguments);
                 }
                 return resValue;
             } else if (returnType.equals(long.class)) {
                 long resValue = 0;
                 for (Object targ : targets) {
-                    resValue += (long) method.invoke(targ, arguments);
+                    resValue += (Long) method.invoke(targ, arguments);
                 }
                 return resValue;
             } else if (returnType.equals(List.class)) {
-                List<?> resList = new ArrayList<>();
+                List<?> resList = new ArrayList<Object>();
                 for (Object targ : targets) {
                     resList.addAll((List) method.invoke(targ, arguments));
                 }

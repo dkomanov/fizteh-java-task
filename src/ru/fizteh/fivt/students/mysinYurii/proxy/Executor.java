@@ -9,5 +9,6 @@ public class Executor {
         UnitTest.test5();
         UnitTest.test6();
         UnitTest.test7();
+        UnitTest.test8();
     }
 }
