@@ -1,9 +1,6 @@
 package ru.fizteh.fivt.examples;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
 
 import org.objectweb.asm.ClassWriter;
@@ -58,11 +55,6 @@ public class CodeGenerationExample {
     }
 
     private static Class<?> loadClass(byte[] bytes) {
-        try {
-            Files.write(new File("/home/spacelord/1.class").toPath(), bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         class LocalClassLoader extends ClassLoader {
             public Class<?> defineClass(byte[] bytes) {
                 return super.defineClass(null, bytes, 0, bytes.length);
