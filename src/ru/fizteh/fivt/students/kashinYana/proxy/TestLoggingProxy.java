@@ -120,7 +120,7 @@ public class TestLoggingProxy {
         log.getArray(num);
         Object all[] = {num, 3, Season.SPRING, "hihihhi"};
         log.getArray(all);
-        Object allWithLongString[] = {veryLongString, num, 3, Season.SPRING, "/\f'\"\b\rhihihhi\\\n\t"};
+        Object allWithLongString[] = {veryLongString, num, 3, Season.SPRING, "/\f'\"\b\rhihihh\\i\\\n\t"};
         log.getArray(allWithLongString);
         test(writer.toString(), "InterfaceToProxy.get2(5) returned 5\n" +
                 "InterfaceToProxy.getNull(77) returned null\n" +
@@ -130,7 +130,7 @@ public class TestLoggingProxy {
                 "InterfaceToProxy.getArray(4{6{\"dfg\", 20, 45, 82, 25, 63}, 3, SPRING, \"hihihhi\"}) returned 100\n" +
                 "InterfaceToProxy.getArray(\n" +
                 "  5{\"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\"," +
-                " 6{\"dfg\", 20, 45, 82, 25, 63}, 3, SPRING, \"/\\f'\\\"\\b\\rhihihhi\\\\\\n\\t\"}\n" +
+                " 6{\"dfg\", 20, 45, 82, 25, 63}, 3, SPRING, \"/\\f'\\\"\\b\\rhihihh\\\\i\\\\\\n\\t\"}\n" +
                 "  )\n" +
                 "  returned 100\n");
     }
@@ -146,10 +146,24 @@ public class TestLoggingProxy {
         InterfaceToProxy log = (InterfaceToProxy)
                 factory.createProxy(target, writer, InterfaceToProxy.class);
         log.toString();
-        class SimpleClass {
+        test(writer.toString(), "");
+        {
+            class SimpleClass {
+
+            }
+            Object log2 = factory.createProxy(new SimpleClass(), writer, new Class[0]);
 
         }
-        Object log2 = factory.createProxy(new SimpleClass(), writer, new Class[0]);
+        InterfaceToProxy log2 = (InterfaceToProxy)
+                factory.createProxy(target, writer, InterfaceToProxy.class);
+        Object[] array = new Object[1];
+        array[0] = array;
+        try {
+            log2.getArray(array);
+        } catch (Exception e) {
+            test(e.getMessage(), "I found cycle indent.");
+        }
+
     }
 
 

@@ -6,6 +6,7 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 
 /**
  * Kashinskaya Yana
@@ -37,7 +38,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
             throw new IllegalArgumentException("Don't take interfaces");
         }
         for (Class<?> iterface : interfaces) {
-            if(iterface == null) {
+            if (iterface == null) {
                 throw new IllegalArgumentException("interface null");
             }
             if (iterface.getMethods().length == 0) {
@@ -82,10 +83,16 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 return string;
             }
 
-            String print(Object args) throws IllegalAccessException {
+            String print(Object args, IdentityHashMap<Object, Object> cycle) throws IllegalAccessException {
                 if (args == null) {
                     return "null";
-                } else if (isPrimitiveType(args.getClass())) {
+                }
+                if (cycle.containsKey(args)) {
+                    throw new RuntimeException("I found cycle indent.");
+                } else {
+                    cycle.put(args, null);
+                }
+                if (isPrimitiveType(args.getClass())) {
                     return args.toString();
                 } else if (args.getClass().equals(String.class)) {
                     return "\"" + screening(args.toString()) + "\"";
@@ -97,7 +104,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                     String answer;
                     answer = list.length + "{";
                     for (int i = 0; i < list.length; i++) {
-                        answer += print(list[i]);
+                        answer += print(list[i], cycle);
                         if (i < list.length - 1) {
                             answer += ", ";
                         }
@@ -118,6 +125,10 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 if (method == null) {
                     throw new IllegalArgumentException("method is null");
                 }
+                if (method.getName().equals("equals") || method.getName().equals("hashCode") ||
+                        method.getName().equals("toString")) {
+                    return method.invoke(target, args);
+                }
                 method.setAccessible(true);
 
                 String stringToLog = "";
@@ -128,9 +139,9 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 ArrayList<String> answer = new ArrayList<String>();
                 boolean isWiden = false;
 
-                if(args != null) {
+                if (args != null) {
                     for (int i = 0; i < args.length; i++) {
-                        answer.add(print(args[i]));
+                        answer.add(print(args[i], new IdentityHashMap<Object, Object>()));
                         if (answer.get(answer.size() - 1).length() > 60) {
                             isWiden = true;
                         }
@@ -171,7 +182,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                             stringToLog += " ";
                         }
                         stringToLog += "returned ";
-                        stringToLog += print(returned) + "\n";
+                        stringToLog += print(returned, new IdentityHashMap<Object, Object>()) + "\n";
                     } else {
                         stringToLog += "\n";
                     }
@@ -190,7 +201,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                         stringToLog += "  ";
                         stringToLog += iterator.toString() + "\n";
                     }
-                    throw  e;
+                    throw e;
                 }
                 append.append(stringToLog);
                 return returned;
