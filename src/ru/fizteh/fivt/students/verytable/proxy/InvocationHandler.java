@@ -21,10 +21,13 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         if (method == null) {
             throw new IllegalArgumentException("Error: empty method.");
         }
-        if (method.getDeclaringClass().equals(Object.class)) {
-            return method.invoke(target, args);
-        }
         method.setAccessible(true);
+        if (method.getDeclaringClass().equals(Object.class)) {
+            try {
+                return method.invoke(target, args);
+            } catch (Throwable ex) {
+            }
+        }
 
         StringBuilder sb = new StringBuilder();
         Map prepared = Collections.synchronizedMap(new IdentityHashMap());
@@ -32,7 +35,10 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         sb.append(method.getDeclaringClass().getSimpleName()).append(Constants.dot);
         sb.append(method.getName()).append(Constants.leftBracket);
 
-        boolean isLongOutputMode = HandlerUtils.prepareArgs(args, sb, prepared);
+        boolean isLongOutputMode = false;
+        if (args != null) {
+            isLongOutputMode = HandlerUtils.prepareArgs(args, sb, prepared);
+        }
 
         if (isLongOutputMode) {
             sb.append(Constants.bigIndent).append(Constants.rightBracket);
@@ -43,9 +49,12 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
         try {
             Object result = method.invoke(target, args);
-            prepared.clear();
-            sb.append(Constants.returned);
-            sb.append(HandlerUtils.prepareObjectToPrint(result, prepared));
+            if (!method.getReturnType().equals(void.class)
+                && !method.getReturnType().equals(Void.class)) {
+                prepared.clear();
+                sb.append(Constants.returned);
+                sb.append(HandlerUtils.prepareObjectToPrint(result, prepared));
+            }
             sb.append(Constants.endl);
             return result;
         } catch (Throwable ex) {
