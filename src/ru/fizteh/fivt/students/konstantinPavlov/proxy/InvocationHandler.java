@@ -26,6 +26,8 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             throw new RuntimeException("impossible to proxy this method");
         }
 
+        method.setAccessible(true);
+
         if (method.getAnnotation(Collect.class) != null) {
             Class<?> returningType = method.getReturnType();
             if (returningType.equals(void.class)) {
