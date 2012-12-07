@@ -53,15 +53,22 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
                         new Function1V<GeneratorAdapter>() {
                             @Override
                             public void apply(GeneratorAdapter ga) {
-                                ga.loadThis();
-                                ga.getField(Type.getType("Proxy"), "targets", Type.getType(ArrayList.class));
-                                ga.push(0);
-                                ga.invokeVirtual(Type.getType(ArrayList.class), new org.objectweb.asm.commons.Method("get",
-                                        "(" + Type.getDescriptor(int.class) + ")" + Type.getDescriptor(Object.class)));
-                                ga.checkCast(Type.getType(interfc));
-                                ga.loadArgs();
-                                ga.invokeInterface(Type.getType(interfc), new org.objectweb.asm.commons.Method(method.getName(),
-                                        Type.getMethodDescriptor(method)));
+                                try {
+                                    ga.loadThis();
+                                    ga.getField(Type.getType("Proxy"), "targets", Type.getType(ArrayList.class));
+                                    ga.loadArgs();
+                                    //ga.invokeStatic(Type.getType(ProxyUtils.class), new org.objectweb.asm.commons.Method("getFirstIntOrLongArgument",
+                                    //        Type.getMethodDescriptor(ProxyUtils.class.getDeclaredMethod("getFirstIntOrLongArgument", Object[].class))));
+                                    ga.push(0);
+                                    //ga.invokeVirtual(Type.getType(ArrayList.class), new org.objectweb.asm.commons.Method("get",
+                                    //        "(" + Type.getDescriptor(int.class) + ")" + Type.getDescriptor(Object.class)));
+                                    ga.checkCast(Type.getType(interfc));
+                                    ga.loadArgs();
+                                    ga.invokeInterface(Type.getType(interfc), new org.objectweb.asm.commons.Method(method.getName(),
+                                            Type.getMethodDescriptor(method)));
+                                } catch (Exception e) {
+                                    System.exit(0);
+                                }
                                 ga.returnValue();
                             }
                         });
@@ -76,6 +83,7 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
             method.invoke(obj, new ArrayList(Arrays.asList(targets)));
             return obj;
         } catch (Throwable t) {
+            t.printStackTrace();
             throw new RuntimeException("Cannot create proxy object.");
         }
     }
