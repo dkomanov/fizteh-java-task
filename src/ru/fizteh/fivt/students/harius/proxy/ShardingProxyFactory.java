@@ -11,28 +11,23 @@ import java.util.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+/*
+ * Factory for ShardingProxy
+ */
 public class ShardingProxyFactory
     implements ru.fizteh.fivt.proxy.ShardingProxyFactory {
 
-    private static final List<Class> integral
-        = Arrays.asList((Class)int.class, (Class)Integer.class,
-                        (Class)long.class, (Class)Long.class);
-
-    private static final List<Class> collectable
-        = Arrays.asList((Class)List.class);
-
-    static {
-        collectable.addAll(integral);
-    }
-
+    /* Create proxy with provided properties */
+    @Override
     public Object createProxy(Object[] targets, Class[] interfaces) {
         checkCorrectness(targets, interfaces);
         return Proxy.newProxyInstance(
             interfaces[0].getClassLoader(),
             interfaces,
-            new ShardingProxyInvokationHandler(targets));
+            new ShardingProxyInvocationHandler(targets));
     }
 
+    /* Check correctness of the input */
     private void checkCorrectness(Object[] targets, Class[] interfaces) {
         if (targets == null || interfaces == null) {
             throw new IllegalArgumentException("Null argument");
@@ -57,6 +52,7 @@ public class ShardingProxyFactory
         }
     }
 
+    /* Check the target inherits properly from the interfaces */
     private void checkInheritance(Object target, Class[] interfaces) {
         List<Class<?>> inherited = Arrays.asList(
             target.getClass().getInterfaces());
@@ -67,21 +63,27 @@ public class ShardingProxyFactory
         }
     }
 
+    /* Check there are no annotation conflicts */
     private void checkAnnotations(Class iface) {
         for (Method method : iface.getMethods()) {
             if (method.getAnnotation(DoNotProxy.class) != null) {
-                if (method.getAnnotation(Collect.class) != null) {
-                    if (!collectable.contains(method.getReturnType())) {
-                        throw new IllegalStateException(
-                            "Return type not collectable");
-                    }
-                } else {
-                    List<Class<?>> params
-                        = Arrays.asList(method.getParameterTypes());
-                    if (Collections.disjoint(params, integral)) {
-                        throw new IllegalArgumentException(
-                            "At least one integral argument needed");
-                    }
+                continue;
+            }
+            if (method.getAnnotation(Collect.class) != null) {
+                if (!ShardingProxyUtils.isCollectable(
+                    method.getReturnType())) {
+
+                    throw new IllegalStateException(
+                        "Return type not collectable");
+                }
+            } else {
+                List<Class<?>> params
+                    = Arrays.asList(method.getParameterTypes());
+                if (Collections.disjoint(
+                    params, ShardingProxyUtils.INTEGRAL)) {
+
+                    throw new IllegalArgumentException(
+                        "At least one integral argument needed");
                 }
             }
         }
