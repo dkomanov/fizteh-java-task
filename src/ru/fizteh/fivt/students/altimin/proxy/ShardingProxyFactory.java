@@ -140,7 +140,9 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                         List result = null;
                         for (Object target: targets) {
                             if (result == null) {
-                                result = (List) returnType.cast(method.invoke(target, objects));
+                                List tempResult = (List) method.invoke(target, objects);
+                                result = tempResult.getClass().newInstance();
+                                result.addAll(tempResult);
                             } else {
                                 result.addAll((List) method.invoke(target, objects));
                             }
