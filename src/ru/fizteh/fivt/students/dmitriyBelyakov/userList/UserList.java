@@ -31,6 +31,24 @@ class UserTypeComparator implements Comparator<Vector<Object>> {
     }
 }
 
+class UserNameComparatorRev implements Comparator<Vector<Object>> {
+    @Override
+    public int compare(Vector<Object> v2, Vector<Object> v1) {
+        if (v1.get(2).equals(v2.get(2))) {
+            return ((String) v1.get(3)).compareTo((String) v2.get(3));
+        } else {
+            return ((String) v1.get(2)).compareTo((String) v2.get(2));
+        }
+    }
+}
+
+class UserTypeComparatorRev implements Comparator<Vector<Object>> {
+    @Override
+    public int compare(Vector<Object> v2, Vector<Object> v1) {
+        return ((UserType) v1.get(1)).compareTo((UserType) v2.get(1));
+    }
+}
+
 public class UserList extends JFrame {
     private JMenuBar menu;
     private JFrame frame = this;
@@ -79,6 +97,12 @@ public class UserList extends JFrame {
                 table.updateUI();
             } else if (actionCommand.equals("SORT_TYPE")) {
                 Collections.sort(users, new UserTypeComparator());
+                table.updateUI();
+            } else if (actionCommand.equals("SORT_NAME_REV")) {
+                Collections.sort(users, new UserNameComparatorRev());
+                table.updateUI();
+            } else if (actionCommand.equals("SORT_TYPE_REV")) {
+                Collections.sort(users, new UserTypeComparatorRev());
                 table.updateUI();
             } else if (actionCommand.equals("NEW_USER")) {
                 Vector<Object> vector = new Vector<>();
@@ -192,6 +216,14 @@ public class UserList extends JFrame {
         sortType.setActionCommand("SORT_TYPE");
         sortType.addActionListener(listener);
         sort.add(sortType);
+        JMenuItem sortNameRev = new JMenuItem("Name reversed");
+        sortNameRev.setActionCommand("SORT_NAME_REV");
+        sortNameRev.addActionListener(listener);
+        sort.add(sortNameRev);
+        JMenuItem sortTypeRev = new JMenuItem("Type reversed");
+        sortTypeRev.setActionCommand("SORT_TYPE_REV");
+        sortTypeRev.addActionListener(listener);
+        sort.add(sortTypeRev);
         menu.add(sort);
         JMenu edit = new JMenu("Edit");
         JMenuItem editNewUser = new JMenuItem("New user");
