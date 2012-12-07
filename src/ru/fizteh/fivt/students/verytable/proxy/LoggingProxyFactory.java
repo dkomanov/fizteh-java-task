@@ -18,7 +18,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
         }
 
         for (int i = 0; i < interfaces.length; ++i) {
-            if (interfaces[i] == null || interfaces[i].getMethods().length == 0) {
+            if (interfaces[i] == null) {
                 throw new IllegalArgumentException("Error: " + interfaces[i]
                                                    + " doesn't have any methods.");
             }
