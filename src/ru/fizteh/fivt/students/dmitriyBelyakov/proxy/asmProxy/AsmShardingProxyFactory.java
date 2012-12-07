@@ -10,7 +10,6 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class AsmShardingProxyFactory implements ShardingProxyFactory {
     @Override
@@ -28,28 +27,18 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
                     @Override
                     public void apply(GeneratorAdapter ga) {
                         ga.loadThis();
-                        ga.dup();
                         ga.invokeConstructor(
                                 Type.getType("java/lang/Object"),
                                 new org.objectweb.asm.commons.Method("<init>", "()V")
                         );
-                        Type printStreamType = Type.getType(PrintStream.class);
-                        ga.getStatic(Type.getType(System.class), "out", printStreamType);
-                        ga.push("Hello, World!");
-                        ga.invokeVirtual(printStreamType, new org.objectweb.asm.commons.Method("println", "(Ljava/lang/String;)V"));
                         ga.returnValue();
                     }
                 });
-        generateMethod(cw, Opcodes.ACC_PUBLIC, "loadTargets", "(" + Type.getDescriptor(ArrayList.class) + ")V",
+        generateMethod(cw, Opcodes.ACC_PRIVATE, "loadTargets", "(" + Type.getDescriptor(ArrayList.class) + ")V",
                 new Function1V<GeneratorAdapter>() {
                     @Override
                     public void apply(GeneratorAdapter ga) {
                         ga.loadThis();
-                        ga.dup();
-                        Type printStreamType = Type.getType(PrintStream.class);
-                        ga.getStatic(Type.getType(System.class), "out", printStreamType);
-                        ga.push("Hello, World!!!");
-                        ga.invokeVirtual(printStreamType, new org.objectweb.asm.commons.Method("println", "(Ljava/lang/String;)V"));
                         ga.loadArg(0);
                         ga.putField(Type.getType("Proxy"), "targets", Type.getType(ArrayList.class));
                         ga.returnValue();
@@ -60,54 +49,35 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
             for (final Method method : methods) {
                 method.setAccessible(true);
                 String descriptor = Type.getMethodDescriptor(method);
-                try {
-                    interfc.getClass().getDeclaredMethod("cast", Object.class);
-                } catch (Throwable t) {
-                    System.out.println(interfc.getClass().getDeclaredMethods().length);
-                    while (true) ;
-                }
-                generateMethod(cw, Opcodes.ACC_PUBLIC, method.getName(), "()V", // TODO
+                generateMethod(cw, Opcodes.ACC_PUBLIC, method.getName(), descriptor,
                         new Function1V<GeneratorAdapter>() {
                             @Override
                             public void apply(GeneratorAdapter ga) {
-                                Type printStreamType = Type.getType(PrintStream.class);
-                                ga.getStatic(Type.getType(System.class), "out", printStreamType);
-                                ga.push("Hello, World!");
-                                ga.invokeVirtual(printStreamType, new org.objectweb.asm.commons.Method("println", "(Ljava/lang/String;)V"));
-                                ga.getStatic(Type.getType(System.class), "out", printStreamType);
-                                //ga.push(Type.getType(interfc));
                                 ga.loadThis();
                                 ga.getField(Type.getType("Proxy"), "targets", Type.getType(ArrayList.class));
                                 ga.push(0);
                                 ga.invokeVirtual(Type.getType(ArrayList.class), new org.objectweb.asm.commons.Method("get",
                                         "(" + Type.getDescriptor(int.class) + ")" + Type.getDescriptor(Object.class)));
-                                ga.checkCast(Type.getType(targets[0].getClass()));
-                                ga.invokeVirtual(Type.getType(targets[0].getClass()), new org.objectweb.asm.commons.Method(method.getName(),
-                                        Type.getMethodDescriptor(method))); // Something bad happening :(
+                                ga.checkCast(Type.getType(interfc));
+                                ga.loadArgs();
+                                ga.invokeInterface(Type.getType(interfc), new org.objectweb.asm.commons.Method(method.getName(),
+                                        Type.getMethodDescriptor(method)));
                                 ga.returnValue();
                             }
                         });
             }
         }
         cw.visitEnd();
-        File file = new File("classBytes.class");
-        try {
-            new FileOutputStream(file).write(cw.toByteArray());
-        } catch (Exception e) {}
         try {
             Class clazz = loadClass(cw.toByteArray());
             Object obj = clazz.newInstance();
-            System.out.println(obj);
-            //System.out.println("||| " + clazz.getDeclaredMethod("loadTargets", Object[].class));
-            //clazz.getDeclaredMethod("loadTargets", Object[].class).invoke(clazz.cast(obj), targets);
             Method method = clazz.getDeclaredMethod("loadTargets", ArrayList.class);
-            System.out.println(method);
+            method.setAccessible(true);
             method.invoke(obj, new ArrayList(Arrays.asList(targets)));
             return obj;
         } catch (Throwable t) {
-            t.printStackTrace();
+            throw new RuntimeException("Cannot create proxy object.");
         }
-        return null;
     }
 
     private ClassWriter newClassWriter() {
