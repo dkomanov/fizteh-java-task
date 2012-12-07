@@ -125,10 +125,8 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                     }
                     answer += "}";
                     return answer;
-                } else if (args.equals(Object.class)) {
-                    return "[" + screening(args.toString()) + "]";
                 } else {
-                    throw new IllegalAccessException("unknown class");
+                    return "[" + screening(args.toString()) + "]";
                 }
             }
 
@@ -139,8 +137,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
                 if (method == null) {
                     throw new IllegalArgumentException("method is null");
                 }
-                if (method.getName().equals("equals") || method.getName().equals("hashCode") ||
-                        method.getName().equals("toString")) {
+                if (method.getDeclaringClass().equals(Object.class)) {
                     return method.invoke(target, args);
                 }
                 method.setAccessible(true);
