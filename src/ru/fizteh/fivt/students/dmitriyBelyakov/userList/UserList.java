@@ -59,7 +59,29 @@ public class UserList extends JFrame {
     private boolean namesSortedAscending;
     private boolean typesSortedAscending;
 
-    private class Listener implements ActionListener {
+    UserList() {
+        super("UserList");
+        namesSortedAscending = false;
+        typesSortedAscending = false;
+        xmlUserList = new XmlUserList();
+        users = new Vector<>();
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setSize(500, 700);
+        createMenu();
+        createTable();
+        setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        try {
+            UserList userList = new UserList();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    public class Listener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent event) {
             String actionCommand = event.getActionCommand();
@@ -75,6 +97,8 @@ public class UserList extends JFrame {
                         updateTable(xmlUserList.loadUsers(xmlFile));
                     }
                 }
+                sortByNames();
+                sortByTypes();
             } else if (actionCommand.equals("SAVE")) {
                 try {
                     save();
@@ -95,27 +119,9 @@ public class UserList extends JFrame {
                     }
                 }
             } else if (actionCommand.equals("SORT_NAME")) {
-                if (!namesSortedAscending) {
-                    Collections.sort(users, new UserNameComparator());
-                    namesSortedAscending = true;
-                } else {
-                    Collections.sort(users, new UserNameComparatorRev());
-                    namesSortedAscending = false;
-                }
-                menu.getMenu(3).setText("Names sorted: " + (namesSortedAscending ? "ascending." : "descending."));
-                menu.updateUI();
-                table.updateUI();
+                sortByNames();
             } else if (actionCommand.equals("SORT_TYPE")) {
-                if (!typesSortedAscending) {
-                    Collections.sort(users, new UserTypeComparator());
-                    typesSortedAscending = true;
-                } else {
-                    Collections.sort(users, new UserTypeComparatorRev());
-                    typesSortedAscending = false;
-                }
-                menu.getMenu(4).setText("Types sorted: " + (typesSortedAscending ? "ascending." : "descending."));
-                menu.updateUI();
-                table.updateUI();
+                sortByTypes();
             } else if (actionCommand.equals("NEW_USER")) {
                 Vector<Object> vector = new Vector<>();
                 vector.add(0);
@@ -125,8 +131,8 @@ public class UserList extends JFrame {
                 vector.add(false);
                 vector.add(0);
                 users.add(vector);
-                menu.getMenu(3).setText("Not sorted by names.");
-                menu.getMenu(4).setText("Not sorted by types.");
+                sortByNames();
+                sortByTypes();
                 menu.updateUI();
                 table.updateUI();
             } else if (actionCommand.equals("DELETE_USER")) {
@@ -186,25 +192,8 @@ public class UserList extends JFrame {
         }
     }
 
-    UserList() {
-        super("UserList");
-        namesSortedAscending = false;
-        typesSortedAscending = false;
-        xmlUserList = new XmlUserList();
-        users = new Vector<>();
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setSize(500, 700);
-        createMenu();
-        createTable();
-        setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        try {
-            UserList userList = new UserList();
-        } catch (Throwable t) {
-            System.exit(1);
-        }
+    public Listener newListener() {
+        return new Listener();
     }
 
     private void createMenu() {
@@ -244,11 +233,37 @@ public class UserList extends JFrame {
         editDeleteUser.addActionListener(listener);
         edit.add(editDeleteUser);
         menu.add(edit);
-        JMenu sortedByNames = new JMenu("Not sorted by names.");
+        JMenu sortedByNames = new JMenu("");
         menu.add(sortedByNames);
-        JMenu sortedByTypes = new JMenu("Not sorted by types.");
+        JMenu sortedByTypes = new JMenu("");
         menu.add(sortedByTypes);
         setJMenuBar(menu);
+    }
+
+    private void sortByNames() {
+        if (!namesSortedAscending) {
+            Collections.sort(users, new UserNameComparator());
+            namesSortedAscending = true;
+        } else {
+            Collections.sort(users, new UserNameComparatorRev());
+            namesSortedAscending = false;
+        }
+        menu.getMenu(3).setText("Names sorted: " + (namesSortedAscending ? "ascending." : "descending."));
+        menu.updateUI();
+        table.updateUI();
+    }
+
+    private void sortByTypes() {
+        if (!typesSortedAscending) {
+            Collections.sort(users, new UserTypeComparator());
+            typesSortedAscending = true;
+        } else {
+            Collections.sort(users, new UserTypeComparatorRev());
+            typesSortedAscending = false;
+        }
+        menu.getMenu(4).setText("Types sorted: " + (typesSortedAscending ? "ascending." : "descending."));
+        menu.updateUI();
+        table.updateUI();
     }
 
     private void createTable() {
