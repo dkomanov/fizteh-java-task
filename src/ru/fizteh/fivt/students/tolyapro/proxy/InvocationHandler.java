@@ -122,7 +122,11 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         try {
             returned = method.invoke(target, args);
             if (returned != null) {
-                writer.append(" returned ");
+                if (extendedMode) {
+                    writer.append("\n  returned ");
+                } else {
+                    writer.append(" returned ");
+                }
                 writer.append(toString(returned, circularRefDetector));
             }
         } catch (InvocationTargetException e) {
