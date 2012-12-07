@@ -72,7 +72,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         builder.append(array.length);
         builder.append('{');
         for (int i = 0; i < array.length; i++) {
-            builder.append(wrapInQuotes(printObject(array[i], parsedObjects)));
+            builder.append(printObject(array[i], parsedObjects));
             if (i != array.length - 1) {
                 builder.append(", ");
             }
