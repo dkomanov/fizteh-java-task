@@ -147,13 +147,11 @@ public class TestLoggingProxy {
                 factory.createProxy(target, writer, InterfaceToProxy.class);
         log.toString();
         test(writer.toString(), "");
-        {
-            class SimpleClass {
-
-            }
-            Object log2 = factory.createProxy(new SimpleClass(), writer, new Class[0]);
+        class SimpleClass {
 
         }
+        Object log4 = factory.createProxy(new SimpleClass(), writer, new Class[0]);
+
         InterfaceToProxy log2 = (InterfaceToProxy)
                 factory.createProxy(target, writer, InterfaceToProxy.class);
         Object[] array = new Object[1];
