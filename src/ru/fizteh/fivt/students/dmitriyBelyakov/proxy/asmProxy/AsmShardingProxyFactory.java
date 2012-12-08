@@ -55,23 +55,89 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
                             @Override
                             public void apply(GeneratorAdapter ga) {
                                 try {
-                                    System.out.println(Type.getMethodDescriptor(ProxyUtils.class.getDeclaredMethod("getFirstIntOrLongArgument", Object[].class)));
-                                    ga.loadThis();
-                                    ga.getField(Type.getType("Proxy"), "targets", Type.getType(ArrayList.class));
-                                    ga.loadArgArray();
-                                    ga.invokeStatic(Type.getType(ProxyUtils.class), new org.objectweb.asm.commons.Method("getFirstIntOrLongArgument",
+                                    if(!ProxyUtils.isCollect(method)) {
+                                        ga.loadThis();
+                                        ga.getField(Type.getType("Proxy"), "targets", Type.getType(ArrayList.class));
+                                        ga.loadArgArray();
+                                        ga.invokeStatic(Type.getType(ProxyUtils.class), new org.objectweb.asm.commons.Method("getFirstIntOrLongArgument",
                                             Type.getMethodDescriptor(ProxyUtils.class.getDeclaredMethod("getFirstIntOrLongArgument", Object[].class))));
-                                    printTypeOnTheTop(ga);
-                                    ga.pop();
-                                    ga.push(0);
-                                    ga.invokeVirtual(Type.getType(ArrayList.class), new org.objectweb.asm.commons.Method("get",
-                                            "(" + Type.getDescriptor(int.class) + ")" + Type.getDescriptor(Object.class)));
-                                    ga.checkCast(Type.getType(interfc));
-                                    ga.loadArgs();
-                                    ga.invokeInterface(Type.getType(interfc), new org.objectweb.asm.commons.Method(method.getName(),
-                                            Type.getMethodDescriptor(method)));
+                                        ga.push((long) targets.length);
+                                        ga.math(GeneratorAdapter.REM, Type.getType(long.class));
+                                        ga.cast(Type.getType(long.class), Type.getType(int.class));
+                                        ga.invokeVirtual(Type.getType(ArrayList.class), new org.objectweb.asm.commons.Method("get",
+                                                "(" + Type.getDescriptor(int.class) + ")" + Type.getDescriptor(Object.class)));
+                                        ga.checkCast(Type.getType(interfc));
+                                        ga.loadArgs();
+                                        ga.invokeInterface(Type.getType(interfc), new org.objectweb.asm.commons.Method(method.getName(),
+                                                Type.getMethodDescriptor(method)));
+                                    } else {
+                                        // char[] chars = this.message.toCharArray();
+                                        ga.loadThis();
+                                        ga.getField(Type.getType("Proxy"), "targets", Type.getType(ArrayList.class));
+                                        ga.invokeVirtual(Type.getType(ArrayList.class), new org.objectweb.asm.commons.Method("toArray", "()[Ljava/lang/Object;"));
+                                        int charsLocal = ga.newLocal(Type.getType(char[].class));
+                                        ga.storeLocal(charsLocal);
+
+                                        //Label forConditionLabel = ga.newLabel();
+                                        //Label forLoopEnd = ga.newLabel();
+
+                                        // for (int i = 0;
+                                        //int iLocal = ga.newLocal(Type.INT_TYPE);
+                                        //ga.push(0);
+                                        //ga.storeLocal(iLocal);
+
+                                        // i < chars.length;
+                                        //ga.visitLabel(forConditionLabel);
+                                        //ga.loadLocal(iLocal);
+                                        //ga.loadLocal(charsLocal);
+                                        //ga.arrayLength();
+                                        //ga.ifCmp(Type.INT_TYPE, Opcodes.IFGE, forLoopEnd);
+
+                                        // System.out.println(chars[i]);
+                                        //Type printStreamType = Type.getType(PrintStream.class);
+                                        //ga.getStatic(Type.getType(System.class), "out", printStreamType);
+                                        ga.loadLocal(charsLocal);
+                                        //ga.loadLocal(iLocal);
+                                        ga.push(0);
+                                        ga.arrayLoad(Type.getType(Object.class));
+                                        ga.checkCast(Type.getType(interfc));
+                                        ga.loadArgs();
+                                        ga.invokeInterface(Type.getType(interfc), new org.objectweb.asm.commons.Method(method.getName(),
+                                                Type.getMethodDescriptor(method)));
+                                        //ga.invokeVirtual(printStreamType, new org.objectweb.asm.commons.Method("println", "(Ljava/lang/Object;)V"));
+                                        //if(!method.getReturnType().equals(void.class)) {
+                                            //ga.invokeVirtual(printStreamType, new org.objectweb.asm.commons.Method("println", "(Ljava/lang/Object;)V"));
+                                            //ga.invokeStatic(Type.getType(ProxyUtils.class), new org.objectweb.asm.commons.Method("pop", "(Ljava/lang/Object;)V"));
+                                        //} else {
+                                        //    ga.pop();
+                                        //}
+
+                                        // i++)
+                                        //ga.iinc(iLocal, 10000);
+                                        //ga.goTo(forConditionLabel);
+
+                                        //ga.visitLabel(forLoopEnd);
+
+                                        /*
+                                        ga.loadThis();
+                                        ga.getField(Type.getType("Proxy"), "targets", Type.getType(ArrayList.class));
+                                        //ga.loadArgArray();
+                                        //ga.invokeStatic(Type.getType(ProxyUtils.class), new org.objectweb.asm.commons.Method("getFirstIntOrLongArgument",
+                                        //        Type.getMethodDescriptor(ProxyUtils.class.getDeclaredMethod("getFirstIntOrLongArgument", Object[].class))));
+                                        ga.push(0);
+                                        //ga.math(GeneratorAdapter.REM, Type.getType(long.class));
+                                        //ga.cast(Type.getType(long.class), Type.getType(int.class));
+                                        ga.invokeVirtual(Type.getType(ArrayList.class), new org.objectweb.asm.commons.Method("get",
+                                                "(" + Type.getDescriptor(int.class) + ")" + Type.getDescriptor(Object.class)));
+                                        ga.checkCast(Type.getType(interfc));
+                                        ga.loadArgs();
+                                        ga.invokeInterface(Type.getType(interfc), new org.objectweb.asm.commons.Method(method.getName(),
+                                                Type.getMethodDescriptor(method)));
+                                        */
+                                    }
                                 } catch (Exception e) {
-                                    System.exit(0);
+                                    e.printStackTrace();
+                                    System.exit(1);
                                 }
                                 ga.returnValue();
                             }

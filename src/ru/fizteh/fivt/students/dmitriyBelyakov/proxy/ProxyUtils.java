@@ -72,7 +72,7 @@ public class ProxyUtils {
         return method.getAnnotation(Collect.class) != null;
     }
 
-    public static long getFirstIntOrLongArgument(Object... args) {
+    public static long getFirstIntOrLongArgument(Object[] args) {
         for (Object arg : args) {
             Class clazz = arg.getClass();
             if (clazz.equals(int.class) || clazz.equals(Integer.class)) {
@@ -82,5 +82,13 @@ public class ProxyUtils {
             }
         }
         throw new IllegalArgumentException("Incorrect arguments.");
+    }
+
+    public static void pop(Object arg) {
+        return;
+    }
+
+    public static void pop() {
+        return;
     }
 }
