@@ -81,9 +81,6 @@ public final class MessageUtils {
                 message.setText(getString(inputStream));
                 break;
             case BYE:
-                if (stringsNum != 0) {
-                    throw new Exception("Incorrect message");
-                }
                 break;
             case ERROR:
                 if (stringsNum != 1) {
