@@ -1,3 +1,8 @@
+package ru.fizteh.fivt.students.babushkinOleg.chat.client;
+
+import ru.fizteh.fivt.students.babushkinOleg.chat.MessageType;
+import ru.fizteh.fivt.students.babushkinOleg.chat.Message;
+import ru.fizteh.fivt.students.babushkinOleg.chat.MessageUtils;
 
 import java.io.*;
 import java.util.Vector;
@@ -9,8 +14,6 @@ import java.io.BufferedReader;
 
 public class Client{
 	private static int currentServer = -1;
-	private static final int myPort = 45000;
-	private static final int serverPort = 40401;
 	private static String nickname;
 	private static Vector<Listener> listeners = new Vector<Listener>();
 
@@ -89,11 +92,7 @@ public class Client{
 						break;
 				}
 			}else{
-				if (currentServer == -1)
-					System.out.print("You don't connect to server\n");
-				else{
-					listeners.get(currentServer).send(m(input, 2));
-				}
+				sendMessage(new Message(MessageType.MESSAGE, nickname, input));
 			}
 		}while(!input.equals("/exit"));
 		
@@ -101,35 +100,18 @@ public class Client{
 		System.out.print("Goodbye, " + nickname + '.');
 	}
 	
-	private String m(String line, int b){
-		byte[] res = new byte[line.length() + 1], res1 = line.getBytes();
-		res[0] = (byte)b;
-		for (int i = 0; i < line.length(); ++i)
-			res[i + 1] = res1[i];
-		return new String(res);
-	}
-	
-	private String cut(String line){
-		if (line.length() > 0){
-			byte[] b = new byte[line.length() - 1];
-			for (int i = 0; i + 1 < line.length(); ++i)
-				b[i] = (byte)line.charAt(i + 1);
-			return new String(b); 
-		}else
-			return line;
-	}
-	
-	public void sendMessage(String line){
-		for (Listener ls: listeners){
-			if (!ls.send(line))
-				System.out.println("Couldn't send message for " + ls.ip);
-		}
+	public void sendMessage(Message message){
+		if (currentServer == -1)
+			System.out.println("You don't connect to server\n");
+		else
+			if (!listeners.get(currentServer).send(message))
+				System.out.println("Couldn't send message for " + listeners.get(currentServer).ip);
 	}
 	
 	public void disconnect(Listener ls) throws IOException{
 		if (listeners.contains(ls)){
 			byte[] b = new byte[1];
-			sendMessage(m("", 3));
+			sendMessage(new Message(MessageType.BYE, nickname, ""));
 			ls.closeSocket();
 			currentServer = -1;
 			listeners.remove(ls);
@@ -147,6 +129,7 @@ public class Client{
 			    listeners.add(listener);
 			    thread.setDaemon(true);
 			    thread.start();
+			    sendMessage(new Message(MessageType.HELLO, nickname, ""));
 		    }
 		}catch (IOException e){
 			System.out.println("Couldn't create connection");
@@ -181,15 +164,11 @@ public class Client{
 			port = serverPort;
 			if (socket == null)
 				throw new IOException("Couldn't create socket");
-			socketReader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
-		    socketWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
-		    send(m(nickname, 1));
 		}
 		
-		public boolean send(String line){
+		public boolean send(Message message){
 			try{
-				socketWriter.write(line + "\n");
-				socketWriter.flush();
+				socket.getOutputStream().write(message.toByte());
 			}catch (IOException e){
 				System.out.print("Couldn't send message");
 				closeSocket();
@@ -208,26 +187,28 @@ public class Client{
 		
 		@Override
 		public void run(){
+			Message message = null;
 			while (!socket.isClosed()){
-				String line = null;
 				try{
-					line = socketReader.readLine();
-						
-				}catch (IOException e){
+					message = MessageUtils.getMessage(socket.getInputStream());
+				}catch (Exception e){
 					closeSocket();
 					break;
-				}	
-				if (line == null || line.length() == 0 || line.getBytes()[0] == 3)
+				}
+				if (myThread.isInterrupted())
 					break;
-				if (line != null)
-					System.out.println(cut(line));
+				if (message == null || message.getType() == MessageType.BYE)
+					break;
+				if (message.getType() == MessageType.ERROR){
+					System.out.println(message.getText());
+					break;
+				}
+				if (message.getType() == MessageType.MESSAGE){
+					System.out.println("<" + message.getName() + "> " + message.getText());					
+				}
 			}
-			System.out.println("Server " + ip + " disconnected");
-			if (currentServer == listeners.indexOf(new Listener(ip)))
-				currentServer = -1;
-			try {
-				disconnect(this);
-			} catch (IOException ignored) {}
+			listeners.remove(this);
+			System.out.println("Connection lost");
 		}
 	}
 }
