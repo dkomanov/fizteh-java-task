@@ -68,6 +68,8 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
             }
             log.append('\n');
             throw ex;
+        } finally {
+            writer.append(log);
         }
     }
 
