@@ -1,12 +1,11 @@
 package ru.fizteh.fivt.students.mysinYurii.proxy;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
 import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
+import ru.fizteh.fivt.students.mysinYurii.testClass.TestClass;
 
 public class UnitTest {
     static void test1() {
@@ -105,13 +104,14 @@ public class UnitTest {
     }
     
     static void test8() {
-        Object[] target = new Object[1];
-        target[0] = abcd.geth1();
         Class[] inter = new Class[1];
-        inter[0] = a.class;
+        Object[] targ = new Object[1];
+        inter[0] = TestClass.getInter();
+        targ[0] = TestClass.getNested();
+        Class newInter = inter[0];
         try {
-            a temp = (a) new ShardingProxyFactory().createProxy(target, inter);
-            temp.h();
+            Object temp = TestClass.getNested();
+            temp = new ShardingProxyFactory().createProxy(targ, inter);
         } catch (IllegalArgumentException e) {
             System.out.println("Fail " + e.getMessage());
         }
@@ -120,6 +120,7 @@ public class UnitTest {
     private static interface ExampleInterface {
         @DoNotProxy
         public int sum(int i, int j);
+        @Collect
         public long mul(long i, long j);
         @Collect
         public List<Integer> assign(int i, int j);
@@ -149,32 +150,5 @@ public class UnitTest {
             }
             return returnVal;
         }
-    }
-    
-    public interface a {
-        @Collect
-        public void h();
-    }
-    
-    public static class abcd implements a {
-
-        @Override
-        public void h() {
-            System.out.println(1);
-        }
-        
-        public static h1 geth1() {
-            return new h1();
-        }
-        
-        private static class h1 implements a {
-
-            @Override
-            public void h() {
-                System.out.println(1);
-            }
-            
-        }
-        
     }
 }
