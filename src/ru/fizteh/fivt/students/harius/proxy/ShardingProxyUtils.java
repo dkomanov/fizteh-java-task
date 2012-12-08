@@ -25,6 +25,7 @@ public abstract class ShardingProxyUtils {
 
     public static boolean isCollectable(Class type) {
         return INTEGRAL.contains(type)
-            || type.isAssignableFrom(List.class);
+            || List.class.isAssignableFrom(type)
+            || type.equals(void.class);
     }
 }

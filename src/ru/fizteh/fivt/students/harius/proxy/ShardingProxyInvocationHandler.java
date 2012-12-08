@@ -55,18 +55,18 @@ public class ShardingProxyInvocationHandler
         } else if (ShardingProxyUtils.isIntegral(returns)) {
             long result = 0;
             for (Object target : targets) {
-                result += ((Number)method.invoke(target, args)).longValue();
+                result += ((Number) method.invoke(target, args)).longValue();
             }
             if (Integer.class.isAssignableFrom(returns)
                 || int.class.isAssignableFrom(returns)) {
-                return (int)result;
+                return (int) result;
             } else {
                 return result;
             }
         } else if (ShardingProxyUtils.isCollectable(returns)) {
             List result = new ArrayList();
             for (Object target : targets) {
-                result.addAll((List)method.invoke(target, args));
+                result.addAll((List) method.invoke(target, args));
             }
             return result;
         } else {
@@ -82,7 +82,7 @@ public class ShardingProxyInvocationHandler
         Number which = null;
         for (Object param : args) {
             if (ShardingProxyUtils.isIntegral(param.getClass())) {
-                which = ((Number)param);
+                which = ((Number) param);
                 break;
             }
         }
@@ -92,6 +92,6 @@ public class ShardingProxyInvocationHandler
                 "At least one integral argument needed");
         }
         return method.invoke(
-            targets[(int)(which.longValue() % targets.length)], args);
+            targets[(int) (which.longValue() % targets.length)], args);
     }
 }
