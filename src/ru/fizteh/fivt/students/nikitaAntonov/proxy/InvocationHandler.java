@@ -39,11 +39,11 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 }
 
                 writeIdentIfNeed(log, needIdent);
-                log.append(" returned ");
+                log.append("returned ");
                 writeObject(log, result, new IdentityHashMap<>());
-                log.append(Character.LINE_SEPARATOR);
             }
 
+            log.append((char) Character.LINE_SEPARATOR);
             return result;
         } catch (Throwable ex) {
             ex = ex.getCause();
@@ -110,6 +110,7 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
         StringBuilder[] params = new StringBuilder[args.length];
         for (int i = 0; i < args.length; ++i) {
+            params[i] = new StringBuilder();
             writeObject(params[i], args[i], already);
             if (params[i].length() > MAX_ARG_LEN) {
                 needIdent = true;
