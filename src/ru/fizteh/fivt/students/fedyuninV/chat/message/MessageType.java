@@ -20,7 +20,7 @@ public enum MessageType {
         return id;
     }
 
-    public static MessageType getMessageType(byte id) {
+    public static MessageType getMessageType(byte id) throws Exception{
         MessageType result = null;
         switch(id) {
             case (1):
@@ -36,7 +36,7 @@ public enum MessageType {
                 result = ERROR;
                 break;
             default:
-                result = null;
+                throw new Exception("");
         }
         return result;
     }

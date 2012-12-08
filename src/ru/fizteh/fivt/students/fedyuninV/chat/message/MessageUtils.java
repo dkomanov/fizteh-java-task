@@ -76,31 +76,38 @@ public final class MessageUtils {
             throw new Exception("Incorrect type of message");
         }
         int stringsNum = inputStream.read();
-        switch (message.getType()) {
-            case MESSAGE:
-                if (stringsNum != 2) {
-                    System.out.println("Incorrect string num in message");
-                    throw new Exception("Incorrect string num in message");
-                }
-                message.setName(getString(inputStream));
-                message.setText(getString(inputStream));
-                break;
-            case BYE:
-                break;
-            case ERROR:
-                if (stringsNum != 1) {
-                    System.out.println("Incorrect string num in message");
-                    throw new Exception("Incorrect string num in message");
-                }
-                message.setText(getString(inputStream));
-                break;
-            case HELLO:
-                if (stringsNum != 1) {
-                    System.out.println("Incorrect string num in message");
-                    throw new Exception("Incorrect string num in message");
-                }
-                message.setName(getString(inputStream));
-                break;
+        try {
+            switch (message.getType()) {
+                case MESSAGE:
+                    if (stringsNum != 2) {
+                        System.out.println("Incorrect string num in message");
+                        throw new Exception("Incorrect string num in message");
+                    }
+                    message.setName(getString(inputStream));
+                    message.setText(getString(inputStream));
+                    break;
+                case BYE:
+                    break;
+                case ERROR:
+                    if (stringsNum != 1) {
+                        System.out.println("Incorrect string num in message");
+                        throw new Exception("Incorrect string num in message");
+                    }
+                    message.setText(getString(inputStream));
+                    break;
+                case HELLO:
+                    if (stringsNum != 1) {
+                        System.out.println("Incorrect string num in message");
+                        throw new Exception("Incorrect string num in message");
+                    }
+                    message.setName(getString(inputStream));
+                    break;
+            }
+        } catch (Exception ex) {
+            if (ex.getMessage().equals("")) {
+                System.out.println("Incorrect type of message");
+            }
+            throw ex;
         }
         return message;
     }
