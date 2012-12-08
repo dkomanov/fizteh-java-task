@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 
 public final class MessageUtils {
 
-    private static final int MAX_LENGTH = 1024;
+    private static final int MAX_LENGTH = 1000;
 
     private MessageUtils() {
     }
