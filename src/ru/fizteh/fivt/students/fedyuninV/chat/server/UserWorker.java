@@ -1,8 +1,11 @@
 package ru.fizteh.fivt.students.fedyuninV.chat.server;
 
+import ru.fizteh.fivt.students.fedyuninV.IOUtils;
 import ru.fizteh.fivt.students.fedyuninV.chat.message.Message;
+import ru.fizteh.fivt.students.fedyuninV.chat.message.MessageType;
 import ru.fizteh.fivt.students.fedyuninV.chat.message.MessageUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -22,7 +25,6 @@ public class UserWorker implements Runnable{
         this.socket = socket;
         userThread = new Thread(this);
         name = null;
-        System.out.println("here");
     }
 
     public void start() {
@@ -30,11 +32,7 @@ public class UserWorker implements Runnable{
     }
 
     public void kill() {
-        try {
-            socket.close();
-        } catch (Exception ignored) {
-
-        }
+        IOUtils.tryClose(socket);
         userThread.interrupt();
     }
 
@@ -42,7 +40,6 @@ public class UserWorker implements Runnable{
         try {
             userThread.join();
         } catch (Exception ignored) {
-
         }
     }
 
@@ -51,7 +48,9 @@ public class UserWorker implements Runnable{
             OutputStream outputStream = socket.getOutputStream();
             outputStream.write(bytes);
         } catch (Exception ex) {
-            System.out.println("Can't deliver your message");
+            if (bytes.length > 0  &&  MessageType.MESSAGE.getId() == bytes[0]) {
+                System.out.println("Can't deliver your message");
+            }
         }
     }
 
@@ -62,11 +61,26 @@ public class UserWorker implements Runnable{
                 try {
                     Message message = MessageUtils.getMessage(iStream);
                     server.processMessage(message, this);
+                } catch (InterruptedException ignored) {
                 } catch (Exception ex) {
+                    try {
+                        if (ex.getMessage() == null) {
+                            sendMessage(MessageUtils.error("An error occured"));
+                        } else {
+                            sendMessage(MessageUtils.error(ex.getMessage()));
+                        }
+                    } catch (Exception ignored) {
+                    } finally {
+                        kill();
+                    }
                 }
             }
-        } catch (Exception ex) {
-
+        } catch (IOException ex) {
+            try {
+                sendMessage(MessageUtils.error("Unable to open input stream"));
+            } catch (Exception ignored) {
+            }
+            kill();
         }
     }
 

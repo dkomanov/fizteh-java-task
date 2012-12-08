@@ -41,6 +41,8 @@ public class Server implements Runnable{
                         if (message != null) {
                             userWorker.sendMessage(message.getBytes());
                         }
+                        userWorker.kill();
+                        userWorker.join();
                     }
                 } else {
                     System.out.println("No user with name " + userName);
@@ -75,14 +77,16 @@ public class Server implements Runnable{
         Set<String> userNames;
         synchronized (usersOnline) {
             userNames = usersOnline.keySet();
+            kill(new Message(MessageType.BYE), userNames.toArray(new String[0]));
+            usersOnline.clear();
         }
-        kill(new Message(MessageType.BYE), userNames.toArray(new String[0]));
         synchronized (unauthorizedUsers) {
             for (UserWorker worker: unauthorizedUsers) {
                 worker.sendMessage(MessageUtils.bye());
                 worker.kill();
                 worker.join();
             }
+            unauthorizedUsers.clear();
         }
         IOUtils.tryClose(serverSocket);
         if (serverThread != null) {
@@ -121,8 +125,10 @@ public class Server implements Runnable{
                 String newName = message.getName();
                 if (name != null) {
                     worker.sendMessage(MessageUtils.message("server", "Already authorized"));
-                } else if (usersOnline.containsKey(newName)  ||  newName.matches("[ \n\t]+")) {
+                } else if (usersOnline.containsKey(newName)  ||  newName == null  ||  newName.matches("[ \n\t]*")) {
                     worker.sendMessage(MessageUtils.error("Cannot authorize with this name"));
+                    worker.kill();
+                    worker.join();
                 } else {
                     synchronized (unauthorizedUsers) {
                         unauthorizedUsers.remove(worker);

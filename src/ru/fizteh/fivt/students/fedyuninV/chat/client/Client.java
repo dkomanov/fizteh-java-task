@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.fedyuninV.chat.client;
 
 import ru.fizteh.fivt.students.fedyuninV.IOUtils;
 import ru.fizteh.fivt.students.fedyuninV.chat.message.Message;
+import ru.fizteh.fivt.students.fedyuninV.chat.message.MessageType;
 import ru.fizteh.fivt.students.fedyuninV.chat.message.MessageUtils;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ public class Client implements Runnable{
         this.chatClient = chatClient;
         this.socket = new Socket(host, port);
         this.name = name;
+        this.active = true;
     }
 
     public void start() {
@@ -49,19 +51,33 @@ public class Client implements Runnable{
             OutputStream outputStream = socket.getOutputStream();
             outputStream.write(bytes);
         } catch (Exception ex) {
-            System.out.println("Can't deliver your message");
+            if (bytes.length > 0  &&  MessageType.MESSAGE.getId() == bytes[0]) {
+                System.out.println("Can't deliver your message");
+            }
         }
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     public void run() {
         try {
             InputStream iStream = socket.getInputStream();
             while (!clientThread.isInterrupted()) {
-                if (active) {
+                try {
+                    Message message = MessageUtils.getMessage(iStream);
+                    chatClient.processMessage(message, this);
+                } catch (InterruptedException ignored) {
+                } catch (Exception ex) {
                     try {
-                        Message message = MessageUtils.getMessage(iStream);
-                        chatClient.processMessage(message, this);
-                    } catch (Exception ex) {
+                        if (ex.getMessage() == null) {
+                        } else {
+                            sendMessage(MessageUtils.error(ex.getMessage()));
+                        }
+                    } catch (Exception ignored) {
+                    } finally {
+                        kill();
                     }
                 }
             }

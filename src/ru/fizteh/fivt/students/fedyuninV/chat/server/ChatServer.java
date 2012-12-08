@@ -113,6 +113,8 @@ public class ChatServer implements CommandLine {
                 server.stop();
                 server.join();
             }
+        } else {
+            printUsage();
         }
     }
 }

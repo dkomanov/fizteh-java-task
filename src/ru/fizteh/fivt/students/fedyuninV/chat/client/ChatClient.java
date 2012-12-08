@@ -21,7 +21,6 @@ public class ChatClient implements CommandLine {
     public ChatClient(String name) {
         this.name = name;
         connections = new TreeMap<>();
-        System.out.println(name);
     }
 
     public void printUsage() {
@@ -69,7 +68,6 @@ public class ChatClient implements CommandLine {
                 return;
             }
             String host = args[0].substring(0, args[0].indexOf(':'));
-            System.out.println(host);
             try {
                 int port = Integer.parseInt(args[0].substring(args[0].indexOf(':') + 1));
                 Client newConnection = new Client(this, args[0], host, port);
@@ -99,6 +97,7 @@ public class ChatClient implements CommandLine {
                 connections.remove(activeConnection.getName());
             } else {
                 System.out.println("You have no active connections");
+                System.out.println(connections.size());
                 return;
             }
             if (connections.isEmpty()) {
@@ -123,6 +122,8 @@ public class ChatClient implements CommandLine {
                 activeConnection.sendMessage(MessageUtils.bye());
                 execute("/disconnect", new String[0]);
             }
+        } else {
+            printUsage();
         }
     }
 
@@ -137,12 +138,18 @@ public class ChatClient implements CommandLine {
                 break;
             case ERROR:
                 System.out.println("An error occured: " + message.getText());
-                execute("/disconnect", new String[0]);
+                if (client.isActive()) {
+                    execute("/disconnect", new String[0]);
+                } else {
+                    connections.remove(name);
+                }
                 client.kill();
                 client.join();
                 break;
             case MESSAGE:
-                System.out.println('<' + message.getName() + ">:" + message.getText());
+                if (client.isActive()) {
+                    System.out.println('<' + message.getName() + ">:" + message.getText());
+                }
         }
     }
 
