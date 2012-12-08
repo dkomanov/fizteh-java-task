@@ -65,6 +65,10 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
             for (int i = 0; i < stringStackTrace; i++) {
                 writeIdentIfNeed(log, needIdent);
+                if (!needIdent) {
+                    log.append("\n");
+                }
+                log.append("  ");
                 log.append(traceElements[i].toString());
             }
             log.append('\n');
