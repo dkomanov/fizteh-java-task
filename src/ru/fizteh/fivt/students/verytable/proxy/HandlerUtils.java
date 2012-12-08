@@ -155,7 +155,7 @@ public class HandlerUtils {
             if (isLongOutputMode) {
                 sb.append(Constants.bigIndent);
             }
-            sb.append(Constants.bigIndent).append(element.toString());
+            sb.append(Constants.bigIndent).append(Constants.at + element.toString());
             sb.append(Constants.endl);
         }
         throw ex;
