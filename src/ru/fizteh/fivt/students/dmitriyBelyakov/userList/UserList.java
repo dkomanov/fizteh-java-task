@@ -6,14 +6,95 @@ import ru.fizteh.fivt.bind.test.UserName;
 import ru.fizteh.fivt.bind.test.UserType;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
+import javax.swing.table.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.*;
 
+class UserListTableModel extends AbstractTableModel {
+    Vector<String> names;
+    Vector<Vector<Object>> users;
+    final DefaultCellEditor editor;
+
+    UserListTableModel(Vector<String> names, Vector<Vector<Object>> users) {
+        this.names = names;
+        this.users = users;
+        UserType[] types = UserType.values();
+        JComboBox typeCombo = new JComboBox(types);
+        editor = new DefaultCellEditor(typeCombo);
+    }
+
+    @Override
+    public Class getColumnClass(int column) {
+        switch (column) {
+            case 0:
+                return Integer.class;
+            case 1:
+                return UserType.class;
+            case 2:
+                return String.class;
+            case 3:
+                return String.class;
+            case 4:
+                return Boolean.class;
+            case 5:
+                return Integer.class;
+            default:
+                return String.class;
+        }
+    }
+
+    public TableCellEditor getCellEditor(int row, int column) {
+        if (column == 1)
+            return editor;
+        else
+            return getCellEditor(row, column);
+    }
+
+    @Override
+    public int getColumnCount() {
+        System.out.println(names.size());
+        return names.size();
+    }
+
+    @Override
+    public int getRowCount() {
+        System.out.println(users.size());
+        return users.size();
+    }
+
+    @Override
+    public String getColumnName(int col) {
+        return names.get(col);
+    }
+
+    @Override
+    public Object getValueAt(int row, int col) {
+        System.out.println(users.get(row).get(col));
+        return users.get(row).get(col);
+    }
+
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return true;
+    }
+
+    @Override
+    public void setValueAt(Object value, int row, int col) {
+        users.get(row).set(col, value);
+    }
+}
+
 class UserNameComparator implements Comparator<Vector<Object>> {
+    /*int firstNamePos;
+    int lastNamePos;
+
+    UserNameComparator(int firstNamePos, int lastNamePos) {
+        this.firstNamePos = firstNamePos;
+        this.lastNamePos = lastNamePos;
+    }*/
+
     @Override
     public int compare(Vector<Object> v1, Vector<Object> v2) {
         if (v1.get(2).equals(v2.get(2))) {
@@ -58,6 +139,7 @@ public class UserList extends JFrame {
     private Vector<Vector<Object>> users;
     private boolean namesSortedAscending;
     private boolean typesSortedAscending;
+    Vector<String> names = new Vector<>();
 
     UserList() {
         super("UserList");
@@ -76,7 +158,7 @@ public class UserList extends JFrame {
         try {
             UserList userList = new UserList();
         } catch (Throwable t) {
-            t.printStackTrace();
+            //t.printStackTrace();
             System.exit(1);
         }
     }
@@ -271,17 +353,18 @@ public class UserList extends JFrame {
     }
 
     private void createTable() {
-        Vector<String> names = new Vector<>();
         names.add("ID");
         names.add("Type");
         names.add("First name");
         names.add("Last name");
         names.add("Root");
         names.add("Quota");
+        final int columnCount = names.size();
         UserType[] types = UserType.values();
         JComboBox typeCombo = new JComboBox(types);
         final DefaultCellEditor editor = new DefaultCellEditor(typeCombo);
-        table = new JTable(new DefaultTableModel(
+        table = new JTable(new T(names, users));
+        /*table = new JTable(new DefaultTableModel(
                 users,
                 names
         )) {
@@ -314,7 +397,42 @@ public class UserList extends JFrame {
                 else
                     return super.getCellEditor(row, column);
             }
-        };
+
+            @Override
+            public int getColumnCount() {
+                System.out.println(names.size());
+                return names.size();
+            }
+
+            @Override
+            public int getRowCount() {
+                System.out.println(users.size());
+                return users.size();
+            }
+
+            @Override
+            public String getColumnName(int col) {
+                return names.get(col);
+            }
+
+            @Override
+            public Object getValueAt(int row, int col) {
+                System.out.println(users.get(row).get(col));
+                return users.get(row).get(col);
+            }
+
+            @Override
+            public void setValueAt(Object value, int row, int col) {
+                //System.out.print(getValueAt(row, col) + "   ");
+                users.get(row).set(col, value);
+                fireTableCellUpdated(row, col);
+                //System.out.println(getValueAt(row, col));
+            }
+        };*/
+        TableRowSorter<TableModel> sorter
+                = new TableRowSorter<TableModel>(table.getModel());
+        //table.setAutoCreateRowSorter(true);
+        table.setRowSorter(sorter);
         add(new JScrollPane(table));
     }
 }
