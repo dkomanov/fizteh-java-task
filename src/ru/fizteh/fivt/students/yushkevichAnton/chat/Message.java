@@ -1,7 +1,9 @@
 package ru.fizteh.fivt.students.yushkevichAnton.chat;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+
+import ru.fizteh.fivt.chat.MessageType;
 
 public class Message {
     MessageType type;
