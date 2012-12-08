@@ -190,7 +190,7 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
     private Object invokeWithoutLogging(Method method, Object args[]) throws Throwable {
         try {
             return method.invoke(target, args);
-        } catch (Throwable e) {
+        } catch ( java.lang.reflect.InvocationTargetException e) {
             throw e.getCause();
         }
     }
