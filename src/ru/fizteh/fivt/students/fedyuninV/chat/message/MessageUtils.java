@@ -79,7 +79,8 @@ public final class MessageUtils {
         switch (message.getType()) {
             case MESSAGE:
                 if (stringsNum != 2) {
-                    throw new Exception("Incorrect message");
+                    System.out.println("Incorrect string num in message");
+                    throw new Exception("Incorrect string num in message");
                 }
                 message.setName(getString(inputStream));
                 message.setText(getString(inputStream));
@@ -88,13 +89,15 @@ public final class MessageUtils {
                 break;
             case ERROR:
                 if (stringsNum != 1) {
-                    throw new Exception("Incorrect message");
+                    System.out.println("Incorrect string num in message");
+                    throw new Exception("Incorrect string num in message");
                 }
                 message.setText(getString(inputStream));
                 break;
             case HELLO:
                 if (stringsNum != 1) {
-                    throw new Exception("Incorrect message");
+                    System.out.println("Incorrect string num in message");
+                    throw new Exception("Incorrect string num in message");
                 }
                 message.setName(getString(inputStream));
                 break;
