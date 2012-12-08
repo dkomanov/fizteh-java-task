@@ -1,7 +1,9 @@
 package ru.fizteh.fivt.students.altimin.proxy;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Assert;
+import org.junit.rules.ExpectedException;
 import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
 
@@ -164,11 +166,26 @@ public class ShardingProxyFactoryTest {
     }
 
 
-    @Test(expected = RuntimeException.class)
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
+    @Test
     public void doNotProxyTest() {
+        expected.expect(RuntimeException.class);
+        expected.expectMessage("It's impossible to call method methodNotForProxy with @DoNotProxy annotation");
         Interface proxy = getProxy();
         proxy.methodNotForProxy();
     }
+
+    @Rule
+    public ExpectedException expected = ExpectedException.none();
+
+    @Test
+    public void test() {
+        //expected.expect(RuntimeException.class);
+        //expected.expectMessage();
+    }
+
 
     @Test
     public void testProxy() {
@@ -188,5 +205,8 @@ public class ShardingProxyFactoryTest {
         assertEquals(list, proxy.collectArrayList());
         assertEquals(list, proxy.collectLinkedList());
     }
+
+
+
 
 }
