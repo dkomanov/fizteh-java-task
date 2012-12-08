@@ -68,7 +68,7 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 if (!needIdent) {
                     log.append("\n");
                 }
-                log.append("  ").
+                log.append("  ")
                    .append("at ")
                    .append(traceElements[i].toString());
             }
