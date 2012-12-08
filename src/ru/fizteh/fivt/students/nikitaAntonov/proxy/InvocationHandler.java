@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.nikitaAntonov.proxy;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -64,6 +65,10 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
             for (int i = 0; i < stringStackTrace; i++) {
                 writeIdentIfNeed(log, needIdent);
+                if (!needIdent) {
+                    log.append("\n");
+                }
+                log.append("  ");
                 log.append(traceElements[i].toString());
             }
             log.append('\n');
@@ -122,6 +127,9 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
             log.append(params[i]);
             if (i + 1 != params.length) {
                 log.append(",");
+                if (!needIdent) {
+                    log.append(" ");
+                }
             }
         }
 
@@ -190,7 +198,7 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
     private Object invokeWithoutLogging(Method method, Object args[]) throws Throwable {
         try {
             return method.invoke(target, args);
-        } catch (Throwable e) {
+        } catch (InvocationTargetException e) {
             throw e.getCause();
         }
     }
