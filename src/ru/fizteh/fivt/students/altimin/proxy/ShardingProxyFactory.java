@@ -163,11 +163,11 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                     Class clazz = argument.getClass();
                     if (clazz.equals(int.class) || clazz.equals(Integer.class)) {
                         int targetIndex = ((Integer) argument) % targets.length;
-                        return method.invoke(targets[targetIndex], objects);
+                        return safeInvoke(method, targets[targetIndex], objects);
                     }
                     if (clazz.equals(long.class) || clazz.equals(Long.class)) {
                         int targetIndex = (int)(((Long) argument) % targets.length);
-                        return method.invoke(targets[targetIndex], objects);
+                        return safeInvoke(method,targets[targetIndex], objects);
                     }
                 }
                 throw new RuntimeException("Expected int or long argument");
