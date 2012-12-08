@@ -20,7 +20,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
         return clazz.equals(int.class) || clazz.equals(Integer.class)
                 || clazz.equals(long.class) || clazz.equals(Long.class)
                 || clazz.equals(void.class) || clazz.equals(Void.class)
-                || List.class.isAssignableFrom(clazz);
+                || clazz.equals(List.class);
     }
 
     private void checkInterface(Class iface) {
@@ -137,15 +137,9 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                         return result;
                     }
                     if (List.class.isAssignableFrom(returnType)) {
-                        List result = null;
+                        List result = new ArrayList();
                         for (Object target: targets) {
-                            if (result == null) {
-                                List tempResult = (List) method.invoke(target, objects);
-                                result = tempResult.getClass().newInstance();
-                                result.addAll(tempResult);
-                            } else {
                                 result.addAll((List) method.invoke(target, objects));
-                            }
                         }
                         return result;
                     }
