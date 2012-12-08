@@ -9,8 +9,7 @@ import java.io.*;
  * Levshin Nikolay
  * MIPT FIVT 196
  */
-public class MyInvocationHandler implements InvocationHandler
-{
+public class MyInvocationHandler implements InvocationHandler {
     Object target;
     Appendable writer;
     boolean soooLong = false;
@@ -20,8 +19,7 @@ public class MyInvocationHandler implements InvocationHandler
         this.writer = writer;
     }
 
-    public String replace(String text)
-    {
+    public String replace(String text) {
         text = text.replaceAll("\\\\", "\\\\\\\\");
         text = text.replaceAll("\n", "\\\\n");
         text = text.replaceAll("\r", "\\\\r");
@@ -33,9 +31,9 @@ public class MyInvocationHandler implements InvocationHandler
     }
 
     public boolean isPrimitive(Class someClass) {
-        return (someClass.isPrimitive() ||  someClass.equals(Double.class) ||  someClass.equals(Character.class)
-                ||  someClass.equals(Byte.class) ||  someClass.equals(Integer.class) ||  someClass.equals(Float.class)
-                ||  someClass.equals(Long.class) ||  someClass.equals(Boolean.class) ||  someClass.equals(Short.class) );
+        return (someClass.isPrimitive() || someClass.equals(Double.class) || someClass.equals(Character.class)
+                || someClass.equals(Byte.class) || someClass.equals(Integer.class) || someClass.equals(Float.class)
+                || someClass.equals(Long.class) || someClass.equals(Boolean.class) || someClass.equals(Short.class));
     }
 
     public String printObject(Object forPrint, Map<Object, Object> parsedObjects) {
@@ -181,11 +179,11 @@ public class MyInvocationHandler implements InvocationHandler
             logger.append(ex.getMessage());
             logger.append('\n');
             StackTraceElement[] traceElements = ex.getStackTrace();
-            for (StackTraceElement traceElement: traceElements) {
+            for (StackTraceElement traceElement : traceElements) {
                 if (soooLong) {
                     logger.append("  ");
                 }
-                logger.append("  ");
+                logger.append("  at ");
                 logger.append(traceElement.toString());
                 logger.append('\n');
             }

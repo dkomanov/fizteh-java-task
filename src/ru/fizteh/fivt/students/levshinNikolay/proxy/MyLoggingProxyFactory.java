@@ -2,6 +2,7 @@ package ru.fizteh.fivt.students.levshinNikolay.proxy;
 
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
+
 /**
  * Levshin Nikolay
  * MIPT FIVT 196
@@ -9,7 +10,7 @@ import java.util.Arrays;
 public class MyLoggingProxyFactory {
 
     public Object createProxy(Object target, Appendable writer, Class... interfaces) {
-        if (target == null  ||  writer == null  ||  interfaces == null  ||  interfaces.length == 0
+        if (target == null || writer == null || interfaces == null || interfaces.length == 0
                 || Arrays.asList(interfaces).contains(null)) {
             throw new IllegalArgumentException("Null parameter found");
         }

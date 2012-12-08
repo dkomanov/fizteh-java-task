@@ -13,7 +13,7 @@ import java.util.*;
 
 interface VoidInterface{}
 
-class VoidInterfaceClass implements VoidInterface{
+class VoidInterfaceClass implements VoidInterface {
     public void func() {}
 }
 
@@ -283,7 +283,7 @@ public class MyProxyTest {
         } catch (Exception ignored) {
         }
         Assert.assertTrue(builder.toString().startsWith("List.add(3, \"wtf\") threw java.lang.IndexOutOfBoundsException: Index: 3, Size: 0\n" +
-                "  java.util.ArrayList.rangeCheckForAdd(ArrayList.java:612)\n" + "  java.util.ArrayList.add(ArrayList.java:426)\n"));
+                "  at java.util.ArrayList.rangeCheckForAdd(ArrayList.java:612)\n" + "  at java.util.ArrayList.add(ArrayList.java:426)\n"));
     }
 
 }
