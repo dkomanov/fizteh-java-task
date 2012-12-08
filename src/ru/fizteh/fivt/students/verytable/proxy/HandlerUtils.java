@@ -148,8 +148,7 @@ public class HandlerUtils {
 
         ex = ex.getCause();
         sb.append(Constants.threw).append(ex.toString());
-        sb.append(Constants.colon).append(Constants.smallIndent);
-        sb.append(ex.getMessage()).append(Constants.endl);
+        sb.append(Constants.endl);
 
         StackTraceElement[] elements = ex.getStackTrace();
         for (StackTraceElement element : elements) {
