@@ -37,13 +37,13 @@ public class ProxyInvocationHandler implements InvocationHandler {
                 if (arguments[i] != null) {
                     if (arguments[i].getClass().equals(int.class) || arguments[i].getClass().equals(Integer.class)) {
                         try {
-                            return method.invoke(targets[(int) arguments[i] % arguments.length], arguments);
+                            return method.invoke(targets[(int) arguments[i] % targets.length], arguments);
                         } catch (InvocationTargetException e) {
                             throw e.getCause();                            
                         }
                     } else if (arguments[i].getClass().equals(long.class) || arguments[i].getClass().equals(Long.class)) {
                         try {
-                            return method.invoke(targets[(int) ((long) arguments[i] % arguments.length)], arguments);
+                            return method.invoke(targets[(int) ((long) arguments[i] % targets.length)], arguments);
                         } catch (InvocationTargetException e) {
                             throw e.getCause();
                         }

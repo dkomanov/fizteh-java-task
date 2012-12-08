@@ -26,7 +26,6 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
             if (targ == null) {
                 throw new IllegalArgumentException("Null target");
             }
-            boolean implementsSomething = false;
             Set<Class> setOfInterfaces = new HashSet<Class>();
             setOfInterfaces.addAll(Arrays.asList(targ.getClass().getInterfaces()));
             for (Class inter : interfaces) {

@@ -1,6 +1,5 @@
 package ru.fizteh.fivt.students.mysinYurii.proxy;
 
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,16 +105,14 @@ public class UnitTest {
     
     static void test8() {
         Class<?>[] inter = new Class[1];
-        Object[] targ = new Object[1];
+        Object[] targ = new Object[2];
         inter[0] = TestClass.getInter();
         targ[0] = TestClass.getNested();
-        Class<?> newInter = inter[0];
+        targ[1] = TestClass.getAnNested();
         try {
-            Object temp = TestClass.getNested(); 
-            temp = temp.getClass().cast(TestClass.getNested());
-            temp = TestClass.getNested();
             Object temp1 = (Object) new ShardingProxyFactory().createProxy(targ, inter);
             temp1.getClass().getMethod("hello", int.class).invoke(temp1, 0);
+            temp1.getClass().getMethod("hello", int.class).invoke(temp1, 1);
         } catch (IllegalArgumentException e) {
             System.out.println("Fail " + e.toString());
         } catch (SecurityException e) {

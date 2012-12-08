@@ -13,9 +13,19 @@ public class TestClass {
             return new NestedClass();
         }
         
+        public static AnotherNestedClass getAnNested() {
+            return new AnotherNestedClass();
+        }
+        
         private static class NestedClass implements Inter {
             public void hello(int i) {
                 System.out.println("Hello");
             }
         }
+        
+        private static class AnotherNestedClass implements Inter {
+            public void hello(int i) {
+                System.out.print("Goodbye");
+            }
+            }
     }
