@@ -47,6 +47,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                 throw new IllegalArgumentException(currInterface.getName() + " has no methods");
             }
             for (Method currMethod : methods) {
+                currMethod.setAccessible(true);
                 if (currMethod.getAnnotation(DoNotProxy.class) != null) {
                     continue;
                 }

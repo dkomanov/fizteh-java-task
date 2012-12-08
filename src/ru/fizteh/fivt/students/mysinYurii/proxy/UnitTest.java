@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.mysinYurii.proxy;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import ru.fizteh.fivt.students.mysinYurii.testClass.TestClass;
 
 public class UnitTest {
     static void test1() {
-        Class[] interfaces = new Class[1];
+        Class<?>[] interfaces = new Class[1];
         Object[] target = new Object[3];
         for (int i = 0; i < 3; ++i) {
             target[i] = new ExampleClass();
@@ -24,7 +25,7 @@ public class UnitTest {
     }
     
     static void test2() {
-        Class[] interfaces = new Class[1];
+        Class<?>[] interfaces = new Class[1];
         Object[] target = new Object[1];
         target[0] = new ExampleClass();
         interfaces[0] = ExampleInterface.class;
@@ -37,7 +38,7 @@ public class UnitTest {
     }
     
     static void test3() {
-        Class[] interfaces = new Class[1];
+        Class<?>[] interfaces = new Class[1];
         Object[] target = new Object[1];
         target[0] = new ExampleClass();
         interfaces[0] = ExampleInterface.class;
@@ -50,7 +51,7 @@ public class UnitTest {
     }
     
     static void test4() {
-        Class[] interfaces = new Class[0];
+        Class<?>[] interfaces = new Class[0];
         Object[] target = new Object[1];
         target[0] = new ExampleClass();
         try {
@@ -62,7 +63,7 @@ public class UnitTest {
     }
     
     static void test5() {
-        Class[] interfaces = new Class[1];
+        Class<?>[] interfaces = new Class[1];
         Object[] target = new Object[1];
         target[0] = new ExampleClass();
         interfaces[0] = ExampleInterface.class;
@@ -77,7 +78,7 @@ public class UnitTest {
     }
     
     static void test6() {
-        Class[] interfaces = new Class[1];
+        Class<?>[] interfaces = new Class[1];
         Object[] target = new Object[1];
         target[0] = new ExampleClass();
         try {
@@ -89,7 +90,7 @@ public class UnitTest {
     }
     
     static void test7() {
-        Class[] interfaces = new Class[1];
+        Class<?>[] interfaces = new Class[1];
         Object[] target = new Object[3];
         for (int i = 0; i < target.length; ++i) {
             target[i] = new ExampleClass();
@@ -104,16 +105,23 @@ public class UnitTest {
     }
     
     static void test8() {
-        Class[] inter = new Class[1];
+        Class<?>[] inter = new Class[1];
         Object[] targ = new Object[1];
         inter[0] = TestClass.getInter();
         targ[0] = TestClass.getNested();
-        Class newInter = inter[0];
+        Class<?> newInter = inter[0];
         try {
-            Object temp = TestClass.getNested();
-            temp = new ShardingProxyFactory().createProxy(targ, inter);
+            Object temp = TestClass.getNested(); 
+            temp = temp.getClass().cast(TestClass.getNested());
+            temp = TestClass.getNested();
+            Object temp1 = (Object) new ShardingProxyFactory().createProxy(targ, inter);
+            temp1.getClass().getMethod("hello", int.class).invoke(temp1, 0);
         } catch (IllegalArgumentException e) {
-            System.out.println("Fail " + e.getMessage());
+            System.out.println("Fail " + e.toString());
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
     
