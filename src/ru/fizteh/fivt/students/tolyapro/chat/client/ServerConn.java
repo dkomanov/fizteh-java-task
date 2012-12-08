@@ -55,7 +55,7 @@ class ServerConnection implements Runnable {
                     if (typeOf != 0)
                         System.out.println(typeOf);
                     if (typeOf == 2) {
-                        System.out.println("norm");
+                        // System.out.println("norm");
                         System.out.println(MessageUtils.get(in));
                     } else if (typeOf == 127) {
                         toBeDeleted = true;
@@ -71,7 +71,7 @@ class ServerConnection implements Runnable {
                     }
                 }
             }
-            //System.out.println("End of era");
+            // System.out.println("End of era");
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.exit(1);

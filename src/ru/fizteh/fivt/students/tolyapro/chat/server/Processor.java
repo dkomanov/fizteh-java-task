@@ -149,7 +149,7 @@ public class Processor implements Runnable {
         try {
             OutputStream selfWriter = writers.get(to);
             if (selfWriter == null) {
-               
+
             } else {
                 selfWriter.write(message.getBytes());
             }

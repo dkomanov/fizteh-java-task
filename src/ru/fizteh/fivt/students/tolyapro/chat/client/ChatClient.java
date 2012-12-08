@@ -114,7 +114,7 @@ public class ChatClient {
     }
 
     void exit() {
-        
+
     }
 
     void sendMessageFromConsole(String message) throws IOException {

@@ -83,7 +83,9 @@ public class Server {
                         System.err.println("No such user " + tokens[1]);
                     }
                     break;
-                } else {
+                } else if (tokens[i].equals("/exit")) {
+                    processor.stop();
+                    System.exit(0);
                 }
             }
             string = scanner.nextLine();
