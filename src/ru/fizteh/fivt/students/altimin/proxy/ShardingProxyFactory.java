@@ -80,6 +80,14 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
         }
     }
 
+    private static Object safeInvoke(Method method, Object target, Object[] objects) throws Throwable {
+        try {
+            return method.invoke(target, objects);
+        } catch (Exception e) {
+            throw e.getCause();
+        }
+    }
+
     @Override
     public Object createProxy(Object[] targets, Class[] interfaces) {
         if (interfaces == null || interfaces.length == 0) {
@@ -118,44 +126,28 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                     Class returnType = method.getReturnType();
                     if (returnType.equals(void.class) || returnType.equals(Void.class)) {
                         for (Object target: targets) {
-                            try {
-                                method.invoke(target, objects);
-                            } catch (Throwable e) {
-                                throw e.getCause();
-                            }
+                            safeInvoke(method, target, objects);
                         }
                         return null;
                     }
                     if (returnType.equals(Integer.class) || returnType.equals(int.class)) {
                         int result = 0;
                         for (Object target: targets) {
-                            try {
-                                result += (Integer) method.invoke(target, objects);
-                            } catch (Throwable e) {
-                                throw e.getCause();
-                            }
+                            result += (Integer) safeInvoke(method, target, objects);
                         }
                         return result;
                     }
                     if (returnType.equals(Long.class) || returnType.equals(long.class)) {
                         long result = 0;
                         for (Object target: targets) {
-                            try {
-                                result += (Long) method.invoke(target, objects);
-                            } catch (Throwable e) {
-                                throw e.getCause();
-                            }
+                            result += (Long) safeInvoke(method, target, objects);
                         }
                         return result;
                     }
                     if (List.class.isAssignableFrom(returnType)) {
                         List result = new ArrayList();
                         for (Object target: targets) {
-                            try {
-                                result.addAll((List) method.invoke(target, objects));
-                            } catch (Throwable e) {
-                                throw e.getCause();
-                            }
+                            result.addAll((List) safeInvoke(method,target, objects));
                         }
                         return result;
                     }
