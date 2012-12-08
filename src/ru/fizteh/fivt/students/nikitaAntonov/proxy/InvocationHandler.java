@@ -43,7 +43,7 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 writeObject(log, result, new IdentityHashMap<>());
             }
 
-            log.append((char) Character.LINE_SEPARATOR);
+            log.append("\n");
             return result;
         } catch (Throwable ex) {
             ex = ex.getCause();
@@ -53,7 +53,7 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
             }
 
             log.append("threw ").append(ex.getClass().getName()).append(": ")
-                    .append(ex.getMessage()).append(Character.LINE_SEPARATOR);
+                    .append(ex.getMessage()).append("\n");
 
             StackTraceElement[] traceElements = ex.getStackTrace();
 
@@ -97,7 +97,7 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
             return;
         }
 
-        log.append(Character.LINE_SEPARATOR);
+        log.append("\n");
         for (int i = 0; i < ident; ++i) {
             log.append(" ");
         }
