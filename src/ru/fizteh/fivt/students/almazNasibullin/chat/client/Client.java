@@ -17,7 +17,6 @@ import java.util.TreeMap;
 import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
 import ru.fizteh.fivt.students.almazNasibullin.chat.MessageType;
 import ru.fizteh.fivt.students.almazNasibullin.chat.MessageUtils;
-import ru.fizteh.fivt.students.almazNasibullin.WrapperPrimitive;
 
 /**
  * 21.10.12
@@ -25,25 +24,26 @@ import ru.fizteh.fivt.students.almazNasibullin.WrapperPrimitive;
  */
 
 public class Client {
+    private static BufferedReader buf;
+    // хранит ip-address сервера + номер порта и номер ячейки в массивах selectors
+    // и channels, в которых хранятся соответствующий Selector и SocketChannel
+    private static Map<String, Integer> servers = new TreeMap<String, Integer>();
+    // ip-address + порт текущего сервера
+    private static String curServer = "";
+    // номер текущего сервера
+    private static int curServerNumber = -1;
+    // подключен или нет клиент к какому-нибудь серверу в данный момент
+    private static boolean connected = false;
+    // список SocketChannel каждого сервера
+    private static List<SocketChannel>  channels = new ArrayList<SocketChannel>();
+    // список Selector каждого сервера
+    private static List<Selector> selectors = new ArrayList<Selector>();
+    // ник клиента
+    private static String nick = "";
 
     public static void main(String[] args) {
         try {
-            BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
-            Map<String, Integer> servers = new TreeMap<String, Integer>();
-            // хранит ip-address сервера и номер ячейки в массивах selectors
-            // и channels, в которых хранятся соответствующий Selector и SocketChannel
-            WrapperPrimitive<String> curServer = new WrapperPrimitive<String>("");
-            // ip-address текущего сервера
-            WrapperPrimitive<Integer> curServerNumber = new WrapperPrimitive<Integer>(-1);
-            // номер текущего сервера
-            WrapperPrimitive<Boolean> connected = new WrapperPrimitive<Boolean>(false);
-            // подключен или нет клиент к какому-нибудь серверу в данный момент
-            List<SocketChannel>  channels = new ArrayList<SocketChannel>();
-            // список SocketChannel каждого сервера
-            List<Selector> selectors = new ArrayList<Selector>();
-            // список Selector каждого сервера
-            String nick = ""; // ник клиента
-
+            buf = new BufferedReader(new InputStreamReader(System.in));
             if (args.length == 0) {
                 IOUtils.printErrorAndExit("Put your nick");
             } else {
@@ -52,30 +52,18 @@ public class Client {
 
             for (;;) {
                 if (buf.ready()) {
-                    handlerConsole(buf, servers, curServer,curServerNumber,
-                            connected, nick, channels, selectors);
+                    handlerConsole();
                 }
-                if (connected.t) {
-                    int num = selectors.get(curServerNumber.t).selectNow();
+                if (connected) {
+                    int num = selectors.get(curServerNumber).selectNow();
                     if (num == 0) {
                         continue;
                     }
-                    handlerServer(servers, curServer, curServerNumber,connected,
-                            channels, selectors);
+                    handlerServer();
                 }
             }
         } catch (Exception e) {
             IOUtils.printErrorAndExit(e.getMessage());
-        }
-    }
-
-    public static void closeChannel(SocketChannel sc) {
-        try {
-            if (sc != null) {
-                sc.close();
-            }
-        } catch (Exception e) {
-            IOUtils.printErrorAndExit("Bad closing: " + e.getMessage());
         }
     }
 
@@ -89,10 +77,7 @@ public class Client {
         }
     }
 
-    public static void connect(Map<String, Integer> servers, 
-            WrapperPrimitive<String> curServer, WrapperPrimitive<Integer> curServerNumber,
-            StringTokenizer st, WrapperPrimitive<Boolean> connected,
-            String nick, List<SocketChannel> channels, List<Selector> selectors) {
+    public static void connect(StringTokenizer st) {
         // при вызове команды сonnect клиент переходит в чат-комнату нового сервера
         try {
             if (st.hasMoreTokens()) {
@@ -101,27 +86,27 @@ public class Client {
                 if (pos != -1) {
                     String host = cur.substring(0, pos);
                     String portNumber = cur.substring(pos + 1, cur.length());
-                    if (servers.containsKey(host)) {
+                    if (servers.containsKey(cur)) {
                         System.out.println("You are already connected to this server");
                     } else {
                         int port = Integer.parseInt(portNumber);
                         try {
-                            channels.add(SocketChannel.open());
                             // создаем новый канал для нового сервера
-                            selectors.add(Selector.open());
+                            channels.add(SocketChannel.open());
                             // создаем новый selector для нового сервера
+                            selectors.add(Selector.open());
                             channels.get(channels.size() - 1).
                                     connect(new InetSocketAddress(host, port));
+                            // делаем канал неблокирующим для использования Selector
                             channels.get(channels.size() - 1).
                                     configureBlocking(false);
-                            // делаем канал неблокирующим для использования Selector
                             channels.get(channels.size() - 1).register
                                     (selectors.get(selectors.size() - 1), SelectionKey.OP_READ);
-                            servers.put(host, channels.size() - 1);
-                            curServer.t = host;
-                            connected.t = true;
-                            curServerNumber.t = selectors.size() - 1;
-                            sendMessage(channels.get(curServerNumber.t),
+                            servers.put(cur, channels.size() - 1);
+                            curServer = cur;
+                            connected = true;
+                            curServerNumber = selectors.size() - 1;
+                            sendMessage(channels.get(curServerNumber),
                                     MessageUtils.hello(nick));
                         } catch (Exception e) {
                             IOUtils.printErrorAndExit(e.getMessage());
@@ -138,41 +123,33 @@ public class Client {
         }
     }
 
-    public static void disconnect(Map<String, Integer> servers, 
-            WrapperPrimitive<String> curServer, WrapperPrimitive<Integer> curServerNumber,
-            WrapperPrimitive<Boolean> connected, List<SocketChannel> channels,
-            List<Selector> selectors) {
-        sendMessage(channels.get(curServerNumber.t), MessageUtils.bye());
-        closeChannel(channels.get(curServerNumber.t));
-        closeSelector(selectors.get(curServerNumber.t));
-        servers.remove(curServer.t);
-        connected.t = false;
-        curServerNumber.t = -1;
-        System.out.println("You are disconnected from " + curServer.t);
+    public static void disconnect() {
+        sendMessage(channels.get(curServerNumber), MessageUtils.bye());
+        IOUtils.closeOrExit(channels.get(curServerNumber));
+        closeSelector(selectors.get(curServerNumber));
+        servers.remove(curServer);
+        connected = false;
+        curServerNumber = -1;
+        System.out.println("You are disconnected from " + curServer);
     }
 
-    public static void handlerConsole(BufferedReader buf, Map<String,Integer> servers,
-            WrapperPrimitive<String> curServer, WrapperPrimitive<Integer> curServerNumber,
-            WrapperPrimitive<Boolean> connected, String nick,
-            List<SocketChannel> channels, List<Selector> selectors) {
+    public static void handlerConsole() {
         try {
             String str = buf.readLine();
             StringTokenizer st = new StringTokenizer(str, " \t");
             if (st.hasMoreTokens()) {
                 String cmd = st.nextToken();
                 if (cmd.equals("/connect")) {
-                    connect(servers, curServer, curServerNumber, st, connected,
-                            nick, channels, selectors);
+                    connect(st);
                 } else if (cmd.equals("/disconnect")) {
-                    if (connected.t) {
-                        disconnect(servers, curServer, curServerNumber, connected,
-                                channels, selectors);
+                    if (connected) {
+                        disconnect();
                     } else {
                         System.out.println("You are not connected");
                     }
                 } else if (cmd.equals("/whereami")) {
-                    if (connected.t) {
-                        System.out.println(curServer.t);
+                    if (connected) {
+                        System.out.println(curServer);
                     } else {
                         System.out.println("You are not connected");
                     }
@@ -184,12 +161,12 @@ public class Client {
                     }
                 } else if (cmd.equals("/use")) {
                     if (st.hasMoreTokens()) {
-                        String host = st.nextToken();
-                        if (servers.containsKey(host)) {
-                            curServer.t = host;
-                            curServerNumber.t = servers.get(curServer.t);
+                        String server = st.nextToken();
+                        if (servers.containsKey(server)) {
+                            curServer = server;
+                            curServerNumber = servers.get(curServer);
                         } else {
-                            IOUtils.printErrorAndExit(host + ": there is no such server");
+                            IOUtils.printErrorAndExit(server + ": there is no such server");
                         }
                     } else {
                         IOUtils.printErrorAndExit("Usage: /use hostName");
@@ -200,7 +177,7 @@ public class Client {
                         Map.Entry pair = (Map.Entry)it.next();
                         sendMessage(channels.get((Integer)pair.getValue()),
                                 MessageUtils.bye());
-                        closeChannel(channels.get((Integer)pair.getValue()));
+                        IOUtils.closeOrExit(channels.get((Integer)pair.getValue()));
                         closeSelector(selectors.get((Integer)pair.getValue()));
                     }
                     servers.clear();
@@ -209,8 +186,8 @@ public class Client {
                     System.exit(0);
                 } else {
                     // отправка сообщения в чат
-                    if (connected.t) {
-                        sendMessage(channels.get(curServerNumber.t),
+                    if (connected) {
+                        sendMessage(channels.get(curServerNumber),
                                 MessageUtils.message(nick, str));
                     } else {
                         System.out.println("You are not connected. You can't "  +
@@ -223,12 +200,9 @@ public class Client {
         }
     }
 
-    public static void handlerServer(Map<String, Integer> servers,
-            WrapperPrimitive<String> curServer, WrapperPrimitive<Integer> curServerNumber,
-            WrapperPrimitive<Boolean> connected, List<SocketChannel> channels,
-            List<Selector> selectors)  {
+    public static void handlerServer()  {
         try {
-            Set<SelectionKey> keys = selectors.get(curServerNumber.t).selectedKeys();
+            Set<SelectionKey> keys = selectors.get(curServerNumber).selectedKeys();
             Iterator iter = keys.iterator();
             while (iter.hasNext()) {
                 SelectionKey key = (SelectionKey)iter.next();
@@ -236,36 +210,38 @@ public class Client {
                         SelectionKey.OP_READ) {
                     // в SocketChannel пришло новое сообщение
                     SocketChannel sc = (SocketChannel)key.channel();
-                    ByteBuffer mes = ByteBuffer.allocate(512);
-                    getMessage(sc, mes, curServer, curServerNumber, servers,
-                            connected,  channels, selectors);
-                    byte[] message = mes.array();
-                    if (message[0] == 2) {
-                        // обычное сообщение
-                        List<String> l = MessageUtils.dispatch(message);
-                        StringBuilder sb = new StringBuilder(l.get(0) + ": ");
-                        for (int i = 1; i < l.size(); ++i) {
-                            sb.append(l.get(i));
+                    ByteBuffer mes = ByteBuffer.allocate(10000000);
+                    boolean crash = getMessage(sc, mes);
+                    if (!crash) {
+                        try {
+                            List<String> l = MessageUtils.getMessage(mes.array());
+                            if (l.get(0).equals("MESSAGE")) {
+                                StringBuilder sb = new StringBuilder(l.get(1) + ": ");
+                                for (int i = 2; i < l.size(); ++i) {
+                                    sb.append(l.get(i));
+                                }
+                                System.out.println(sb.toString());
+                            } else if (l.get(0).equals("ERROR")) {
+                                StringBuilder sb = new StringBuilder();
+                                for (int i = 1; i < l.size(); ++i) {
+                                    sb.append(l.get(i));
+                                }
+                                System.out.println(sb.toString());
+                                disconnect();
+                            } else {
+                                disconnect();
+                            }
+                        } catch (RuntimeException re) {
+                            System.out.println(re.getMessage());
+                            disconnect();
                         }
-                        System.out.println(sb.toString());
-                    } else if (message[0] == 3) {
-                        // bye от сервера
-                        disconnect(servers, curServer, curServerNumber, connected,
-                                channels, selectors);
-                    } else if (message[0] == 127) {
-                        // ошибка от сервера
-                        List<String> l = MessageUtils.dispatch(message);
-                        StringBuilder sb = new StringBuilder();
-                        for (int i = 0; i < l.size(); ++i) {
-                            sb.append(l.get(i));
-                        }
-                        System.out.println("Error: " + sb.toString());
                     }
                 }
             }
             keys.clear();
         } catch (Exception e) {
-            IOUtils.printErrorAndExit(e.getMessage());
+            IOUtils.printErrorAndExit("Smth bad occured during getting message from"
+                    + " server: " + e.getMessage());
         }
     }
 
@@ -282,19 +258,17 @@ public class Client {
         }
     }
 
-    public static void getMessage(SocketChannel sc, ByteBuffer message,
-            WrapperPrimitive<String> curServer, WrapperPrimitive<Integer> curServerNumber,
-            Map<String, Integer> servers, WrapperPrimitive<Boolean> connected,
-            List<SocketChannel> channels, List<Selector> selectors) {
+    public static boolean getMessage(SocketChannel sc, ByteBuffer message) {
         try {
             int count = sc.read(message);
             if (count == -1) {
                 // проверка на случай экстренного выхода сервера
-                disconnect(servers, curServer, curServerNumber, connected,
-                        channels, selectors);
+                disconnect();
+                return true;
             }
         } catch (Exception e) {
             IOUtils.printErrorAndExit("Bad geting message!" + e.getMessage());
         }
+        return false;
     }
 }
