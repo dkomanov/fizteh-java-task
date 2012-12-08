@@ -198,4 +198,35 @@ public class UnitTests {
                         + "CanWorkWithArrays.voidMethod(0{})\n");
     }
 
+    @Test
+    public void longParamsTest() {
+        List<String> list = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        List<String> proxy = (List<String>) factory.createProxy(list, builder,
+                list.getClass().getInterfaces());
+        proxy.add("wtf1");
+        proxy.add("wtf2");
+        proxy.get(0);
+        proxy.add(
+                2,
+                "too long too long too long too long too long too long too long too long too long too long");
+        proxy.add("0123456789012345678901234567890123456789012345678901234567");
+        proxy.add("too long too long too long too long too long too long too long too long too long too long");
+        proxy.toString();
+        Assert.assertEquals(
+                builder.toString(),
+                "List.add(\"wtf1\") returned true\n"
+                        + "List.add(\"wtf2\") returned true\n"
+                        + "List.get(0) returned \"wtf1\"\n"
+                        + "List.add(\n"
+                        + "  2,\n"
+                        + "  \"too long too long too long too long too long too long too long too long too long too long\"\n"
+                        + "  )\n"
+                        + "List.add(\"0123456789012345678901234567890123456789012345678901234567\") returned true\n"
+                        + "List.add(\n"
+                        + "  \"too long too long too long too long too long too long too long too long too long too long\"\n"
+                        + "  )\n" + "  returned true\n");
+    }
+
 }
