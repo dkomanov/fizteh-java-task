@@ -225,7 +225,20 @@ public class Server implements Runnable{
                         worker.join();
                     }
                 } else {
-                    sendAll(MessageType.MESSAGE, message.getName(), message.getText());
+                    if (!message.getName().equals(worker.getName())) {
+                        try{
+                            worker.sendMessage(MessageUtils.message("server", "Don't change your name please"));
+                        } catch (Exception ex) {
+                            try {
+                                worker.sendMessage(MessageUtils.error("can't deliver previous messages to you"));
+                            } catch (Exception ignored) {
+                            }
+                            worker.kill();
+                            worker.join();
+                        }
+                    } else {
+                        sendAll(MessageType.MESSAGE, message.getName(), message.getText());
+                    }
                 }
         }
     }
