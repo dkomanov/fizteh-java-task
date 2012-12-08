@@ -46,7 +46,7 @@ public class Client implements Runnable{
         }
     }
 
-    public void sendMessage(byte[] bytes) {
+    public void sendMessage(byte[] bytes) throws Exception{
         try {
             OutputStream outputStream = socket.getOutputStream();
             outputStream.write(bytes);
@@ -54,6 +54,7 @@ public class Client implements Runnable{
             if (bytes.length > 0  &&  MessageType.MESSAGE.getId() == bytes[0]) {
                 System.out.println("Can't deliver your message");
             }
+            throw ex;
         }
     }
 

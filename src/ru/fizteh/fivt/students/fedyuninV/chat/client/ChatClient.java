@@ -44,7 +44,15 @@ public class ChatClient implements CommandLine {
                 return;
             }
             if (activeConnection != null) {
-                activeConnection.sendMessage(MessageUtils.message(name, args[0]));
+                try {
+                    activeConnection.sendMessage(MessageUtils.message(name, args[0]));
+                } catch (Exception ex) {
+                    try {
+                        activeConnection.sendMessage(MessageUtils.error("cannot deliver previous messages"));
+                    } catch (Exception ignored) {
+                    }
+                    execute("/disconnect", new String[0]);
+                }
             } else {
                 System.out.println("You have no active connections");
             }
@@ -131,8 +139,16 @@ public class ChatClient implements CommandLine {
                 }
             }
         } else if (command.equals("/exit")) {
-            while (!connections.isEmpty()) {
-                activeConnection.sendMessage(MessageUtils.bye());
+            while (true) {
+                synchronized (connections) {
+                    if (connections.isEmpty()) {
+                        break;
+                    }
+                }
+                try {
+                    activeConnection.sendMessage(MessageUtils.bye());
+                } catch (Exception ignored) {
+                }
                 execute("/disconnect", new String[0]);
             }
         } else {
@@ -145,7 +161,9 @@ public class ChatClient implements CommandLine {
         switch (message.getType()) {
             case BYE:
                 System.out.println("You were kicked from server " + name + ", try next time");
-                connections.remove(name);
+                synchronized (connections) {
+                    connections.remove(name);
+                }
                 client.kill();
                 client.join();
                 break;
@@ -154,7 +172,9 @@ public class ChatClient implements CommandLine {
                 if (client.isActive()) {
                     execute("/disconnect", new String[0]);
                 } else {
-                    connections.remove(name);
+                    synchronized (connections) {
+                        connections.remove(name);
+                    }
                 }
                 client.kill();
                 client.join();

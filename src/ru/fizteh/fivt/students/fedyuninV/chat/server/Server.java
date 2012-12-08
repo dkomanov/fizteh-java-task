@@ -39,7 +39,10 @@ public class Server implements Runnable{
                     if (!userName.equals("server")) {
                         UserWorker userWorker = usersOnline.remove(userName);
                         if (message != null) {
-                            userWorker.sendMessage(message.getBytes());
+                            try {
+                                userWorker.sendMessage(message.getBytes());
+                            } catch (Exception ignored) {
+                            }
                         }
                         userWorker.kill();
                         userWorker.join();
@@ -67,7 +70,7 @@ public class Server implements Runnable{
         } catch (IOException ex) {
             System.out.println("Can't start the server");
             System.out.println(ex.getMessage());
-            return;
+            throw new RuntimeException();
         }
         serverThread = new Thread(this);
         serverThread.start();
@@ -77,12 +80,17 @@ public class Server implements Runnable{
         Set<String> userNames;
         synchronized (usersOnline) {
             userNames = usersOnline.keySet();
-            kill(new Message(MessageType.BYE), userNames.toArray(new String[0]));
+        }
+        kill(new Message(MessageType.BYE), userNames.toArray(new String[0]));
+        synchronized (usersOnline) {
             usersOnline.clear();
         }
         synchronized (unauthorizedUsers) {
             for (UserWorker worker: unauthorizedUsers) {
-                worker.sendMessage(MessageUtils.bye());
+                try {
+                    worker.sendMessage(MessageUtils.bye());
+                } catch (Exception ignored) {
+                }
                 worker.kill();
                 worker.join();
             }
@@ -95,14 +103,26 @@ public class Server implements Runnable{
     }
 
     public void send(Message message, String address) {
+        UserWorker worker = null;
         synchronized (usersOnline) {
             if (!usersOnline.containsKey(address)) {
                 System.out.println("There is no user with name " + address);
+                return;
             } else if (address.equals("server")) {
                 MessageUtils.printMessage(message);
+                return;
             } else {
-                usersOnline.get(address).sendMessage(message.getBytes());
+                worker = usersOnline.get(address);
             }
+        }
+        try {
+            if (worker != null) {
+                worker.sendMessage(message.getBytes());
+            }
+        } catch (Exception ex) {
+            Message errorMessage = new Message(MessageType.ERROR);
+            errorMessage.setText("can't deliver previous messages to you");
+            kill(errorMessage, address);
         }
     }
 
@@ -110,8 +130,12 @@ public class Server implements Runnable{
         Message message = new Message(type);
         message.setName(name);
         message.setText(text);
+        Set<String> userNames = null;
         synchronized (usersOnline) {
-            for (String userName: usersOnline.keySet()) {
+            userNames = usersOnline.keySet();
+        }
+        if (userNames != null) {
+            for (String userName: userNames) {
                 send(message, userName);
             }
         }
@@ -124,12 +148,24 @@ public class Server implements Runnable{
             case HELLO:
                 String newName = message.getName();
                 if (name != null) {
-                    worker.sendMessage(MessageUtils.message("server", "Already authorized"));
+                    try {
+                        worker.sendMessage(MessageUtils.message("server", "Already authorized"));
+                    } catch (Exception ex) {
+                        try {
+                            worker.sendMessage(MessageUtils.error("can't deliver previous messages to you"));
+                        } catch (Exception ignored) {
+                        }
+                        worker.kill();
+                        worker.join();
+                    }
                     return;
                 }
                 synchronized (usersOnline) {
                     if (usersOnline.containsKey(newName)  ||  newName == null  ||  newName.matches("[ \n\t]*")) {
-                        worker.sendMessage(MessageUtils.error("Cannot authorize with this name"));
+                        try {
+                            worker.sendMessage(MessageUtils.error("Cannot authorize with this name"));
+                        } catch (Exception ignored) {
+                        }
                         worker.kill();
                         worker.join();
                         return;
@@ -178,7 +214,16 @@ public class Server implements Runnable{
                 break;
             case MESSAGE:
                 if (name == null) {
-                    worker.sendMessage(MessageUtils.message("server", "You need to authorize"));
+                    try {
+                        worker.sendMessage(MessageUtils.message("server", "You need to authorize"));
+                    } catch (Exception ex) {
+                        try {
+                            worker.sendMessage(MessageUtils.error("can't deliver previous messages to you"));
+                        } catch (Exception ignored) {
+                        }
+                        worker.kill();
+                        worker.join();
+                    }
                 } else {
                     sendAll(MessageType.MESSAGE, message.getName(), message.getText());
                 }
