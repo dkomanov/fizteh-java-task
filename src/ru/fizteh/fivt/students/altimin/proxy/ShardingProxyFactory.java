@@ -118,28 +118,44 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                     Class returnType = method.getReturnType();
                     if (returnType.equals(void.class) || returnType.equals(Void.class)) {
                         for (Object target: targets) {
-                            method.invoke(target, objects);
+                            try {
+                                method.invoke(target, objects);
+                            } catch (Throwable e) {
+                                throw e.getCause();
+                            }
                         }
                         return null;
                     }
                     if (returnType.equals(Integer.class) || returnType.equals(int.class)) {
                         int result = 0;
                         for (Object target: targets) {
-                            result += (Integer) method.invoke(target, objects);
+                            try {
+                                result += (Integer) method.invoke(target, objects);
+                            } catch (Throwable e) {
+                                throw e.getCause();
+                            }
                         }
                         return result;
                     }
                     if (returnType.equals(Long.class) || returnType.equals(long.class)) {
                         long result = 0;
                         for (Object target: targets) {
-                            result += (Long) method.invoke(target, objects);
+                            try {
+                                result += (Long) method.invoke(target, objects);
+                            } catch (Throwable e) {
+                                throw e.getCause();
+                            }
                         }
                         return result;
                     }
                     if (List.class.isAssignableFrom(returnType)) {
                         List result = new ArrayList();
                         for (Object target: targets) {
+                            try {
                                 result.addAll((List) method.invoke(target, objects));
+                            } catch (Throwable e) {
+                                throw e.getCause();
+                            }
                         }
                         return result;
                     }
