@@ -22,7 +22,7 @@ public class LoggingProxyFactory implements ru.fizteh.fivt.proxy.LoggingProxyFac
         }
         
         if (!haveMethods) {
-            throw new IllegalArgumentException("There is no methods to proxy");
+            throw new IllegalArgumentException("There is no methods for proxing");
         }
         
         return Proxy.newProxyInstance(interfaces[0].getClassLoader(), interfaces, new InvocationHandler(target, writer));
