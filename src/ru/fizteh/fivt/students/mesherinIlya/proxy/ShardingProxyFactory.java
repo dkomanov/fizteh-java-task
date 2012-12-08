@@ -1,18 +1,18 @@
 
 package ru.fizteh.fivt.students.mesherinIlya.proxy;
 
-import java.lang.reflect.Proxy;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import ru.fizteh.fivt.proxy.DoNotProxy;
 import ru.fizteh.fivt.proxy.Collect;
+import ru.fizteh.fivt.proxy.DoNotProxy;
 
 
 
@@ -30,7 +30,9 @@ class NeverSleepingEye implements InvocationHandler {
         if (method.getAnnotation(DoNotProxy.class) != null) {
             throw new IllegalStateException("This method can't be invoked using the proxy.");
         }
-        
+
+        method.setAccessible(true);
+
      try {
         if (method.getAnnotation(Collect.class) != null) {
             Class returnType = method.getReturnType();
@@ -54,7 +56,7 @@ class NeverSleepingEye implements InvocationHandler {
             } else if (returnType.equals(List.class)) {
                 List result = new ArrayList();
                 for (Object target : targets) {
-                    result.addAll((ArrayList)method.invoke(target, args));
+                    result.addAll((List)method.invoke(target, args));
                 }
                 return result;
             } else {
@@ -65,11 +67,11 @@ class NeverSleepingEye implements InvocationHandler {
             for (Object numberArgument : args) {
                 if (numberArgument.getClass().equals(int.class) 
                         || numberArgument.getClass().equals(Integer.class)) {
-                    return method.invoke(targets[(Integer)numberArgument % args.length], args);    
+                    return method.invoke(targets[(Integer)numberArgument % targets.length], args);
                 }
                 if (numberArgument.getClass().equals(long.class) 
                         || numberArgument.getClass().equals(Long.class)) {
-                    return method.invoke(targets[(int)((Long)numberArgument % args.length)], args);
+                    return method.invoke(targets[(int)((Long)numberArgument % targets.length)], args);
                 }
             }    
             
