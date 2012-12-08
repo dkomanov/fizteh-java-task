@@ -39,10 +39,10 @@ public class ShardingProxyFactoryTest {
         List collectList();
 
         @Collect
-        ArrayList collectArrayList();
+        List collectArrayList();
 
         @Collect
-        LinkedList collectLinkedList();
+        List collectLinkedList();
     }
 
     private static interface EmptyInterface {
@@ -180,11 +180,6 @@ public class ShardingProxyFactoryTest {
     @Rule
     public ExpectedException expected = ExpectedException.none();
 
-    @Test
-    public void test() {
-        //expected.expect(RuntimeException.class);
-        //expected.expectMessage();
-    }
 
 
     @Test
