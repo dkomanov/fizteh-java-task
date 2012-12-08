@@ -187,13 +187,12 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
         log.append("}");
     }
 
-    private Object invokeWithoutLogging(Method method, Object args[]) {
+    private Object invokeWithoutLogging(Method method, Object args[]) throws Throwable {
         try {
             return method.invoke(target, args);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            throw e.getCause();
         }
-
-        return null; // Never reached
     }
 
     public static boolean isPrimitive(Class clazz) {
