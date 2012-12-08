@@ -25,13 +25,13 @@ class NeverSleepingEye implements InvocationHandler {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         
         if (method.getAnnotation(DoNotProxy.class) != null) {
             throw new IllegalStateException("This method can't be invoked using the proxy.");
         }
         
-        //try {
+     try {
         if (method.getAnnotation(Collect.class) != null) {
             Class returnType = method.getReturnType();
             if (returnType.equals(void.class)) {
@@ -39,13 +39,13 @@ class NeverSleepingEye implements InvocationHandler {
                     method.invoke(target, args);
                 }
                 return null;
-            } else if (returnType.equals(int.class)) {
+            } else if (returnType.equals(int.class) || returnType.equals(Integer.class)) {
                 int result = 0;
                 for (Object target : targets) {
                     result += (Integer) method.invoke(target, args);
                 }
                 return result;
-            } else if (returnType.equals(long.class)) {
+            } else if (returnType.equals(long.class) || returnType.equals(Long.class)) {
                 long result = 0;
                 for (Object target : targets) {
                     result += (Long) method.invoke(target, args);
@@ -76,9 +76,9 @@ class NeverSleepingEye implements InvocationHandler {
             throw new IllegalArgumentException(
                     "There must be at least one integer or long number among the parameters.");
         }
-        //} catch (InvocationTargetException e) {
-        //    throw e.getTargetException();
-        //}
+     } catch (InvocationTargetException e) {
+         throw e.getTargetException();
+     }
         
     }
 
@@ -86,7 +86,7 @@ class NeverSleepingEye implements InvocationHandler {
 
 
 
-class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyFactory {
+public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyFactory {
     
     
     @Override
