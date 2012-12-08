@@ -1,4 +1,4 @@
-package misc.chat;
+package ru.fizteh.fivt.students.yushkevichAnton.chat;
 
 import java.io.*;
 import java.util.*;
