@@ -122,7 +122,10 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
             writeIdentIfNeed(log, needIdent);
             log.append(params[i]);
             if (i + 1 != params.length) {
-                log.append(", ");
+                log.append(",");
+                if (!needIdent) {
+                    log.append(" ");
+                }
             }
         }
 
