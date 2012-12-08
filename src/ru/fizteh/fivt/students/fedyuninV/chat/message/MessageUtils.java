@@ -38,6 +38,7 @@ public final class MessageUtils {
         int nextByte;
         for (int i = 0; i < 4; i++) {
             if ((nextByte = inputStream.read()) < 0) {
+                System.out.println("Cannot get string length");
                 throw new Exception("Cannot get string length");
             }
             buffer.put((byte) nextByte);
@@ -49,12 +50,14 @@ public final class MessageUtils {
     private static String getString(InputStream inputStream) throws Exception{
         int length = getLength(inputStream);
         if (length < 0  ||  length > MAX_LENGTH) {
+            System.out.println("Incorrect length of message");
             throw new Exception("Incorrect length of message");
         }
         byte[] text = new byte[length];
         int nextByte;
         for (int i = 0; i < length; i++) {
             if ((nextByte = inputStream.read()) < 0) {
+                System.out.println("Can't get message");
                 throw new Exception("Can't get message");
             }
             text[i] = (byte) nextByte;
@@ -65,6 +68,7 @@ public final class MessageUtils {
     public static Message getMessage(InputStream inputStream) throws Exception {
         int typeInt;
         if ((typeInt = inputStream.read()) < 0) {
+            System.out.println("Can't get type of message");
             throw new Exception("Can't get type of message");
         }
         Message message = new Message(MessageType.getMessageType((byte) typeInt));
