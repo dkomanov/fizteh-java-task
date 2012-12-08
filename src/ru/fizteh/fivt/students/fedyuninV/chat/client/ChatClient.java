@@ -53,14 +53,16 @@ public class ChatClient implements CommandLine {
                 printUsage();
                 return;
             }
-            if (connections.containsKey(args[0])) {
-                if (activeConnection != null) {
-                    activeConnection.setActive(false);
+            synchronized (connections) {
+                if (connections.containsKey(args[0])) {
+                    if (activeConnection != null) {
+                        activeConnection.setActive(false);
+                    }
+                    activeConnection = connections.get(args[0]);
+                    activeConnection.setActive(true);
+                } else {
+                    System.out.println("There is no connected server with name " + args[0]);
                 }
-                activeConnection = connections.get(args[0]);
-                activeConnection.setActive(true);
-            } else {
-                System.out.println("There is no connected server with name " + args[0]);
             }
         } else if (command.equals("/connect")) {
             if (args == null  ||  args.length != 1  ||  args[0].indexOf(':') == -1) {
@@ -77,7 +79,9 @@ public class ChatClient implements CommandLine {
                 if (activeConnection != null) {
                     activeConnection.setActive(false);
                 }
-                connections.put(args[0], newConnection);
+                synchronized (connections) {
+                    connections.put(args[0], newConnection);
+                }
                 activeConnection = newConnection;
             } catch (IOException ex) {
                 System.out.println("Can't create connection to " + args[0]);
@@ -94,7 +98,9 @@ public class ChatClient implements CommandLine {
                 activeConnection.setActive(false);
                 activeConnection.kill();
                 activeConnection.join();
-                connections.remove(activeConnection.getName());
+                synchronized (connections) {
+                    connections.remove(activeConnection.getName());
+                }
             } else {
                 System.out.println("You have no active connections");
                 System.out.println(connections.size());
@@ -103,7 +109,9 @@ public class ChatClient implements CommandLine {
             if (connections.isEmpty()) {
                 activeConnection = null;
             } else {
-                activeConnection = connections.firstEntry().getValue();
+                synchronized (connections) {
+                    activeConnection = connections.firstEntry().getValue();
+                }
                 activeConnection.setActive(true);
             }
         } else if (command.equals("/whereami")) {
@@ -113,9 +121,14 @@ public class ChatClient implements CommandLine {
                 System.out.println("You have no active connections");
             }
         } else if (command.equals("/list")) {
-            Set<String> hostNames = connections.keySet();
-            for (String hostName: hostNames) {
-                System.out.println(hostName);
+            Set<String> hostNames;
+            synchronized (connections) {
+                hostNames = connections.keySet();
+            }
+            if (hostNames != null) {
+                for (String hostName: hostNames) {
+                    System.out.println(hostName);
+                }
             }
         } else if (command.equals("/exit")) {
             while (!connections.isEmpty()) {

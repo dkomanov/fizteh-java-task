@@ -125,20 +125,24 @@ public class Server implements Runnable{
                 String newName = message.getName();
                 if (name != null) {
                     worker.sendMessage(MessageUtils.message("server", "Already authorized"));
-                } else if (usersOnline.containsKey(newName)  ||  newName == null  ||  newName.matches("[ \n\t]*")) {
-                    worker.sendMessage(MessageUtils.error("Cannot authorize with this name"));
-                    worker.kill();
-                    worker.join();
-                } else {
-                    synchronized (unauthorizedUsers) {
-                        unauthorizedUsers.remove(worker);
-                    }
-                    worker.setName(newName);
-                    synchronized (usersOnline) {
-                        usersOnline.put(newName, worker);
-                    }
-                    System.out.println(newName + " suddenly appeared");
+                    return;
                 }
+                synchronized (usersOnline) {
+                    if (usersOnline.containsKey(newName)  ||  newName == null  ||  newName.matches("[ \n\t]*")) {
+                        worker.sendMessage(MessageUtils.error("Cannot authorize with this name"));
+                        worker.kill();
+                        worker.join();
+                        return;
+                    }
+                }
+                synchronized (unauthorizedUsers) {
+                    unauthorizedUsers.remove(worker);
+                }
+                worker.setName(newName);
+                synchronized (usersOnline) {
+                    usersOnline.put(newName, worker);
+                }
+                System.out.println(newName + " suddenly appeared");
                 break;
             case BYE:
                 text = " left the chat";
