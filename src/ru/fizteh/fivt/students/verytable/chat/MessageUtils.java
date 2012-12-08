@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.verytable.chat;
 
+import ru.fizteh.fivt.chat.MessageType;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
