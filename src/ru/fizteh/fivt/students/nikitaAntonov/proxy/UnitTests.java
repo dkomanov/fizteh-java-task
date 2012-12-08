@@ -22,6 +22,12 @@ public class UnitTests {
         void proc(int i);
     }
 
+    interface CanWorkWithArrays {
+        public Double[] setArray(Double[] newArray);
+
+        public void voidMethod(Double[] newArray);
+    }
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -164,5 +170,32 @@ public class UnitTests {
         assertEquals(logger.toString(), "HasVoidResultMethod.proc(42)\n");
 
     }
-    
+
+    @Test
+    public void arrayTest() {
+
+        class ArrayTest implements CanWorkWithArrays {
+            @Override
+            public Double[] setArray(Double[] array) {
+                return array;
+            }
+
+            @Override
+            public void voidMethod(Double[] newArray) {
+            }
+        }
+
+        ArrayTest arrayTest = new ArrayTest();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        CanWorkWithArrays proxy = (CanWorkWithArrays) factory.createProxy(
+                arrayTest, builder, CanWorkWithArrays.class);
+        proxy.setArray(new Double[] { 3.1415, 1.02, 23.04 });
+        proxy.voidMethod(new Double[] {});
+        Assert.assertEquals(
+                builder.toString(),
+                "CanWorkWithArrays.setArray(3{3.1415, 1.02, 23.04}) returned 3{3.1415, 1.02, 23.04}\n"
+                        + "CanWorkWithArrays.voidMethod(0{})\n");
+    }
+
 }
