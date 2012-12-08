@@ -78,7 +78,6 @@ public final class MessageUtils {
         return result.get(0);
     }
 
-    // # TODO write my own
     public static byte[] getMessage(InputStream iStream) throws Exception {
         byte code;
         code = (byte) iStream.read();
@@ -92,7 +91,7 @@ public final class MessageUtils {
             throw new Exception("problems with gettong message");
         }
 
-        if (code == 2) { // just message
+        if (code == 2) {
 
             ByteBuffer buffer = ByteBuffer.allocate(4);
             byte[] len = new byte[4];
@@ -152,7 +151,7 @@ public final class MessageUtils {
             messBuff.put(bMess);
             return messBuff.array();
 
-        } else if (code == 127) { // error message
+        } else if (code == 127) { 
             byte[] bLength = new byte[4];
             for (int i = 0; i < 4; ++i) {
                 int tmp;
@@ -183,7 +182,7 @@ public final class MessageUtils {
             messBuff.put(bLength);
             messBuff.put(bText);
             return messBuff.array();
-        } else if (code == 1) { // hello message
+        } else if (code == 1) { 
             ByteBuffer buffer = ByteBuffer.allocate(4);
             byte[] len = new byte[4];
             for (int i = 0; i < 4; ++i) {
