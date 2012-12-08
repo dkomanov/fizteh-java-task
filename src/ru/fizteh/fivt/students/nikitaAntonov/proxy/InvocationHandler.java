@@ -54,7 +54,7 @@ class InvocationHandler implements java.lang.reflect.InvocationHandler {
             }
 
             log.append("threw ").append(ex.getClass().getName()).append(": ")
-                    .append(ex.getMessage()).append("\n");
+                    .append(ex.getMessage());
 
             StackTraceElement[] traceElements = ex.getStackTrace();
 
