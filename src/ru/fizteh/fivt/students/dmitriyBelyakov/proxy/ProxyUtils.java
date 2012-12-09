@@ -84,11 +84,24 @@ public class ProxyUtils {
         throw new IllegalArgumentException("Incorrect arguments.");
     }
 
-    public static void pop(Object arg) {
-        return;
+    public static int merge(int i1, int i2) {
+        return i1 + i2;
     }
 
-    public static void pop() {
-        return;
+    public static Integer merge(Integer i1, Integer i2) {
+        return i1 + i2;
+    }
+
+    public static long merge(long l1, long l2) {
+        return l1 + l2;
+    }
+
+    public static Long merge(Long l1, Long l2) {
+        return l1 + l2;
+    }
+
+    public static List merge(List l1, List l2) {
+        l1.addAll(l2);
+        return l1;
     }
 }
