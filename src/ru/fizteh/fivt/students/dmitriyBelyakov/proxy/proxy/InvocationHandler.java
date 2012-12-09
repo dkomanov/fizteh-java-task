@@ -23,7 +23,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         }
         method.setAccessible(true);
         if (ProxyUtils.isDoNotProxy(method)) {
-            throw new RuntimeException("Incorrect method.");
+            throw new RuntimeException("This method not for proxy.");
         }
         if (ProxyUtils.isCollect(method)) {
             Class returnType = method.getReturnType();
