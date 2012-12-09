@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+    
+    <context:annotation-config/>
+    
+    <bean id="printer" class="ru.fizteh.fivt.examples.spring.ConsolePrinter"/>
+    <bean id="algorithm" class="ru.fizteh.fivt.examples.spring.SimpleAlgorithm"/>
+    
+    <bean id="user1" class="ru.fizteh.fivt.bind.test.User">
+        <constructor-arg index="0" value="1"/>
+        <constructor-arg index="1" value="MODERATOR"/>
+        <constructor-arg index="2">
+            <bean class="ru.fizteh.fivt.bind.test.UserName">
+                <constructor-arg index="0" value="firstName"/>
+                <constructor-arg index="1" value="lastName"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg index="3">
+            <bean class="ru.fizteh.fivt.bind.test.Permissions">
+                <property name="root" value="true"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+    
+</beans>
