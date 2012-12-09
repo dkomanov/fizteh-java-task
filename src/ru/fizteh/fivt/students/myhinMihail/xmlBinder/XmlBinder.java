@@ -132,7 +132,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         return methods;
     }
 
-    private void serializeToWriter(Object value, XMLStreamWriter xmlWriter) {
+    public void serializeToWriter(Object value, XMLStreamWriter xmlWriter) {
         if (serialised.containsKey(value)) {
             throw new RuntimeException("Can not serialize object");
         }
@@ -179,6 +179,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             }
         } catch (Exception expt) {
             throw new RuntimeException("Error during serialization");
+        } finally {
+            serialised.remove(value);
         }
     }
 
@@ -291,7 +293,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
     }
     
-    private Object getDeserializedValue(Element element, Class<?> clazz) {
+    public Object getDeserializedValue(Element element, Class<?> clazz) {
         if (isPrimitiveType(clazz)) {
             return getPrimitiveValue(element.getTextContent(), clazz);
         }
