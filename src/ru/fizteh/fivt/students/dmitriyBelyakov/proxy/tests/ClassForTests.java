@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.proxy.proxy.test;
+package ru.fizteh.fivt.students.dmitriyBelyakov.proxy.tests;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -53,6 +53,6 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             }
         }
         long num = ProxyUtils.getFirstIntOrLongArgument(args);
-        return method.invoke(targets[(int) (num & targets.length)], args);
+        return method.invoke(targets[(int) (num % targets.length)], args);
     }
 }

@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import ru.fizteh.fivt.students.dmitriyBelyakov.proxy.proxy.test.*;
+import ru.fizteh.fivt.students.dmitriyBelyakov.proxy.tests.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -143,6 +143,19 @@ public class AsmProxyTest extends Assert {
         targets[0] = new ClassForTests(0);
         targets[1] = new ClassForTests(1);
         targets[2] = new ClassWithoutInterfaces();
+        proxy = (InterfaceForTests) factory.createProxy(targets, interfaces);
+    }
+
+    @Test
+    public void testConflictInMethods() {
+        expectedException.expect(RuntimeException.class);
+        expectedException.expectMessage("Conflict methods in interfaces.");
+        AsmShardingProxyFactory factory = new AsmShardingProxyFactory();
+        Class[] interfaces = new Class[2];
+        interfaces[0] = InterfaceForTests.class;
+        interfaces[1] = InterfaceConflictWithInterfaceForTests.class;
+        Object[] targets = new Object[1];
+        targets[0] = new ClassForTests(1);
         proxy = (InterfaceForTests) factory.createProxy(targets, interfaces);
     }
 

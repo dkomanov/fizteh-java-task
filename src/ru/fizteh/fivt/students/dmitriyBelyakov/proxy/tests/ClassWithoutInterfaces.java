@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.proxy.proxy.test;
+package ru.fizteh.fivt.students.dmitriyBelyakov.proxy.tests;
 
 public class ClassWithoutInterfaces {
     public void nothing() {
