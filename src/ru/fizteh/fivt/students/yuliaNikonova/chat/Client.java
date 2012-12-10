@@ -30,7 +30,7 @@ public class Client extends Thread {
         socket = new Socket(host, port);
 
         // We got a connection! Tell the world
-        System.out.println("connected to " + socket);
+        System.out.println("DEBUG: connected to " + socket);
         // Let's grab the streams and create DataInput/Output streams
         // from them
         din = new DataInputStream(socket.getInputStream());
@@ -46,9 +46,9 @@ public class Client extends Thread {
             // System.out.println("Message: "+message);
             // Send it to the server
             byte[] byteMessage = MessageUtils.message(userName, message);
-            int len = byteMessage.length;
+            // int len = byteMessage.length;
             // System.out.println("Length: " + len);
-            dout.writeInt(len);
+            // dout.writeInt(len);
             dout.write(MessageUtils.message(userName, message));
             // System.out.println("Sended message \"" + message +
             // "\" to server");
@@ -63,7 +63,7 @@ public class Client extends Thread {
         servers.put(key, this);
         try {
             // System.out.println("Want to say hello to server");
-            dout.writeInt(MessageUtils.hello(userName).length);
+            // dout.writeInt(MessageUtils.hello(userName).length);
             dout.write(MessageUtils.hello(userName));
             // System.out.println("Username: " + userName);
             // System.out.println("I said hello to server");
@@ -75,16 +75,23 @@ public class Client extends Thread {
             // Receive messages one-by-one, forever
             while (work) {
                 // System.out.println("pause for " + socket + " : " + pause);
-                synchronized (pause) {
-                    if (pause) {
-                        pause.wait();
+                byte[] message = null;
+                try {
+                    message = MessageUtils.getMessage(din);
+                } catch (Exception e) {
+                    if (work) {
+                        if (show) {
+                            System.err.println("Error: problems with getting message " + socket + " " + e.getMessage());
+                        }
+                        disconnect();
                     }
-                    // System.out.println("Awake???");
                 }
-                byte[] message = getMessage(din);
 
                 if (message == null) {
-                    // System.err.println("Null message");
+                    if (show) {
+                        System.err.println("Error: problems with getting message " + socket);
+                    }
+                    disconnect();
                 } else {
                     if (message[0] == 2) {
                         List<String> l = MessageUtils.parse(message);
@@ -145,17 +152,17 @@ public class Client extends Thread {
 
     protected void pause() {
         show = false;
-        pause = true;
-        System.out.println(socket + " is paused");
+        // pause = true;
+        System.out.println("DEBUG: " + socket + " is paused");
     }
 
     protected void begin() {
-        System.out.println(socket + " is started");
+        System.out.println("DEBUG: " + socket + " is started");
         show = true;
-        pause = false;
-        synchronized (pause) {
-            pause.notifyAll();
-        }
+        // pause = false;
+        // (pause) {
+        // pause.notifyAll();
+        // }
     }
 
     protected void disconnect() {

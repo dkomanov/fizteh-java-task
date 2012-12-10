@@ -42,15 +42,27 @@ public class ServerThread extends Thread {
             DataOutputStream dout = new DataOutputStream(socket.getOutputStream());
             DataInputStream din = new DataInputStream(socket.getInputStream());
             while (work) {
-                byte[] message = getMessage(din);
+                byte[] message = null;
+                try {
+                    message = MessageUtils.getMessage(din);
+                } catch (Exception e) {
+                    sendErrorandStop(dout, e.getMessage());
+                    work = false;
+                }
+
                 if (message == null || message.length < 1) {
                     sendErrorandStop(dout, "You send bad message");
                     work = false;
                 } else {
                     if (message[0] == 1) { // сообщение с ником
                         if (!userName.isEmpty()) {
-                            dout.writeInt(MessageUtils.error("You can't change your nick").length);
-                            dout.write(MessageUtils.error("You can't change your nick"));
+                            // dout.writeInt(MessageUtils.error("You can't change your nick").length);
+                            try {
+                                dout.write(MessageUtils.error("You can't change your nick"));
+                            } catch (Exception e) {
+                                sendErrorandStop(dout, e.getMessage());
+                                work = false;
+                            }
                         } else {
                             String nick = "";
                             try {
@@ -63,7 +75,7 @@ public class ServerThread extends Thread {
                                 sendErrorandStop(dout, "This nick " + nick + " is already exist");
                                 work = false;
                             } else {
-                                System.out.println("New user: " + nick);
+                                System.out.println("DEBUG: new user - " + nick);
                                 userName = nick;
                                 users.put(userName, socket);
                                 outputStreams.put(socket, dout);
@@ -121,8 +133,12 @@ public class ServerThread extends Thread {
 
     private void sendErrorandStop(DataOutputStream dout, String errorMessage) throws IOException {
         if (work) {
-            dout.writeInt(MessageUtils.error(errorMessage).length);
-            dout.write(MessageUtils.error(errorMessage));
+            // dout.writeInt(MessageUtils.error(errorMessage).length);
+            try {
+                dout.write(MessageUtils.error(errorMessage));
+            } catch (Exception e) {
+
+            }
             // dout.write(MessageUtils.bye());
             if (!userName.isEmpty() || users.containsKey(userName)) {
                 server.kill(userName);
