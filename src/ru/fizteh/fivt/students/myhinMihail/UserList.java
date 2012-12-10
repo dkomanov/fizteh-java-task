@@ -81,6 +81,42 @@ public class UserList extends JFrame {
     private XmlBinder<User> binder = new XmlBinder<User>(User.class);
     private File xmlFile;
     
+    public static class NameCompUp implements Comparator<ArrayList<Object>> {
+        public int compare(ArrayList<Object> one, ArrayList<Object> two) {
+            return ((String) one.get(2) + " " + (String) one.get(3)).compareTo((String) two.get(2) + " " + two.get(3));
+        }
+    }
+    
+    public static class NameCompDown implements Comparator<ArrayList<Object>> {
+        public int compare(ArrayList<Object> two, ArrayList<Object> one) {
+            return ((String) one.get(2) + " " + (String) one.get(3)).compareTo((String) two.get(2) + " " + two.get(3));
+        }
+    }
+    
+    static int getType(Object ob) {
+        switch (((UserType) ob).name()) {
+            case "USER": 
+                return 1;
+            case "ADVANCED": 
+                return 2;
+            case "MODERATOR": 
+                return 3;
+        }
+        return -1;
+    }
+    
+    public static class TypeCompUp implements Comparator<ArrayList<Object>> {
+        public int compare(ArrayList<Object> one, ArrayList<Object> two) {
+            return Integer.compare(getType(one.get(1)), getType(two.get(1)));
+        }
+    }
+    
+    public static class TypeCompDown implements Comparator<ArrayList<Object>> {
+        public int compare(ArrayList<Object> two, ArrayList<Object> one) {
+            return Integer.compare(getType(one.get(1)), getType(two.get(1)));
+        }
+    }
+    
     public class ActionRunner implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent event) {
@@ -143,6 +179,30 @@ public class UserList extends JFrame {
                         return;
                     }
                     ((UserListTable) table.getModel()).removeRow(row);
+                    table.updateUI();
+                    break;
+                }
+                
+                case "SORT_NAME_UP": {
+                    Collections.sort(((UserListTable) table.getModel()).getData(), new NameCompUp());
+                    table.updateUI();
+                    break;
+                }
+                
+                case "SORT_NAME_DOWN": {
+                    Collections.sort(((UserListTable) table.getModel()).getData(), new NameCompDown());
+                    table.updateUI();
+                    break;
+                }
+                
+                case "SORT_TYPE_UP": {
+                    Collections.sort(((UserListTable) table.getModel()).getData(), new TypeCompUp());
+                    table.updateUI();
+                    break;
+                }
+                
+                case "SORT_TYPE_DOWN": {
+                    Collections.sort(((UserListTable) table.getModel()).getData(), new TypeCompDown());
                     table.updateUI();
                     break;
                 }
@@ -234,6 +294,29 @@ public class UserList extends JFrame {
         editDeleteUser.addActionListener(action);
         edit.add(editDeleteUser);
         menu.add(edit);
+        
+        JMenu sort = new JMenu("Sort");
+        JMenuItem sortNameUp = new JMenuItem("Name Up");
+        sortNameUp.setActionCommand("SORT_NAME_UP");
+        sortNameUp.addActionListener(action);
+        sort.add(sortNameUp);
+        
+        JMenuItem sortNameDown = new JMenuItem("Name Down");
+        sortNameDown.setActionCommand("SORT_NAME_DOWN");
+        sortNameDown.addActionListener(action);
+        sort.add(sortNameDown);
+        
+        JMenuItem sortTypeUp = new JMenuItem("Type Up");
+        sortTypeUp.setActionCommand("SORT_TYPE_UP");
+        sortTypeUp.addActionListener(action);
+        sort.add(sortTypeUp);
+        
+        JMenuItem sortTypeDown = new JMenuItem("Tupe Down");
+        sortTypeDown.setActionCommand("SORT_TYPE_DOWN");
+        sortTypeDown.addActionListener(action);
+        sort.add(sortTypeDown);
+        
+        menu.add(sort);
         
         setJMenuBar(menu);
         
