@@ -52,30 +52,72 @@ public final class MessageUtils {
         return buffer.array();
     }
 
-    public static byte typeOf(byte[] message) {
-        return message[0];
-    }
+    public static List<String> getMessage(byte[] message) {
+        if (message == null) {
+            throw new RuntimeException("'message' is NullPointer");
+        }
 
-    public static List<String> dispatch(byte[] message) {
-        List<String> result = new ArrayList<String>();
         ByteBuffer buffer = ByteBuffer.wrap(message);
-        int head = buffer.get();
-        int count = buffer.get();
-        for(int m = 0; m < count; ++m) {
-            int length = buffer.getInt();
-            byte[] temp = new byte[length];
-            buffer.get(temp);
-            result.add(new String(temp));
+        int length = message.length;
+        if (length == 0) {
+            throw new RuntimeException("'message' is empty");
         }
-        return result;
+
+        List<String> mes = new ArrayList<String>();
+        switch (buffer.get()) {
+            case 1:
+                mes.add("HELLO");
+                break;
+            case 2:
+                mes.add("MESSAGE");
+                break;
+            case 3:
+                mes.add("BYE");
+                break;
+            case 127:
+                mes.add("ERROR");
+                break;
+            default:
+                throw new RuntimeException("'message' type is wrong");
+        }
+
+        if (length == 1) {
+            throw new RuntimeException("'message' has only type");
+        }
+
+        int count = buffer.get();
+        int curPosition = 2;
+
+        for (int i = 0; i < count; ++i) {
+            if (curPosition >= length) {
+                throw new RuntimeException("Incorrect number of messages");
+            }
+
+            int messageLength = buffer.getInt();
+            if (messageLength <= 0) {
+                throw new RuntimeException("Nonpositive length of message");
+            }
+            if (curPosition + messageLength >= length) {
+                throw new RuntimeException("Incorrect length of message");
+            }
+
+            ++curPosition;
+            byte[] bytes = new byte[messageLength];
+            buffer.get(bytes);
+            mes.add(new String(bytes));
+            curPosition += messageLength;
+        }
+        return mes;
     }
 
-    public static String getNickname(byte[] message) {
-        List<String> result = dispatch(message);
-        if (result.size() != 1) {
-            System.err.println("Bad Nickname");
-            System.exit(1);
+    public static String getNickname(List<String> l) {
+        if (l.size() != 2) {
+            throw new RuntimeException("Message with nickname consists incorrect "
+                    + "number of messages");
         }
-        return result.get(0);
+        if (!l.get(0).equals("HELLO")) {
+            throw new RuntimeException("Incorrect type of nickname message");
+        }
+        return l.get(1);
     }
 }

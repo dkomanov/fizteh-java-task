@@ -178,6 +178,93 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
     }
 
+    public void serializeObject(Object o, XMLStreamWriter xmlsw) {
+        if (o == null) {
+            return;
+        }
+        Class clazz = o.getClass();
+        try {
+            if (isPrimitive(clazz)) {
+                xmlsw.writeCharacters(o.toString());
+                return;
+            }
+            BindingType bt = (BindingType)clazz.getAnnotation(BindingType.class);
+            if (bt == null || bt.value().equals(MembersToBind.FIELDS)) {
+                List<FieldWithName> allFieldWithName = fields.get(clazz);
+                for (int i = 0; i < allFieldWithName.size(); ++i) {
+                    Field f = allFieldWithName.get(i).f;
+                    if (f.get(o) != null) {
+                        String name = getName(f);
+                        allFieldWithName.get(i).name = name;
+                        if (f.getAnnotation(AsXmlAttribute.class) == null) {
+                            xmlsw.writeStartElement(name);
+                            int k = i + 1;
+                            while (k < allFieldWithName.size()) {
+                                Field field = allFieldWithName.get(k).f;
+                                if (field.get(o) != null) {
+                                    if (field.getAnnotation(AsXmlAttribute.class) != null) {
+                                        String s = getName(field);
+                                        allFieldWithName.get(k).name = name;
+                                        writeFieldAsAttribute(field, xmlsw, o, s);
+                                        ++k;
+                                    } else {
+                                        break;
+                                    }
+                                } else {
+                                    ++k;
+                                }
+                            }
+                            i = --k;
+                            serializeObject(f.get(o), xmlsw);
+                            xmlsw.writeEndElement();
+                        } else {
+                            writeFieldAsAttribute(f, xmlsw, o, name);
+                        }
+                    }
+                }
+            } else {
+                 List<PairMethodsToSerialization> pairMethods = methods.get(clazz);
+                 for (int i = 0; i < pairMethods.size(); ++i) {
+                     PairMethodsToSerialization pm = pairMethods.get(i);
+                     String name = getName(pm.getter, pm.name);
+                     name = getName(pm.setter, name);
+                     pm.name = name;
+                     Object newObject = pm.getter.invoke(o);
+                     if (newObject != null) {
+                         if (pm.getter.getAnnotation(AsXmlAttribute.class) == null
+                                  && pm.setter.getAnnotation(AsXmlAttribute.class) == null) {
+                            xmlsw.writeStartElement(name);
+                            int k = i + 1;
+                            while (k < pairMethods.size()) {
+                                PairMethodsToSerialization m = pairMethods.get(k);
+                                String s = getName(m.getter, m.name);
+                                Object obj = m.getter.invoke(o);
+                                if (obj != null) {
+                                    if (m.getter.getAnnotation(AsXmlAttribute.class) != null) {
+                                        xmlsw.writeAttribute(s, obj.toString());
+                                        ++k;
+                                    } else {
+                                        break;
+                                    }
+                                } else {
+                                    ++k;
+                                }
+                            }
+                            i = --k;
+                            serializeObject(newObject, xmlsw);
+                            xmlsw.writeEndElement();
+                         } else {
+                             xmlsw.writeAttribute(name, newObject.toString());
+                         }
+                     }
+                 }
+            }
+        } catch (Throwable cause) {
+            throw new RuntimeException("Something bad occured during serialization",
+                    cause);
+        }
+    }
+
     private void serializeObject(Object o, XMLStreamWriter xmlsw,
             Set<Object> serialized) {
         if (serialized.contains(o)) {
@@ -351,7 +438,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
     }
 
-    private Object deserializeObject(Element e, Class clazz) {
+    public Object deserializeObject(Element e, Class clazz) {
         if (isPrimitive(clazz)) {
            return getPrimitive(e.getTextContent(), clazz);
         }
