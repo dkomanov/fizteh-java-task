@@ -76,9 +76,8 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
     private void generateInterfaceMethod(ClassWriter cw, final Class interfc, final Method method, final int targetsCount) {
         final Type arrayListType = Type.getType(ArrayList.class);
         final Type proxyType = Type.getType("Proxy");
-        final Type proxyUtilsType = Type.getType(ProxyUtils.class);
         final Type interfaceType = Type.getType(interfc);
-        method.setAccessible(true);
+        //method.setAccessible(true);
         final String descriptor = Type.getMethodDescriptor(method);
         final String name = method.getName();
         final Class methodReturnType = method.getReturnType();
