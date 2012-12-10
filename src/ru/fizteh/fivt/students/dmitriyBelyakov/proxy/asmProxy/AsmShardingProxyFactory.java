@@ -86,7 +86,7 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
                 new Function1V<GeneratorAdapter>() {
                     @Override
                     public void apply(GeneratorAdapter ga) {
-                        if(ProxyUtils.isDoNotProxy(method)) {
+                        if (ProxyUtils.isDoNotProxy(method)) {
                             ga.throwException(Type.getType(RuntimeException.class), "This method not for proxy.");
                         }
                         if (!ProxyUtils.isCollect(method)) {
