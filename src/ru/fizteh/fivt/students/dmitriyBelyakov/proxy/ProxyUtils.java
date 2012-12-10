@@ -77,7 +77,7 @@ public class ProxyUtils {
         for (Object arg : args) {
             Class clazz = arg.getClass();
             if (clazz.equals(int.class) || clazz.equals(Integer.class)) {
-                return (long) ((Integer)arg);
+                return (long) ((Integer) arg);
             } else if (clazz.equals(long.class) || clazz.equals(Long.class)) {
                 return (Long) arg;
             }
@@ -97,17 +97,17 @@ public class ProxyUtils {
 
     public static void throwExceptionIfInterfacesContainsEqualsMethodSignature(Class[] interfaces) {
         HashSet<String> signatures = new HashSet<>();
-        for(Class interfc : interfaces) {
-            Method[] methods =interfc.getDeclaredMethods();
-            for(Method method : methods) {
+        for (Class interfc : interfaces) {
+            Method[] methods = interfc.getDeclaredMethods();
+            for (Method method : methods) {
                 StringBuilder signature = new StringBuilder();
                 signature.append(method.getName()).append("(");
                 Class[] argTypes = method.getParameterTypes();
-                for(Class type : argTypes) {
+                for (Class type : argTypes) {
                     signature.append(Type.getDescriptor(type));
                 }
                 signature.append(")");
-                if(signatures.contains(signature.toString())) {
+                if (signatures.contains(signature.toString())) {
                     throw new IllegalArgumentException("Conflict methods in interfaces.");
                 } else {
                     signatures.add(signature.toString());

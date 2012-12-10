@@ -92,7 +92,7 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
                             ga.getField(proxyType, "targets", arrayListType);
                             int numOfArg = ProxyUtils.getNumberOfFirstIntOrLongArgument(method.getParameterTypes());
                             ga.loadArg(numOfArg);
-                            if(method.getParameterTypes()[numOfArg].equals(int.class)) {
+                            if (method.getParameterTypes()[numOfArg].equals(int.class)) {
                                 ga.cast(Type.INT_TYPE, Type.LONG_TYPE);
                             }
                             ga.push((long) targetsCount);
