@@ -10,8 +10,8 @@ import java.io.InputStream;
  * Contains methods to create a message, that could be transmitted via network.
  * It's just for protocol explanation
  */
+
 public final class MessageUtils {
-	
     private MessageUtils() {
     }
     
@@ -36,7 +36,6 @@ public final class MessageUtils {
     	int messangesNumber = in.read();
     	if (type == null)
     		throw new RuntimeException("Incorrect message specification");
-    	
     	if (type == MessageType.MESSAGE || type == MessageType.HELLO){
 	    	ByteBuffer buffer = ByteBuffer.allocate(4);
 	    	for (int i = 0; i < 4; ++i) {
@@ -48,10 +47,9 @@ public final class MessageUtils {
 	        }
 	    	buffer.position(0);
 	    	int length = buffer.getInt();
-	        if (length > 100 || length == 0) {
+	        if (length > 100 || length <= 0) {
 	            throw new RuntimeException("Incorrect length");
 	        }
-	
 	        name = new byte[length];
 	        for (int i = 0; i < length; ++i) {
 	            int tmp;
@@ -59,8 +57,7 @@ public final class MessageUtils {
 	                throw new RuntimeException("Cannot read message");
 	            }
 	            name[i] = (byte) tmp;
-	        }
-	        
+	        }    
     	}
         if (type == MessageType.MESSAGE || type == MessageType.ERROR){
         	ByteBuffer buffer = ByteBuffer.allocate(4);
@@ -73,7 +70,7 @@ public final class MessageUtils {
 		    }
 		    buffer.position(0);
 		    int length = buffer.getInt();
-		    if (length > 1000 || length == 0) {
+		    if (length > 1000 || length <= 0) {
 		        throw new RuntimeException("Incorrect length");
 		    }
 		    message = new byte[length];

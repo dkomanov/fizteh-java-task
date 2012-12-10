@@ -11,68 +11,66 @@ import java.io.*;
 import java.util.Vector;
 
 
-public class Server {
+public class Server  {
 	private ServerSocket socket;
 	private Thread serverThread = null;
 	private int serverPort;
 	private Vector<Listener> listeners = new Vector<Listener>();
-	
-	class ServerListener implements Runnable{
-	
-		private ServerListener(int port) throws IOException {
+		
+	class ServerListener implements Runnable {
+		private ServerListener(int port) throws IOException  {
 			socket = new ServerSocket(port);
 			serverPort = port;
 		}
 		
 		@Override
-		public void run(){
+		public void run() {
 			serverThread = Thread.currentThread();
 			while (true) {
 				Socket newSocket;
-				try{
+				try {
 					newSocket = socket.accept();
-				}catch (IOException e){
+				} catch (IOException e) {
 					System.out.println("Couldn't accept socket");
 					break;
 				}
 				if (serverThread.isInterrupted())
 					break;
-	        	if (newSocket != null){
+	        	if (newSocket != null) {
 	                    Listener listener;
-						try {
+						try  {
 							listener = new Listener(newSocket);
 		                    listener.myThread = new Thread(listener);
 		                    listeners.add(listener);
 		                    listener.myThread.setDaemon(true);
 		                    listener.myThread.start();
-						} catch (IOException e) {
+						} catch (IOException e)  {
 							System.out.print("Couldn't initialize read/write buffer");
 							break;
 						}
 	        	}
 	        }
 			sendAll(new Message(MessageType.BYE, "server", ""), true);
-			for (Listener ls : listeners){
+			for (Listener ls : listeners) {
 				ls.myThread.interrupt();
 				ls.closeSocket();
 			}
 		}
 	}
 	
-	public void run() throws IOException{
+	public void run() throws IOException {
 		String input = null;
 		BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
-		do{
+		do {
 			input = userInput.readLine();
-			if (!input.isEmpty() && input.charAt(0) == '/'){
+			if (!input.isEmpty() && input.charAt(0) == '/') {
 				String[] inputCommand = null;
 				inputCommand = input.substring(1).split(" ", 3);
-				switch (inputCommand[0]){
-				
+				switch (inputCommand[0]) {
 					case "listen" :
 						if (inputCommand.length != 2)
 							throw new IOException("Wrong arguments number for command \"listen\"");
-						else{
+						else {
 							System.out.println("Start to listening " + inputCommand[1]);
 							serverThread = new Thread(new ServerListener(Integer.parseInt(inputCommand[1])));
 							serverThread.setDaemon(true);
@@ -82,7 +80,7 @@ public class Server {
 						
 					case "list" :
 						System.out.println("Connected users : ");
-						for (Listener ls : listeners){
+						for (Listener ls : listeners) {
 							System.out.println("\t" + ls.nickname);
 						}
 						break;	
@@ -92,7 +90,8 @@ public class Server {
 							throw new IOException("Wrong arguments number for command \"send\"");
 						else
 							if (listeners.contains(new Listener(inputCommand[1])))
-									listeners.get(listeners.indexOf(new Listener(inputCommand[1]))).send(new Message(MessageType.MESSAGE, "server", inputCommand[2]));
+									listeners.get(listeners.indexOf(new Listener(inputCommand[1]))).send(
+											new Message(MessageType.MESSAGE, "server", inputCommand[2]));
 							else
 								System.out.println("User " + inputCommand[1] + " not found");
 						break;
@@ -110,9 +109,10 @@ public class Server {
 					case "kill" :
 						if (inputCommand.length != 2)
 							throw new IOException("Wrong arguments number for command \"kill\"");
-						else{
-							if (listeners.contains(new Listener(inputCommand[1]))){
-								listeners.get(listeners.indexOf(new Listener(inputCommand[1]))).send(new Message(MessageType.BYE, "server", ""));
+						else {
+							if (listeners.contains(new Listener(inputCommand[1]))) {
+								listeners.get(listeners.indexOf(new Listener(inputCommand[1]))).send(
+										new Message(MessageType.BYE, "server", ""));
 								listeners.get(listeners.indexOf(new Listener(inputCommand[1]))).myThread.interrupt();
 								listeners.get(listeners.indexOf(new Listener(inputCommand[1]))).closeSocket();
 								listeners.remove(new Listener(inputCommand[1]));
@@ -120,55 +120,54 @@ public class Server {
 						}
 				}
 			}
-		}while(!input.equals("/exit") && !input.equals("/stop"));
-		try{
+		} while (!input.equals("/exit") && !input.equals("/stop"));
+		try {
 			if (serverThread != null)
 				serverThread.interrupt();
 			new Socket("localhost", serverPort);
-		} catch (IOException ignored){};
+		} catch (IOException ignored) {};
 	}
 	
-	public static void main(String[] args) throws IOException{
+	public static void main(String[] args) throws IOException {
 		new Server().run();
 	}
 	
-	private void sendAll(Message message, boolean isExceptSender){
-		for (Listener ls : listeners){
+	private void sendAll(Message message, boolean isExceptSender) {
+		for (Listener ls : listeners) {
 			if (!isExceptSender || !ls.nickname.equals(message.getName()))
 				ls.send(message);
 		}
 	}
 	
-	private class Listener implements Runnable{
-		
+	private class Listener implements Runnable {
 		private String ip;
 		private Socket socket;
 		private Thread myThread;
 		private String nickname = null; 
 		
-		Listener(Socket socket) throws IOException{
+		Listener(Socket socket) throws IOException {
             this.socket = socket;
             ip = socket.getInetAddress().toString();
 		}
 		
-		Listener(String nickname){
+		Listener(String nickname) {
 			this.nickname = nickname;
 		}
 		
-		public synchronized void closeSocket(){
-			try{
+		public synchronized void closeSocket() {
+			try {
 				if (socket != null && !socket.isClosed())
 				socket.close();
-			}catch (IOException e){
+			} catch (IOException e) {
 				System.out.print("Couldn't close socket");
 			}
 		}
 
-		public boolean send(Message message){
-			try{
+		public boolean send(Message message) {
+			try {
 				socket.getOutputStream().write(message.toByte());
 				socket.getOutputStream().flush();
-			}catch (IOException e){
+			} catch (IOException e) {
 				System.out.print("Couldn't send message");
 				closeSocket();
 				return false;
@@ -177,20 +176,20 @@ public class Server {
 		}
 		
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(Object obj)  {
 			if (obj instanceof Listener)
-				return nickname != null && ((Listener)obj).nickname != null && nickname.equals(((Listener)obj).nickname);
+				return nickname != null && ((Listener) obj).nickname != null && nickname.equals(((Listener) obj).nickname);
 			else
 				return false;
 		}
 		
 		@Override
-		public void run(){
+		public void run() {
 			Message message = null;
-			while (!socket.isClosed()){
-				try{
+			while (!socket.isClosed()) {
+				try {
 					message = MessageUtils.getMessage(socket.getInputStream());
-				}catch (Exception e){
+				} catch (Exception e) {
 					closeSocket();
 					break;
 				}
@@ -198,7 +197,7 @@ public class Server {
 					break;
 				if (message == null || message.getType() == MessageType.BYE)
 					break;
-				if (message.getType() == MessageType.ERROR){
+				if (message.getType() == MessageType.ERROR) {
 					System.out.println(message.getText());
 					break;
 				}
