@@ -20,6 +20,7 @@ public class Server {
         if (s1 == null || s1 == null) {
             sendMessage(sc, MessageUtils.message("<server>", "bad message"));
             System.out.println("Bad message from " + getNickFromSocket(sc));
+            
             return false;
         }
         
@@ -109,6 +110,13 @@ public class Server {
         }
     }
     
+    public static void sendBadMessage(String error, SocketChannel clientSocket, List<SocketChannel> anonymousClients) {
+    	sendMessage(clientSocket, MessageUtils.error(error));
+        sendMessage(clientSocket, MessageUtils.bye());
+        anonymousClients.remove(clientSocket);
+        Utils.tryClose(clientSocket);
+    }
+    
     public static void kill(StringTokenizer st) {
         try {
             if (st.hasMoreTokens()) {
@@ -145,7 +153,7 @@ public class Server {
     public static void disconnectClient(SocketChannel sc) {
         String clientName = getNickFromSocket(sc);
         if (clientName == null) {
-            Utils.printErrorAndExit("Error: it could not happen");
+        	return;
         }
         
         sendMessage(sc, MessageUtils.bye());
@@ -273,15 +281,12 @@ public class Server {
                                     continue;
                                 }
                                 
-                                if (clients.containsKey(nick) || nick.length() >  32) {
-                                    if (nick.length() >  32) {
-                                        sendMessage(clientSocket, MessageUtils.error("<server>: your nick is too long"));
-                                    } else {
-                                        sendMessage(clientSocket, MessageUtils.error("<server>: another user is using this nick"));
-                                    }
-                                    sendMessage(clientSocket, MessageUtils.bye());
-                                    anonymousClients.remove(clientSocket);
-                                    Utils.tryClose(clientSocket);
+                                if (clients.containsKey(nick)) {
+                                	sendBadMessage("<server>: another user is using this nick", clientSocket, anonymousClients);
+                                } else if (nick.length() >  32) {
+                                	sendBadMessage("<server>: your nick is too long", clientSocket, anonymousClients);
+                                } else if (nick.replaceAll("\\s*", "").equals("") || nick.replaceAll("\\s*", "").contains("server")) {
+                                	sendBadMessage("<server>: bad nick", clientSocket, anonymousClients);
                                 } else {
                                     System.out.println(nick + " enter this chatroom");
                                     notifyAllClients(nick + " enter this chatroom");
@@ -296,7 +301,8 @@ public class Server {
                             case 2: {
                                 String nick = getNickFromSocket(clientSocket);
                                 if (nick == null) {
-                                    Utils.printErrorAndExit("Error: it could not happen");
+                                	//clientSocket.close();
+                                	continue;
                                 }
                                 
                                 Utils.Pair<String, String> pair = MessageUtils.parseMessage(message);
