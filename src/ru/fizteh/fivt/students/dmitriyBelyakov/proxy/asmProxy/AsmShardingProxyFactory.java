@@ -91,9 +91,11 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
                         } else if (!ProxyUtils.isCollect(method)) {
                             ga.loadThis();
                             ga.getField(proxyType, "targets", arrayListType);
-                            ga.loadArgArray();
-                            ga.invokeStatic(proxyUtilsType, new org.objectweb.asm.commons.Method("getFirstIntOrLongArgument",
-                                    "([Ljava/lang/Object;)J"));
+                            int numOfArg = ProxyUtils.getNumberOfFirstIntOrLongArgument(method.getParameterTypes());
+                            ga.loadArg(numOfArg);
+                            if(method.getParameterTypes()[numOfArg].equals(int.class)) {
+                                ga.cast(Type.INT_TYPE, Type.LONG_TYPE);
+                            }
                             ga.push((long) targetsCount);
                             ga.math(GeneratorAdapter.REM, Type.LONG_TYPE);
                             ga.cast(Type.LONG_TYPE, Type.INT_TYPE);

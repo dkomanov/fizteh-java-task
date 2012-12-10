@@ -85,6 +85,16 @@ public class ProxyUtils {
         throw new IllegalArgumentException("Incorrect arguments.");
     }
 
+    public static int getNumberOfFirstIntOrLongArgument(Class[] args) {
+        for (int i = 0; i < args.length; ++i) {
+            Class clazz = args[i];
+            if (clazz.equals(int.class) || clazz.equals(Integer.class) || clazz.equals(long.class) || clazz.equals(Long.class)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Incorrect arguments.");
+    }
+
     public static void throwExceptionIfInterfacesContainsEqualsMethodSignature(Class[] interfaces) {
         HashSet<String> signatures = new HashSet<>();
         for(Class interfc : interfaces) {
