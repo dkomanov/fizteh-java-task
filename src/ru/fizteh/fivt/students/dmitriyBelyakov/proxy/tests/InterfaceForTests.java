@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.proxy;
+package ru.fizteh.fivt.students.dmitriyBelyakov.proxy.tests;
 
 import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
@@ -24,4 +24,12 @@ public interface InterfaceForTests {
 
     @Collect
     List numCollectList();
+
+    Integer numInteger(int num);
+
+    @Collect
+    Integer numCollectInteger();
+
+    @Collect
+    Long numCollectLongObject();
 }
