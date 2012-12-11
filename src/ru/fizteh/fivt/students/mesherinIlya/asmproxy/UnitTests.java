@@ -196,7 +196,7 @@ public class UnitTests {
         MyTestInterface myInter = (MyTestInterface) factory.createProxy(clazz, interf);
         Assert.assertTrue(myInter.smth(2, 3) == 8);
         Assert.assertTrue(myInter.getA(3L) == -3L);
-        //Assert.assertEquals(myInter.getL(412L).longValue(), 826);
+        Assert.assertEquals(myInter.getL(412L).longValue(), 826);
         Assert.assertEquals(myInter.getSomething(), 30);
         Assert.assertEquals(myInter.getLength("123456"), 12);
     }

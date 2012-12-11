@@ -146,7 +146,8 @@ public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingPro
                     @Override
                     public void apply(GeneratorAdapter ga) {
                         if (method.getAnnotation(DoNotProxy.class) != null) {
-                            throw new IllegalStateException("This method can't be invoked using the proxy.");
+                            ga.throwException(Type.getType(IllegalStateException.class),
+                                    "This method can't be invoked using the proxy.");
                         } else if (method.getAnnotation(Collect.class) != null) {
                             Label forContinue = ga.newLabel();
                             Label forEnding = ga.newLabel();
@@ -202,7 +203,7 @@ public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingPro
                             ga.checkCast(Type.getType(intrface));
                             ga.loadArgs();
                             ga.invokeInterface(Type.getType(intrface), new Method(method.getName(), Type.getMethodDescriptor(method)));
-                            // ProxyUtils.merge(res, obj);
+                            // add summand to result
                             if (!returnType.equals(void.class)) {
                                 Type type = Type.getType(returnType);
                                 ga.loadLocal(summand);
@@ -214,8 +215,6 @@ public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingPro
                                 } else {
                                     ga.math(GeneratorAdapter.ADD, Type.getType(returnType)); 
                                 }
-                                //ga.invokeStatic(Type.getType(ProxyUtils.class),
-                                 //       new Method("merge", "(" + descriptor + descriptor + ")" + descriptor));
                                 ga.storeLocal(summand);
                             }
 
