@@ -5,6 +5,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import ru.fizteh.fivt.proxy.ShardingProxyFactory;
 import ru.fizteh.fivt.students.dmitriyBelyakov.proxy.ProxyUtils;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +24,6 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
         cw.visit(Opcodes.V1_7, Opcodes.ACC_PUBLIC, "Proxy", null, "java/lang/Object", interfacesName);
         cw.visitField(Opcodes.ACC_PRIVATE, "targets", Type.getDescriptor(ArrayList.class), null, null).visitEnd();
         generateConstructor(cw);
-        generateLoadTargets(cw);
         for (final Class interfc : interfaces) {
             Method[] methods = interfc.getDeclaredMethods();
             for (final Method method : methods) {
@@ -34,19 +34,16 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
         cw.visitEnd();
         try {
             Class clazz = loadClass(cw.toByteArray());
-            Object obj = clazz.newInstance();
-            Method method = clazz.getDeclaredMethod("loadTargets", ArrayList.class);
-            method.setAccessible(true);
-            method.invoke(obj, new ArrayList(Arrays.asList(targets)));
-            return obj;
+            Constructor constructor = clazz.getConstructor(ArrayList.class);
+            constructor.setAccessible(true);
+            return constructor.newInstance(new ArrayList(Arrays.asList(targets)));
         } catch (Throwable t) {
-            t.printStackTrace();
-            throw new RuntimeException("Cannot create proxy object.");
+            throw new RuntimeException("Cannot create proxy object.", t);
         }
     }
 
     private void generateConstructor(ClassWriter cw) {
-        generateMethod(cw, Opcodes.ACC_PUBLIC, "<init>", "()V",
+        generateMethod(cw, Opcodes.ACC_PUBLIC, "<init>", "(" + Type.getDescriptor(ArrayList.class) + ")V",
                 new Function1V<GeneratorAdapter>() {
                     @Override
                     public void apply(GeneratorAdapter ga) {
@@ -55,16 +52,6 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
                                 Type.getType("java/lang/Object"),
                                 new org.objectweb.asm.commons.Method("<init>", "()V")
                         );
-                        ga.returnValue();
-                    }
-                });
-    }
-
-    private void generateLoadTargets(ClassWriter cw) {
-        generateMethod(cw, Opcodes.ACC_PRIVATE, "loadTargets", "(" + Type.getDescriptor(ArrayList.class) + ")V",
-                new Function1V<GeneratorAdapter>() {
-                    @Override
-                    public void apply(GeneratorAdapter ga) {
                         ga.loadThis();
                         ga.loadArg(0);
                         ga.putField(Type.getType("Proxy"), "targets", Type.getType(ArrayList.class));
@@ -77,7 +64,6 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
         final Type arrayListType = Type.getType(ArrayList.class);
         final Type proxyType = Type.getType("Proxy");
         final Type interfaceType = Type.getType(interfc);
-        //method.setAccessible(true);
         final String descriptor = Type.getMethodDescriptor(method);
         final String name = method.getName();
         final Class methodReturnType = method.getReturnType();
@@ -122,10 +108,20 @@ public class AsmShardingProxyFactory implements ShardingProxyFactory {
                             int resLocal = 0;
                             if (!methodReturnType.equals(void.class)) {
                                 resLocal = ga.newLocal(Type.getType(methodReturnType));
-                                if (methodReturnType.equals(int.class) || methodReturnType.equals(Integer.class)) {
+                                if (methodReturnType.equals(int.class)) {
                                     ga.push(0);
-                                } else if (methodReturnType.equals(long.class) || methodReturnType.equals(Long.class)) {
+                                } else if (methodReturnType.equals(Integer.class)) {
+                                    ga.newInstance(Type.getType(Integer.class));
+                                    ga.dup();
+                                    ga.push(0);
+                                    ga.invokeConstructor(Type.getType(Integer.class), new org.objectweb.asm.commons.Method("<init>", "(I)V"));
+                                } else if (methodReturnType.equals(long.class)) {
                                     ga.push((long) 0);
+                                } else if (methodReturnType.equals(Long.class)) {
+                                    ga.newInstance(Type.getType(Long.class));
+                                    ga.dup();
+                                    ga.push((long) 0);
+                                    ga.invokeConstructor(Type.getType(Long.class), new org.objectweb.asm.commons.Method("<init>", "(J)V"));
                                 } else if (methodReturnType.equals(List.class)) {
                                     ga.newInstance(Type.getType(ArrayList.class));
                                     ga.dup();

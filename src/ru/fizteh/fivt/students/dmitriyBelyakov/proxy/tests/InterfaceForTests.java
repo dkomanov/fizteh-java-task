@@ -24,4 +24,12 @@ public interface InterfaceForTests {
 
     @Collect
     List numCollectList();
+
+    Integer numInteger(int num);
+
+    @Collect
+    Integer numCollectInteger();
+
+    @Collect
+    Long numCollectLongObject();
 }

@@ -168,6 +168,9 @@ public class AsmProxyTest extends Assert {
         proxy.numCollectVoid();
         assertEquals(3, proxy.numCollectInt());
         assertEquals(3, proxy.numCollectLong());
+        assertEquals(new Integer(0), proxy.numInteger(0));
+        assertEquals(new Integer(3), proxy.numCollectInteger());
+        assertEquals(new Long(3), proxy.numCollectLongObject());
         List list = new ArrayList();
         for (int i = 0; i < 3; ++i) {
             list.add(i);
