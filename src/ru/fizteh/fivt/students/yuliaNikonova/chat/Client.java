@@ -45,11 +45,10 @@ public class Client extends Thread {
         try {
             // System.out.println("Message: "+message);
             // Send it to the server
+            System.out.println("DEBUG: I want send message!!!!");
             byte[] byteMessage = MessageUtils.message(userName, message);
-            // int len = byteMessage.length;
-            // System.out.println("Length: " + len);
-            // dout.writeInt(len);
-            dout.write(MessageUtils.message(userName, message));
+            socket.getOutputStream().write(MessageUtils.message(userName, message));
+            System.out.println("DEBUG: I sended message!!!!");
             // System.out.println("Sended message \"" + message +
             // "\" to server");
         } catch (IOException ie) {
@@ -114,6 +113,7 @@ public class Client extends Thread {
                         if (show) {
                             System.out.println("Error: " + sb.toString());
                         }
+                        disconnect();
                     }
                 }
             }

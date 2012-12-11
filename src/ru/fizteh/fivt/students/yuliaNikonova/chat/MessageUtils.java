@@ -23,7 +23,9 @@ public final class MessageUtils {
     }
 
     public static byte[] message(String name, String message) {
+
         return getMessageBytes(MessageType.MESSAGE, name.getBytes(), message.getBytes());
+
     }
 
     public static byte[] bye() {
@@ -210,8 +212,10 @@ public final class MessageUtils {
             messBuff.put(len);
             messBuff.put(bName);
             return messBuff.array();
+        } else if (code == 3) { // bye message
+            return MessageUtils.bye();
         }
-        return null;
+        throw new Exception("Unknown code");
 
     }
 }

@@ -85,6 +85,9 @@ public class ServerThread extends Thread {
                     } else if (message[0] == 2) { // обычное сообщение
                         List<String> l = MessageUtils.parse(message);
                         String nick = l.get(0);
+                        if (!nick.equals(userName)) {
+                            sendErrorandStop(dout, "You send message not with you nickname");
+                        }
                         StringBuilder sb = new StringBuilder();
                         for (int i = 1; i < l.size(); ++i) {
                             sb.append(l.get(i));
@@ -97,7 +100,20 @@ public class ServerThread extends Thread {
                             sb.append(l.get(i));
                         }
                         System.out.println("Error from " + userName + ": " + sb.toString());
+                        if (!userName.isEmpty() && users.containsKey(userName)) {
+                            server.kill(userName);
+                        } else {
+                            server.removeConnection(socket);
+                        }
+                    } else if (message[0] == 3) { // bye message
+                        if (!userName.isEmpty() && users.containsKey(userName)) {
+                            server.kill(userName);
+                        } else {
+                            server.removeConnection(socket);
+                        }
+
                     } else { // непонятное сообшение, такого клиента отключаем
+
                         sendErrorandStop(dout, "Unknown message");
                         work = false;
                     }
@@ -140,7 +156,7 @@ public class ServerThread extends Thread {
 
             }
             // dout.write(MessageUtils.bye());
-            if (!userName.isEmpty() || users.containsKey(userName)) {
+            if (!userName.isEmpty() && users.containsKey(userName)) {
                 server.kill(userName);
             } else {
                 server.removeConnection(socket);
