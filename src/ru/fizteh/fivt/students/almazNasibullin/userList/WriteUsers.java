@@ -15,7 +15,6 @@ import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
  */
 
 public class WriteUsers {
-
     public void writeUsers(List<User> users, File f) {
         XmlBinder<User> binder = new XmlBinder<User>(User.class);
         FileWriter fw = null;
