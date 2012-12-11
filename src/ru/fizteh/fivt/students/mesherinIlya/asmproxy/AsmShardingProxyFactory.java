@@ -170,14 +170,14 @@ public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingPro
                                     ga.newInstance(Type.getType(Integer.class));
                                     ga.dup();
                                     ga.push(0);
-                                    ga.invokeConstructor(Type.getType(Integer.class), new Method("<init>", "(I)V"));
+                                    ga.invokeStatic(Type.getType(Integer.class), new Method("valueOf", "(I)Ljava/lang/Integer"));
                                 } else if (returnType.equals(long.class)) {
                                     ga.push(0L);
                                 } else if (returnType.equals(Long.class)) {
                                     ga.newInstance(Type.getType(Long.class));
                                     ga.dup();
                                     ga.push(0L);
-                                    ga.invokeConstructor(Type.getType(Long.class), new Method("<init>", "(J)V"));
+                                    ga.invokeStatic(Type.getType(Long.class), new Method("valueOf", "(J)Ljava/lang/Long"));
                                 } else if (returnType.equals(List.class)) {
                                     ga.newInstance(Type.getType(ArrayList.class));
                                     ga.dup();
@@ -242,13 +242,14 @@ public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingPro
                                 }
                             }
                             ga.loadArg(numArg);
-                            if (method.getParameterTypes()[numArg].equals(int.class)) {
+                            if (method.getParameterTypes()[numArg].equals
+                                    || method.getParameterTypes()[numArg].equals(Integer.class)) {
                                 ga.cast(Type.INT_TYPE, Type.LONG_TYPE);
                             }
                             ga.push((long) targets.length);
                             ga.math(GeneratorAdapter.REM, Type.LONG_TYPE);
                             ga.cast(Type.LONG_TYPE, Type.INT_TYPE);
-                            ga.invokeVirtual(Type.getType(ArrayList.class), new Method("get", "(I)Lj    ava/lang/Object;"));
+                            ga.invokeVirtual(Type.getType(ArrayList.class), new Method("get", "(I)Ljava/lang/Object;"));
                             ga.checkCast(Type.getType(intrface));
                             ga.loadArgs();
                             ga.invokeInterface(Type.getType(intrface), 
