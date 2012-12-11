@@ -46,7 +46,7 @@ public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingPro
         ga.endMethod();
     }
     
-    private void Validation(Object[] targets, Class[] interfaces) {
+    private void validation(Object[] targets, Class[] interfaces) {
         if (targets == null) {
             throw new IllegalArgumentException("Targets is null.");
         } else if (interfaces == null) {
@@ -120,7 +120,7 @@ public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingPro
     @Override
     public Object createProxy(final Object[] targets, Class[] interfaces) {
             
-        Validation(targets, interfaces);
+        validation(targets, interfaces);
         
         String[] interfacesNames = new String[interfaces.length];
         for (int i = 0; i < interfaces.length; i++) {
@@ -139,8 +139,6 @@ public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingPro
             java.lang.reflect.Method[] methods = intrface.getDeclaredMethods();
             for (final java.lang.reflect.Method method : methods) {
                 
-                method.setAccessible(true);
-
                 Function1V<GeneratorAdapter> methodGenerator = new Function1V<GeneratorAdapter>() {
                     
                     @Override
@@ -250,13 +248,16 @@ public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingPro
                             ga.push((long) targets.length);
                             ga.math(GeneratorAdapter.REM, Type.LONG_TYPE);
                             ga.cast(Type.LONG_TYPE, Type.INT_TYPE);
-                            ga.invokeVirtual(Type.getType(ArrayList.class), new Method("get", "(I)Ljava/lang/Object;"));
+                            ga.invokeVirtual(Type.getType(ArrayList.class), new Method("get", "(I)Lj    ava/lang/Object;"));
                             ga.checkCast(Type.getType(intrface));
                             ga.loadArgs();
                             ga.invokeInterface(Type.getType(intrface), 
                                     new Method(method.getName(), Type.getMethodDescriptor(method)));    
                         
                         }
+                    
+                    ga.returnValue();
+                    
                     } //apply        
                 }; //function1V
                 
