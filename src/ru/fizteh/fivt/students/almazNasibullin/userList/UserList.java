@@ -7,6 +7,7 @@ import javax.swing.table.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -74,13 +75,16 @@ public class UserList extends JFrame {
                 if (ret == JFileChooser.APPROVE_OPTION) {
                     File fileToSave = jfs.getSelectedFile();
                     if (!fileToSave.exists()) {
-                        showErrorMessage("File doesn't exist", "Save As");
-                    } else {
                         try {
-                            save(fileToSave);
-                        } catch (Exception e) {
+                            fileToSave.createNewFile();
+                        } catch (IOException e) {
                             showErrorMessage("The list could not be saved", "Save As");
                         }
+                    }
+                    try {
+                        save(fileToSave);
+                    } catch (Exception e) {
+                        showErrorMessage("The list could not be saved", "Save As");
                     }
                 }
             } else if (event.getActionCommand().equals("Add")) {
@@ -161,7 +165,8 @@ public class UserList extends JFrame {
         MenuListener ml = new MenuListener();
         menu = new JMenuBar();
         
-        JMenuItem openFile = new JMenuItem("Open_file");
+        JMenuItem openFile = new JMenuItem("Open");
+        openFile.setBackground(Color.lightGray);
         menu.add(openFile);
         openFile.addActionListener(ml);
         openFile.setActionCommand("Open_file");
@@ -172,6 +177,7 @@ public class UserList extends JFrame {
         save.setActionCommand("Save");
 
         JMenuItem saveAs = new JMenuItem("Save_As");
+        saveAs.setBackground(Color.lightGray);
         menu.add(saveAs);
         saveAs.addActionListener(ml);
         saveAs.setActionCommand("Save_As");
@@ -182,6 +188,7 @@ public class UserList extends JFrame {
         add.setActionCommand("Add");
 
         JMenuItem delete = new JMenuItem("Delete");
+        delete.setBackground(Color.lightGray);
         menu.add(delete);
         delete.addActionListener(ml);
         delete.setActionCommand("Delete");
