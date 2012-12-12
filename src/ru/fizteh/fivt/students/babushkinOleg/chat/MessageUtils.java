@@ -15,7 +15,7 @@ public final class MessageUtils {
     private MessageUtils() {
     }
     
-    public static Message getMessage(InputStream in) throws Exception{
+    public static Message getMessage(InputStream in) throws Exception {
     	MessageType type = null;
         byte[] name = null;
         byte[] message = null;

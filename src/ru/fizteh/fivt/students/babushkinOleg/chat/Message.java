@@ -23,7 +23,7 @@ public class Message {
         return text;
     }
     
-    public byte[] toByte() throws RuntimeException{
+    public byte[] toByte() {
     	switch (getType()) {
 	        case HELLO:
 	            return MessageUtils.getMessageBytes(MessageType.HELLO, getName().getBytes());
