@@ -71,7 +71,6 @@ public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingPro
                 String description = ProxyUtils.getMethodDescription(method);
                 if (!proceedMethods.contains(description)) {
                     generateMethod(cw, method, targets.length, iface);
-                } else {
                     proceedMethods.add(description);
                 }
             }
