@@ -39,7 +39,7 @@ public class EolnNormalizedReader extends Reader {
         } else {
             value = reader.read();
         }
-        if (value == '\r') { // normalizing bad eoln chat
+        if (value == '\r') { // normalizing bad eoln char
             value = reader.read();
             if (value == '\n') { //Windows-style eoln
                 return '\n';
