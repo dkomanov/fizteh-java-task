@@ -16,70 +16,6 @@ import java.util.*;
  */
 public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyFactory {
 
-    private boolean isCollectableClass(Class clazz) {
-        return clazz.equals(int.class) || clazz.equals(Integer.class)
-                || clazz.equals(long.class) || clazz.equals(Long.class)
-                || clazz.equals(void.class) || clazz.equals(Void.class)
-                || clazz.equals(List.class);
-    }
-
-    private void checkInterface(Class iface) {
-        if (iface == null) {
-            throw new IllegalArgumentException("Null interface passed as argument");
-        }
-        Method[] methods = iface.getMethods();
-        if (methods == null || methods.length == 0) {
-            throw new IllegalArgumentException("Empty interface passed as argument");
-        }
-        for (Method method: methods) {
-            if (method.isAnnotationPresent(DoNotProxy.class)) {
-                continue;
-            }
-            if (method.isAnnotationPresent(Collect.class)) {
-                if (!isCollectableClass(method.getReturnType())) {
-                    throw new IllegalStateException(
-                            String.format(
-                                    "Incorrect annotation: return type of method %s of interface %s is not collectable",
-                                    method.getName(),
-                                    iface.getSimpleName()
-                            )
-                    );
-                }
-                continue;
-            }
-            List<Class<?>> parameterTypes = Arrays.asList(method.getParameterTypes());
-            if (!(parameterTypes.contains(int.class) || parameterTypes.contains(Integer.class)
-                    || parameterTypes.contains(long.class) || parameterTypes.contains(Long.class))) {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "Method %s of interface %s has no int/long parameter",
-                                method.getName(),
-                                iface.getSimpleName()
-                        )
-                );
-            }
-        }
-    }
-
-    private void checkObject(Object object, Class[] ifaces) {
-        Set<Class> interfaces = new HashSet<Class>(Arrays.asList(ifaces));
-        Class[] implementedInterfaces = object.getClass().getInterfaces();
-        boolean foundInterface = false;
-        for (Class iface: implementedInterfaces) {
-            if (interfaces.contains(iface)) {
-                foundInterface = true;
-            }
-        }
-        if (!foundInterface) {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "Class %s doesn't implement any of interfaces",
-                            object.getClass().getSimpleName()
-                    )
-            );
-        }
-    }
-
     private static Object safeInvoke(Method method, Object target, Object[] objects) throws Throwable {
         try {
             return method.invoke(target, objects);
@@ -90,18 +26,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
 
     @Override
     public Object createProxy(Object[] targets, Class[] interfaces) {
-        if (interfaces == null || interfaces.length == 0) {
-            throw new IllegalArgumentException("Interfaces is empty");
-        }
-        if (targets == null || targets.length == 0) {
-            throw new IllegalArgumentException("Targets is empty");
-        }
-        for (Class iface: interfaces) {
-            checkInterface(iface);
-        }
-        for (Object target: targets) {
-            checkObject(target, interfaces);
-        }
+        ProxyUtils.check(targets, interfaces);
 
         class InvocationHandler implements java.lang.reflect.InvocationHandler {
 

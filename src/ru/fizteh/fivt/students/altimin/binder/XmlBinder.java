@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.altimin.xmlbinder;
+package ru.fizteh.fivt.students.altimin.binder;
 
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -439,5 +439,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         } catch (InvocationTargetException e) {
             throw new RuntimeException("Failed to serialize");
         }
+    }
+
+    public byte[] serialize(String typeName, T... objects) {
+        return null;
+
     }
 }

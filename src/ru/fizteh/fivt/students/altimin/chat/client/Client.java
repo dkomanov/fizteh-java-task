@@ -48,7 +48,7 @@ public class Client {
             socket = new Socket(host, port);
             in = socket.getInputStream();
             out = socket.getOutputStream();
-            thread = new ConnectionListener(in, serverName);
+            thread = new ConnectionListener(in, out, socket, serverName);
         }
 
         void close() {
@@ -74,10 +74,21 @@ public class Client {
 
     public class ConnectionListener extends Thread {
         InputStream inputStream;
+        OutputStream outputStream;
+        Socket socket;
         String serverName;
 
-        public ConnectionListener(InputStream inputStream, String serverName) {
+        public void close() {
+            try {
+                socket.close();
+            } catch (Exception e) {
+            }
+        }
+
+        public ConnectionListener(InputStream inputStream, OutputStream outputStream, Socket socket, String serverName) {
             this.inputStream = inputStream;
+            this.outputStream = outputStream;
+            this.socket = socket;
             this.serverName = serverName;
         }
 
@@ -89,24 +100,32 @@ public class Client {
                 try {
                     message = messageReader.read();
                 } catch (IOException e) {
+                    System.err.println("Failed to read message " + e.getMessage());
                     Client.this.deleteServer(serverName);
                     break;
                 }
+                log("Got message " + message.type.toString());
                 if (message.type == MessageType.ERROR) {
                     if (message.data.size() > 0) {
                         System.err.println("Server " + serverName + "reported error: " + message.data.get(0));
                     } else {
                         System.err.println("Server " + serverName + "reported error");
                     }
+                    close();
+                    Client.this.deleteServer(serverName);
                     break;
                 }
                 if (message.type == MessageType.BYE) {
                     System.err.println("Server " + serverName + " closed connection: BYE message got");
+                    close();
+                    Client.this.deleteServer(serverName);
                     break;
                 }
                 if (message.type != MessageType.MESSAGE || message.data.size() != 2) {
                     Client.this.deleteServer(serverName);
                     System.err.println("Server " + serverName + " returned unexpected message");
+                    close();
+                    Client.this.deleteServer(serverName);
                     break;
                 }
                 boolean isActive = false;
