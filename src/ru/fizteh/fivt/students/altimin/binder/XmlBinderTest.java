@@ -1,10 +1,10 @@
-package ru.fizteh.fivt.students.altimin.xmlbinder;
+package ru.fizteh.fivt.students.altimin.binder;
 
 import ru.fizteh.fivt.bind.test.Permissions;
 import ru.fizteh.fivt.bind.test.User;
 import ru.fizteh.fivt.bind.test.UserName;
 import ru.fizteh.fivt.bind.test.UserType;
-import ru.fizteh.fivt.students.altimin.xmlbinder.test.A;
+import ru.fizteh.fivt.students.altimin.binder.test.A;
 
 /**
  * User: altimin
