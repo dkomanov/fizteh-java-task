@@ -17,8 +17,16 @@ public class StringFormatterBasicExtension extends StringFormatterExtension {
             throw new FormatterException("Pattern must be non empty string");
         }
 
+        if (buffer == null) {
+            throw new FormatterException("Buffer == null");
+        }
+
+        if (o == null) {
+            throw new FormatterException("Null isn't correct object to format");
+        }
+
         Formatter f = null;
-        
+
         try {
             f = new Formatter();
             buffer.append(f.format("%" + pattern, o));

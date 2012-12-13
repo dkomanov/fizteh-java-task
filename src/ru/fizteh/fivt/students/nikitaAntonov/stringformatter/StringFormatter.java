@@ -34,7 +34,16 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         if (format == null) {
             throw new FormatterException("Format musn't be null");
         }
-        
+
+        if (buffer == null) {
+            throw new FormatterException("Buffer musn't be null");
+        }
+
+        if (args == null) {
+            args = new String[1];
+            args[0] = null;
+        }
+
         int pos = 0;
         int end = format.length();
 
@@ -85,7 +94,7 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
     }
 
     private void doFormating(StringBuilder buffer, String substring,
-            Object... args) {
+            Object args[]) {
 
         String selector;
         String pattern;
@@ -101,39 +110,62 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
         }
 
         int pointPos = selector.indexOf('.');
-        Object object;
-        try {
-            if (pointPos == -1) {
-                object = args[Integer.parseInt(selector)];
-            } else {
-                int lastPointPos = pointPos;
-                object = args[Integer.parseInt(selector.substring(0, pointPos))];
-                pointPos = selector.indexOf('.', pointPos + 1);
-
-                while (pointPos != -1) {
-                    object = extractField(object,
-                            selector.substring(lastPointPos + 1, pointPos));
-
-                    lastPointPos = pointPos;
-                    pointPos = selector.indexOf('.', pointPos + 1);
-                }
-
-                object = extractField(object,
-                        selector.substring(lastPointPos + 1));
-
-            }
-        } catch (FormatterException e) {
-            throw e;
-        } catch (Throwable e) {
-            throw new FormatterException(
-                    "An error while extracting field occurred", e);
-        }
         
+        checkIsSelectorCorrect(selector);
+        
+        Object object;
+
+        if (pointPos == -1) {
+            int index;
+
+            try {
+                index = Integer.parseInt(selector);
+            } catch (NumberFormatException e) {
+                throw new FormatterException("Incorrect number: " + selector, e);
+            }
+
+            if (index < 0 || index >= args.length) {
+                throw new FormatterException("Index " + index
+                        + " is out of range");
+            }
+
+            object = args[index];
+
+        } else {
+            int lastPointPos = pointPos;
+            int index;
+            try {
+                index = Integer.parseInt(selector.substring(0, pointPos));
+            } catch (NumberFormatException e) {
+                throw new FormatterException("Incorrect number: "
+                        + selector.substring(0, pointPos), e);
+            }
+
+            if (index < 0 || index >= args.length) {
+                throw new FormatterException("Index " + index
+                        + " is out of range");
+            }
+
+            object = args[index];
+            pointPos = selector.indexOf('.', pointPos + 1);
+
+            while (pointPos != -1) {
+                object = extractField(object,
+                        selector.substring(lastPointPos + 1, pointPos));
+
+                lastPointPos = pointPos;
+                pointPos = selector.indexOf('.', pointPos + 1);
+            }
+
+            object = extractField(object, selector.substring(lastPointPos + 1));
+
+        }
+
         if (pattern == null) {
             if (object != null) {
                 buffer.append(object.toString());
             }
-        } else {
+        } else if (object != null) {
             boolean thereIsNoGoodFormatter = true;
 
             for (StringFormatterExtension ext : extensions) {
@@ -153,8 +185,37 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
 
     }
 
-    private Object extractField(Object object, String field)
-            throws IllegalArgumentException, IllegalAccessException {
+    private static void checkIsSelectorCorrect(String selector) {
+        boolean isCorrect = false;
+        
+        for (int i = 0, e = selector.length(); i < e; ++i) {
+            char c = selector.charAt(i);
+            if (c == '.') {
+                break;
+            } else if (Character.isDigit(c)) {
+                isCorrect = true;
+            } else {
+                isCorrect = false;
+                break;
+            }
+        }
+        
+        if (!isCorrect) {
+            throw new FormatterException("Incorrect number: " + selector);
+        }
+        
+    }
+
+    private Object extractField(Object object, String field) {
+
+        if (object == null) {
+            return null;
+        }
+        
+        if (field.isEmpty()) {
+            throw new FormatterException("Field of class can't have empty name");
+        }
+
         Class<?> parent = object.getClass();
         Object result = null;
         boolean wasSet = false;
@@ -163,7 +224,11 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             try {
                 Field f = parent.getDeclaredField(field);
                 f.setAccessible(true);
-                result = f.get(object);
+                try {
+                    result = f.get(object);
+                } catch (Throwable e) {
+                    result = null;
+                }
                 wasSet = true;
                 break;
             } catch (NoSuchFieldException expt) {
@@ -171,10 +236,6 @@ public class StringFormatter implements ru.fizteh.fivt.format.StringFormatter {
             }
         }
 
-        if (!wasSet) {
-            throw new FormatterException("Field " + field + " not found");
-        }
-        
         return result;
     }
 

@@ -1,10 +1,15 @@
 package ru.fizteh.fivt.examples;
 
-import org.objectweb.asm.*;
+import java.io.PrintStream;
+import java.util.ArrayList;
+
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
-
-import java.io.PrintStream;
 
 /**
  * @author Dmitriy Komanov (dkomanov@ya.ru)
@@ -31,6 +36,21 @@ public class CodeGenerationExample {
             System.out.println(clazz);
             Runnable runnable = (Runnable) clazz.getConstructor(String.class).newInstance("Hi");
             runnable.run();
+        }
+
+        {
+            Class<?> clazz = loadClass(myInterface());
+            System.out.println(clazz);
+            MyInterface impl = new MyInterface() {
+                @Override
+                public void doSomething() {
+                    System.out.println("MyInterface.Impl.doSomething()");
+                }
+            };
+            ArrayList<MyInterface> list = new ArrayList<>();
+            list.add(impl);
+            MyInterface my = (MyInterface) clazz.getConstructor(ArrayList.class).newInstance(list);
+            my.doSomething();
         }
     }
 
@@ -64,7 +84,7 @@ public class CodeGenerationExample {
     private static byte[] runnableWithHelloWorld() {
         ClassWriter cw = newClassWriter();
         cw.visit(Opcodes.V1_7, Opcodes.ACC_PUBLIC, "HelloWorldRunnable", null,
-                "java/lang/Object", new String[]{"java/lang/Runnable"});
+                "java/lang/Object", new String[] {"java/lang/Runnable"});
 
         generateMethod(cw, Opcodes.ACC_PUBLIC, "<init>", "()V",
                 new Function1V<GeneratorAdapter>() {
@@ -97,7 +117,7 @@ public class CodeGenerationExample {
 
         ClassWriter cw = newClassWriter();
         cw.visit(Opcodes.V1_7, Opcodes.ACC_PUBLIC, type.getInternalName(), null,
-                "java/lang/Object", new String[]{"java/lang/Runnable"});
+                "java/lang/Object", new String[] {"java/lang/Runnable"});
 
         cw.visitField(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL,
                 fieldName, "Ljava/lang/String;", null, null)
@@ -158,6 +178,64 @@ public class CodeGenerationExample {
                         ga.goTo(forConditionLabel);
 
                         ga.visitLabel(forLoopEnd);
+                        ga.returnValue();
+                    }
+                });
+
+        return cw.toByteArray();
+    }
+
+    public interface MyInterface {
+        void doSomething();
+    }
+
+    private static byte[] myInterface() {
+        final Type type = Type.getType("LMyInterfaceImpl;");
+        final Type interfaceType = Type.getType(MyInterface.class);
+        final Type fieldType = Type.getType(ArrayList.class);
+        final String fieldName = "targets";
+
+        ClassWriter cw = newClassWriter();
+        cw.visit(Opcodes.V1_7, Opcodes.ACC_PUBLIC, type.getInternalName(), null,
+                "java/lang/Object", new String[] {interfaceType.getInternalName()});
+
+        cw.visitField(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL,
+                fieldName, fieldType.getDescriptor(), null, null)
+                .visitEnd();
+
+        generateMethod(cw, Opcodes.ACC_PUBLIC, "<init>", "(" + fieldType.getDescriptor() + ")V",
+                new Function1V<GeneratorAdapter>() {
+                    @Override
+                    public void apply(GeneratorAdapter ga) {
+                        ga.loadThis();
+                        ga.dup();
+                        ga.invokeConstructor(
+                                Type.getType("java/lang/Object"),
+                                new Method("<init>", "()V")
+                        );
+                        ga.loadThis();
+                        ga.loadArg(0);
+                        ga.putField(type, fieldName, fieldType);
+                        ga.returnValue();
+                    }
+                });
+
+        generateMethod(cw, Opcodes.ACC_PUBLIC, "doSomething", "()V",
+                new Function1V<GeneratorAdapter>() {
+                    @Override
+                    public void apply(GeneratorAdapter ga) {
+                        ga.loadThis();
+                        ga.getField(type, fieldName, fieldType);
+
+                        // ArrayList on stack
+
+                        ga.push(0);
+                        ga.invokeVirtual(fieldType, new Method("get", "(I)" + Type.getDescriptor(Object.class)));
+
+                        // Object on stack
+
+                        ga.checkCast(interfaceType);
+                        ga.invokeInterface(interfaceType, new Method("doSomething", "()V"));
                         ga.returnValue();
                     }
                 });

@@ -7,6 +7,7 @@ import java.util.Formatter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import ru.fizteh.fivt.format.FormatterException;
 
@@ -40,6 +41,15 @@ public class TestFormatter {
         private String s3 = null;
     }
 
+    static public class TestNull {
+        public TestDoubleChild t = null;
+        private TestNull nullAgain = null;
+    }
+
+    static public class TestNull2 {
+        public TestNull testNull = new TestNull();
+    }
+
     TestDouble testDouble;
     TestDoubleChild testDoubleChild;
     TestBigInteger testBigInteger;
@@ -61,6 +71,30 @@ public class TestFormatter {
     public void testBadPatternDouble() {
         double d = 100500;
         formatter.format("{0:...}", d);
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testExtn1() {
+        ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter formatterTest = new StringFormatterFactory()
+                .create(testDouble.getClass().toString());
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testExtn2() {
+        ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter formatterTest = new StringFormatterFactory()
+                .create(int.class.toString());
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testExtn3() {
+        ru.fizteh.fivt.students.tolyapro.stringFormatter.StringFormatter formatterTest = new StringFormatterFactory()
+                .create(null);
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testNullToFabric() {
+        StringFormatterFactory stringFormatterFactory = new StringFormatterFactory();
+        stringFormatterFactory.create(null);
     }
 
     @Test(expected = FormatterException.class)
@@ -92,6 +126,21 @@ public class TestFormatter {
     @Test(expected = FormatterException.class)
     public void testBadIndex() {
         formatter.format("{-0}", testDouble.d1);
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testBadDots1() {
+        formatter.format("{0.}", "1");
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testBadDots2() {
+        formatter.format("{0.}", 1);
+    }
+
+    @Test(expected = FormatterException.class)
+    public void testBadDots3() {
+        formatter.format("{0.d1.}", testDouble);
     }
 
     @Test
@@ -140,6 +189,26 @@ public class TestFormatter {
 
         result = formatter.format("a{0.s3}b", testOtherFormats);
         Assert.assertEquals("ab", result);
+
+        TestNull testNull = new TestNull();
+
+        result = formatter.format("{0.t.d3}", testNull);
+        Assert.assertEquals("", result);
+
+        result = formatter.format(">>{0.t.d3}<<", testNull);
+        Assert.assertEquals(">><<", result);
+
+        result = formatter.format(">>{0.<>.<>}<<", testNull);
+        Assert.assertEquals(">><<", result);
+
+        result = formatter.format("{0.nullAgain.t.d3}", testNull);
+        Assert.assertEquals("", result);
+
+        TestNull2 testNull2 = new TestNull2();
+
+        result = formatter.format("{0.testNull.nullAgain.t.d3}", testNull2);
+        Assert.assertEquals("", result);
+
     }
 
 }

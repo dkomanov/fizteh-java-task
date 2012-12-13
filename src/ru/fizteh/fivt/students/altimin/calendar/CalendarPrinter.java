@@ -68,6 +68,14 @@ public class CalendarPrinter {
         }
         this.month = (month != null) ? convertMonthValue(month) : calendar.get(Calendar.MONTH);
         this.year  = (year != null)  ? year  : calendar.get(Calendar.YEAR);
+        int minYearValue = calendar.getMinimum(Calendar.YEAR);
+        int maxYearValue = calendar.getMaximum(Calendar.YEAR);
+        if (this.year < minYearValue) {
+            throw new IllegalArgumentException("Year should not exceed " + minYearValue);
+        }
+        if (this.year > maxYearValue) {
+            throw new IllegalArgumentException("Year should not be greater than " + maxYearValue);
+        }
         calendar.set(this.year, this.month, 1);
         minimalWeekDayNumber = calendar.getActualMinimum(Calendar.DAY_OF_WEEK);
         maximalWeekDayNumber = calendar.getActualMaximum(Calendar.DAY_OF_WEEK);
@@ -104,6 +112,7 @@ public class CalendarPrinter {
     }
 
     private void printTable() {
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
         int weeksInCurrentMonth = calendar.getActualMaximum(Calendar.WEEK_OF_MONTH)
                 - calendar.get(Calendar.WEEK_OF_MONTH) + 1;
         Integer[][] buffer = new Integer[weeksInCurrentMonth][DAYS_IN_WEEK];

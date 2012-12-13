@@ -102,7 +102,78 @@ public class UnitTest {
         TestClassSerializationFields serializedLada = xb.deserialize(xb.serialize(Lada));
         TestClassSerializationFields serializedBMW = xb.deserialize(xb.serialize(BMW));
         Assert.assertEquals(Lada, serializedLada);
-        Assert.assertEquals(BMW, serializedBMW);
+        Assert.assertEquals(BMW, serializedBMW); // вот здесь тестируется это
         Assert.assertNotSame(serializedLada, serializedBMW);
+    }
+    
+    @Test
+    public void testInnerClass() {
+         XmlBinder<TestClassSerializationFields.InnerClass> xb =
+                new XmlBinder<TestClassSerializationFields.InnerClass>
+                (TestClassSerializationFields.InnerClass.class);
+         TestClassSerializationFields.InnerClass ic = new
+                 TestClassSerializationFields.InnerClass();
+         TestClassSerializationFields.InnerClass serialized = xb.deserialize(xb.serialize(ic));
+         Assert.assertEquals(serialized, ic);
+         Assert.assertTrue(serialized != ic);
+    }
+    
+    @BindingType(MembersToBind.GETTERS_AND_SETTERS)
+    class DifferentAsXmlAttributeName {
+        int day = 30;
+
+        @AsXmlAttribute(name = "firstName")
+        public int getDay() {
+            return day;
+        }
+
+        @AsXmlAttribute(name = "secondName")
+        public void setDay(int day) {
+            this.day = day;
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testDifferentAsXmlAttributeName() {
+        new XmlBinder<DifferentAsXmlAttributeName>(DifferentAsXmlAttributeName.class).
+                serialize(new DifferentAsXmlAttributeName());
+    }
+    
+    @BindingType(MembersToBind.GETTERS_AND_SETTERS)
+    private static class WithAttributeFields {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        @AsXmlAttribute(name = "name2")
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            WithAttributeFields wf = (WithAttributeFields)o;
+            return wf.getName().equals(name);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 41 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+    }
+
+    @Test
+    public void testWithAttributeMethods() {
+        XmlBinder<WithAttributeFields> x = new XmlBinder<WithAttributeFields>
+                (WithAttributeFields.class);
+        WithAttributeFields wf = new WithAttributeFields();
+        wf.setName("aaa");
+        WithAttributeFields serialized = x.deserialize(x.serialize(wf));
+        Assert.assertEquals(serialized, wf);
+        Assert.assertTrue(serialized != wf);
     }
 }

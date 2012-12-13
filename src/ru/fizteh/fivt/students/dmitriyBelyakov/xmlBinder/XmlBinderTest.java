@@ -23,9 +23,7 @@ public class XmlBinderTest extends Assert {
 
     @Test(expected = RuntimeException.class)
     public void testUnsupportedClass() {
-        new XmlBinder<ClassForSerializationFields>(ClassForSerializationFields.class).deserialize(new String(
-                "<classForSerializationMethods>"
-                        + "</classForSerializationMethods>").getBytes());
+        new XmlBinder<ClassForSerializationFields>(ClassForSerializationFields.class).deserialize("<classForSerializationMethods></classForSerializationMethods>".getBytes());
     }
 
     @Test(expected = RuntimeException.class)

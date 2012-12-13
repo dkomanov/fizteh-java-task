@@ -42,6 +42,16 @@ public class XmlBinderTester {
     }
 
     @Test
+    public void incorrectMethodsNames2() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Incorrect annotations of methods.");
+        XmlBinder<WithElement1> binder = new XmlBinder<WithElement1>(WithElement1.class);
+        WithElement1 withElement1 = new WithElement1();
+        byte[] bytes = binder.serialize(withElement1);
+        WithElement1 deserialized = binder.deserialize(bytes);
+    }
+
+    @Test
     public void incorrectPairOfMethodsNames() {
         thrown.expect(RuntimeException.class);
         thrown.expectMessage("Two pairs of methods with the same names.");
@@ -76,7 +86,6 @@ public class XmlBinderTester {
         bytes = binder.serialize(deserialized);
         user = binder.deserialize(bytes);
         Assert.assertEquals(user, deserialized);
-        Assert.assertEquals(user, deserialized);
 
         user = new User(1, null, new UserName("first", "last"), permissions);
         bytes = binder.serialize(user);
@@ -85,6 +94,14 @@ public class XmlBinderTester {
         bytes = binder.serialize(deserialized);
         user = binder.deserialize(bytes);
         Assert.assertEquals(user, deserialized);
+
+        Permissions adminPermissions = new Permissions();
+        adminPermissions.setQuota(100);
+        adminPermissions.setRoot(true);
+        User anotherUser = new User(2, UserType.MODERATOR, new UserName("adminFirst", "adminLast"), adminPermissions, user);
+        bytes = binder.serialize(anotherUser);
+        deserialized = binder.deserialize(bytes);
+        Assert.assertEquals(anotherUser, deserialized);
     }
 
     @Test
@@ -101,15 +118,35 @@ public class XmlBinderTester {
     public void voidAnnotattionsTest() {
         XmlBinder<VoidAnnotationsTest> binder
                 = new XmlBinder<VoidAnnotationsTest>(VoidAnnotationsTest.class);
-        VoidAnnotationsTest value = new VoidAnnotationsTest("Ivan", "Ivanov", 10);
-        byte[] bytes = binder.serialize(value);
+        VoidAnnotationsTest voidAnnotationsTest = new VoidAnnotationsTest("Valeriy", "Fedyunin", 18);
+        byte[] bytes = binder.serialize(voidAnnotationsTest);
         VoidAnnotationsTest deserialized = binder.deserialize(bytes);
-        Assert.assertTrue(value.equals(deserialized));
+        Assert.assertTrue(deserialized.equals(voidAnnotationsTest));
         Document document = binder.bytesToXml(bytes);
         Element root = document.getDocumentElement();
-        Assert.assertEquals(root.getElementsByTagName("wtf").getLength(), 1);
         Assert.assertEquals(root.getElementsByTagName("name").getLength(), 1);
         Assert.assertEquals(root.getElementsByTagName("age").getLength(), 1);
-        Assert.assertEquals(root.getElementsByTagName("nonExistingElement").getLength(), 0);
+        Assert.assertEquals(root.getElementsByTagName("surname").getLength(), 1);
+    }
+
+
+    @Test
+    public void testWithElement() {
+        XmlBinder<WithElement2> binder = new XmlBinder<WithElement2>(WithElement2.class);
+        WithElement2 withElement2 = new WithElement2();
+        withElement2.setValue1("value-1");
+        withElement2.setValue2("value-2");
+        withElement2.setValue3("value-3");
+        byte[] bytes = binder.serialize(withElement2);
+        WithElement2 deserialized = binder.deserialize(bytes);
+        Assert.assertTrue(deserialized.equals(withElement2));
+    }
+
+    @Test
+    public void methodsAnnotationsFail() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Incorrect annotations of methods.");
+        XmlBinder<MethodsAnnotationsFail> binder
+                = new XmlBinder<MethodsAnnotationsFail>(MethodsAnnotationsFail.class);
     }
 }

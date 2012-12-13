@@ -41,21 +41,20 @@ public class UnitTests {
 
     @Test
     public void factoryNullPointerException() {
-        try {
-            StringFormatterFactory f = new StringFormatterFactory();
-            ru.fizteh.fivt.format.StringFormatter ff = f.create(
-                    StringFormatterDoubleExtension.class.getName(), null);
-        } catch (FormatterException e) {
-            Throwable c = e.getCause();
-            if (c != null) {
-                assertEquals(c.getClass(), NullPointerException.class);
-                return;
-            }
-        }
-
-        fail("No exception =(");
+        thrown.expectMessage("Name of the extension class can't be null");
+        StringFormatterFactory f = new StringFormatterFactory();
+        ru.fizteh.fivt.format.StringFormatter ff = f.create(
+                StringFormatterDoubleExtension.class.getName(), null);
     }
 
+    @Test
+    public void factoryNullParamList() {
+        thrown.expectMessage("Extensions list mustn't be null");
+        StringFormatterFactory f = new StringFormatterFactory();
+        ru.fizteh.fivt.format.StringFormatter ff = f.create(null);
+
+    }
+    
     @Test
     public void factoryGetFormatterFromHash() {
         StringFormatterFactory f = new StringFormatterFactory();
@@ -69,7 +68,7 @@ public class UnitTests {
 
     @Test
     public void factoryIncorrectNameOfFormatter() {
-        thrown.expectMessage("Incorrect extension");
+        thrown.expectMessage("Can't create instance of blahblah");
 
         StringFormatterFactory f = new StringFormatterFactory();
         StringFormatter a = (StringFormatter) f.create("blahblah");
@@ -86,6 +85,12 @@ public class UnitTests {
     public void formatterNullPointer() {
         thrown.expectMessage("exList == null");
         StringFormatter f = new StringFormatter(null);
+    }
+
+    @Test
+    public void formatterNullFormat() {
+        thrown.expectMessage("Format musn't be null");
+        formatter.format(null, 1, 2, 3);
     }
 
     @Test
@@ -139,9 +144,8 @@ public class UnitTests {
             public int a = 10;
         }
 
-        thrown.expectMessage("Field b not found");
         String result = formatter.format("Test {0.a}, {0.b}", new TestClass());
-
+        Assert.assertEquals("Test 10, ", result);
     }
 
     @Test
@@ -165,8 +169,8 @@ public class UnitTests {
             public Object a = null;
         }
 
-        thrown.expectMessage("An error while extracting field occurred");
         String result = formatter.format("Test {0.a.b}", new TestClass());
+        Assert.assertEquals("Test ", result);
     }
 
     @Test
@@ -210,10 +214,98 @@ public class UnitTests {
         String result = formatter.format("{0:}", new BigInteger("31"));
     }
 
-    public void nullPattern() {
+    @Test
+    public void nullPatternInExt() {
+        
+        thrown.expectMessage("Pattern must be non empty string");
         StringFormatterDoubleExtension ext = new StringFormatterDoubleExtension();
         Double a = 0.0;
         ext.format(new StringBuilder(), a, null);
     }
+    
+    @Test
+    public void nullBufferInExt() {
+        
+        thrown.expectMessage("Buffer == null");
+        StringFormatterDoubleExtension ext = new StringFormatterDoubleExtension();
+        Double a = 0.0;
+        ext.format(null, a, ".2");
+    }
+    
+    @Test
+    public void nullObjectInExt() {
+        
+        thrown.expectMessage("Null isn't correct object to format");
+        StringFormatterDoubleExtension ext = new StringFormatterDoubleExtension();
+        ext.format(new StringBuilder(), null, ".2");
+    }
+    
+    @Test
+    public void formatterNullBuffer() {
+        thrown.expectMessage("Buffer musn't be null");
+        formatter.format((StringBuilder) null, "Test {0}", 1);
+    }
+    
+    @Test
+    public void formatterNullArgs() {
+        String result = formatter.format("test{0}test", null);
+        Assert.assertEquals("testtest", result);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex1() {
+        thrown.expectMessage("Incorrect number: blah");
+        formatter.format("test{blah}", 1);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex2() {
+        thrown.expectMessage("Incorrect number: blah");
+        formatter.format("test{blah.blah}", 1);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex3() {
+        thrown.expectMessage("Index 5 is out of range");
+        formatter.format("test{5}", 1);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex4() {
+        thrown.expectMessage("Index 5 is out of range");
+        formatter.format("test{5.blah}", 1);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex5() {
+        thrown.expectMessage("Index 2 is out of range");
+        formatter.format("test{2}", 1);
+    }
+    
+    @Test 
+    public void formatterIncorrectIndex6() {
+        thrown.expectMessage("Index 2 is out of range");
+        formatter.format("test{2.blah}", 1);
+    }
+    
+    @Test
+    public void formatterIncorrectIndex7() {
+        thrown.expectMessage("Incorrect number: +0");
+        formatter.format("{+0}", "1");
+    }
+    
+    @Test
+    public void formatterFormatingOfNull() {
+        String result = formatter.format("{0:f}", (Object) null);
+        Assert.assertEquals("", result);
+    }
+    
+    @Test
+    public void formatterEmptyFieldName() {
+        thrown.expectMessage("Field of class can't have empty name");
+        formatter.format("{0.}", 1);
+    }
+    
 
 }
+
