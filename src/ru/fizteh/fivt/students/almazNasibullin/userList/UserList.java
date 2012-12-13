@@ -56,7 +56,12 @@ public class UserList extends JFrame {
                         showErrorMessage("File doesn't exist", "Open file");
                         f = null;
                     } else {
-                        updateTable(new ReadUsers().readUsers(f));
+                        try {
+                            List<User> users = new ReadUsers().readUsers(f);
+                            updateTable(users);
+                        } catch (Exception e) {
+                            showErrorMessage("Could not open file", "Open file");
+                        }
                     }
                 }
             } else if (event.getActionCommand().equals("Save")) {
@@ -110,10 +115,23 @@ public class UserList extends JFrame {
 
         public void save(File f) {
             List<User> users = new ArrayList<User>();
-            for (Vector<Object> user : ((MyTableModel) table.getModel()).getData()) {
+            Vector<Vector<Object>> data  = ((MyTableModel)table.getModel()).getData();
+            if (data.isEmpty()) {
+                showErrorMessage("No users to save", "Save");
+                return;
+            }
+            for (Vector<Object> user : data) {
                 int id = (Integer)user.get(0);
                 UserType ut = (UserType)user.get(1);
                 UserName un = new UserName((String)user.get(2), (String)user.get(3));
+                if (un.getFirstName().equals("")) {
+                    showErrorMessage("User with an empty first name is found", "Save");
+                    return;
+                }
+                if (un.getLastName().equals("")) {
+                    showErrorMessage("User with an empty last name is found", "Save");
+                    return;
+                }
                 Permissions p = new Permissions();
                 p.setRoot((Boolean)user.get(4));
                 p.setQuota((Integer)user.get(5));
