@@ -1,8 +1,10 @@
 package ru.fizteh.fivt.students.harius.chat.base;
 
 import ru.fizteh.fivt.students.harius.chat.io.Packet;
+import java.io.IOException;
+import java.io.Closeable;
 
-public abstract class NetworkObservable {
+public abstract class NetworkObservable implements Closeable {
     NetworkObserver observer = null;
 
     public final void setObserver(NetworkObserver observer) {
@@ -14,4 +16,6 @@ public abstract class NetworkObservable {
             observer.processNetwork(packet, this);
         }
     }
+
+    public abstract void send(Packet packet) throws IOException;
 }

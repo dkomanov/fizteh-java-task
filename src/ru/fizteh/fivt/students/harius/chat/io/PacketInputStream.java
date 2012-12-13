@@ -19,4 +19,10 @@ public class PacketInputStream extends InputStream {
     public final int read() throws IOException {
         return stream.read();
     }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        stream.close();
+    }
 }

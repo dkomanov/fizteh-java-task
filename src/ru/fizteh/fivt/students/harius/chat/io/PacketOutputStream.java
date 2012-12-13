@@ -11,12 +11,18 @@ public class PacketOutputStream extends OutputStream {
         this.stream = stream;
     }
 
-    public void write(Packet packet) throws IOException {
+    public void writePacket(Packet packet) throws IOException {
         throw new IOException("Unimplemented yet");
     }
 
     @Override
     public final void write(int b) throws IOException {
         stream.write(b);
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        stream.close();
     }
 }

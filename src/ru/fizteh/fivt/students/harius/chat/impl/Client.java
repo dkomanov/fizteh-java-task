@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.harius.chat.impl;
 
 import ru.fizteh.fivt.students.harius.chat.base.*;
+import ru.fizteh.fivt.students.harius.chat.io.Packet;
 
 public final class Client {
     private final DisplayBase display;
@@ -39,6 +40,14 @@ public final class Client {
 
         @Override
         public void sendMessage(String message) {
+
+        }
+    };
+    private NetworkObserver networkProcessor
+        = new NetworkObserver() {
+
+        @Override
+        public void processNetwork(Packet packet, NetworkObservable caller) {
 
         }
     };

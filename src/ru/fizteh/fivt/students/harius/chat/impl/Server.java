@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.harius.chat.impl;
 
 import ru.fizteh.fivt.students.harius.chat.base.*;
+import ru.fizteh.fivt.students.harius.chat.io.Packet;
 
 public final class Server {
     private final DisplayBase display;
@@ -40,6 +41,24 @@ public final class Server {
         @Override
         public void exit() {
 
+        }
+    };
+
+    private NetworkObserver clientsProcessor
+        = new NetworkObserver() {
+
+        @Override
+        public void processNetwork(Packet packet, NetworkObservable caller) {
+
+        }
+    };
+
+    private Runnable registrationProcessor
+        = new Runnable() {
+
+        @Override
+        public void run() {
+            
         }
     };
 
