@@ -171,4 +171,26 @@ public class ShardingProxyFactoryTest {
         Interface proxy = getAsmProxy();
         proxy.throwException();
     }
+
+    public interface Interface1 {
+        void method(int i);
+    }
+
+    public interface Interface2 {
+        void method(int i);
+    }
+
+    private static class Implementation implements Interface1, Interface2 {
+        @Override
+        public void method(int i) {
+        }
+    }
+
+    @Test
+    public void interfaceWithTheSameMethodShouldNotFail() {
+        Object proxy = new AsmShardingProxyFactory().createProxy(new Object[] {new Implementation()}, new Class[] {Interface1.class, Interface2.class});
+        ((Interface1) proxy).method(1);
+        ((Interface2) proxy).method(1);
+    }
+
 }
