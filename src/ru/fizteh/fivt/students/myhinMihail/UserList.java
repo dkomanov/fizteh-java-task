@@ -222,6 +222,10 @@ public class UserList extends JFrame {
             try {
                 ArrayList<User> usersList = new ArrayList<>();
                 for (ArrayList<Object> list : ((UserListTable) table.getModel()).getData()) {
+                    if (((String) list.get(2)).isEmpty() || ((String) list.get(3)).isEmpty()) {
+                        JOptionPane.showMessageDialog(frame, "User with empty first name or last name in the table");
+                        return false;
+                    }
                     UserName name = new UserName((String) list.get(2), (String) list.get(3));
                     Permissions permissions = new Permissions();
                     permissions.setRoot((boolean) list.get(4));
