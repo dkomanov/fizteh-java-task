@@ -24,17 +24,17 @@ public class Message {
     }
     
     public byte[] toByte() {
-    	switch (getType()) {
-	        case HELLO:
-	            return MessageUtils.getMessageBytes(MessageType.HELLO, getName().getBytes());
-	        case BYE:
-	            return MessageUtils.getMessageBytes(MessageType.BYE);
-	        case ERROR:
-	            return MessageUtils.getMessageBytes(MessageType.ERROR, getText().getBytes());
-	        case MESSAGE:
-	            return MessageUtils.getMessageBytes(MessageType.MESSAGE, getName().getBytes(), getText().getBytes());
-	        default:
-	            throw new RuntimeException("Unknown message type.");
-	    }
+        switch (getType()) {
+            case HELLO:
+                return MessageUtils.getMessageBytes(MessageType.HELLO, getName().getBytes());
+            case BYE:
+                return MessageUtils.getMessageBytes(MessageType.BYE);
+            case ERROR:
+                return MessageUtils.getMessageBytes(MessageType.ERROR, getText().getBytes());
+            case MESSAGE:
+                return MessageUtils.getMessageBytes(MessageType.MESSAGE, getName().getBytes(), getText().getBytes());
+            default:
+                throw new RuntimeException("Unknown message type.");
+        }
     }
 }

@@ -16,75 +16,75 @@ public final class MessageUtils {
     }
     
     public static Message getMessage(InputStream in) throws Exception {
-    	MessageType type = null;
+        MessageType type = null;
         byte[] name = null;
         byte[] message = null;
-    	switch ((byte)in.read()){
-    		case 1 : 
-    			type = MessageType.HELLO;
-    			break;
-    		case 2 : 
-    			type = MessageType.MESSAGE;
-    			break;
-    		case 3 : 
-    			type = MessageType.BYE;
-    			break;
-    		case 127 : 
-    			type = MessageType.ERROR;
-    			break;
-    	}
-    	int messangesNumber = in.read();
-    	if (type == null)
-    		throw new RuntimeException("Incorrect message specification");
-    	if (type == MessageType.MESSAGE || type == MessageType.HELLO){
-	    	ByteBuffer buffer = ByteBuffer.allocate(4);
-	    	for (int i = 0; i < 4; ++i) {
-	            int tmp;
-	            if ((tmp = in.read()) < 0) {
-	                throw new RuntimeException("Cannot read message");
-	            }
-	            buffer.put((byte) tmp);
-	        }
-	    	buffer.position(0);
-	    	int length = buffer.getInt();
-	        if (length > 100 || length <= 0) {
-	            throw new RuntimeException("Incorrect length");
-	        }
-	        name = new byte[length];
-	        for (int i = 0; i < length; ++i) {
-	            int tmp;
-	            if ((tmp = in.read()) < 0) {
-	                throw new RuntimeException("Cannot read message");
-	            }
-	            name[i] = (byte) tmp;
-	        }    
-    	}
-        if (type == MessageType.MESSAGE || type == MessageType.ERROR){
-        	ByteBuffer buffer = ByteBuffer.allocate(4);
-		    for (int i = 0; i < 4; ++i) {
-		        int tmp;
-		        if ((tmp = in.read()) < 0) {
-		            throw new RuntimeException("Cannot read message");
-		        }
-		        buffer.put((byte) tmp);
-		    }
-		    buffer.position(0);
-		    int length = buffer.getInt();
-		    if (length > 1000 || length <= 0) {
-		        throw new RuntimeException("Incorrect length");
-		    }
-		    message = new byte[length];
-		    for (int i = 0; i < length; ++i) {
-		        int tmp;
-		        if ((tmp = in.read()) < 0) {
-		            throw new RuntimeException("Cannot read message");
-		        }
-		        message[i] = (byte) tmp;
-		    }
+        switch ((byte)in.read()){
+            case 1 : 
+                type = MessageType.HELLO;
+                break;
+            case 2 : 
+                type = MessageType.MESSAGE;
+                break;
+            case 3 : 
+                type = MessageType.BYE;
+                break;
+            case 127 : 
+                type = MessageType.ERROR;
+                break;
         }
-    	return new Message(type, 
-    			name == null? "" : new String(name), 
-    			message == null? "" : new String(message));
+        int messangesNumber = in.read();
+        if (type == null)
+            throw new RuntimeException("Incorrect message specification");
+        if (type == MessageType.MESSAGE || type == MessageType.HELLO){
+            ByteBuffer buffer = ByteBuffer.allocate(4);
+            for (int i = 0; i < 4; ++i) {
+                int tmp;
+                if ((tmp = in.read()) < 0) {
+                    throw new RuntimeException("Cannot read message");
+                }
+                buffer.put((byte) tmp);
+            }
+            buffer.position(0);
+            int length = buffer.getInt();
+            if (length > 100 || length <= 0) {
+                throw new RuntimeException("Incorrect length");
+            }
+            name = new byte[length];
+            for (int i = 0; i < length; ++i) {
+                int tmp;
+                if ((tmp = in.read()) < 0) {
+                    throw new RuntimeException("Cannot read message");
+                }
+                name[i] = (byte) tmp;
+            }    
+        }
+        if (type == MessageType.MESSAGE || type == MessageType.ERROR){
+            ByteBuffer buffer = ByteBuffer.allocate(4);
+            for (int i = 0; i < 4; ++i) {
+                int tmp;
+                if ((tmp = in.read()) < 0) {
+                    throw new RuntimeException("Cannot read message");
+                }
+                buffer.put((byte) tmp);
+            }
+            buffer.position(0);
+            int length = buffer.getInt();
+            if (length > 1000 || length <= 0) {
+                throw new RuntimeException("Incorrect length");
+            }
+            message = new byte[length];
+            for (int i = 0; i < length; ++i) {
+                int tmp;
+                if ((tmp = in.read()) < 0) {
+                    throw new RuntimeException("Cannot read message");
+                }
+                message[i] = (byte) tmp;
+            }
+        }
+        return new Message(type, 
+                name == null? "" : new String(name), 
+                message == null? "" : new String(message));
     }
 
     public static byte[] hello(String name) {
