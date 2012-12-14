@@ -9,7 +9,7 @@ import javax.swing.table.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.*;
 import org.w3c.dom.*;
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
@@ -116,6 +116,50 @@ public class UserList extends JFrame {
             return Integer.compare(getType(one.get(1)), getType(two.get(1)));
         }
     }
+    
+    public class TableRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, 
+                boolean hasFocus, int row, int column) {
+            Component cell;
+            switch (column) {
+                case 0:
+                case 5:
+                    cell = super.getTableCellRendererComponent(table,
+                            (int)value, isSelected,hasFocus, row, column);
+                    break;
+                    
+                case 1:
+                    cell = super.getTableCellRendererComponent(table,
+                            (UserType)value, isSelected,hasFocus, row, column);
+                    break;
+                    
+                case 2:
+                case 3:
+                default:
+                    cell = super.getTableCellRendererComponent(table,
+                            (String)value, isSelected,hasFocus, row, column);
+                    break;
+                    
+                case 4:
+                    cell = super.getTableCellRendererComponent(table,
+                            (boolean)value, isSelected,hasFocus, row, column);
+                    break;
+            }
+
+            String firstName = (String) table.getModel().getValueAt(row, 2);
+            String lastName = (String) table.getModel().getValueAt(row, 3);
+
+            if (firstName.equals("") || lastName.equals("")) {
+                setBackground(Color.yellow);
+            } else {
+                setBackground(Color.white);
+            }
+
+            ((UserListTable)table.getModel()).fireTableCellUpdated(row, column);
+            return cell;
+        }
+    };
     
     public class ActionRunner implements ActionListener {
         @Override
@@ -387,6 +431,10 @@ public class UserList extends JFrame {
         
         table.setRowSorter(new TableRowSorter<>(table.getModel()));
         add(new JScrollPane(table));
+        
+        for (int i = 0; i < table.getColumnCount(); ++i) {
+            table.getColumnModel().getColumn(i).setCellRenderer(new TableRenderer());
+        }
     }
     
     public void loadUsers(File file) {
@@ -454,4 +502,5 @@ public class UserList extends JFrame {
             Utils.tryClose(writer);
         }
     }
+    
 }
