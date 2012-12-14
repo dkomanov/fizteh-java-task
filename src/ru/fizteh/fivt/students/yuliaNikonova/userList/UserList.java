@@ -29,7 +29,6 @@ public class UserList extends JFrame implements ListSelectionListener {
 
     UserList() {
 	super("UserList");
-	// xmlUserList = new XmlUserList();
 	setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 	setSize(500, 700);
 	createMenu();
@@ -46,14 +45,10 @@ public class UserList extends JFrame implements ListSelectionListener {
 	}
     }
 
-    // событие выделения строки
     public void valueChanged(ListSelectionEvent e) {
-	// System.out.println("lalala");
-	// если событие было сгенерировано нашей таблицей
+
 	if (e.getSource() == table.getSelectionModel()
 		&& e.getFirstIndex() >= 0) {
-
-	    // отображаем выделенный объект в виде строки
 	    int row = table.getSelectedRow();
 	    if (row > -1 && row < table.getRowCount()) {
 
@@ -325,7 +320,8 @@ public class UserList extends JFrame implements ListSelectionListener {
     }
 
     private void showError(String errorMessage, String windowName) {
-	JOptionPane.showMessageDialog(frame, errorMessage, windowName, JOptionPane.ERROR_MESSAGE);
+	JOptionPane.showMessageDialog(frame, errorMessage, windowName,
+		JOptionPane.ERROR_MESSAGE);
 
     }
 }
