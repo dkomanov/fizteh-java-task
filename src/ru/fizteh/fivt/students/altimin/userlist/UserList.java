@@ -388,11 +388,11 @@ public class UserList extends JFrame {
 
     public void saveIntoFile(File file) {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("<Users>");
+        buffer.append("<users>");
         for (UserRepresentation userRepresentation : tableModel.list) {
             buffer.append(userRepresentation.toXML());
         }
-        buffer.append("</Users>");
+        buffer.append("</users>");
         FileWriter fileWriter = null;
         try {
             fileWriter = new FileWriter(file);
@@ -419,7 +419,6 @@ public class UserList extends JFrame {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             int selectedRow = UserList.this.table.getSelectedRow();
-            System.err.println(row + " " + selectedRow);
             List<UserRepresentation> list = UserList.this.tableModel.list;
             if (selectedRow != -1) {
                 boolean ok = true;
