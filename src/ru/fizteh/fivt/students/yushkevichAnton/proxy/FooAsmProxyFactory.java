@@ -131,22 +131,16 @@ public class FooAsmProxyFactory extends FooProxyFactory {
                         if (methodReturnType.equals(int.class)) {
                             generatorAdapter.push(0);
                         } else if (methodReturnType.equals(Integer.class)) {
-                            generatorAdapter.newInstance(Type.getType(Integer.class));
-                            generatorAdapter.dup();
                             generatorAdapter.push(0);
                             //generatorAdapter.invokeConstructor(Type.getType(Integer.class), new org.objectweb.asm.commons.Method("<init>", "(I)V"));
                             generatorAdapter.invokeStatic(Type.getType(Integer.class), new org.objectweb.asm.commons.Method("valueOf", "(I)" + Type.getType(Integer.class).getDescriptor()));
                         } else if (methodReturnType.equals(long.class)) {
                             generatorAdapter.push(0L);
                         } else if (methodReturnType.equals(Long.class)) {
-                            generatorAdapter.newInstance(Type.getType(Long.class));
-                            generatorAdapter.dup();
                             generatorAdapter.push(0L);
                             //generatorAdapter.invokeConstructor(Type.getType(Long.class), new org.objectweb.asm.commons.Method("<init>", "(J)V"));
                             generatorAdapter.invokeStatic(Type.getType(Long.class), new org.objectweb.asm.commons.Method("valueOf", "(J)" + Type.getType(Long.class).getDescriptor()));
                         } else if (methodReturnType.equals(List.class)) {
-                            generatorAdapter.newInstance(Type.getType(ArrayList.class));
-                            generatorAdapter.dup();
                             generatorAdapter.invokeConstructor(arrayListType, new org.objectweb.asm.commons.Method("<init>", "()V"));
                         } else {
                             throw new IllegalArgumentException();
@@ -173,9 +167,9 @@ public class FooAsmProxyFactory extends FooProxyFactory {
                         generatorAdapter.loadLocal(resLocal);
                         generatorAdapter.swap(returnType, returnType);
                         String returnTypeDescriptor = returnType.getDescriptor();
-                        final org.objectweb.asm.commons.Method merge = new org.objectweb.asm.commons.Method("merge", "(" +
+                        final org.objectweb.asm.commons.Method sum = new org.objectweb.asm.commons.Method("sum", "(" +
                                                                                                                      returnTypeDescriptor + returnTypeDescriptor + ")" + returnTypeDescriptor);
-                        generatorAdapter.invokeStatic(Type.getType(ProxyUtils.class), merge);
+                        generatorAdapter.invokeStatic(Type.getType(FooAsmProxyFactory.class), sum);
                         generatorAdapter.storeLocal(resLocal);
                     }
 
@@ -213,5 +207,28 @@ public class FooAsmProxyFactory extends FooProxyFactory {
         generatorAdapter.visitCode();
         generatorApplier.apply(generatorAdapter);
         generatorAdapter.endMethod();
+    }
+
+    // sums
+
+    public static int sum(int a, int b) {
+        return a + b;
+    }
+
+    public static Integer sum(Integer a, Integer b) {
+        return a + b;
+    }
+
+    public static long sum(long a, long b) {
+        return a + b;
+    }
+
+    public static Long sum(Long a, Long b) {
+        return a + b;
+    }
+
+    public static List sum(List a, List b) {
+        a.addAll(b);
+        return a;
     }
 }
