@@ -213,7 +213,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     }
 
     private void writeToDocumentByFields(Document document, Object value, Element root) throws Exception {
-        System.err.println("HERE");
         for (Field field: fields.get(value.getClass())) {
             field.setAccessible(true);
             Object fieldValue = field.get(value);
@@ -258,8 +257,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
 
     public void writeUserList(Document document, List<User> userList) {
         Element usersElement = document.createElement("users");
-        document.appendChild(usersElement);
         for (User user: userList) {
+            serialized = new IdentityHashMap<>();
             Element userElement = document.createElement("user");
             usersElement.appendChild(userElement);
             try {
@@ -267,6 +266,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             } catch (Exception ignored) {
             }
         }
+        document.appendChild(usersElement);
     }
 
     @Override
