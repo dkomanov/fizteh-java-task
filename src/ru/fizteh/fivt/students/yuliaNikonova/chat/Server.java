@@ -32,13 +32,13 @@ public class Server extends Thread {
         ss = new ServerSocket(port);
 
         // Tell the world we're ready to go
-        System.out.println("Listening on " + ss);
+        System.out.println("DEBUG: listening on " + ss);
         // Keep accepting connections forever
         while (work) {
             // Grab the next incoming connection
             Socket s = ss.accept();
             // Tell the world we've got it
-            System.out.println("Connection from " + s);
+            System.out.println("DEBUG: connection from " + s);
             // DataOutputStream dout = new
             // DataOutputStream(s.getOutputStream());
             // outputStreams.put(s, dout);
@@ -69,9 +69,10 @@ public class Server extends Thread {
             for (Enumeration e = getOutputStreams(); e.hasMoreElements();) {
                 DataOutputStream dout = (DataOutputStream) e.nextElement();
                 try {
+                    // dout.writeInt(message.length);
                     dout.write(message);
                 } catch (IOException ie) {
-                    System.out.println(ie);
+                    System.err.println(ie);
                 }
             }
         }
@@ -176,6 +177,8 @@ public class Server extends Thread {
                 DataOutputStream dout = outputStreams.get(s);
                 if (dout != null) {
                     try {
+                        // dout.writeInt(MessageUtils.message("server",
+                        // message).length);
                         dout.write(MessageUtils.message("server", message));
                         return;
                     } catch (Exception e) {

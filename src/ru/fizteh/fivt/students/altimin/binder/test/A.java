@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.altimin.xmlbinder.test;
+package ru.fizteh.fivt.students.altimin.binder.test;
 
 import ru.fizteh.fivt.bind.AsXmlAttribute;
 

@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.tolyapro.proxy;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -76,6 +77,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable {
         IdentityHashMap<Object, Object> circularRefDetector = new IdentityHashMap<Object, Object>();
+        method.setAccessible(true);
         Class clazz = method.getDeclaringClass();
         if (clazz.equals(Object.class)) {
             return method.invoke(target, args);
@@ -85,37 +87,60 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         ArrayList<String> argsAsStrings = new ArrayList<String>();
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
-                if (args[i] != null && args[i].toString().length() > magicConst) {
+                argsAsStrings.add(toString(args[i], circularRefDetector));
+                if (argsAsStrings.get(i).length() > magicConst) {
                     extendedMode = true;
                 }
-                argsAsStrings.add(toString(args[i], circularRefDetector));
             }
         }
         writer.append(method.getDeclaringClass().getSimpleName() + '.');
         writer.append(method.getName() + '(');
+        if (extendedMode) {
+            writer.append('\n');
+        }
         for (int i = 0; i < argsAsStrings.size(); ++i) {
+            if (extendedMode) {
+                writer.append("  ");
+            }
             writer.append(argsAsStrings.get(i));
             if (i != argsAsStrings.size() - 1) {
-                writer.append(", ");
+                writer.append(",");
             }
             if (extendedMode) {
                 writer.append('\n');
+            } else {
+                if (i != argsAsStrings.size() - 1) {
+                    writer.append(" ");
+                }
             }
+        }
+        if (extendedMode) {
+            writer.append("  ");
         }
         writer.append(")");
         Object returned = null;
         try {
             returned = method.invoke(target, args);
             if (returned != null) {
-                writer.append(" returned ");
+                if (extendedMode) {
+                    writer.append("\n  returned ");
+                } else {
+                    writer.append(" returned ");
+                }
                 writer.append(toString(returned, circularRefDetector));
             }
-        } catch (Throwable e) {
-            writer.append('\n');
-            StackTraceElement[] elements = e.getStackTrace();
-            writer.append("threw"
-                    + e.getClass().toString().replaceFirst("class", "")
-                    + " Message:" + e.getMessage() + '\n');
+        } catch (InvocationTargetException e) {
+            if (extendedMode) {
+                writer.append('\n');
+                writer.append("  ");
+            } else {
+                writer.append(" ");
+            }
+            StackTraceElement[] elements = e.getTargetException()
+                    .getStackTrace();
+            writer.append("threw "
+                    + e.getTargetException().getClass().getCanonicalName()
+                    + ": " + e.getTargetException().getMessage() + '\n');
             for (int i = 0; i < elements.length; ++i) {
                 if (extendedMode) {
                     writer.append("  ");
@@ -126,8 +151,12 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     writer.append('\n');
                 }
             }
+            // System.out.println(writer);
+            throw e.getTargetException();
+        } catch (Throwable e) {
             throw e;
         }
+
         writer.append('\n');
         return returned;
     }

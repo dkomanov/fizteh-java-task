@@ -5,7 +5,6 @@ import ru.fizteh.fivt.bind.test.Permissions;
 import ru.fizteh.fivt.bind.test.User;
 import ru.fizteh.fivt.bind.test.UserName;
 import ru.fizteh.fivt.bind.test.UserType;
-import ru.fizteh.fivt.students.altimin.binder.XmlBinder;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;

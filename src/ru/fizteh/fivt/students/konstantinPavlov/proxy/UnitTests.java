@@ -43,6 +43,9 @@ public class UnitTests extends Assert {
 
         @Collect
         List<?> numCollectList();
+
+        @Collect
+        void throwException();
     }
 
     interface InterfaceWithoutMethods {
@@ -56,6 +59,60 @@ public class UnitTests extends Assert {
 
     class ClassForTests implements InterfaceForTests {
         public int number;
+
+        public SubClassForTests newInstanceOfSubClass() {
+            return new SubClassForTests(0);
+        }
+
+        private class SubClassForTests implements InterfaceForTests {
+            SubClassForTests(int num) {
+                number = num;
+            }
+
+            @Override
+            public int numInt(int num) {
+                return 1;
+            }
+
+            @Override
+            public int numLong(long num) {
+                return 2;
+            }
+
+            @Override
+            public void numNotForProxy() {
+                return;
+            }
+
+            @Override
+            public int numCollectInt() {
+                return number;
+            }
+
+            @Override
+            public void numCollectVoid() {
+                return;
+            }
+
+            @Override
+            public long numCollectLong() {
+                return number;
+            }
+
+            @Override
+            public List numCollectList() {
+                List returnList = new ArrayList<Integer>();
+                returnList.add(number);
+                returnList.add(number + 1);
+                returnList.add(number + 2);
+                return returnList;
+            }
+
+            @Override
+            public void throwException() {
+                throw new RuntimeException("SubException");
+            }
+        }
 
         ClassForTests(int num) {
             number = num;
@@ -98,6 +155,11 @@ public class UnitTests extends Assert {
             returnList.add(number + 1);
             returnList.add(number + 2);
             return returnList;
+        }
+
+        @Override
+        public void throwException() {
+            throw new RuntimeException("Exception");
         }
     }
 
@@ -216,5 +278,34 @@ public class UnitTests extends Assert {
         InterfaceForTests testInterface = (InterfaceForTests) new ShardingProxyFactory()
                 .createProxy(targets, interfaces);
 
+    }
+
+    @Test
+    public void testForPrivateNestedClass() {
+        Object[] targets = new Object[2];
+        targets[0] = new ClassForTests(0).newInstanceOfSubClass();
+        targets[1] = new ClassForTests(1).newInstanceOfSubClass();
+
+        Class[] interfaces = new Class[1];
+        interfaces[0] = InterfaceForTests.class;
+
+        InterfaceForTests testInterface = (InterfaceForTests) new ShardingProxyFactory()
+                .createProxy(targets, interfaces);
+
+    }
+
+    @Test
+    public void exceptionTest() {
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Exception");
+        Object[] targets = new Object[1];
+        targets[0] = new ClassForTests(0);
+
+        Class[] interfaces = new Class[1];
+        interfaces[0] = InterfaceForTests.class;
+
+        InterfaceForTests inter = (InterfaceForTests) new ShardingProxyFactory()
+                .createProxy(targets, interfaces);
+        inter.throwException();
     }
 }

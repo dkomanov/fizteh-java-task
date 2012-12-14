@@ -72,7 +72,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         builder.append(array.length);
         builder.append('{');
         for (int i = 0; i < array.length; i++) {
-            builder.append(wrapInQuotes(printObject(array[i], parsedObjects)));
+            builder.append(printObject(array[i], parsedObjects));
             if (i != array.length - 1) {
                 builder.append(", ");
             }
@@ -118,7 +118,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
         String[] parsedArgs = new String[args.length];
         for (int i = 0; i < args.length; i++) {
             parsedArgs[i] = printObject(args[i], parsedObjects);
-            if (parsedArgs[i].length() >= ARG_MAX_LENGTH) {
+            if (parsedArgs[i].length() > ARG_MAX_LENGTH) {
                 tooLong = true;
             }
         }
@@ -188,6 +188,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
             }
             return result;
         } catch (Throwable ex) {
+            ex = ex.getCause();
             if (tooLong) {
                 logger.append(' ');
             }
@@ -205,7 +206,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler{
                 logger.append(traceElement.toString());
                 logger.append('\n');
             }
-            throw ex.getCause();
+            throw ex;
         } finally {
             writer.append(logger.toString());
         }

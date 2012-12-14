@@ -79,7 +79,12 @@ public class MyCalendar {
                         break;
                     case 'y':
                         i++;
-                        year = Integer.parseInt(args[i]) - 1;
+                        try {
+                        year = Integer.parseInt(args[i]);
+                        } catch (NumberFormatException exeption) {
+                            System.err.println(exeption.getMessage());
+                            System.exit(1);
+                        }
                         if (calendar.getActualMinimum(Calendar.YEAR) > year || calendar.getActualMaximum(Calendar.YEAR) < year) {
                             uError();
                         }

@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.verytable.proxy;
 
+import java.lang.reflect.Array;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -37,6 +38,7 @@ public class HandlerUtils {
     public static String wrap(String s, char leftSymbol, char rightSymbol) {
 
         StringBuilder sb = new StringBuilder();
+        s = s.replaceAll("\\\\", "\\\\\\\\");
         s = s.replaceAll("\t", "\\\\t");
         s = s.replaceAll("\b", "\\\\b");
         s = s.replaceAll("\n", "\\\\n");
@@ -44,22 +46,30 @@ public class HandlerUtils {
         s = s.replaceAll("\f", "\\\\f");
         s = s.replaceAll("\'", "\\\\\'");
         s = s.replaceAll("\"", "\\\\\"");
-        s = s.replaceAll("\\\\", "\\\\\\\\");
         return sb.append(leftSymbol).append(s).append(rightSymbol).toString();
     }
 
-    public static String prepareArrayToPrint(Object[] arrayToPrint,
+    public static String prepareArrayToPrint(Object arrayToPrint,
                                              Map prepared) throws Throwable {
+
+        Object[] array;
+        try {
+            array = (Object[]) arrayToPrint;
+        } catch (ClassCastException ex) {
+            array = new Object[Array.getLength(arrayToPrint)];
+            for (int i = 0; i < array.length; i++) {
+                array[i] = Array.get(arrayToPrint, i);
+            }
+        }
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append(arrayToPrint.length);
+        sb.append(array.length);
         sb.append(Constants.leftBrace);
 
-        for (int i = 0; i < arrayToPrint.length; ++i) {
-            sb.append(wrap(prepareObjectToPrint(arrayToPrint[i], prepared),
-                           Constants.doubleQuote, Constants.doubleQuote));
-            if (i != arrayToPrint.length - 1) {
+        for (int i = 0; i < array.length; ++i) {
+            sb.append(prepareObjectToPrint(array[i], prepared));
+            if (i != array.length - 1) {
                 sb.append(Constants.comma).append(Constants.smallIndent);
             }
         }
@@ -79,7 +89,6 @@ public class HandlerUtils {
             throw new RuntimeException("Error: " + objectToPrint
                                        + " has cyclic reference.");
         }
-        prepared.put(objectToPrint, null);
         Class objectToPrintClass = objectToPrint.getClass();
 
         if (isPrimitiveOrWrappedType(objectToPrintClass)) {
@@ -90,7 +99,8 @@ public class HandlerUtils {
         } else if (objectToPrintClass.isEnum()) {
             return ((Enum) objectToPrint).name();
         } else if (objectToPrintClass.isArray()) {
-            return prepareArrayToPrint((Object[]) objectToPrint, prepared);
+            prepared.put(objectToPrint, null);
+            return prepareArrayToPrint(objectToPrint, prepared);
         } else {
             return wrap(objectToPrint.toString(), Constants.leftSquareBracket,
                         Constants.rightSquareBracket);
@@ -133,20 +143,22 @@ public class HandlerUtils {
     }
 
     public static void prepareExceptionToPrint(Throwable ex, StringBuilder sb,
-                                               boolean isLongOutputMode) {
+                                               boolean isLongOutputMode
+                                               ) throws Throwable {
 
-        sb.append(Constants.threw).append(ex.getClass().getSimpleName());
-        sb.append(Constants.colon).append(Constants.smallIndent);
-        sb.append(ex.getMessage()).append(Constants.endl);
+        ex = ex.getCause();
+        sb.append(Constants.threw).append(ex.toString());
+        sb.append(Constants.endl);
 
         StackTraceElement[] elements = ex.getStackTrace();
         for (StackTraceElement element : elements) {
             if (isLongOutputMode) {
                 sb.append(Constants.bigIndent);
             }
-            sb.append(Constants.bigIndent).append(element.toString());
+            sb.append(Constants.bigIndent).append(Constants.at + element.toString());
             sb.append(Constants.endl);
         }
+        throw ex;
     }
 
 }

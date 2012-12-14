@@ -21,6 +21,17 @@ interface VoidInterface{}
 class VoidInterfaceClass implements VoidInterface{
     public void func() {}
 }
+
+interface InnerInterface {
+    public void go();
+}
+
+class ExternalInterface implements InnerInterface {
+    @Override
+    public void go() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+}
 interface SetArrays {
     public Double[] setArray(Double[] newArray);
 
@@ -63,6 +74,7 @@ public class ProxyTest {
         proxy.add("wtf2");
         proxy.get(0);
         proxy.add(2, "too long too long too long too long too long too long too long too long too long too long");
+        proxy.add("0123456789012345678901234567890123456789012345678901234567");
         proxy.add("too long too long too long too long too long too long too long too long too long too long");
         proxy.toString();
         Assert.assertEquals(builder.toString(),
@@ -73,6 +85,7 @@ public class ProxyTest {
                         "  2,\n" +
                         "  \"too long too long too long too long too long too long too long too long too long too long\"\n" +
                         "  )\n" +
+                        "List.add(\"0123456789012345678901234567890123456789012345678901234567\") returned true\n" +
                         "List.add(\n" +
                         "  \"too long too long too long too long too long too long too long too long too long too long\"\n" +
                         "  )\n" +
@@ -113,7 +126,7 @@ public class ProxyTest {
         proxy.hashCode(); //don't proxy
         proxy.equals(null); //don't proxy
         Assert.assertEquals(builder.toString(),
-                "SetArrays.setArray(3{\"3.1415\", \"1.02\", \"23.04\"}) returned 3{\"3.1415\", \"1.02\", \"23.04\"}\n" +
+                "SetArrays.setArray(3{3.1415, 1.02, 23.04}) returned 3{3.1415, 1.02, 23.04}\n" +
                 "SetArrays.voidMethod(0{})\n");
     }
 
@@ -247,7 +260,43 @@ public class ProxyTest {
         Integer x = 3;
         proxy.indexOf(new Integer[]{x, x});  //test for similar elements in array
         proxy.indexOf(new int[]{1, 2});  //primitive array
-        Assert.assertEquals(builder.toString(), "List.indexOf(2{\"3\", \"3\"}) returned -1\n" +
-                "List.indexOf(2{\"1\", \"2\"}) returned -1\n");
+        Assert.assertEquals(builder.toString(), "List.indexOf(2{3, 3}) returned -1\n" +
+                "List.indexOf(2{1, 2}) returned -1\n");
     }
+
+    @Test
+    public void badInterfaceTest() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("target doesn't support interface");
+        ArrayTest arrayTest = new ArrayTest();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        ExternalInterface proxy = (ExternalInterface) factory.createProxy(arrayTest, builder, ExternalInterface.class);
+    }
+
+    @Test
+    public void innerInterfaceTest() {
+        ExternalInterface externalInterface = new ExternalInterface();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        InnerInterface proxy = (InnerInterface) factory.createProxy(externalInterface, builder, InnerInterface.class);
+        proxy.go();
+        Assert.assertEquals(builder.toString(), "InnerInterface.go()\n");
+    }
+
+    @Test
+    public void exceptionTypeTest() {
+        List<String> list = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        LoggingProxyFactory factory = new LoggingProxyFactory();
+        List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
+        try {
+            proxy.add(3, "wtf");
+        } catch (Exception ignored) {
+        }
+        Assert.assertTrue(builder.toString().startsWith("List.add(3, \"wtf\") threw java.lang.IndexOutOfBoundsException: Index: 3, Size: 0\n" +
+                "  java.util.ArrayList.rangeCheckForAdd(ArrayList.java:612)\n" +
+                "  java.util.ArrayList.add(ArrayList.java:426)\n"));
+    }
+
 }

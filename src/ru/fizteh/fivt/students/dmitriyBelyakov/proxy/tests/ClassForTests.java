@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.proxy;
+package ru.fizteh.fivt.students.dmitriyBelyakov.proxy.tests;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 public class ClassForTests implements InterfaceForTests {
     public int number;
 
-    ClassForTests(int num) {
+    public ClassForTests(int num) {
         number = num;
     }
 
@@ -47,5 +47,20 @@ public class ClassForTests implements InterfaceForTests {
         returnList.add(number + 1);
         returnList.add(number + 2);
         return returnList;
+    }
+
+    @Override
+    public Integer numInteger(int num) {
+        return number;
+    }
+
+    @Override
+    public Integer numCollectInteger() {
+        return number;
+    }
+
+    @Override
+    public Long numCollectLongObject() {
+        return (long) number;
     }
 }

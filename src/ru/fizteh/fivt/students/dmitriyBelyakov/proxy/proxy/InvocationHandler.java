@@ -1,7 +1,6 @@
-package ru.fizteh.fivt.students.dmitriyBelyakov.proxy;
+package ru.fizteh.fivt.students.dmitriyBelyakov.proxy.proxy;
 
-import ru.fizteh.fivt.proxy.Collect;
-import ru.fizteh.fivt.proxy.DoNotProxy;
+import ru.fizteh.fivt.students.dmitriyBelyakov.proxy.ProxyUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -16,11 +15,17 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
-        method.setAccessible(true);
-        if (method.getAnnotation(DoNotProxy.class) != null) {
-            throw new RuntimeException("Incorrect method.");
+        if (proxy == null || method == null) {
+            throw new NullPointerException();
         }
-        if (method.getAnnotation(Collect.class) != null) {
+        if ((args == null || args.length == 0) && !ProxyUtils.isCollect(method)) {
+            throw new RuntimeException("One of arguments must be int or long.");
+        }
+        method.setAccessible(true);
+        if (ProxyUtils.isDoNotProxy(method)) {
+            throw new RuntimeException("This method not for proxy.");
+        }
+        if (ProxyUtils.isCollect(method)) {
             Class returnType = method.getReturnType();
             if (returnType.equals(void.class)) {
                 for (Object target : targets) {
@@ -47,22 +52,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 return result;
             }
         }
-        if (proxy == null || method == null) {
-            throw new NullPointerException();
-        }
-        if (args == null || args.length == 0) {
-            throw new RuntimeException("One of arguments must be int or long.");
-        }
-        for (Object arg : args) {
-            Class clazz = arg.getClass();
-            if (clazz.equals(int.class) || clazz.equals(Integer.class)) {
-                int num = (Integer) arg % targets.length;
-                return method.invoke(targets[num], args);
-            } else if (clazz.equals(long.class) || clazz.equals(Long.class)) {
-                int num = (int) ((Long) arg % targets.length);
-                return method.invoke(targets[num], args);
-            }
-        }
-        throw new IllegalArgumentException("Incorrect arguments");
+        long num = ProxyUtils.getFirstIntOrLongArgument(args);
+        return method.invoke(targets[(int) (num % targets.length)], args);
     }
 }

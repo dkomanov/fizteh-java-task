@@ -23,6 +23,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
         if (method == null) {
             throw new IllegalArgumentException("Null method");
         }
+        method.setAccessible(true);
         if (method.getAnnotation(DoNotProxy.class) != null) {
             throw new IllegalArgumentException("Method has DoNotProxy annotation");
         }
@@ -73,15 +74,19 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                     return res;
                 }
 
-                if (returnType.isAssignableFrom(List.class)) {
+                if (returnType.equals(List.class)) {
+                    // System.out.println("LIST!!!!");
                     List res = new ArrayList();
                     for (Object target : targets) {
                         res.addAll((List) method.invoke(target, args));
                     }
+
+                    return res;
                 }
             } catch (InvocationTargetException e) {
                 throw e.getTargetException();
             }
+
             throw new IllegalArgumentException("Method has unsupported return type");
         }
 

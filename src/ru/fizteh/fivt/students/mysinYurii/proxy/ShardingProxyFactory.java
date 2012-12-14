@@ -26,7 +26,6 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
             if (targ == null) {
                 throw new IllegalArgumentException("Null target");
             }
-            boolean implementsSomething = false;
             Set<Class> setOfInterfaces = new HashSet<Class>();
             setOfInterfaces.addAll(Arrays.asList(targ.getClass().getInterfaces()));
             for (Class inter : interfaces) {
@@ -47,6 +46,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                 throw new IllegalArgumentException(currInterface.getName() + " has no methods");
             }
             for (Method currMethod : methods) {
+                currMethod.setAccessible(true);
                 if (currMethod.getAnnotation(DoNotProxy.class) != null) {
                     continue;
                 }
@@ -58,7 +58,7 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                     Set<Class> argSet = new HashSet<Class>(Arrays.asList(currMethod.getParameterTypes()));
                     if (!argSet.contains(int.class) 
                             && !argSet.contains(long.class)) {
-                        throw new IllegalArgumentException("No int or long parameter");
+                        throw new IllegalArgumentException("No int or long parameter in " + currMethod.getName());
                     }
                 }
             }

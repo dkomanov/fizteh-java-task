@@ -50,27 +50,15 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
             }
             cycleInterrupter.put(arg, null);
             if (clazz.isArray()) {
-                if (!clazz.getComponentType().isPrimitive()) {
-                    Object[] args = (Object[]) arg;
-                    stream.append(args.length + "{");
-                    for (int i = 0; i < args.length; ++i) {
-                        IdentityHashMap<Object, Object> arrayCycleInterrupter = new IdentityHashMap<Object, Object>(cycleInterrupter);
-                        specialToString(args[i].getClass(), args[i], stream, arrayCycleInterrupter);
-                        if (i + 1 != args.length) {
-                            stream.append(", ");
-                        }
+                int size = Array.getLength(arg);
+                stream.append(size + "{");
+                for (int i = 0; i < size; ++i) {
+                    IdentityHashMap<Object, Object> arrayCycleInterrupter = new IdentityHashMap<Object, Object>(cycleInterrupter);
+                    specialToString(clazz.getComponentType(), Array.get(arg, i), stream, arrayCycleInterrupter);
+                    if (i + 1 != size) {
+                        stream.append(", ");
                     }
-                } else {
-                    int size = Array.getLength(arg);
-                    stream.append(size + "{");
-                    for (int i = 0; i < size; ++i) {
-                        IdentityHashMap<Object, Object> arrayCycleInterrupter = new IdentityHashMap<Object, Object>(cycleInterrupter);
-                        specialToString(Array.get(arg, i).getClass(), Array.get(arg, i), stream, arrayCycleInterrupter);
-                        if (i + 1 != size) {
-                            stream.append(", ");
-                        }
-                    }
-                }
+                }    
                 stream.append("}");
             } else if (clazz.equals(String.class)) {
                 stream.append("\"");
@@ -150,7 +138,7 @@ public class InvocationHandler implements java.lang.reflect.InvocationHandler {
                 } else {
                     writer.append(" ");
                 }
-                writer.append(exception.getTargetException().getClass().getCanonicalName() + ": " + exception.getTargetException().getMessage() + '\n');
+                writer.append("threw " + exception.getTargetException().getClass().getCanonicalName() + ": " + exception.getTargetException().getMessage() + '\n');
                 if (isExtendedOutput) {
                     writer.append("  ");
                 }

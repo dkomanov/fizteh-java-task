@@ -1,17 +1,16 @@
 package ru.fizteh.fivt.students.dmitriyBelyakov.proxy;
 
+import org.objectweb.asm.Type;
 import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyFactory {
-    @Override
-    public Object createProxy(Object[] targets, Class[] interfaces) {
+public class ProxyUtils {
+    public static void throwExceptionIfArgumentsIsIncorrect(Object[] targets, Class[] interfaces) {
         if (targets == null || targets.length == 0) {
             throw new IllegalArgumentException("No one target found.");
         }
@@ -64,6 +63,77 @@ public class ShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyF
                 throw new IllegalArgumentException("One of targets doesn't implement interface from interfaces.");
             }
         }
-        return Proxy.newProxyInstance(interfaces[0].getClassLoader(), interfaces, new InvocationHandler(targets));
+    }
+
+    public static boolean isDoNotProxy(Method method) {
+        return method.getAnnotation(DoNotProxy.class) != null;
+    }
+
+    public static boolean isCollect(Method method) {
+        return method.getAnnotation(Collect.class) != null;
+    }
+
+    public static long getFirstIntOrLongArgument(Object[] args) {
+        for (Object arg : args) {
+            Class clazz = arg.getClass();
+            if (clazz.equals(int.class) || clazz.equals(Integer.class)) {
+                return (long) ((Integer) arg);
+            } else if (clazz.equals(long.class) || clazz.equals(Long.class)) {
+                return (Long) arg;
+            }
+        }
+        throw new IllegalArgumentException("Incorrect arguments.");
+    }
+
+    public static int getNumberOfFirstIntOrLongArgument(Class[] args) {
+        for (int i = 0; i < args.length; ++i) {
+            Class clazz = args[i];
+            if (clazz.equals(int.class) || clazz.equals(Integer.class) || clazz.equals(long.class) || clazz.equals(Long.class)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Incorrect arguments.");
+    }
+
+    public static void throwExceptionIfInterfacesContainsEqualsMethodSignature(Class[] interfaces) {
+        HashSet<String> signatures = new HashSet<>();
+        for (Class interfc : interfaces) {
+            Method[] methods = interfc.getDeclaredMethods();
+            for (Method method : methods) {
+                StringBuilder signature = new StringBuilder();
+                signature.append(method.getName()).append("(");
+                Class[] argTypes = method.getParameterTypes();
+                for (Class type : argTypes) {
+                    signature.append(Type.getDescriptor(type));
+                }
+                signature.append(")");
+                if (signatures.contains(signature.toString())) {
+                    throw new IllegalArgumentException("Conflict methods in interfaces.");
+                } else {
+                    signatures.add(signature.toString());
+                }
+            }
+        }
+    }
+
+    public static int merge(int i1, int i2) {
+        return i1 + i2;
+    }
+
+    public static Integer merge(Integer i1, Integer i2) {
+        return i1 + i2;
+    }
+
+    public static long merge(long l1, long l2) {
+        return l1 + l2;
+    }
+
+    public static Long merge(Long l1, Long l2) {
+        return l1 + l2;
+    }
+
+    public static List merge(List l1, List l2) {
+        l1.addAll(l2);
+        return l1;
     }
 }
