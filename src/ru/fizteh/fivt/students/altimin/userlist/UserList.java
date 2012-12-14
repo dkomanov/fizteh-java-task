@@ -11,16 +11,19 @@ import ru.fizteh.fivt.bind.test.UserName;
 import ru.fizteh.fivt.bind.test.UserType;
 import ru.fizteh.fivt.students.altimin.binder.XmlBinder;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * User: altimin
@@ -42,7 +45,13 @@ public class UserList extends JFrame {
             columnNames[i] = fields[i].get();
         }
         userList.table = new JTable(userList.tableModel);
-        //table.getTableHeader().setReorderingAllowed(false);
+        CellRenderer cellRenderer = userList.new CellRenderer();
+        userList.table.setDefaultRenderer(Object.class, cellRenderer);
+        userList.table.setCellSelectionEnabled(true);
+        userList.table.setColumnSelectionAllowed(true);
+        TableCellSelectionListener listener = userList.new TableCellSelectionListener();
+        userList.table.getSelectionModel().addListSelectionListener(listener);
+        userList.table.getColumnModel().getSelectionModel().addListSelectionListener(listener);
         JScrollPane scrollPane = new JScrollPane(userList.table);
         userList.table.setFillsViewportHeight(true);
         userList.table.getInputMap().put(KeyStroke.getKeyStroke("DELETE"), "delete pressed");
@@ -60,9 +69,8 @@ public class UserList extends JFrame {
         userList.table.getActionMap().put("insert pressed", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                System.err.println("Insert!");
                 int newRow = userList.tableModel.list.size();
-                userList.tableModel.list.add(userList.new UserRepresentation(new User(0, null, null, null)));
+                userList.tableModel.list.add(userList.new UserRepresentation(new User(0, UserType.USER, null, null)));
                 userList.tableModel.fireTableRowsInserted(newRow, newRow);
             }
         });
@@ -87,6 +95,7 @@ public class UserList extends JFrame {
 
     static class UserFieldTree {
         UserFieldTree[] children;
+
         int nodeIndex;
         String nodeName;
 
@@ -219,17 +228,31 @@ public class UserList extends JFrame {
             return values[value];
         }
 
-        private void go(StringBuilder buffer, UserFieldTree tree) {
-            buffer.append("<").append(tree.nodeName).append(">");
+        private boolean shouldGo(UserFieldTree tree) {
             if (tree.nodeIndex != -1) {
-                if (values[tree.nodeIndex] != null) {
-                    buffer.append(values[tree.nodeIndex]);
-                }
+                return values[tree.nodeIndex] != null && values[tree.nodeIndex].length() > 0;
             }
             for (UserFieldTree child: tree.children) {
-                go(buffer, child);
+                if (shouldGo(child)) {
+                    return true;
+                }
             }
-            buffer.append("</").append(tree.nodeName).append(">");
+            return false;
+        }
+
+        private void go(StringBuilder buffer, UserFieldTree tree) {
+            if (shouldGo(tree)) {
+                buffer.append("<").append(tree.nodeName).append(">");
+                if (tree.nodeIndex != -1) {
+                    if (values[tree.nodeIndex] != null) {
+                        buffer.append(values[tree.nodeIndex]);
+                    }
+                }
+                for (UserFieldTree child: tree.children) {
+                    go(buffer, child);
+                }
+                buffer.append("</").append(tree.nodeName).append(">");
+            }
         }
 
         public String toXML() {
@@ -381,6 +404,44 @@ public class UserList extends JFrame {
                 fileWriter.close();
             } catch (Exception e) {
             }
+        }
+    }
+
+    private static final String[] comparisonMethodNames = { "firstName", "secondName" };
+    private static final Set<String> comparisonMethods = new HashSet<String>(Arrays.asList(comparisonMethodNames));
+
+    private class CellRenderer extends DefaultTableCellRenderer {
+        private boolean equals(String name1, String name2) {
+            return name1 != null && name1.equals(name2);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            int selectedRow = UserList.this.table.getSelectedRow();
+            System.err.println(row + " " + selectedRow);
+            List<UserRepresentation> list = UserList.this.tableModel.list;
+            if (selectedRow != -1) {
+                boolean ok = true;
+                for (int i = 0; i < fields.length; i ++) {
+                    if (comparisonMethods.contains(fields[i].get())) {
+                        ok = ok && equals(list.get(row).values[i], list.get(selectedRow).values[i]);
+                    }
+                }
+                if (ok) {
+                    setBackground(Color.YELLOW);
+                } else {
+                    setBackground(Color.WHITE);
+                }
+            }
+            return c;
+        }
+    }
+
+    private class TableCellSelectionListener implements ListSelectionListener {
+        @Override
+        public void valueChanged(ListSelectionEvent listSelectionEvent) {
+            UserList.this.table.updateUI();
         }
     }
 }
