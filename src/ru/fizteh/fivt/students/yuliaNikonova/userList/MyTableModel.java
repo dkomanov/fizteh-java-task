@@ -13,12 +13,12 @@ import javax.swing.table.TableModel;
 import ru.fizteh.fivt.bind.test.UserType;
 
 public class MyTableModel extends AbstractTableModel {
-	
-	Vector<String> names;
+    
+    Vector<String> names;
     Vector<Vector<Object> > users;
     final DefaultCellEditor editor;
 
-	MyTableModel(Vector<String> names, Vector<Vector<Object>> users) {
+    MyTableModel(Vector<String> names, Vector<Vector<Object>> users) {
         this.names = names;
         this.users = users;
         editor = new DefaultCellEditor(new JComboBox(UserType.values()));
