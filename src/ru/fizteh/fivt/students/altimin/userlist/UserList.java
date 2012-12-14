@@ -38,6 +38,8 @@ public class UserList extends JFrame {
 
     private JTable table;
 
+    private final Object lock = new Object();
+
     private static void createGUI() {
         final UserList userList = new UserList();
         String[] columnNames = new String[fields.length];
@@ -51,7 +53,6 @@ public class UserList extends JFrame {
         userList.table.setColumnSelectionAllowed(true);
         TableCellSelectionListener listener = userList.new TableCellSelectionListener();
         userList.table.getSelectionModel().addListSelectionListener(listener);
-        userList.table.getColumnModel().getSelectionModel().addListSelectionListener(listener);
         JScrollPane scrollPane = new JScrollPane(userList.table);
         userList.table.setFillsViewportHeight(true);
         userList.table.getInputMap().put(KeyStroke.getKeyStroke("DELETE"), "delete pressed");
@@ -440,7 +441,9 @@ public class UserList extends JFrame {
     private class TableCellSelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent listSelectionEvent) {
-            UserList.this.table.updateUI();
+            synchronized (lock) {
+                UserList.this.table.updateUI();
+            }
         }
     }
 }
