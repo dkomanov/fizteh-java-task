@@ -9,5 +9,6 @@ import ru.fizteh.fivt.proxy.LoggingProxyFactory;
 public class AsmLoggingProxyFactory implements LoggingProxyFactory{
     @Override
     public Object createProxy(Object target, Appendable writer, Class... interfaces) {
+        return null;
     }
 }
