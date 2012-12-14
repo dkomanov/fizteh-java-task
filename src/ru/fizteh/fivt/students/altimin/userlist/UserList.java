@@ -40,6 +40,8 @@ public class UserList extends JFrame {
 
     private final Object lock = new Object();
 
+    private JScrollPane scrollPane;
+
     private static void createGUI() {
         final UserList userList = new UserList();
         String[] columnNames = new String[fields.length];
@@ -53,7 +55,7 @@ public class UserList extends JFrame {
         userList.table.setColumnSelectionAllowed(true);
         TableCellSelectionListener listener = userList.new TableCellSelectionListener();
         userList.table.getSelectionModel().addListSelectionListener(listener);
-        JScrollPane scrollPane = new JScrollPane(userList.table);
+        userList.scrollPane = new JScrollPane(userList.table);
         userList.table.setFillsViewportHeight(true);
         userList.table.getInputMap().put(KeyStroke.getKeyStroke("DELETE"), "delete pressed");
         userList.table.getActionMap().put("delete pressed", new AbstractAction() {
@@ -73,9 +75,11 @@ public class UserList extends JFrame {
                 int newRow = userList.tableModel.list.size();
                 userList.tableModel.list.add(userList.new UserRepresentation(new User(0, UserType.USER, null, null)));
                 userList.tableModel.fireTableRowsInserted(newRow, newRow);
+                JScrollBar vertical = userList.scrollPane.getVerticalScrollBar();
+                vertical.setValue(vertical.getMaximum());
             }
         });
-        userList.add(scrollPane);
+        userList.add(userList.scrollPane);
         userList.add(userList.new FileChooser(), BorderLayout.SOUTH);
         userList.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         userList.pack();
@@ -378,7 +382,8 @@ public class UserList extends JFrame {
             }
             tableModel.fireTableDataChanged();
         } catch (Exception e) {
-            System.err.println(e.toString());
+            System.err.println("Failed to read data from file");
+            JOptionPane.showMessageDialog(null, "Failed to read data from file");
         } finally {
             try {
                 inputStream.close();
@@ -399,7 +404,8 @@ public class UserList extends JFrame {
             fileWriter = new FileWriter(file);
             fileWriter.write(buffer.toString());
         } catch (IOException e) {
-            System.err.println("Failed to write data in file");
+            System.err.println("Failed to write data to file");
+            JOptionPane.showMessageDialog(null, "Failed to write data to file");
         } finally {
             try {
                 fileWriter.close();
