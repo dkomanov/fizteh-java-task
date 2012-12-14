@@ -111,7 +111,6 @@ public class ChatClient implements CommandLine {
                 }
             } else {
                 System.out.println("You have no active connections");
-                System.out.println(connections.size());
                 return;
             }
             if (connections.isEmpty()) {
@@ -136,6 +135,9 @@ public class ChatClient implements CommandLine {
             if (hostNames != null) {
                 for (String hostName: hostNames) {
                     System.out.println(hostName);
+                }
+                if (hostNames.size() == 0) {
+                    System.out.println("You have no active connections");
                 }
             }
         } else if (command.equals("/exit")) {

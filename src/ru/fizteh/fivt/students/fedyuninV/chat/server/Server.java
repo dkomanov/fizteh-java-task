@@ -149,15 +149,15 @@ public class Server implements Runnable{
                 String newName = message.getName();
                 if (name != null) {
                     try {
-                        worker.sendMessage(MessageUtils.message("server", "Already authorized"));
+                        worker.sendMessage(MessageUtils.error("You were authorized previously"));
                     } catch (Exception ex) {
                         try {
                             worker.sendMessage(MessageUtils.error("can't deliver previous messages to you"));
                         } catch (Exception ignored) {
                         }
-                        worker.kill();
-                        worker.join();
                     }
+                    worker.kill();
+                    worker.join();
                     return;
                 }
                 synchronized (usersOnline) {
