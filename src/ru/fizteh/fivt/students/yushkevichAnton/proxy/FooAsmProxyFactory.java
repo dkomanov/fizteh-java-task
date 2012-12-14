@@ -4,7 +4,6 @@ import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
 import ru.fizteh.fivt.proxy.ShardingProxyFactory;
 
-import com.sun.deploy.net.proxy.ProxyUtils;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
