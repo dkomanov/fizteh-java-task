@@ -8,6 +8,7 @@ import org.w3c.dom.NodeList;
 import ru.fizteh.fivt.bind.AsXmlElement;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.bind.MembersToBind;
+import ru.fizteh.fivt.bind.test.User;
 import sun.misc.Unsafe;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -212,6 +213,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
     }
 
     private void writeToDocumentByFields(Document document, Object value, Element root) throws Exception {
+        System.err.println("HERE");
         for (Field field: fields.get(value.getClass())) {
             field.setAccessible(true);
             Object fieldValue = field.get(value);
@@ -251,6 +253,19 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             writeToDocumentByFields(document, value, root);
         } else {
             writeToDocumentByMethods(document, value, root);
+        }
+    }
+
+    public void writeUserList(Document document, List<User> userList) {
+        Element usersElement = document.createElement("users");
+        document.appendChild(usersElement);
+        for (User user: userList) {
+            Element userElement = document.createElement("user");
+            usersElement.appendChild(userElement);
+            try {
+                writeToDocument(document, user, userElement);
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -340,6 +355,23 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T>{
             return Enum.valueOf(clazz, text);
         }
         return null;
+    }
+
+    public List<User> getUserList(Document document) {
+        List<User> result = new ArrayList<>();
+        Element root = document.getDocumentElement();
+        if (root.getTagName().equals("users")) {
+            NodeList childs = root.getChildNodes();
+            for (int i = 0; i < childs.getLength(); i++) {
+                if (childs.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                    Element element = (Element) childs.item(i);
+                    if (element.getTagName().equals("user")) {
+                        result.add((User) deserialize(User.class, element));
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private Object deserialize(Class clazz, Element root) {
