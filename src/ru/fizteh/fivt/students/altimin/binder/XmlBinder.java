@@ -43,6 +43,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
     }
 
+    public String getClassName() {
+        return firstLetterToLower(getClazz().getSimpleName());
+    }
+
     @Override
     public byte[] serialize(T value) {
         return serializeSingleObjectToString(value).getBytes();
@@ -61,7 +65,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         InputSource inputSource = new InputSource(reader);
         try {
             Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputSource);
-            if (!document.getDocumentElement().getTagName().equals(getClazz().getSimpleName())) {
+            if (!document.getDocumentElement().getTagName().equals(getClassName())) {
                 throw new RuntimeException("Failed to deserialize: class name doesn't match");
             }
             return (T) deserialize(getClazz(), document.getDocumentElement());
@@ -85,14 +89,14 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         InputSource inputSource = new InputSource(reader);
         try {
             Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputSource);
-            if (!document.getDocumentElement().getTagName().equals(getClazz().getSimpleName() + "s")) {
+            if (!document.getDocumentElement().getTagName().equals(getClassName() + "s")) {
                 throw new RuntimeException("Failed to deserialize: file header to not match");
             }
             NodeList childrenNodes = document.getDocumentElement().getChildNodes();
             for (int i = 0; i < childrenNodes.getLength(); i ++) {
                 Node node = childrenNodes.item(i);
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
-                    if (((Element) node).getTagName().equals(getClazz().getSimpleName())) {
+                    if (((Element) node).getTagName().equals(getClassName())) {
                         list.add(deserialize(getClazz(), (Element) node));
                     }
                 }
@@ -121,7 +125,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         XMLStreamWriter xmlWriter = null;
         try {
             xmlWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
-            xmlWriter.writeStartElement(value.getClass().getSimpleName());
+            xmlWriter.writeStartElement(getClassName());
             serialize(getClazz(), value, xmlWriter);
             xmlWriter.writeEndElement();
         } catch (XMLStreamException e) {
@@ -136,7 +140,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
     }
 
     private String serializeToString(T... objects) {
-        String typeName = getClazz().getSimpleName() + "s";
+        String typeName = getClassName() + "s";
         if (objects == null) {
             return "<" + typeName + "> </" + typeName + ">" ;
         }
@@ -291,10 +295,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             for (int i = 0; i < children.getLength(); i ++) {
                 Node node = children.item(i);
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
-                    String name = ((Element) node).getTagName();
+                    String name = firstLetterToUpper(((Element) node).getTagName());
                     Method setter = getSetter(clazz, name);
                     if (setter == null) {
-                        throw new RuntimeException("Failed to deserialize: no such method get" + name);
+                        throw new RuntimeException("Failed to deserialize: no such method set" + name);
                     }
                     Class newClass = setter.getParameterTypes()[0];
                     try {
@@ -324,7 +328,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
     }
 
-/*    private String firstLetterToLower(String string) {
+    private String firstLetterToLower(String string) {
         if (string == null && string.length() == 0) {
             return string;
         }
@@ -336,7 +340,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             return string;
         }
         return Character.toUpperCase(string.charAt(0)) + string.substring(1);
-    } */
+    }
 
     private static class GetterAndSetter {
         String fieldName;
@@ -490,7 +494,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         AsXmlAttribute XMLAnnotation = (AsXmlAttribute) getterAndSetter.getter.getAnnotation(
                                 AsXmlAttribute.class);
                         if (XMLAnnotation == null) {
-                            xmlWriter.writeStartElement(getterAndSetter.fieldName);
+                            xmlWriter.writeStartElement(firstLetterToLower(getterAndSetter.fieldName));
                             serialize(getterAndSetter.getter.getReturnType(), obj, xmlWriter);
                             xmlWriter.writeEndElement();
                         }
