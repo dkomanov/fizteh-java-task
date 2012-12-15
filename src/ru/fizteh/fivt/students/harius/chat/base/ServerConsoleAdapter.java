@@ -19,7 +19,15 @@ public abstract class ServerConsoleAdapter implements ConsoleObserver {
             String message = input.substring(8).trim();
             sendall(message);
         } else if (input.startsWith("/send")) {
-
+            String tail = input.substring(5).trim();
+            int nextSpace = tail.indexOf(' ');
+            if (nextSpace == -1) {
+                error("usage: /send username message");
+                return;
+            }
+            String name = tail.substring(0, nextSpace);
+            String message = tail.substring(nextSpace).trim();
+            send(name, message);
         } else if (input.startsWith("/kill")) {
             String user = input.substring(5).trim();
             kill(user);

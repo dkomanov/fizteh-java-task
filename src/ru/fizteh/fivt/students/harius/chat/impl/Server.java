@@ -83,7 +83,19 @@ public final class Server {
 
         @Override
         public void sendall(String message) {
-
+            for (NetworkObservable client : clients) {
+                try {
+                    client.send(Packet.message("<server>", message));
+                } catch (IOException ioEx) {
+                    display.error("i/o error while sending packet to "
+                        + client.repr() + ": " + ioEx.getMessage());
+                    try {
+                        client.close();
+                    } catch (IOException anotherIoEx) {
+                        display.error("and an error while closing the connection");
+                    }
+                }
+            }
         }
 
         @Override
@@ -122,15 +134,6 @@ public final class Server {
         public void error(String error) {
             display.error(error);
         }
-
-        private NetworkObservable clientByName(String name) {
-            for (NetworkObservable client : clients) {
-                if (client.name().equals(name)) {
-                    return client;
-                }
-            }
-            return null;
-        }
     };
 
     private NetworkObserver clientsProcessor
@@ -163,7 +166,7 @@ public final class Server {
                 } else if (packet.isError()) {
                     display.warn("An error was received from " + caller.repr());
                     for (String error : data) {
-                        display.warn("\t" + error);
+                        display.warn(" " + error);
                     }
                     caller.close();
                 } else if (packet.isHello()) {
@@ -178,12 +181,22 @@ public final class Server {
                             caller.close();
                         } else {
                             String nick = packet.getData().get(0);
-                            caller.setName(nick);
-                            caller.send(Packet.message("<server>", "Welcome to the chat"));
+                            NetworkObservable test = clientByName(nick);
+                            if (test != null) {
+                                display.warn("Nickname is use already: " + nick);
+                                caller.send(Packet.error("Nickname is already in use"));
+                                caller.close();
+                            } else {
+                                caller.setName(nick);
+                                caller.send(Packet.message("<server>", "Welcome to the chat"));
+                            }
                         }
                     }
                 } else if (packet.isBye()) {
                     display.warn("Goodbye from " + caller.repr());
+                    for (String message : packet.getData()) {
+                        display.warn(" " + message);
+                    }
                     caller.close();
                 } else {
                     display.error("internal error: unhandled message type");
@@ -227,5 +240,14 @@ public final class Server {
         this.display = display;
         display.setObserver(inputProcessor);
         new Thread(display).start();
+    }
+
+    private NetworkObservable clientByName(String name) {
+        for (NetworkObservable client : clients) {
+            if (client.name() != null && client.name().equals(name)) {
+                return client;
+            }
+        }
+        return null;
     }
 }

@@ -159,13 +159,16 @@ public final class Client {
                 } else if (packet.isError()) {
                     display.warn("An error was received from " + caller.repr());
                     for (String error : data) {
-                        display.warn("\t" + error);
+                        display.warn(" " + error);
                     }
                     caller.close();
                 } else if (packet.isHello()) {
                     display.warn("Connected to " + caller.repr());
                 } else if (packet.isBye()) {
                     display.warn("Goodbye from " + caller.repr());
+                    for (String message : packet.getData()) {
+                        display.warn(" " + message);
+                    }
                     caller.close();
                 } else {
                     display.error("internal error: unhandled message type");

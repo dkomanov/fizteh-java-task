@@ -26,13 +26,19 @@ public class NetworkService extends NetworkObservable {
             }
         } catch (IOException ioEx) {
             if (!closed) {
-                throw new RuntimeException(ioEx);
+                try {
+                    close("i/o error: " + ioEx.getMessage());
+                } catch (IOException anotherIoEx) {
+                    System.err.println("i/o error while closing network service: "
+                        + anotherIoEx.getMessage());
+                }
             }
         } catch (ProtocolException proto) {
             try {
                 close("protocol error: " + proto.getMessage());
             } catch (IOException ioEx) {
-                throw new RuntimeException(ioEx);
+                System.err.println("i/o error while closing network service: "
+                    + ioEx.getMessage());
             }
         }
     }

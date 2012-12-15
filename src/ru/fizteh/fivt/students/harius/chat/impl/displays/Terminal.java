@@ -34,7 +34,7 @@ public class Terminal extends DisplayBase
                 notifyObserver(line);
             } catch (IOException ioEx) {
                 if (!closed) {
-                    throw new RuntimeException(ioEx);
+                    System.err.println("i/o error while reading from terminal: " + ioEx.getMessage());
                 }
             }
         }
@@ -46,7 +46,7 @@ public class Terminal extends DisplayBase
         try {
             input.close();
         } catch (IOException ioEx) {
-            throw new RuntimeException(ioEx);
+            System.err.println("i/o error while closing terminal: " + ioEx.getMessage());
         }
     }      
 }
