@@ -149,7 +149,12 @@ public class UserList extends JFrame {
                 UserWriter userWriter = new UserWriter(file);
                 ArrayList<User> users = ((InteractiveTableModel) table
                         .getModel()).getData();
+                try {
                 userWriter.write(users);
+                } catch (Exception ee) {
+                    System.err.println(ee.getMessage());
+                    System.exit(1);
+                }
             }
         });
 
@@ -166,7 +171,12 @@ public class UserList extends JFrame {
                     ArrayList<User> users = ((InteractiveTableModel) table
                             .getModel()).getData();
                     UserWriter userWriter = new UserWriter(file);
+                    try {
                     userWriter.write(users);
+                    } catch (Exception ee) {
+                        System.err.println(ee.getMessage());
+                        System.exit(1);
+                    }
                 }
 
             }
