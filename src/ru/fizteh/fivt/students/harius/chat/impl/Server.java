@@ -34,6 +34,7 @@ public final class Server {
             } else {
                 try {
                     registrationProcessor.close();
+                    registrationProcessor = null;
                 } catch (IOException ioEx) {
                     display.error("i/o error while stopping server: " + ioEx.getMessage());
                 }
@@ -59,12 +60,12 @@ public final class Server {
 
         @Override
         public void kill(String user) {
-            
+
         }
 
         @Override
         public void exit() {
-            
+
         }
     };
 
