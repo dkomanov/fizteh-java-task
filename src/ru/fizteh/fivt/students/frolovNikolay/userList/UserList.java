@@ -1,7 +1,6 @@
 package ru.fizteh.fivt.students.frolovNikolay.userList;
 
-import java.awt.Color;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -9,17 +8,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -32,10 +21,12 @@ import javax.xml.stream.XMLStreamWriter;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
+import ru.fizteh.fivt.bind.test.Permissions;
+import ru.fizteh.fivt.bind.test.User;
+import ru.fizteh.fivt.bind.test.UserName;
+import ru.fizteh.fivt.bind.test.UserType;
 import ru.fizteh.fivt.students.frolovNikolay.Closer;
 import ru.fizteh.fivt.students.frolovNikolay.xmlBinder.XmlBinder;
-import ru.fizteh.fivt.bind.test.*;
 
 class UsersTable extends AbstractTableModel {
     private static final String[] colNames =  {"id", "type", "first name", "last name", "root", "quota"};
@@ -203,7 +194,7 @@ public class UserList extends JFrame {
                 for (User user : savedUsers) {
                     IdentityHashMap<Object, Object> cycleLinkInterrupter = new IdentityHashMap<Object, Object>();
                     xmlOutput.writeStartElement("user");
-                    xmlBinder.serializeToStream(user, xmlOutput, cycleLinkInterrupter);
+                    //xmlBinder.serializeToStream(user, xmlOutput, cycleLinkInterrupter);
                     xmlOutput.writeEndElement();
                 }
                 xmlOutput.writeEndElement();
@@ -228,7 +219,7 @@ public class UserList extends JFrame {
                 for (int i = 0; i < childNodes.getLength(); ++i) {
                     Node node = childNodes.item(i);
                     if (node.getNodeType() == Node.ELEMENT_NODE && ((Element) node).getTagName().equals("user")) {
-                        users.add((User) xmlBinder.objectDeserialize((Element) node, User.class));
+                        //users.add((User) xmlBinder.objectDeserialize((Element) node, User.class));
                     }
                 }
             } catch (Throwable expt) {
