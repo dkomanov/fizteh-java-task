@@ -49,7 +49,10 @@ public class ParallelSorterRunner {
                         array.add(scanner.next());
                     }
                 } finally {
-                    scanner.close();
+                    try {
+                        scanner.close();
+                    } catch (Exception e){
+                    }
                 }
             } else {
                 for (String fileName: parsedArgs.other) {
@@ -63,8 +66,9 @@ public class ParallelSorterRunner {
                         System.err.println(e.toString());
                         System.exit(1);
                     } finally {
-                        if (scanner != null) {
+                        try {
                             scanner.close();
+                        } catch (Exception e) {
                         }
                     }
                 }
@@ -103,7 +107,11 @@ public class ParallelSorterRunner {
             }
         } finally {
             if (hasOpenedFile) {
-                printer.close();
+                printer.flush();
+                try {
+                    printer.close();
+                } catch (Exception e) {
+                }
             }
         }
     }
