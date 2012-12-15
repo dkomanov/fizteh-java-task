@@ -5,6 +5,7 @@ import ru.fizteh.fivt.bind.test.User;
 import ru.fizteh.fivt.bind.test.UserName;
 import ru.fizteh.fivt.bind.test.UserType;
 
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +18,13 @@ import java.util.Vector;
 public class UserTable extends AbstractTableModel{
     private final String[] columnNames;
     private Vector<Object[]> data;
-
+    final DefaultCellEditor userTypeEditor;
 
     public UserTable()
     {
         columnNames = new String[]{"ID", "First name", "Second name", "User type", "is root?", "quota"};
         data = new Vector<>();
+        userTypeEditor = new DefaultCellEditor(new JComboBox(UserType.values()));
     }
 
     @Override
@@ -45,9 +47,30 @@ public class UserTable extends AbstractTableModel{
         return data.get(row)[col];  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
+    public boolean isCellEditable(int row, int col) {
+        return  true;
+    }
 
-    public void setValueAt(int row, int col, Object value) {
+    @Override
+    public void setValueAt(Object value, int row, int col) {
         data.get(row)[col] = value;
+    }
+
+    @Override
+    public Class getColumnClass(int col) {
+        switch (col) {
+            case 0:
+                return Integer.class;
+            case 3:
+                return UserType.class;
+            case 4:
+                return Boolean.class;
+            case 5:
+                return Integer.class;
+            default:
+                return String.class;
+        }
     }
 
     public void removeRow(int row) {

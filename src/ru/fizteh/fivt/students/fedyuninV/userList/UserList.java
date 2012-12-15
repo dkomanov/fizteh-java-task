@@ -7,6 +7,7 @@ import ru.fizteh.fivt.bind.test.UserType;
 import ru.fizteh.fivt.students.fedyuninV.bind.XmlBinder;
 
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -28,6 +29,20 @@ public class UserList extends JFrame {
     private JFrame myFrame;
     private XmlBinder<User> binder;
     private File currFile;
+    private JScrollPane scrollPane;
+
+    public UserList() {
+        currFile = null;
+        binder = new XmlBinder<User>(User.class);
+        initTable();
+        initMenu();
+        scrollPane = new JScrollPane(table);
+        add(scrollPane);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(800, 600);
+        myFrame = this;
+        setVisible(true);
+    }
 
     static class NameIncComparator implements Comparator<User> {
         @Override
@@ -98,19 +113,18 @@ public class UserList extends JFrame {
         }
     }
 
-    public UserList() {
-        currFile = null;
-        binder = new XmlBinder<User>(User.class);
-        initTable();
-        initMenu();
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(800, 600);
-        myFrame = this;
-        setVisible(true);
-    }
-
     private void initTable() {
-        table = new JTable(new UserTable());
+        table = new JTable(new UserTable()) {
+            @Override
+            public TableCellEditor getCellEditor(int row, int col) {
+                switch (col) {
+                    case 3:
+                        return ((UserTable) getModel()).userTypeEditor;
+                    default:
+                        return super.getCellEditor(row, col);
+                }
+            }
+        };
         add(new JScrollPane(table));
     }
     private void initMenu() {
@@ -163,7 +177,6 @@ public class UserList extends JFrame {
 
     class UserListMenuListener implements ActionListener {
 
-
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             String command = actionEvent.getActionCommand();
@@ -211,6 +224,9 @@ public class UserList extends JFrame {
                 }
             } else if (command.equals("ADD")) {
                 ((UserTable) table.getModel()).addRow();
+                JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
+                scrollBar.setValue(scrollBar.getMaximum());
+                table.setRowSelectionInterval(table.getRowCount() - 1, table.getRowCount() - 1);
             } else if (command.equals("REMOVE")) {
                 if (table.getSelectedRow() == -1) {
                     JOptionPane.showMessageDialog(myFrame, "Select user before remove");
