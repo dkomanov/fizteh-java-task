@@ -112,4 +112,6 @@ public class UserTable extends AbstractTableModel{
         data = newData;
         fireTableDataChanged();
     }
+
+
 }

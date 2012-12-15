@@ -8,6 +8,8 @@ import ru.fizteh.fivt.students.fedyuninV.bind.XmlBinder;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -126,6 +128,7 @@ public class UserList extends JFrame {
             }
         };
         add(new JScrollPane(table));
+        table.setRowSorter(new TableRowSorter<TableModel>(table.getModel()));
     }
     private void initMenu() {
         UserListMenuListener listener = new UserListMenuListener();
@@ -155,7 +158,7 @@ public class UserList extends JFrame {
         editRemove.setActionCommand("REMOVE");
         editRemove.addActionListener(listener);
         edit.add(editRemove);
-        JMenuItem editNameSort = new JMenuItem("Sort by name");
+        /*JMenuItem editNameSort = new JMenuItem("Sort by name");
         editNameSort.setActionCommand("SORT_BY_NAME");
         editNameSort.addActionListener(listener);
         edit.add(editNameSort);
@@ -170,7 +173,7 @@ public class UserList extends JFrame {
         JMenuItem editTypeSortDec = new JMenuItem("Sort by type dec");
         editTypeSortDec.setActionCommand("SORT_BY_TYPE_DEC");
         editTypeSortDec.addActionListener(listener);
-        edit.add(editTypeSortDec);
+        edit.add(editTypeSortDec);*/
         menu.add(edit);
         setJMenuBar(menu);
     }
