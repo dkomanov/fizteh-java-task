@@ -1,7 +1,5 @@
 package ru.fizteh.fivt.students.frolovNikolay.userList;
 
-
-
 public class UserListMain {
 
     public static void main(String[] args) { 
