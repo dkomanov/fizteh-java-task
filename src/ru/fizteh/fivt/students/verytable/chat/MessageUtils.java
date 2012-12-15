@@ -1,5 +1,7 @@
 package ru.fizteh.fivt.students.verytable.chat;
 
+import ru.fizteh.fivt.chat.MessageType;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -43,5 +45,13 @@ public final class MessageUtils {
             buffer.putInt(bytes.length).put(bytes);
         }
         return buffer.array();
+    }
+
+    static byte[] toPrimitive(Byte[] bm) {
+        byte[] byteMessage = new byte[bm.length];
+        for (int i = 0; i < byteMessage.length; ++i) {
+            byteMessage[i] = bm[i];
+        }
+        return byteMessage;
     }
 }

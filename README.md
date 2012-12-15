@@ -25,8 +25,8 @@ Thread.stop(), Shutdown hook. java.lang.reflect.Proxy]
 10. [Байт-код: инструкции, пример генерации с помощью asm. JUnit]
 (http://yadi.sk/d/DkPrkdxp0q7LQ)
 11. [GUI, Swing, MVC](http://yadi.sk/d/sOG6YDQN0v6BQ)
-12. [Работа над ошибками, ООП, Dependency Injection](http://yadi.sk/d/igx7ykpM15Ic0)
-13. Garbage Collector
+12. [Работа над ошибками, ООП, Dependency Injection](http://yadi.sk/d/0V3B-OZN1B8_J)
+13. [Garbage Collector](http://yadi.sk/d/YrhaPilR1B8_l)
 
 ## Семинары
 В папке [tasks](fizteh-java-task/tree/master/tasks) находятся описания заданий на

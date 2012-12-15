@@ -8,7 +8,7 @@ public class ChatServer {
     private static int port = -1;
     private static Server server;
 
-    static public void main(String args[]) {
+    public static void main(String args[]) {
         server = null;
         String command = "";
         Scanner in = new Scanner(System.in);
