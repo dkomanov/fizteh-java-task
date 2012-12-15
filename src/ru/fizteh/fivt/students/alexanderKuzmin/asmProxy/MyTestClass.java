@@ -2,7 +2,7 @@ package ru.fizteh.fivt.students.alexanderKuzmin.asmProxy;
 
 import ru.fizteh.fivt.proxy.Collect;
 import ru.fizteh.fivt.proxy.DoNotProxy;
-import asmProxy.MyTestInterface;
+import ru.fizteh.fivt.students.alexanderKuzmin.asmProxy.MyTestInterface;
 
 /**
  * @author Alexander Kuzmin group 196 Class MyTestClass
