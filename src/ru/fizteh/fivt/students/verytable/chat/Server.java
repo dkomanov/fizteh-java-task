@@ -140,21 +140,17 @@ public class Server implements Runnable {
         for (int i = 0; i < len; ++i) {
             forClientsMessages.get(sc).add(buffer.array()[i]);
         }
-        if (!hasMessage(sc)) {
-            return true;
-        }
 
         Byte[] bm = new Byte[forClientsMessages.get(sc).size()];
         byte[] byteMessage = MessageUtils.toPrimitive(forClientsMessages.get(sc).toArray(bm));
+        ArrayList<String> message;
+        message = getMessage(sc, byteMessage);
+        if (message == null) {
+            return true;
+        }
 
         switch (byteMessage[0]) {
             case 1:
-                ArrayList<String> message = getMessage(sc, byteMessage);
-                if (message == null) {
-                    send(sc, MessageUtils.error("Too large hello message."));
-                    connectionSocketChannels.remove(sc);
-                    return true;
-                }
                 String nick = message.get(0);
                 if (nick.replace("\\s", "").equals("")) {
                     send(sc, MessageUtils.error("Nick must be visible."));
@@ -184,12 +180,6 @@ public class Server implements Runnable {
                 }
                 break;
             case 2:
-                message = getMessage(sc, byteMessage);
-                if (message == null) {
-                    send(sc, MessageUtils.error("Don't send bad messages!"));
-                    kill(getKey(sc), false);
-                    return true;
-                }
                 String sender = message.get(0);
                 if (!clients.containsKey(sender)) {
                     System.err.println("No such user!");
@@ -214,21 +204,12 @@ public class Server implements Runnable {
                 }
                 break;
             case 3:
-                message = getMessage(sc, byteMessage);
-                //sender = message.get(0);
-                //kill(sender, false);
                 kill(getKey(sc), false);
                 System.out.println("one exited.");
                 break;
             case 127:
-                message = getMessage(sc, byteMessage);
                 sender = getKey(sc);
                 sb = new StringBuilder("");
-                if (message != null) {
-                    for (int i = 1; i < message.size(); ++i) {
-                        sb.append(message.get(i));
-                    }
-                }
                 System.out.println("Error from " + sender + ": " + sb.toString());
                 it = clients.entrySet().iterator();
                 while (it.hasNext()) {
@@ -245,6 +226,7 @@ public class Server implements Runnable {
                 kill(getKey(sc), true);
         }
         System.out.println("Processed " + buffer.limit() + " from " + sc);
+
         return true;
     }
 
@@ -324,61 +306,45 @@ public class Server implements Runnable {
         System.exit(0);
     }
 
-
-    static boolean hasMessage(SocketChannel sc) {
-        Byte[] bm = new Byte[forClientsMessages.get(sc).size()];
-        byte[] forMessagesByteArray = MessageUtils.toPrimitive(forClientsMessages.get(sc).toArray(bm));
-        ByteBuffer curData = ByteBuffer.wrap(forMessagesByteArray);
-        if (forMessagesByteArray.length == 0) {
-            return false;
-        }
-        int messageType = curData.get();
-        if (forMessagesByteArray.length == 1) {
-            return false;
-        }
-        int messageCount = curData.get();
-        if (messageCount < 0) {
-            System.err.println("bad messages length");
-            send(sc, MessageUtils.error("Bad message count."));
-            kill(getKey(sc), false);
-            return false;
-        }
-        int curLen = 2;
-        for (int i = 0; i < messageCount; ++i) {
-            if (forMessagesByteArray.length < curLen + 4) {
-                return false;
-            }
-            int nextMessageLength = curData.get();
-            curLen += 4;
-            if (nextMessageLength < 0 || nextMessageLength > 512) {
-                System.err.println("Message len < 0 or > 512");
-                send(sc, MessageUtils.error("Bad message length."));
-                kill(getKey(sc), false);
-                return false;
-            }
-            byte[] tmp = new byte[curLen];
-            if (forMessagesByteArray.length < curLen + nextMessageLength) {
-                return false;
-            }
-            curLen += nextMessageLength;
-        }
-        return true;
-    }
-
     static public ArrayList<String> getMessage(SocketChannel sc, byte[] byteMessage) {
         ArrayList<String> message = new ArrayList<String>();
         ByteBuffer buffer = ByteBuffer.wrap(byteMessage);
+
+        if (forClientsMessages.get(sc).size() < 1) {
+            return null;
+        }
         int messageType = buffer.get();
+        if (messageType != 1 && messageType != 2 && messageType != 3 && messageType != 127) {
+            System.err.println("Bad type");
+            kill(getKey(sc), false);
+            return null;
+        }
+        if (forClientsMessages.get(sc).size() < 2) {
+            return null;
+        }
         int messageCount = buffer.get();
+        if (messageCount < 1) {
+            System.err.println("Bad messages cnt.");
+            kill(getKey(sc), false);
+            return null;
+        }
+
         int len = 2;
         for (int i = 0; i < messageCount; ++i) {
+            if (forClientsMessages.get(sc).size() < len + 4) {
+                return null;
+            }
             int length = buffer.getInt();
             len += 4;
-            if (length < 0) {
-                System.err.println("array size < 0");
+            if (length < 0 && len > 512) {
+                System.err.println("array size < 0 || array size > 512");
+                kill(getKey(sc), false);
                 return null;
             }
             byte[] tmp = new byte[length];
+            if (forClientsMessages.get(sc).size() < len + length) {
+                return null;
+            }
             if (tmp.length < 512) {
                 buffer.get(tmp);
                 len += length;
