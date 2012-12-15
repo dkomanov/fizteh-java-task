@@ -93,7 +93,6 @@ class UsersTable extends AbstractTableModel {
 }
 
 public class UserList extends JFrame {
-    
     private JTable usersTable;
     private XmlBinder<User> xmlBinder = new XmlBinder<User>(User.class);
     private File currentXmlFile = null;
