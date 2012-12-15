@@ -5,8 +5,7 @@ import ru.fizteh.fivt.students.harius.chat.io.*;
 import java.net.Socket;
 import java.io.IOException;
 
-public class NetworkService extends NetworkObservable
-                            implements Runnable {
+public class NetworkService extends NetworkObservable {
     private Socket socket;
     private PacketOutputStream output;
     private PacketInputStream input;
@@ -29,12 +28,21 @@ public class NetworkService extends NetworkObservable
             if (!closed) {
                 throw new RuntimeException(ioEx);
             }
+        } catch (ProtocolException proto) {
+            notifyClosed("protocol error: " + proto.getMessage());
+            try {
+                close();
+            } catch (IOException ioEx) {
+                throw new RuntimeException(ioEx);
+            }
         }
     }
 
     @Override
     public void send(Packet packet) throws IOException {
-        output.writePacket(packet);
+        if (!closed) {
+            output.writePacket(packet);
+        }
     }
 
     @Override

@@ -4,7 +4,7 @@ import ru.fizteh.fivt.students.harius.chat.io.Packet;
 import java.io.IOException;
 import java.io.Closeable;
 
-public abstract class NetworkObservable implements Closeable {
+public abstract class NetworkObservable implements Closeable, Runnable {
     NetworkObserver observer = null;
 
     public final void setObserver(NetworkObserver observer) {
@@ -15,6 +15,10 @@ public abstract class NetworkObservable implements Closeable {
         if (observer != null) {
             observer.processNetwork(packet, this);
         }
+    }
+
+    public final void notifyClosed(String message) {
+        observer.processClosed(message);
     }
 
     public abstract void send(Packet packet) throws IOException;

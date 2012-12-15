@@ -81,6 +81,11 @@ public final class Server {
                 display.error("i/o exception: " + ioEx.getMessage());
             }
         }
+
+        @Override
+        public void processClosed(String why) {
+            
+        }
     };
 
     private Runnable registrationProcessor

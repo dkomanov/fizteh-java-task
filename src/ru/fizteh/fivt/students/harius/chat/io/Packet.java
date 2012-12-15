@@ -24,6 +24,10 @@ public class Packet {
         return new Packet(MessageType.MESSAGE.getId(), content);
     }
 
+    public static Packet hello(String welcome) {
+        return new Packet(MessageType.HELLO.getId(), Collections.singletonList(welcome));
+    }
+
     public static Packet goodbye(String farewell) {
         return new Packet(MessageType.BYE.getId(), Collections.singletonList(farewell));
     }

@@ -25,7 +25,11 @@ public final class Client {
                 Socket connection = new Socket(host, port);
                 NetworkObservable observable
                     = new NetworkService(connection);
+                new Thread(observable).start();
+                current = servers.size();
                 servers.add(observable);
+                observable.setObserver(networkProcessor);
+                observable.send(Packet.hello(name));
             } catch (IOException badHost) {
                 display.error("Bad server address");
             }
@@ -146,6 +150,11 @@ public final class Client {
             } catch (IOException ioEx) {
                 display.error("i/o exception: " + ioEx.getMessage());
             }
+        }
+
+        @Override
+        public void processClosed(String why) {
+            display.warn("Connection closed:\n" + why);
         }
     };
 

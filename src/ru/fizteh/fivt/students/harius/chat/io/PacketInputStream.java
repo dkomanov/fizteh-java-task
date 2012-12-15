@@ -12,8 +12,10 @@ public class PacketInputStream extends InputStream {
     }
 
     public Packet readPacket() throws IOException, ProtocolException {
+        // System.err.println("reading");
         byte head = (byte) read();
         byte size = (byte) read();
+        // System.out.println("head " + head + " size " + size);
         if (size < 0 || size > 100) {
             throw new ProtocolException("Invalid packages size");
         }
