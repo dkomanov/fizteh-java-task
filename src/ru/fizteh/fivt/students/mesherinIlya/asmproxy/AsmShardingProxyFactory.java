@@ -1,16 +1,11 @@
 package ru.fizteh.fivt.students.mesherinIlya.asmproxy;
 
-import java.io.PrintStream;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
-
-import java.lang.reflect.Constructor;
-
-import ru.fizteh.fivt.proxy.DoNotProxy;
-import ru.fizteh.fivt.proxy.Collect;
+import java.util.Set;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -19,6 +14,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
+import ru.fizteh.fivt.proxy.Collect;
+import ru.fizteh.fivt.proxy.DoNotProxy;
 
 public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingProxyFactory {
     
@@ -242,7 +239,7 @@ public class AsmShardingProxyFactory implements ru.fizteh.fivt.proxy.ShardingPro
                                 }
                             }
                             ga.loadArg(numArg);
-                            if (method.getParameterTypes()[numArg].equals
+                            if (method.getParameterTypes()[numArg].equals(int.class)
                                     || method.getParameterTypes()[numArg].equals(Integer.class)) {
                                 ga.cast(Type.INT_TYPE, Type.LONG_TYPE);
                             }
