@@ -140,15 +140,9 @@ public class Client implements Runnable {
         if (buffer.limit() == 0) {
             return false;
         }
-        System.out.println(buffer);
-        System.out.println("Got len " + len);
-        System.out.println(forMessages.size());
         for (int i = 0; i < len; ++i) {
             forMessages.add(buffer.array()[i]);
         }
-        System.out.println(forMessages);
-        System.out.println(forMessages.size());
-
         Byte[] bm1 = new Byte[forMessages.size()];
         byte[] byteMessage1 = MessageUtils.toPrimitive(forMessages.toArray(bm1));
         ArrayList<String> message;
@@ -156,12 +150,10 @@ public class Client implements Runnable {
         if (message == null) {
             return true;
         }
-        System.out.println("Has message its size = " + forMessages.size());
 
         switch (byteMessage1[0]) {
             case 2:
                 System.out.println("Got simple message");
-                System.out.println("after getMessage");
                 String sender = message.get(0);
                 StringBuilder sb = new StringBuilder();
                 for (int i = 1; i < message.size(); ++i) {
@@ -275,15 +267,13 @@ public class Client implements Runnable {
             System.out.println("wrong message type");
             disconnect(false);
         }
-        System.out.println("in getmessage got type " + messageType);
 
         if (forMessages.size() < 2) {
             return null;
         }
         int messageCount = buffer.get();
-        System.out.println("In getmessage got cnt " + messageCount);
 
-        if (messageCount == -1) {
+        if (messageCount < 1) {
             System.err.println("error in message reading");
             disconnect(false);
             System.exit(1);
@@ -295,10 +285,9 @@ public class Client implements Runnable {
                 return null;
             }
             int length = buffer.getInt();
-            System.out.println("    " + i + " got length " + length);
             len += 4;
             if (length < 0 || length > 512) {
-                System.out.println("Array size < 0");
+                System.out.println("Array size < 0 || array size > 512");
                 disconnect(false);
             }
             byte[] tmp = new byte[length];
@@ -307,7 +296,6 @@ public class Client implements Runnable {
             }
             if (tmp.length < 512) {
                 buffer.get(tmp);
-                System.out.println("    got message " + buffer);
                 len += length;
             } else {
                 System.err.println("To large message was received from server.");
@@ -315,11 +303,9 @@ public class Client implements Runnable {
             }
             message.add(new String(tmp, Charset.forName("UTF-8")));
         }
-        System.out.println("Success getting");
         for (int i = 0; i < len; ++i) {
             forMessages.remove();
         }
-        System.out.println("removed from queue. Now its size = " + forMessages.size());
         return message;
     }
 

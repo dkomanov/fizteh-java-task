@@ -226,7 +226,9 @@ public class Server implements Runnable {
                 kill(getKey(sc), true);
         }
         System.out.println("Processed " + buffer.limit() + " from " + sc);
-
+        byte[] b = {2, 1, 0, 0, 0, 2, 'h', 'i'};
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        sc.write(bb);
         return true;
     }
 
