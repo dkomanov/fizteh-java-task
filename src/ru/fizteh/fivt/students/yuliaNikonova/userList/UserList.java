@@ -50,19 +50,18 @@ public class UserList extends JFrame implements ListSelectionListener {
             && e.getFirstIndex() >= 0) {
             int row = table.getSelectedRow();
             if (row > -1 && row < table.getRowCount()) {
-
-            for (int i = 0; i < table.getColumnCount(); ++i) {
-                table.getColumnModel().getColumn(i)
-                    .setCellRenderer(new MyRenderer());
-            }
-            for (int i = 0; i < table.getRowCount(); ++i) {
-                for (int j = 0; j < table.getColumnCount(); ++j) {
-                table.getCellRenderer(i, j)
-                    .getTableCellRendererComponent(table,
-                        table.getModel().getValueAt(i, j),
-                        i == row, false, i, j);
+                for (int i = 0; i < table.getColumnCount(); ++i) {
+                    table.getColumnModel().getColumn(i)
+                        .setCellRenderer(new MyRenderer(false));
                 }
-            }
+                for (int i = 0; i < table.getRowCount(); ++i) {
+                    for (int j = 0; j < table.getColumnCount(); ++j) {
+                    table.getCellRenderer(i, j)
+                        .getTableCellRendererComponent(table,
+                            table.getModel().getValueAt(i, j),
+                            i == row, false, i, j);
+                    }
+                }
             }
         }
     }
@@ -95,7 +94,11 @@ public class UserList extends JFrame implements ListSelectionListener {
 
         class MyRenderer extends DefaultTableCellRenderer {
 
-        public Component getTableCellRendererComponent(JTable table,
+            private boolean save=false;
+        public MyRenderer(boolean save) {
+        this.save=save;
+        }
+    public Component getTableCellRendererComponent(JTable table,
             Object value, boolean isSelected, boolean hasFocus, int row,
             int column) {
 
@@ -130,21 +133,31 @@ public class UserList extends JFrame implements ListSelectionListener {
                 (String) value, isSelected, hasFocus, row, column);
             }
             int selectRow = table.getSelectedRow();
-            if (selectRow != -1) {
-                if (selectRow == row) {
-                    setBackground(Color.blue);
+            String firstName = (String) table.getValueAt(row, 2);
+            String lastName = (String) table.getValueAt(row, 3);
+            if (save) {
+                if (firstName.isEmpty() || lastName.isEmpty()) {
+                    setBackground(Color.red);
                 } else {
-                    String selectFirstName = (String) table.getValueAt(
-                        selectRow, 2);
-                    String selectLastName = (String) table.getValueAt(
-                        selectRow, 3);
-                    String firstName = (String) table.getValueAt(row, 2);
-                    String lastName = (String) table.getValueAt(row, 3);
-                    if (firstName.equals(selectFirstName)
-                        && lastName.equals(selectLastName)) {
-                    setBackground(Color.orange);
-                    } else {
                     setBackground(Color.white);
+                }
+            
+            } else {
+                if (selectRow != -1) {
+                    if (selectRow == row) {
+                        setBackground(Color.blue);
+                    } else {
+                        String selectFirstName = (String) table.getValueAt(
+                            selectRow, 2);
+                        String selectLastName = (String) table.getValueAt(
+                            selectRow, 3);
+                        
+                        if (firstName.equals(selectFirstName)
+                            && lastName.equals(selectLastName)) {
+                        setBackground(Color.orange);
+                        } else {
+                        setBackground(Color.white);
+                        }
                     }
                 }
             }
@@ -195,23 +208,23 @@ public class UserList extends JFrame implements ListSelectionListener {
             if (ret == JFileChooser.APPROVE_OPTION) {
                 xmlFile = jfs.getSelectedFile();
                 if (!xmlFile.exists()) {
-                showError("File doesn't exist", "Open file");
-                xmlFile = null;
+                    showError("File doesn't exist", "Open file");
+                    xmlFile = null;
                 } else {
-                try {
-                    updateTable(new UsersReader().readUsers(xmlFile));
-                } catch (Exception expt) {
-                    showError(expt.getMessage(), "Open file");
-                }
+                    try {
+                        updateTable(new UsersReader().readUsers(xmlFile));
+                    } catch (Exception expt) {
+                        showError(expt.getMessage(), "Open file");
+                    }
                 }
             }
 
             } else if (e.getActionCommand().equalsIgnoreCase("SAVE")) {
                 try {
                     if (xmlFile == null) {
-                    showError("nothing to save", "Save file");
+                        showError("nothing to save", "Save file");
                     } else {
-                    saveFile(xmlFile);
+                        saveFile(xmlFile);
                     }
                 } catch (Exception expt) {
                     showError("Problems with saving " + expt.getMessage(),
@@ -223,13 +236,13 @@ public class UserList extends JFrame implements ListSelectionListener {
                 if (ret == JFileChooser.APPROVE_OPTION) {
                     File fileToSave = jfs.getSelectedFile();
                     if (!fileToSave.exists()) {
-                    try {
-                        fileToSave.createNewFile();
-                    } catch (Exception expt) {
-                        showError(
-                            "Can't save the list " + expt.getMessage(),
-                            "Save As");
-                    }
+                        try {
+                            fileToSave.createNewFile();
+                        } catch (Exception expt) {
+                            showError(
+                                "Can't save the list " + expt.getMessage(),
+                                "Save As");
+                        }
                     }
                     try {
                     saveFile(fileToSave);
@@ -272,8 +285,30 @@ public class UserList extends JFrame implements ListSelectionListener {
             for (Vector<Object> user : users) {
                 int id = (Integer) user.get(0);
                 UserType userType = (UserType) user.get(1);
+                String firstName=(String) user.get(2);
+                String lastName=(String) user.get(3);
+                if (firstName.isEmpty() || lastName.isEmpty()) {
+                    
+                    for (int i = 0; i < table.getColumnCount(); ++i) {
+                        table.getColumnModel().getColumn(i)
+                            .setCellRenderer(new MyRenderer(true));
+                    }
+                    for (int i = 0; i < table.getRowCount(); ++i) {
+                        for (int j = 0; j < table.getColumnCount(); ++j) {
+                        table.getCellRenderer(i, j)
+                            .getTableCellRendererComponent(table,
+                                table.getModel().getValueAt(i, j),
+                                i == table.getSelectedRow(), false, i, j);
+                        }
+                    }
+                    
+                    showError("Empty username", "Save");
+                    return;
+                    
+                }
                 UserName userName = new UserName((String) user.get(2),
                     (String) user.get(3));
+                
                 Permissions permissions = new Permissions();
                 permissions.setRoot((Boolean) user.get(4));
                 permissions.setQuota((Integer) user.get(5));
