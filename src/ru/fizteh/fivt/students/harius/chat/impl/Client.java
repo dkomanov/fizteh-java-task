@@ -16,7 +16,7 @@ public final class Client {
     private final DisplayBase display;
 
     private final List<NetworkObservable> servers
-        = new ArrayList<>();
+        = Collections.synchronizedList(new ArrayList<NetworkObservable>());
 
     private int current = -1;
 
@@ -69,9 +69,11 @@ public final class Client {
         @Override
         public void list() {
             int index = 0;
-            for (NetworkObservable server : servers) {
-                display.warn(index + " " + server.repr());
-                ++index;
+            synchronized (servers) {
+                for (NetworkObservable server : servers) {
+                    display.warn(index + " " + server.repr());
+                    ++index;
+                }
             }
         }
 
