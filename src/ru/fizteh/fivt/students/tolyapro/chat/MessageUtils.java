@@ -79,19 +79,25 @@ public final class MessageUtils {
     }
 
     public static String get(InputStream iStream) throws IOException {
-        if ((byte) iStream.read() != 2) {
-            throw new RuntimeException("Incorrect message specification.");
+        byte messages = (byte) iStream.read();
+        System.out.println("messages : " + messages);
+        if (messages == -1) {
+            throw new IOException("Problems with getting message");
         }
         ByteBuffer buffer = ByteBuffer.allocate(4);
+        byte[] len = new byte[4];
         for (int i = 0; i < 4; ++i) {
             int tmp;
             if ((tmp = iStream.read()) < 0) {
                 throw new RuntimeException("Cannot read message");
             }
             buffer.put((byte) tmp);
+            len[i] = (byte) tmp;
+            System.out.println("len[]: " + len[i]);
         }
         buffer.position(0);
         int length = buffer.getInt();
+        System.out.println("length : " + length);
         if (length > 100 || length <= 0) {
             throw new RuntimeException("Incorrect length.");
         }
@@ -101,6 +107,7 @@ public final class MessageUtils {
             if ((tmp = iStream.read()) < 0) {
                 throw new RuntimeException("Cannot read message.");
             }
+            System.out.println(tmp);
             bName[i] = (byte) tmp;
         }
         String name = new String(bName);
@@ -114,6 +121,7 @@ public final class MessageUtils {
         }
         buffer.position(0);
         length = buffer.getInt();
+        System.out.println("length : " + length);
         if (length > 1000 || length <= 0) {
             throw new RuntimeException("Incorrect length.");
         }
@@ -126,6 +134,7 @@ public final class MessageUtils {
             bMess[i] = (byte) tmp;
         }
         String result = new String(bMess);
+        System.out.println("out of here");
         return name + ":" + result;
     }
 

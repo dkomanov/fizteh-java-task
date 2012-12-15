@@ -52,40 +52,34 @@ class ServerConnection implements Runnable {
             while ((type = in.read()) != -1) {
                 if (active) {
                     byte typeOf = (byte) type;
-                    if (typeOf != 0)
-                        System.out.println(typeOf);
+                    System.out.println(typeOf);
                     if (typeOf == 2) {
                         // System.out.println("norm");
                         System.out.println(MessageUtils.get(in));
+
                     } else if (typeOf == 127) {
+
                         toBeDeleted = true;
                         disable();
                         throw new RuntimeException(
-                                MessageUtils.getErrorMessage(in)); // caught
-                                                                   // below
+                                MessageUtils.getErrorMessage(in));
+                                                                   
                     } else if (typeOf == 3) {
                         System.out.println("bye");
                         disable();
                         toBeDeleted = true;
                         return;
+                    } else {
+                        if (typeOf != 0) {
+                            System.exit(1);
+                        }
                     }
                 }
             }
             // System.out.println("End of era");
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            System.err.println("Error: " + e.getMessage());
             System.exit(1);
-            // throw new RuntimeException(e);
-            // kill me, my server!
-            /*
-             * try { PrintWriter out = new PrintWriter(server.getOutputStream(),
-             * true); out.println(new String(MessageUtils
-             * .error("i see your error and  i raise your mine"))); out.close();
-             * // # TODO finally
-             * 
-             * } catch (IOException e1) { }
-             */
-            // return;
         }
     }
 }

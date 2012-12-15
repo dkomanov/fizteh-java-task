@@ -14,6 +14,8 @@ import ru.fizteh.fivt.students.tolyapro.chat.MessageUtils;
 public class Client {
 
     public static void main(String[] args) throws IOException {
+        //byte[] expected = new byte[]{12, 1, 0, 0, 0, 3, 66, 97, 100};
+        //System.out.println(expected);
         ChatClient client = new ChatClient(args[0]);
         Scanner scanner = new Scanner(System.in);
         String string = null;
@@ -58,10 +60,13 @@ public class Client {
                     } else if (tokens[i].equals("/exit")) {
                         client.exit();
                         System.exit(0);
+                    } else if (string.isEmpty()) {
+
                     } else if (tokens[i].startsWith("/") && i == 0) {
                         System.err.println("Unknown command");
                         break;
                     } else {
+                        System.out.println("In mes");
                         client.sendMessageFromConsole(new String(MessageUtils
                                 .message(args[0], string)));
                         break;

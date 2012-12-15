@@ -151,7 +151,8 @@ public class Processor implements Runnable {
             if (selfWriter == null) {
 
             } else {
-                selfWriter.write(message.getBytes());
+                //message.getBytes()
+                selfWriter.write(new byte[]{2, 1, 0, 0, 0, 1, 66, 97, 100, -1,-1});
             }
         } catch (Exception e) {
             System.out.println("in sendto " + e.getMessage());
@@ -215,6 +216,9 @@ class ClientConn implements Runnable {
             try {
                 String name = MessageUtils.getNickname(msg);
                 System.out.println("new user " + name);
+                if (name == null || name.equals("")) {
+                    out.write(MessageUtils.error("Bad nick"));
+                }
                 if (users.containsKey(name)) {
                     // out.println(new String(MessageUtils
                     // .error("Nickname is already in use")));
