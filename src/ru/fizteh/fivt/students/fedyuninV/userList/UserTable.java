@@ -78,7 +78,6 @@ public class UserTable extends AbstractTableModel{
         for (int i = 0; i < data.size(); i++) {
             result.add(userFromArray(data.get(i)));
         }
-        System.err.println(result.size());
         return result;
     }
 

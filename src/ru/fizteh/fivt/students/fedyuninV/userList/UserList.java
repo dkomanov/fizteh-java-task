@@ -14,7 +14,9 @@ import javax.xml.transform.stream.StreamResult;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Fedyunin Valeriy
@@ -22,10 +24,6 @@ import java.util.Comparator;
  */
 public class UserList extends JFrame {
     private JMenuBar menu;
-    private final int TYPE_INC = 0;
-    private final int TYPE_DEC = 1;
-    private final int NAME_INC = 2;
-    private final int NAME_DEC = 3;
     private JTable table;
     private JFrame myFrame;
     private XmlBinder<User> binder;
@@ -35,7 +33,7 @@ public class UserList extends JFrame {
         @Override
         public int compare(User user, User user1) {
             UserName x = user.getName();
-            UserName y = user.getName();
+            UserName y = user1.getName();
             if (x == null) {
                 return -1;
             }
@@ -220,13 +218,21 @@ public class UserList extends JFrame {
                     ((UserTable) table.getModel()).removeRow(table.getSelectedRow());
                 }
             } else if (command.equals("SORT_BY_NAME")) {
-
+                List<User> userList = ((UserTable) table.getModel()).getUserList();
+                Collections.sort(userList, new NameIncComparator());
+                ((UserTable) table.getModel()).setData(userList);
             } else if (command.equals("SORT_BY_NAME_DEC")) {
-
+                List<User> userList = ((UserTable) table.getModel()).getUserList();
+                Collections.sort(userList, new NameDecComparator());
+                ((UserTable) table.getModel()).setData(userList);
             } else if (command.equals("SORT_BY_TYPE")) {
-
+                List<User> userList = ((UserTable) table.getModel()).getUserList();
+                Collections.sort(userList, new TypeIncComparator());
+                ((UserTable) table.getModel()).setData(userList);
             } else if (command.equals("SORT_BY_TYPE_DEC")) {
-
+                List<User> userList = ((UserTable) table.getModel()).getUserList();
+                Collections.sort(userList, new TypeDecComparator());
+                ((UserTable) table.getModel()).setData(userList);
             }
         }
     }
