@@ -211,11 +211,13 @@ public class UserList extends JFrame {
                 if (result == JFileChooser.APPROVE_OPTION) {
                     File file = openFile.getSelectedFile();
                     try {
+                        if (!file.exists()) {
+                            if (!file.createNewFile()) {
+                                throw new Exception();
+                            }
+                        }
                         Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
                         binder.writeUserList(document, ((UserTable) table.getModel()).getUserList());
-                        if(!file.exists()) {
-                            file.createNewFile();
-                        }
                         TransformerFactory.newInstance().newTransformer().transform(new DOMSource(document), new StreamResult(file));
                         currFile = file;
                     } catch (Exception ex) {
