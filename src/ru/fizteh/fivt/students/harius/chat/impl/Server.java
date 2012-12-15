@@ -186,6 +186,10 @@ public final class Server {
                                 display.warn("Nickname is use already: " + nick);
                                 caller.send(Packet.error("Nickname is already in use"));
                                 caller.close();
+                            } else if (!nick.matches("\\w{3,24}")) {
+                                display.warn("Nickname is incorrect: " + nick);
+                                caller.send(Packet.error("Nickname is incorrect"));
+                                caller.close();
                             } else {
                                 caller.setName(nick);
                                 caller.send(Packet.message("<server>", "Welcome to the chat"));

@@ -17,16 +17,16 @@ public abstract class ClientConsoleAdapter implements ConsoleObserver {
             } catch (NumberFormatException notNum) {
                 error("Illegal port number: " + port);
             }
-        } else if (input.startsWith("/disconnect")) {
+        } else if (input.equals("/disconnect")) {
             disconnect();
-        } else if (input.startsWith("/whereami")) {
+        } else if (input.equals("/whereami")) {
             whereami();
-        } else if (input.startsWith("/list")) {
+        } else if (input.equals("/list")) {
             list();
         } else if (input.startsWith("/use")) {
             String server = input.substring(4).trim();
             use(server);
-        } else if (input.startsWith("/exit")) {
+        } else if (input.equals("/exit")) {
             exit();
         } else if (!input.startsWith("/")) {
             sendMessage(input);
