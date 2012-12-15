@@ -1,8 +1,8 @@
 package ru.fizteh.fivt.students.alexanderKuzmin.asmProxy;
 
 import org.junit.Assert;
-import PerformanceTest.PerformanceTest;
-import Proxy.ShardingProxyFactory;
+import ru.fizteh.fivt.PerformanceTest;
+import proxy.ShardingProxyFactory;
 
 /**
  * @author Alexander Kuzmin group 196 Class MyPerformanceTest

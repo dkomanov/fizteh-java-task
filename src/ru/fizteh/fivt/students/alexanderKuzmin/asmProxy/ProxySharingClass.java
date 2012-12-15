@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.objectweb.asm.Type;
 import ru.fizteh.fivt.proxy.Collect;
-
 import ru.fizteh.fivt.proxy.DoNotProxy;
 
 /**
