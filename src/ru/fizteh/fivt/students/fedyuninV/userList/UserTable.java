@@ -34,17 +34,17 @@ public class UserTable extends AbstractTableModel{
 
     @Override
     public int getRowCount() {
-        return data.size();  //To change body of implemented methods use File | Settings | File Templates.
+        return data.size();
     }
 
     @Override
     public int getColumnCount() {
-        return columnNames.length;  //To change body of implemented methods use File | Settings | File Templates.
+        return columnNames.length;
     }
 
     @Override
     public Object getValueAt(int row, int col) {
-        return data.get(row)[col];  //To change body of implemented methods use File | Settings | File Templates.
+        return data.get(row)[col]; 
     }
 
     @Override
