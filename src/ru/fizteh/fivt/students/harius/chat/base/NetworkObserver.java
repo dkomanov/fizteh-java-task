@@ -4,5 +4,5 @@ import ru.fizteh.fivt.students.harius.chat.io.Packet;
 
 public interface NetworkObserver {
     void processNetwork(Packet packet, NetworkObservable caller);
-    void processClosed(String message);
+    void processClosed(String message, NetworkObservable caller);
 }

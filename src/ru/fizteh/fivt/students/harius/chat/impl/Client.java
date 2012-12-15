@@ -44,7 +44,7 @@ public final class Client {
                 try {
                     current.send(Packet.goodbye("I am disconnecting"));
                 } catch (IOException ioEx) {
-                    display.error("i/o exception: " + ioEx.getMessage());
+                    display.error("i/o exception while disconnecting: " + ioEx.getMessage());
                 }
             }
         }
@@ -91,7 +91,7 @@ public final class Client {
                 }
                 display.close();
             } catch (IOException ioEx) {
-                display.error("i/o exception: " + ioEx.getMessage());
+                display.error("i/o exception while performing quit: " + ioEx.getMessage());
             }
         }
 
@@ -104,7 +104,7 @@ public final class Client {
                 try {
                     current.send(Packet.message(name, message));
                 } catch (IOException ioEx) {
-                    display.error("i/o exception: " + ioEx.getMessage());
+                    display.error("i/o exception while sending packet: " + ioEx.getMessage());
                 }
             }
         }
@@ -129,12 +129,14 @@ public final class Client {
             try {
                 List<String> data = packet.getData();
                 if (!packet.isValid()) {
-                    display.warn("Message with wrong header was recceived");
+                    display.warn("Message with wrong header was received from " + caller.repr());
                     caller.send(Packet.error("Invalid message type"));
+                    caller.close();
                 } else if (packet.isMessage()) {
                     if (data.isEmpty()) {
-                        display.warn("Message without a name was received");
-                        caller.send(Packet.error("Where is your nickname?"));
+                        display.warn("Message without a name was received from " + caller.repr());
+                        caller.send(Packet.error("Message without a nickname was received"));
+                        caller.close();
                     } else {
                         String nick = data.get(0);
                         for (String msg : data.subList(1, data.size())) {
@@ -142,21 +144,33 @@ public final class Client {
                         }
                     }
                 } else if (packet.isError()) {
-                    display.warn("An error was received");
+                    display.warn("An error was received from " + caller.repr());
                     for (String error : data) {
                         display.warn("\t" + error);
                     }
+                    caller.close();
                 } else if (packet.isHello()) {
-                    display.warn("Hello received");
+                    display.warn("Hello received from " + caller.repr());
                 }
             } catch (IOException ioEx) {
-                display.error("i/o exception: " + ioEx.getMessage());
+                display.error("i/o exception while processing packet: " + ioEx.getMessage());
             }
         }
 
         @Override
-        public void processClosed(String why) {
-            display.warn("Connection closed:\n" + why);
+        public void processClosed(String why, NetworkObservable caller) {
+            display.warn("Connection to " + caller.repr() + " closed:\n" + why);
+            int index = servers.indexOf(caller);
+            if (index == -1) {
+                display.error("internal error: unknown server deleted: " + caller.repr());
+            } else {
+                servers.remove(index);
+                if (current == index) {
+                    current = -1;
+                } else if (current > index) {
+                    --current;
+                }
+            }
         }
     };
 

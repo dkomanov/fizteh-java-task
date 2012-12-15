@@ -18,7 +18,7 @@ public abstract class NetworkObservable implements Closeable, Runnable {
     }
 
     public final void notifyClosed(String message) {
-        observer.processClosed(message);
+        observer.processClosed(message, this);
     }
 
     public abstract void send(Packet packet) throws IOException;
