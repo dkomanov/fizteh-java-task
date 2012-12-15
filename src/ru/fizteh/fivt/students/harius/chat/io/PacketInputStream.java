@@ -17,7 +17,7 @@ public class PacketInputStream extends InputStream {
         byte size = (byte) read();
         // System.out.println("head " + head + " size " + size);
         if (size < 0 || size > 100) {
-            throw new ProtocolException("Invalid packages size");
+            throw new ProtocolException("Invalid packages size:" + size);
         }
         List<String> messages = new ArrayList<>();
         for (int i = 0; i < size; ++i) {

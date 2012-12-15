@@ -29,9 +29,8 @@ public class NetworkService extends NetworkObservable {
                 throw new RuntimeException(ioEx);
             }
         } catch (ProtocolException proto) {
-            notifyClosed("protocol error: " + proto.getMessage());
             try {
-                close();
+                close("protocol error: " + proto.getMessage());
             } catch (IOException ioEx) {
                 throw new RuntimeException(ioEx);
             }
@@ -47,8 +46,13 @@ public class NetworkService extends NetworkObservable {
 
     @Override
     public void close() throws IOException {
+        close("disconnecting");
+    }
+
+    public void close(String reason) throws IOException {
         if (!closed) {
             closed = true;
+            notifyClosed(reason);
             input.close();
             output.close();
         }

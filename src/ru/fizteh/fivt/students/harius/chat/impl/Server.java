@@ -4,6 +4,7 @@ import ru.fizteh.fivt.students.harius.chat.base.*;
 import ru.fizteh.fivt.students.harius.chat.io.Packet;
 import java.util.*;
 import java.io.IOException;
+import java.net.Socket;
 
 public final class Server {
     private final DisplayBase display;
@@ -16,12 +17,12 @@ public final class Server {
         
         @Override
         public void listen(int port) {
-            if (registrationProcessor != null) {
+            if (registrator != null) {
                 display.warn("Already listening another port");
             }
             try {
-                registrationProcessor = new Registrator(port);
-                new Thread(registrationProcessor).start();
+                registrator = new Registrator(registrationProcessor, port);
+                new Thread(registrator).start();
             } catch (IOException ioEx) {
                 display.error("cannot bind server: " + ioEx.getMessage());
             }
@@ -29,14 +30,26 @@ public final class Server {
 
         @Override
         public void stop() {
-            if (registrationProcessor == null) {
+            if (registrator == null) {
                 display.warn("Not listening any port yet");
             } else {
+                List<NetworkObservable> copy
+                    = new ArrayList<>(clients);
+                for (NetworkObservable client : copy) {
+                    try {
+                        client.send(Packet.goodbye("You are disconnected"));
+                        client.close();
+                    } catch (IOException ioEx) {
+                        display.error("i/o error while disconnecting client: "
+                            + ioEx.getMessage());
+                    }
+                }
                 try {
-                    registrationProcessor.close();
-                    registrationProcessor = null;
+                    registrator.close();
+                    registrator = null;
                 } catch (IOException ioEx) {
-                    display.error("i/o error while stopping server: " + ioEx.getMessage());
+                    display.error("i/o error while stopping server: "
+                        + ioEx.getMessage());
                 }
             }
         }
@@ -44,13 +57,28 @@ public final class Server {
         @Override
         public void list() {
             for (NetworkObservable client : clients) {
-                display.warn(" " + client.repr());
+                display.warn(" " + client.name() + "@" + client.repr());
             }
         }
 
         @Override
         public void send(String user, String message) {
-
+            NetworkObservable target = clientByName(user);
+            if (target == null) {
+                display.error("No such user");
+            } else {
+                try {
+                    target.send(Packet.message("<server>", message));
+                } catch (IOException ioEx) {
+                    display.error("i/o error while sending packet to "
+                        + target.repr() + ": " + ioEx.getMessage());
+                    try {
+                        target.close();
+                    } catch (IOException anotherIoEx) {
+                        display.error("and an error while closing the connection");
+                    }
+                }
+            }
         }
 
         @Override
@@ -60,12 +88,48 @@ public final class Server {
 
         @Override
         public void kill(String user) {
-
+            NetworkObservable target = clientByName(user);
+            if (target == null) {
+                display.error("No such user");
+            } else {
+                try {
+                    target.send(Packet.goodbye("You are disconnected"));
+                    target.close();
+                } catch (IOException ioEx) {
+                    display.error("i/o error while disconnecting user: " + ioEx.getMessage());
+                }
+            }
         }
 
         @Override
         public void exit() {
+            if (registrator != null) {
+                stop();
+            }
+            try {
+                display.close();
+            } catch (IOException ioEx) {
+                display.error("i/o exception while performing quit: " + ioEx.getMessage());
+            }
+        }
 
+        @Override
+        public void other(String message) {
+            display.error("Unrecognized command: " + message);
+        }
+
+        @Override
+        public void error(String error) {
+            display.error(error);
+        }
+
+        private NetworkObservable clientByName(String name) {
+            for (NetworkObservable client : clients) {
+                if (client.name().equals(name)) {
+                    return client;
+                }
+            }
+            return null;
         }
     };
 
@@ -85,9 +149,13 @@ public final class Server {
                         display.warn("Message without a name was received from " + caller.repr());
                         caller.send(Packet.error("Where is your nickname?"));
                         caller.close();
+                    } else if (!data.get(0).equals(caller.name())) {
+                        display.warn("Message with incorrect nick from " + caller.repr());
+                        caller.send(Packet.error("Cheating hacker, it's not your nickname!"));
+                        caller.close();
                     } else {
                         for (NetworkObservable client : clients) {
-                            if (client != caller) {
+                            if (client != caller && client.name() != null) {
                                 client.send(packet);
                             }
                         }
@@ -98,6 +166,27 @@ public final class Server {
                         display.warn("\t" + error);
                     }
                     caller.close();
+                } else if (packet.isHello()) {
+                    if (caller.name() != null) {
+                        display.warn("Second hello-packet received from " + caller.repr());
+                        caller.send(Packet.error("Hello-packet must contain your nickname"));
+                        caller.close();                        
+                    } else {
+                        if (packet.getData().size() != 1) {
+                            display.warn("Incorrect hello-packet received from " + caller.repr());
+                            caller.send(Packet.error("Hello-packet must contain your nickname"));
+                            caller.close();
+                        } else {
+                            String nick = packet.getData().get(0);
+                            caller.setName(nick);
+                            caller.send(Packet.message("<server>", "Welcome to the chat"));
+                        }
+                    }
+                } else if (packet.isBye()) {
+                    display.warn("Goodbye from " + caller.repr());
+                    caller.close();
+                } else {
+                    display.error("internal error: unhandled message type");
                 }
             } catch (IOException ioEx) {
                 display.error("i/o exception while packet processing: " + ioEx.getMessage());
@@ -116,7 +205,23 @@ public final class Server {
         }
     };
 
-    private Registrator registrationProcessor = null;
+    private Registrator registrator = null;
+
+    private RegistratorObserver registrationProcessor
+         = new RegistratorObserver() {
+
+        @Override
+        public void processRegistration(Socket socket) {
+            try {
+                NetworkObservable client = new NetworkService(socket);
+                clients.add(client);
+                client.setObserver(clientsProcessor);
+                new Thread(client).start();
+            } catch (IOException ioEx) {
+                display.error("i/o error while creating new client: " + ioEx.getMessage());
+            }
+        }   
+    };
 
     public Server(DisplayBase display) {
         this.display = display;

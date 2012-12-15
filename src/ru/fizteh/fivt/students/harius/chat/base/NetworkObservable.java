@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.io.Closeable;
 
 public abstract class NetworkObservable implements Closeable, Runnable {
-    NetworkObserver observer = null;
+    private NetworkObserver observer = null;
+    private String name = null;
 
     public final void setObserver(NetworkObserver observer) {
         this.observer = observer;
@@ -19,6 +20,14 @@ public abstract class NetworkObservable implements Closeable, Runnable {
 
     public final void notifyClosed(String message) {
         observer.processClosed(message, this);
+    }
+
+    public final String name() {
+        return name;
+    }
+
+    public final void setName(String newName) {
+        name = newName;
     }
 
     public abstract void send(Packet packet) throws IOException;

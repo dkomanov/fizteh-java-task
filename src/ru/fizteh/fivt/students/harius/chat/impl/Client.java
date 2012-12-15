@@ -25,11 +25,11 @@ public final class Client {
                 Socket connection = new Socket(host, port);
                 NetworkObservable observable
                     = new NetworkService(connection);
-                new Thread(observable).start();
                 current = servers.size();
                 servers.add(observable);
                 observable.setObserver(networkProcessor);
                 observable.send(Packet.hello(name));
+                new Thread(observable).start();
             } catch (IOException badHost) {
                 display.error("Bad server address");
             }
@@ -37,12 +37,13 @@ public final class Client {
 
         @Override
         public void disconnect() {
-            NetworkObservable current = getCurrent();
-            if (current == null) {
+            NetworkObservable server = getCurrent();
+            if (server == null) {
                 display.error("Cannot disconnect, no active server");
             } else {
                 try {
-                    current.send(Packet.goodbye("I am disconnecting"));
+                    server.send(Packet.goodbye("I am disconnecting"));
+                    server.close();
                 } catch (IOException ioEx) {
                     display.error("i/o exception while disconnecting: " + ioEx.getMessage());
                 }
@@ -51,11 +52,11 @@ public final class Client {
 
         @Override
         public void whereami() {
-            NetworkObservable current = getCurrent();
-            if (current == null) {
+            NetworkObservable server = getCurrent();
+            if (server == null) {
                 display.error("Cannot send message, no active server");
             } else {
-                display.warn(current.repr());
+                display.warn(server.repr());
             }
         }
 
@@ -85,7 +86,9 @@ public final class Client {
         @Override
         public void exit() {
             try {
-                for (NetworkObservable server : servers) {
+                List<NetworkObservable> copy
+                    = new ArrayList<>(servers);
+                for (NetworkObservable server : copy) {
                     server.send(Packet.goodbye("I am disconnecting"));
                     server.close();
                 }
@@ -97,14 +100,19 @@ public final class Client {
 
         @Override
         public void sendMessage(String message) {
-            NetworkObservable current = getCurrent();
-            if (current == null) {
+            NetworkObservable server = getCurrent();
+            if (server == null) {
                 display.error("Cannot send message, no active server");
             } else {
                 try {
-                    current.send(Packet.message(name, message));
+                    server.send(Packet.message(name, message));
                 } catch (IOException ioEx) {
                     display.error("i/o exception while sending packet: " + ioEx.getMessage());
+                    try {
+                        server.close();
+                    } catch (IOException anotherIoEx) {
+                        display.error("and an error while closing the connection");
+                    }
                 }
             }
         }
@@ -112,6 +120,11 @@ public final class Client {
         @Override
         public void other(String message) {
             display.error("Unrecognized command: " + message);
+        }
+
+        @Override
+        public void error(String error) {
+            display.error(error);
         }
 
         private NetworkObservable getCurrent() {
@@ -150,7 +163,12 @@ public final class Client {
                     }
                     caller.close();
                 } else if (packet.isHello()) {
-                    display.warn("Hello received from " + caller.repr());
+                    display.warn("Connected to " + caller.repr());
+                } else if (packet.isBye()) {
+                    display.warn("Goodbye from " + caller.repr());
+                    caller.close();
+                } else {
+                    display.error("internal error: unhandled message type");
                 }
             } catch (IOException ioEx) {
                 display.error("i/o exception while processing packet: " + ioEx.getMessage());

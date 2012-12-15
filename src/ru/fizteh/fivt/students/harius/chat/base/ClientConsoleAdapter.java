@@ -5,10 +5,18 @@ public abstract class ClientConsoleAdapter implements ConsoleObserver {
     public void processConsole(String input) {
         if (input.startsWith("/connect")) {
             int space = input.indexOf(':');
+            if (space == -1) {
+                error("Please provide address in format host:port");
+                return;
+            }
             String host = input.substring(8, space).trim();
             String port = input.substring(space + 1).trim();
-            int portN = Integer.parseInt(port);
-            connect(host, portN);
+            try {
+                int portN = Integer.parseInt(port);
+                connect(host, portN);
+            } catch (NumberFormatException notNum) {
+                error("Illegal port number: " + port);
+            }
         } else if (input.startsWith("/disconnect")) {
             disconnect();
         } else if (input.startsWith("/whereami")) {
@@ -35,4 +43,5 @@ public abstract class ClientConsoleAdapter implements ConsoleObserver {
     public abstract void exit();
     public abstract void sendMessage(String message);
     public abstract void other(String input);
+    public abstract void error(String error);
 }
