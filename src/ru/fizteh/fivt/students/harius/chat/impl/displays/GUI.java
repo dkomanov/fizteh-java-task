@@ -13,4 +13,19 @@ public class GUI extends DisplayBase
     public void warn(String warn) {
         throw new RuntimeException("Not implemented yet");
     }
+
+    @Override
+    public void error(String warn) {
+        throw new RuntimeException("Not implemented yet");
+    }
+
+    @Override
+    public void run() {
+        throw new RuntimeException("Not implemented yet");
+    }
+
+    @Override
+    public void close() {
+        throw new RuntimeException("Not implemented yet");
+    }
 }

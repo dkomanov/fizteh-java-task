@@ -5,10 +5,14 @@ import ru.fizteh.fivt.students.harius.chat.impl.displays.Terminal;
 
 public class LaunchClientTerminal {
     public static void main(String[] args) {
-        new LaunchClientTerminal().launch();
+        if (args.length != 1) {
+            System.err.println("Please provide your nickname");
+        } else {
+            new LaunchClientTerminal().launch(args[0]);
+        }
     }
 
-    public void launch() {
-        new Client(new Terminal());
+    public void launch(String name) {
+        new Client(new Terminal(), name);
     }
 }

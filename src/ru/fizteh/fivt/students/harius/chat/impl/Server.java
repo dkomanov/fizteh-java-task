@@ -2,9 +2,15 @@ package ru.fizteh.fivt.students.harius.chat.impl;
 
 import ru.fizteh.fivt.students.harius.chat.base.*;
 import ru.fizteh.fivt.students.harius.chat.io.Packet;
+import java.util.*;
+import java.io.IOException;
 
 public final class Server {
     private final DisplayBase display;
+
+    private final List<NetworkObservable> clients
+        = new ArrayList<>();
+
     private ServerConsoleAdapter inputProcessor
         = new ServerConsoleAdapter() {
         
@@ -49,7 +55,31 @@ public final class Server {
 
         @Override
         public void processNetwork(Packet packet, NetworkObservable caller) {
-
+            try {
+                List<String> data = packet.getData();
+                if (!packet.isValid()) {
+                    display.warn("Message with wrong header was recceived");
+                    caller.send(Packet.error("Invalid message type"));
+                } else if (packet.isMessage()) {
+                    if (data.isEmpty()) {
+                        display.warn("Message without a name was received");
+                        caller.send(Packet.error("Where is your nickname?"));
+                    } else {
+                        for (NetworkObservable client : clients) {
+                            if (client != caller) {
+                                client.send(packet);
+                            }
+                        }
+                    }
+                } else if (packet.isError()) {
+                    display.warn("An error was received");
+                    for (String error : data) {
+                        display.warn("\t" + error);
+                    }
+                }
+            } catch (IOException ioEx) {
+                display.error("i/o exception: " + ioEx.getMessage());
+            }
         }
     };
 

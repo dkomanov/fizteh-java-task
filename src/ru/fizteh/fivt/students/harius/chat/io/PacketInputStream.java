@@ -11,8 +11,29 @@ public class PacketInputStream extends InputStream {
         this.stream = stream;
     }
 
-    public Packet readPacket() throws IOException {
-        throw new IOException("Unimplemented yet");
+    public Packet readPacket() throws IOException, ProtocolException {
+        byte head = (byte) read();
+        byte size = (byte) read();
+        if (size < 0 || size > 100) {
+            throw new ProtocolException("Invalid packages size");
+        }
+        List<String> messages = new ArrayList<>();
+        for (int i = 0; i < size; ++i) {
+            int length = 0;
+            for (int shift = 24; shift >=0; shift -= 8) {
+                byte next = (byte) read();
+                length |= (next << shift);
+            }
+            if (length < 0 || length > 100000) {
+                throw new ProtocolException("Invalid part length");
+            }
+            byte[] part = new byte[length];
+            for (int sym = 0; sym < length; ++sym) {
+                part[sym] = (byte) read();
+            }
+            messages.add(new String(part));
+        }
+        return new Packet(head, messages);
     }
 
     @Override

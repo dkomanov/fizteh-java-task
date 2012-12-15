@@ -18,4 +18,5 @@ public abstract class NetworkObservable implements Closeable {
     }
 
     public abstract void send(Packet packet) throws IOException;
+    public abstract String repr();
 }

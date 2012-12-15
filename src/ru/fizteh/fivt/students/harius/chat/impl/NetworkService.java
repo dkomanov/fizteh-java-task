@@ -9,24 +9,26 @@ public class NetworkService extends NetworkObservable
                             implements Runnable {
     private Socket socket;
     private PacketOutputStream output;
+    private PacketInputStream input;
     private boolean closed = false;
 
     public NetworkService(Socket socket) throws IOException {
         this.socket = socket;
         output = new PacketOutputStream(socket.getOutputStream());
+        input = new PacketInputStream(socket.getInputStream());
     }
 
     @Override
     public void run() {
-        try (PacketInputStream input
-                = new PacketInputStream(socket.getInputStream())) {
-
+        try {
             while (!closed) {
                 Packet received = input.readPacket();
                 notifyObserver(received);
             }
         } catch (IOException ioEx) {
-            throw new RuntimeException(ioEx);
+            if (!closed) {
+                throw new RuntimeException(ioEx);
+            }
         }
     }
 
@@ -38,9 +40,14 @@ public class NetworkService extends NetworkObservable
     @Override
     public void close() throws IOException {
         if (!closed) {
-            // close input?
-            output.close();
             closed = true;
+            input.close();
+            output.close();
         }
+    }
+
+    @Override
+    public String repr() {
+        return socket.getInetAddress().toString();
     }
 }

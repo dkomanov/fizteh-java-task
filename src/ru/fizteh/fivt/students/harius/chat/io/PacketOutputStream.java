@@ -12,7 +12,10 @@ public class PacketOutputStream extends OutputStream {
     }
 
     public void writePacket(Packet packet) throws IOException {
-        throw new IOException("Unimplemented yet");
+        write(packet.getType());
+        for (String piece : packet.getData()) {
+            write(piece.getBytes());
+        }
     }
 
     @Override

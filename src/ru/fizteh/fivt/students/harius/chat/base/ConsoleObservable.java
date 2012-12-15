@@ -1,6 +1,8 @@
 package ru.fizteh.fivt.students.harius.chat.base;
 
-public abstract class ConsoleObservable {
+import java.io.Closeable;
+
+public abstract class ConsoleObservable implements Runnable, Closeable {
     ConsoleObserver observer = null;
 
     public final void setObserver(ConsoleObserver observer) {

@@ -3,7 +3,28 @@ package ru.fizteh.fivt.students.harius.chat.base;
 public abstract class ClientConsoleAdapter implements ConsoleObserver {
     @Override
     public void processConsole(String input) {
-        throw new RuntimeException("Not implemented yet");
+        if (input.startsWith("/connect")) {
+            int space = input.indexOf(':');
+            String host = input.substring(8, space).trim();
+            String port = input.substring(space + 1).trim();
+            int portN = Integer.parseInt(port);
+            connect(host, portN);
+        } else if (input.startsWith("/disconnect")) {
+            disconnect();
+        } else if (input.startsWith("/whereami")) {
+            whereami();
+        } else if (input.startsWith("/list")) {
+            list();
+        } else if (input.startsWith("/use")) {
+            String server = input.substring(4).trim();
+            use(server);
+        } else if (input.startsWith("/exit")) {
+            exit();
+        } else if (!input.startsWith("/")) {
+            sendMessage(input);
+        } else {
+            other(input);
+        }
     }
 
     public abstract void connect(String host, int port);
@@ -13,4 +34,5 @@ public abstract class ClientConsoleAdapter implements ConsoleObserver {
     public abstract void use(String server);
     public abstract void exit();
     public abstract void sendMessage(String message);
+    public abstract void other(String input);
 }
