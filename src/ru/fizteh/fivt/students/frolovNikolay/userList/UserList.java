@@ -170,6 +170,7 @@ public class UserList extends JFrame {
                 for (ArrayList<Object> user : ((UsersTable) usersTable.getModel()).getData()) {
                     if (((String) user.get(2)).isEmpty() || ((String) user.get(3)).isEmpty()) {
                         JOptionPane.showMessageDialog(mainFrame, "Can't save: one of users have empty firstname or lastname");
+                        return true;
                     }
                     UserName name = new UserName((String) user.get(2),(String) user.get(3));
                     Permissions perm = new Permissions();
