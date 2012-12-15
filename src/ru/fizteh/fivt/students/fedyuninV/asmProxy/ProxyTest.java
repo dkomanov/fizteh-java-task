@@ -22,17 +22,6 @@ class VoidInterfaceClass implements VoidInterface{
     public void func() {}
 }
 
-interface InnerInterface {
-    public void go();
-}
-
-class ExternalInterface implements InnerInterface {
-    @Override
-    public void go() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-}
-
 class ArrayTest implements SetArrays{
     @Override
     public Double[] setArray(Double[] array) {
@@ -168,6 +157,7 @@ public class ProxyTest {
         AsmLoggingProxyFactory factory = new AsmLoggingProxyFactory();
         List<String> proxy = (List<String>) factory.createProxy(list, builder, list.getClass().getInterfaces());
         proxy.add("wtf1\\\\ \n wtf2\\\"");
+        proxy.add("YAHHO");
         Assert.assertEquals(builder.toString(), "List.add(\"wtf1\\\\\\\\ \\n wtf2\\\\\\\"\") returned true\n"); // wtf2\\\"
     }
 

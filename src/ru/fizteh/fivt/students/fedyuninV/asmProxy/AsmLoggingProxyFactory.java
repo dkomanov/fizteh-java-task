@@ -42,7 +42,7 @@ public class AsmLoggingProxyFactory implements LoggingProxyFactory{
         Logger logger = new Logger(writer);
         Class clazz = loadClass(getBytes(target, logger, interfaces));
         try {
-            Constructor constructor = clazz.getConstructor(Object.class, Logger.class);
+            Constructor constructor = clazz.getConstructor(targetClass, Logger.class);
             return constructor.newInstance(target, logger);
         } catch (Exception ex) {
             throw new RuntimeException("Can't create proxy", ex);
@@ -66,7 +66,7 @@ public class AsmLoggingProxyFactory implements LoggingProxyFactory{
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         classWriter.visit(Opcodes.V1_7, Opcodes.ACC_PUBLIC, "Proxy", null, Type.getInternalName(Object.class), internalNames);
         //adding target & logger
-        classWriter.visitField(Opcodes.ACC_PRIVATE, "target", Type.getDescriptor(target.getClass()), null, null);
+        classWriter.visitField(Opcodes.ACC_PRIVATE, "target", Type.getDescriptor(targetClass), null, null);
         classWriter.visitField(Opcodes.ACC_PRIVATE, "logger", Type.getDescriptor(Logger.class), null, null);
         classWriter.visitEnd();
         //generatingConstructor
@@ -87,19 +87,20 @@ public class AsmLoggingProxyFactory implements LoggingProxyFactory{
     }
 
     private void generateConstructor(ClassWriter classWriter) {
-        generateMethod(classWriter, Opcodes.ACC_PUBLIC, "<init>", "(" + Type.getDescriptor(Object.class) +
+        generateMethod(classWriter, Opcodes.ACC_PUBLIC, "<init>", "(" + Type.getDescriptor(targetClass) +
                 Type.getDescriptor(Logger.class) + ")V",
                 new Function1V<GeneratorAdapter>() {
                     @Override
                     public void apply(GeneratorAdapter ga) {
                         ga.loadThis();
-                        ga.invokeConstructor( Type.getType("java/lang/Object"), new org.objectweb.asm.commons.Method("<init>", "()V"));
+                        ga.invokeConstructor( Type.getType(Object.class), new Method("<init>", "()V"));
                         ga.loadThis();
                         ga.loadArg(0);
-                        ga.putField(Type.getType("Proxy"), "target", Type.getType(Object.class));
+                        ga.putField(Type.getType("Proxy"), "target", Type.getType(targetClass));
                         ga.loadThis();
                         ga.loadArg(1);
                         ga.putField(Type.getType("Proxy"), "logger", Type.getType(Logger.class));
+                        ga.loadThis();
                         ga.returnValue();
                     }
                 });
@@ -146,15 +147,29 @@ public class AsmLoggingProxyFactory implements LoggingProxyFactory{
                         ga.getField(proxyType, "logger", loggerType);
                         ga.push(method.getDeclaringClass().getSimpleName());
                         ga.push(method.getName());
-                        ga.loadArgs();
+                        ga.loadArgArray();
                         try {
-                            ga.invokeVirtual(loggerType, new org.objectweb.asm.commons.Method("appendMethodAndArgs",
-                                                                                                logMethodAndArgs));
+                            ga.invokeVirtual(loggerType, new Method("appendMethodAndArgs", logMethodAndArgs));
                         } catch (Exception ignored) {
                             System.err.println("type'o");
                         }
+                        ga.loadThis();
+                        ga.getField(proxyType, "target", targetType);
                         ga.loadArgs();
                         ga.invokeInterface(interfazeType, new Method(method.getName(), Type.getMethodDescriptor(method)));
+                        if (!method.getReturnType().equals(void.class)) {
+                            ga.dup();
+                            int resultLocal = ga.newLocal(Type.getType(Object.class));
+                            ga.storeLocal(resultLocal);
+                            ga.loadThis();
+                            ga.getField(proxyType, "logger", loggerType);
+                            ga.loadLocal(resultLocal);
+                            try {
+                                ga.invokeVirtual(loggerType, new Method("appendResult", logResult));
+                            } catch (Exception ignored) {
+                                System.err.println("type'o");
+                            }
+                        }
                         ga.returnValue();
                     }
                 }

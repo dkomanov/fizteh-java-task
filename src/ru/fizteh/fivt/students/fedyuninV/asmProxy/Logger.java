@@ -160,19 +160,23 @@ public class Logger {
     }
 
     public void appendResult(Object result) {
-        Map<Object, Object> parsedObjects = new IdentityHashMap<>();
-        try {
-            if (tooLong) {
-                writer.append(' ');
-            }
-            writer.append(" returned ");
-            parsedObjects.clear();
-            writer.append(printObject(result, parsedObjects));
-            if (tooLong) {
-                writer.append('\n');
-            }
-        } catch (Exception ignored) {
+        if (result instanceof Throwable) {
+            appendThrowable((Throwable) result);
+        } else {
+            Map<Object, Object> parsedObjects = new IdentityHashMap<>();
+            try {
+                if (tooLong) {
+                    writer.append(' ');
+                }
+                writer.append(" returned ");
+                parsedObjects.clear();
+                writer.append(printObject(result, parsedObjects));
+                if (tooLong) {
+                    writer.append('\n');
+                }
+            } catch (Exception ignored) {
 
+            }
         }
     }
 
