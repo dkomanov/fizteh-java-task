@@ -146,6 +146,8 @@ public final class Client {
                     for (String error : data) {
                         display.warn("\t" + error);
                     }
+                } else if (packet.isHello()) {
+                    display.warn("Hello received");
                 }
             } catch (IOException ioEx) {
                 display.error("i/o exception: " + ioEx.getMessage());
