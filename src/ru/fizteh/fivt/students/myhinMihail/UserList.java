@@ -430,35 +430,12 @@ public class UserList extends JFrame {
             }
         };
         
-        table.setRowSorter(new TableRowSorter<>(table.getModel()));
         add(new JScrollPane(table));
         
         for (int i = 0; i < table.getColumnCount(); ++i) {
             table.getColumnModel().getColumn(i).setCellRenderer(new TableRenderer());
         }
         
-        for (int i = 0; i < table.getRowCount(); ++i) {
-            for (int j = 0; j < table.getColumnCount(); ++j) {
-                table.getCellRenderer(i, j).getTableCellRendererComponent(table, table.getModel().getValueAt(i, j), false, false, i, j);
-            }
-        }
-        
-        ListSelectionModel selModel = table.getSelectionModel();
-        selModel.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                int selectedRow = table.getSelectedRow();
-                for (int i = 0; i < table.getColumnCount(); ++i) {
-                    table.getColumnModel().getColumn(i).setCellRenderer(new TableRenderer());
-                }
-                for (int i = 0; i < table.getRowCount(); ++i) {
-                    for (int j = 0; j < table.getColumnCount(); ++j) {
-                        table.getCellRenderer(i, j).getTableCellRendererComponent
-                                    (table, table.getModel().getValueAt(i, j), i == selectedRow, false, i, j);
-                    }
-                }
-            }
-        });
     }
     
     public void loadUsers(File file) {
