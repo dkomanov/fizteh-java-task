@@ -129,6 +129,7 @@ public class UserList extends JFrame {
                             // System.out.println("good");
                             UserReader userReader = new UserReader(file);
                             ArrayList<User> users = userReader.read();
+                            ((InteractiveTableModel) table.getModel()).clear();
                             for (int i = 0; i < users.size(); ++i) {
                                 upd(users.get(i));
                             }
@@ -150,7 +151,7 @@ public class UserList extends JFrame {
                 ArrayList<User> users = ((InteractiveTableModel) table
                         .getModel()).getData();
                 try {
-                userWriter.write(users);
+                    userWriter.write(users);
                 } catch (Exception ee) {
                     System.err.println(ee.getMessage());
                     System.exit(1);
@@ -172,7 +173,7 @@ public class UserList extends JFrame {
                             .getModel()).getData();
                     UserWriter userWriter = new UserWriter(file);
                     try {
-                    userWriter.write(users);
+                        userWriter.write(users);
                     } catch (Exception ee) {
                         System.err.println(ee.getMessage());
                         System.exit(1);
