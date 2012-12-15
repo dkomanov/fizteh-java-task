@@ -16,7 +16,7 @@ public final class Server {
     private final DisplayBase display;
 
     private final List<NetworkObservable> clients
-        = new ArrayList<>();
+        = Collections.synchronizedList(new ArrayList<NetworkObservable>());
 
     private ServerConsoleAdapter inputProcessor
         = new ServerConsoleAdapter() {
@@ -62,8 +62,10 @@ public final class Server {
 
         @Override
         public void list() {
-            for (NetworkObservable client : clients) {
-                display.warn(" " + client.name() + "@" + client.repr());
+            synchronized(clients) {
+                for (NetworkObservable client : clients) {
+                    display.warn(" " + client.name() + "@" + client.repr());
+                }
             }
         }
 
@@ -89,16 +91,18 @@ public final class Server {
 
         @Override
         public void sendall(String message) {
-            for (NetworkObservable client : clients) {
-                try {
-                    client.send(Packet.message("<server>", message));
-                } catch (IOException ioEx) {
-                    display.error("i/o error while sending packet to "
-                        + client.repr() + ": " + ioEx.getMessage());
+            synchronized(clients) {
+                for (NetworkObservable client : clients) {
                     try {
-                        client.close();
-                    } catch (IOException anotherIoEx) {
-                        display.error("and an error while closing the connection");
+                        client.send(Packet.message("<server>", message));
+                    } catch (IOException ioEx) {
+                        display.error("i/o error while sending packet to "
+                            + client.repr() + ": " + ioEx.getMessage());
+                        try {
+                            client.close();
+                        } catch (IOException anotherIoEx) {
+                            display.error("and an error while closing the connection");
+                        }
                     }
                 }
             }
@@ -163,9 +167,11 @@ public final class Server {
                         caller.send(Packet.error("Cheating hacker, it's not your nickname!"));
                         caller.close();
                     } else {
-                        for (NetworkObservable client : clients) {
-                            if (client != caller && client.name() != null) {
-                                client.send(packet);
+                        synchronized(clients) {
+                            for (NetworkObservable client : clients) {
+                                if (client != caller && client.name() != null) {
+                                    client.send(packet);
+                                }
                             }
                         }
                     }
@@ -253,9 +259,11 @@ public final class Server {
     }
 
     private NetworkObservable clientByName(String name) {
-        for (NetworkObservable client : clients) {
-            if (client.name() != null && client.name().equals(name)) {
-                return client;
+        synchronized(clients) {
+            for (NetworkObservable client : clients) {
+                if (client.name() != null && client.name().equals(name)) {
+                    return client;
+                }
             }
         }
         return null;

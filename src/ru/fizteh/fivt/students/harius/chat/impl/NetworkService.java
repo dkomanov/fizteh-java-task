@@ -50,7 +50,7 @@ public class NetworkService extends NetworkObservable {
     }
 
     @Override
-    public void send(Packet packet) throws IOException {
+    public synchronized void send(Packet packet) throws IOException {
         if (!closed) {
             output.writePacket(packet);
         }

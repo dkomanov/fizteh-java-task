@@ -16,17 +16,17 @@ public class Terminal extends DisplayBase
     private BufferedReader input;
 
     @Override
-    public void message(String user, String message) {
+    public synchronized void message(String user, String message) {
         System.out.println("<" + user + "> " + message);
     }
 
     @Override
-    public void warn(String warn) {
+    public synchronized void warn(String warn) {
         System.err.println(warn);
     } 
 
     @Override
-    public void error(String error) {
+    public synchronized void error(String error) {
         System.err.println(error);
     }
 
