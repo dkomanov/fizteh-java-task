@@ -26,6 +26,8 @@ public class ShardingAsmProxyFactory implements ShardingProxyFactory {
     @Override
     public Object createProxy(Object[] targets, Class[] interfaces) {
         ProxySharingClass.throwIncorrectArgument(targets, interfaces);
+        ProxySharingClass
+                .throwExceptionIfInterfacesContainsEqualsMethodSignature(interfaces);
         String[] interfacesName = new String[interfaces.length];
         for (int i = 0; i < interfaces.length; ++i) {
             interfacesName[i] = Type.getInternalName(interfaces[i]);
@@ -130,9 +132,14 @@ public class ShardingAsmProxyFactory implements ShardingProxyFactory {
                             ga.push((long) targetsCount);
                             ga.math(GeneratorAdapter.REM, Type.LONG_TYPE);
                             ga.cast(Type.LONG_TYPE, Type.INT_TYPE);
-                            ga.invokeVirtual(arrayListType,
-                                    new org.objectweb.asm.commons.Method("get",
-                                            "(I)Ljava/lang/Object;"));
+                            try {
+                                ga.invokeVirtual(arrayListType,
+                                        new org.objectweb.asm.commons.Method(
+                                                "get", "(I)Ljava/lang/Object;"));
+                            } catch (Throwable e) {
+                                throw new RuntimeException(
+                                        "ArrayList doesn't have the method.");
+                            }
                             ga.checkCast(interfaceType);
                             ga.loadArgs();
                             ga.invokeInterface(interfaceType,
@@ -149,9 +156,14 @@ public class ShardingAsmProxyFactory implements ShardingProxyFactory {
                             int sizeLocal = ga.newLocal(Type.INT_TYPE);
                             ga.loadThis();
                             ga.getField(proxyType, "targets", arrayListType);
-                            ga.invokeVirtual(arrayListType,
-                                    new org.objectweb.asm.commons.Method(
-                                            "size", "()I"));
+                            try {
+                                ga.invokeVirtual(arrayListType,
+                                        new org.objectweb.asm.commons.Method(
+                                                "size", "()I"));
+                            } catch (Throwable e) {
+                                throw new RuntimeException(
+                                        "ArrayList doesn't have the method.");
+                            }
                             ga.storeLocal(sizeLocal);
 
                             int resLocal = 0;
@@ -202,10 +214,14 @@ public class ShardingAsmProxyFactory implements ShardingProxyFactory {
                             ga.loadThis();
                             ga.getField(proxyType, "targets", arrayListType);
                             ga.loadLocal(iLocal);
-                            ga.invokeVirtual(arrayListType,
-                                    new org.objectweb.asm.commons.Method("get",
-                                            "(I)Ljava/lang/Object;"));
-
+                            try {
+                                ga.invokeVirtual(arrayListType,
+                                        new org.objectweb.asm.commons.Method(
+                                                "get", "(I)Ljava/lang/Object;"));
+                            } catch (Throwable e) {
+                                throw new RuntimeException(
+                                        "ArrayList doesn't have the method.");
+                            }
                             ga.checkCast(interfaceType);
                             ga.loadArgs();
                             ga.invokeInterface(interfaceType,
