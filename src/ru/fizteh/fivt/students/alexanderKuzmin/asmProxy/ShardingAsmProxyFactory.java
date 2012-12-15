@@ -1,5 +1,6 @@
 package ru.fizteh.fivt.students.alexanderKuzmin.asmProxy;
 
+import org.hamcrest.StringDescription;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import ru.fizteh.fivt.proxy.ShardingProxyFactory;
@@ -9,6 +10,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -26,8 +28,6 @@ public class ShardingAsmProxyFactory implements ShardingProxyFactory {
     @Override
     public Object createProxy(Object[] targets, Class[] interfaces) {
         ProxySharingClass.throwIncorrectArgument(targets, interfaces);
-        ProxySharingClass
-                .throwExceptionIfInterfacesContainsEqualsMethodSignature(interfaces);
         String[] interfacesName = new String[interfaces.length];
         for (int i = 0; i < interfaces.length; ++i) {
             interfacesName[i] = Type.getInternalName(interfaces[i]);
@@ -39,11 +39,16 @@ public class ShardingAsmProxyFactory implements ShardingProxyFactory {
         cw.visitField(Opcodes.ACC_PRIVATE, "targets",
                 Type.getDescriptor(ArrayList.class), null, null).visitEnd();
         generateConstructor(cw);
+        HashSet<String> descriptors = new HashSet<>();
         for (Class<?> interfc : interfaces) {
             Method[] methods = interfc.getDeclaredMethods();
             for (Method method : methods) {
-                method.setAccessible(true);
-                generateInterfaceMethod(cw, interfc, method, targets.length);
+                String descriptor = Type.getMethodDescriptor(method);
+                if (!descriptors.contains(descriptor)) {
+                    method.setAccessible(true);
+                    generateInterfaceMethod(cw, interfc, method, targets.length);
+                    descriptors.add(descriptor);
+                }
             }
         }
         cw.visitEnd();
@@ -117,6 +122,7 @@ public class ShardingAsmProxyFactory implements ShardingProxyFactory {
                             ga.throwException(
                                     Type.getType(IllegalStateException.class),
                                     "This method has DoNotProxy annotation.");
+                            return;
                         }
 
                         if (!ProxySharingClass.isCollect(method)) {
