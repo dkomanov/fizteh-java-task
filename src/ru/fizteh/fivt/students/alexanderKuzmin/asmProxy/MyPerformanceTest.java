@@ -2,7 +2,7 @@ package ru.fizteh.fivt.students.alexanderKuzmin.asmProxy;
 
 import org.junit.Assert;
 import ru.fizteh.fivt.PerformanceTest;
-import proxy.ShardingProxyFactory;
+import ru.fizteh.fivt.students.alexanderKuzmin.proxy.ShardingProxyFactory;
 
 /**
  * @author Alexander Kuzmin group 196 Class MyPerformanceTest

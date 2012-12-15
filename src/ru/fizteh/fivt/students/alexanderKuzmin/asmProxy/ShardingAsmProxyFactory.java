@@ -3,7 +3,7 @@ package ru.fizteh.fivt.students.alexanderKuzmin.asmProxy;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import ru.fizteh.fivt.proxy.ShardingProxyFactory;
-import asmProxy.ProxySharingClass;
+import ru.fizteh.fivt.students.alexanderKuzmin.asmProxy.ProxySharingClass;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;

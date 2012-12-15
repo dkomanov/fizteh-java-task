@@ -1,7 +1,7 @@
 package ru.fizteh.fivt.students.alexanderKuzmin.proxy;
 
 import java.lang.reflect.Proxy;
-import asmProxy.ProxySharingClass;
+import ru.fizteh.fivt.students.alexanderKuzmin.asmProxy.ProxySharingClass;
 
 /**
  * @author Alexander Kuzmin group 196 Class ShardingProxyFactor
