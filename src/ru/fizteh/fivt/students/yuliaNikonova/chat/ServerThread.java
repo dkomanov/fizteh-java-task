@@ -71,7 +71,7 @@ public class ServerThread extends Thread {
                                 sendErrorandStop(dout, e.getMessage());
                                 work = false;
                             }
-                            if (users.contains(nick)) {
+                            if (users.containsKey(nick)) {
                                 sendErrorandStop(dout, "This nick " + nick + " is already exist");
                                 work = false;
                             } else {

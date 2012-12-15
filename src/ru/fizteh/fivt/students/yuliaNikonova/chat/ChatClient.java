@@ -34,18 +34,21 @@ public class ChatClient {
                         String[] hostPort = com[1].split(":");
                         if (hostPort.length != 2) {
                             System.err.println("Usage: /connect host:port");
-                            break;
+                            continue;
+                            //break;
                         }
                         int port = -1;
                         try {
                             port = Integer.parseInt(hostPort[1]);
                         } catch (Exception e) {
                             System.err.println("Wrong port: " + hostPort[1]);
-                            break;
+                            continue;
+                            //break;
                         }
                         if (port < 0 || port > 65535) {
                             System.err.println("Wrong port: " + hostPort[1]);
-                            break;
+                            continue;
+                            //;
                         }
                         try {
                             Client client = new Client(hostPort[0], port, userName, servers);
