@@ -193,7 +193,7 @@ public class UserList extends JFrame {
                 for (User user : savedUsers) {
                     IdentityHashMap<Object, Object> cycleLinkInterrupter = new IdentityHashMap<Object, Object>();
                     xmlOutput.writeStartElement("user");
-                    //xmlBinder.serializeToStream(user, xmlOutput, cycleLinkInterrupter);
+                    xmlBinder.serializeToStream(user, xmlOutput, cycleLinkInterrupter);
                     xmlOutput.writeEndElement();
                 }
                 xmlOutput.writeEndElement();
@@ -218,7 +218,7 @@ public class UserList extends JFrame {
                 for (int i = 0; i < childNodes.getLength(); ++i) {
                     Node node = childNodes.item(i);
                     if (node.getNodeType() == Node.ELEMENT_NODE && ((Element) node).getTagName().equals("user")) {
-                        //users.add((User) xmlBinder.objectDeserialize((Element) node, User.class));
+                        users.add((User) xmlBinder.objectDeserialize((Element) node, User.class));
                     }
                 }
             } catch (Throwable expt) {
