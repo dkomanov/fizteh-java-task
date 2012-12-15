@@ -1,7 +1,6 @@
 package ru.fizteh.fivt.students.fedyuninV.asmProxy;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -12,14 +11,12 @@ import java.util.Map;
  */
 public class Logger {
     private Appendable writer;
-    private Object target;
     private boolean tooLong;
     private final int ARG_MAX_LENGTH = 60;
     private Map<String, String> screenMap = new HashMap<>();
     private final Object PARSED = new Object();
 
-    public Logger(Object target, Appendable writer) {
-        this.target = target;
+    public Logger(Appendable writer) {
         this.writer = writer;
         screenMap.put("\n", "\\\\n");
         screenMap.put("\r", "\\\\r");
@@ -144,70 +141,61 @@ public class Logger {
         return builder.toString();
     }
 
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    public void appendMethodAndArgs(String className, String methodName, Object args[]) {
         Map<Object, Object> parsedObjects = new IdentityHashMap<>();
-        method.setAccessible(true);
-        if (method.getDeclaringClass().equals(Object.class)) {
-            try {
-                return method.invoke(target, args);
-            } catch (Throwable ignored) {
-            }
-        }
         tooLong = false;
-        StringBuilder logger = new StringBuilder();
-        logger.append(method.getDeclaringClass().getSimpleName());
-        logger.append('.');
-        logger.append(method.getName());
-        logger.append('(');
-        if (args != null) {
-            logger.append(parseArgs(args, parsedObjects));
-        }
-        if (tooLong) {
-            logger.append("  ");
-        }
-        logger.append(')');
-        if (tooLong) {
-            logger.append("\n");
-        }
         try {
-            Object result = method.invoke(target, args);
-            if (!method.getReturnType().equals(void.class)) {
-                if (tooLong) {
-                    logger.append(' ');
-                }
-                logger.append(" returned ");
-                parsedObjects.clear();
-                logger.append(printObject(result, parsedObjects));
-                if (tooLong) {
-                    logger.append('\n');
-                }
+            writer.append(className);
+            writer.append('.');
+            writer.append(methodName);
+            writer.append('(');
+            if (args != null) {
+                writer.append(parseArgs(args, parsedObjects));
             }
-            if (!tooLong) {
-                logger.append('\n');
-            }
-            return result;
-        } catch (Throwable ex) {
-            ex = ex.getCause();
             if (tooLong) {
-                logger.append(' ');
+                writer.append("  ");
             }
-            logger.append(" threw ");
-            logger.append(ex.getClass().getName());
-            logger.append(": ");
-            logger.append(ex.getMessage());
-            logger.append('\n');
+        } catch (Exception ignored) {
+        }
+    }
+
+    public void appendResult(Object result) {
+        Map<Object, Object> parsedObjects = new IdentityHashMap<>();
+        try {
+            if (tooLong) {
+                writer.append(' ');
+            }
+            writer.append(" returned ");
+            parsedObjects.clear();
+            writer.append(printObject(result, parsedObjects));
+            if (tooLong) {
+                writer.append('\n');
+            }
+        } catch (Exception ignored) {
+
+        }
+    }
+
+    public void appendThrowable(Throwable ex) {
+        try {
+            if (tooLong) {
+                writer.append(' ');
+            }
+            writer.append(" threw ");
+            writer.append(ex.getClass().getName());
+            writer.append(": ");
+            writer.append(ex.getMessage());
+            writer.append('\n');
             StackTraceElement[] traceElements = ex.getStackTrace();
             for (StackTraceElement traceElement: traceElements) {
                 if (tooLong) {
-                    logger.append("  ");
+                    writer.append("  ");
                 }
-                logger.append("  ");
-                logger.append(traceElement.toString());
-                logger.append('\n');
+                writer.append("  ");
+                writer.append(traceElement.toString());
+                writer.append('\n');
             }
-            throw ex;
-        } finally {
-            writer.append(logger.toString());
+        } catch (Exception ignored) {
         }
     }
 }
