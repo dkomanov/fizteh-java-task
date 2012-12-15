@@ -37,6 +37,9 @@ public class Terminal extends DisplayBase
         while (!closed) {
             try {
                 String line = input.readLine();
+                if (line == null) {
+                    throw new IOException("Terminal stream end");
+                }
                 notifyObserver(line);
             } catch (IOException ioEx) {
                 if (!closed) {
