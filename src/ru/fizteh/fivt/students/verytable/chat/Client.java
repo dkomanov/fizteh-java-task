@@ -17,7 +17,7 @@ import java.util.*;
 public class Client implements Runnable {
 
 
-    private final ByteBuffer buffer = ByteBuffer.allocate(512);
+    private final ByteBuffer buffer = ByteBuffer.allocate(512 * 1024);
     private static String curHost;
     private static int curPort;
     private static String clientName;
@@ -128,7 +128,7 @@ public class Client implements Runnable {
                 return true;
             }
         }
-        if (len < 0) {
+        if (len <= 0) {
             System.err.println("Emergency server exit.");
             String exitedUser = getKey(sc);
             if (exitedUser != null) {
@@ -136,30 +136,24 @@ public class Client implements Runnable {
                 return false;
             }
         }
-        buffer.flip();
 
         if (buffer.limit() == 0) {
             return false;
         }
-
         for (int i = 0; i < len; ++i) {
             forMessages.add(buffer.array()[i]);
         }
-        if (!hasMessage()) {
+        Byte[] bm1 = new Byte[forMessages.size()];
+        byte[] byteMessage1 = MessageUtils.toPrimitive(forMessages.toArray(bm1));
+        ArrayList<String> message;
+        message = getMessage(byteMessage1);
+        if (message == null) {
             return true;
         }
 
-        Byte[] bm = new Byte[forMessages.size()];
-        byte[] byteMessage = MessageUtils.toPrimitive(forMessages.toArray(bm));
-
-        switch (byteMessage[0]) {
+        switch (byteMessage1[0]) {
             case 2:
-                ArrayList<String> message = getMessage(byteMessage);
-                if (message == null) {
-                    System.out.println("I received too large message.");
-                    disconnect(true);
-                    return true;
-                }
+                System.out.println("Got simple message");
                 String sender = message.get(0);
                 StringBuilder sb = new StringBuilder();
                 for (int i = 1; i < message.size(); ++i) {
@@ -168,10 +162,12 @@ public class Client implements Runnable {
                 System.out.println(sender + ": " + sb.toString());
                 break;
             case 3:
+                System.out.println("Got bye message");
                 disconnect(false);
                 break;
             case 127:
-                message = getMessage(byteMessage);
+                System.out.println("Got error message.");
+                //message = getMessage(byteMessage);
                 sender = message.get(0);
                 sb = new StringBuilder();
                 for (int i = 1; i < message.size(); ++i) {
@@ -258,61 +254,46 @@ public class Client implements Runnable {
         }
     }
 
-    static boolean hasMessage() {
-        Byte[] bm = new Byte[forMessages.size()];
-        byte[] forMessagesByteArray = MessageUtils.toPrimitive(forMessages.toArray(bm));
-        ByteBuffer curData = ByteBuffer.wrap(forMessagesByteArray);
-        if (forMessagesByteArray.length == 0) {
-            return false;
-        }
-        int messageType = curData.get();
-        if (forMessagesByteArray.length == 1) {
-            return false;
-        }
-        int messageCount = curData.get();
-        if (messageCount < 0) {
-            System.err.println("bad messages length");
-            disconnect(false);
-        }
-        int curLen = 2;
-        for (int i = 0; i < messageCount; ++i) {
-            if (forMessagesByteArray.length < curLen + 4) {
-                return false;
-            }
-            int nextMessageLength = curData.get();
-            curLen += 4;
-            if (nextMessageLength < 0 || nextMessageLength > 512) {
-                System.err.println("Message len < 0 or > 512");
-                disconnect(false);
-            }
-            byte[] tmp = new byte[curLen];
-            if (forMessagesByteArray.length < curLen + nextMessageLength) {
-                return false;
-            }
-            curLen += nextMessageLength;
-        }
-        return true;
-    }
-
     static public ArrayList<String> getMessage(byte[] byteMessage) {
+
         ArrayList<String> message = new ArrayList<String>();
         ByteBuffer buffer = ByteBuffer.wrap(byteMessage);
+
+        if (forMessages.size() < 1) {
+            return null;
+        }
         int messageType = buffer.get();
-        int messageCount = buffer.get();
-        if (messageCount == -1) {
+        if (messageType != 2 && messageType != 3 && messageType != 127) {
+            System.out.println("wrong message type");
             disconnect(false);
+        }
+
+        if (forMessages.size() < 2) {
+            return null;
+        }
+        int messageCount = buffer.get();
+
+        if (messageCount < 1) {
             System.err.println("error in message reading");
+            disconnect(false);
             System.exit(1);
         }
+
         int len = 2;
         for (int i = 0; i < messageCount; ++i) {
-            int length = buffer.getInt();
-            len += 4;
-            if (length < 0) {
-                System.out.println("Array size < 0");
+            if (forMessages.size() < 6) {
                 return null;
             }
+            int length = buffer.getInt();
+            len += 4;
+            if (length < 0 || length > 512) {
+                System.out.println("Array size < 0 || array size > 512");
+                disconnect(false);
+            }
             byte[] tmp = new byte[length];
+            if (forMessages.size() < len + length) {
+                return null;
+            }
             if (tmp.length < 512) {
                 buffer.get(tmp);
                 len += length;
