@@ -1,6 +1,6 @@
 package ru.fizteh.fivt.students.fedyuninV.chat.client;
 
-import ru.fizteh.fivt.students.almazNasibullin.chat.MessageUtils;
+import ru.fizteh.fivt.students.fedyuninV.chat.message.MessageUtils;
 import ru.fizteh.fivt.students.fedyuninV.CommandLine;
 import ru.fizteh.fivt.students.fedyuninV.CommandLineParser;
 import ru.fizteh.fivt.students.fedyuninV.chat.message.Message;
