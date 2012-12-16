@@ -35,6 +35,7 @@ public class FooAsmProxyFactory extends FooProxyFactory {
         for (Class interfaceBar : interfaces) {
             Method[] methods = interfaceBar.getDeclaredMethods();
             for (Method method : methods) {
+                method.setAccessible(true);
                 generateInterfaceMethod(classWriter, interfaceBar, method, targets.length);
             }
         }
@@ -45,9 +46,10 @@ public class FooAsmProxyFactory extends FooProxyFactory {
         try {
             Class classBar = loadClass(classWriter.toByteArray());
             Constructor constructor = classBar.getConstructor(ArrayList.class);
+            constructor.setAccessible(true);
             result = constructor.newInstance(new ArrayList(Arrays.asList(targets)));
         } catch (Exception t) {
-            throw new RuntimeException(t.getMessage());
+            throw new IllegalStateException(t.getMessage());
         }
         return result;
     }
@@ -78,7 +80,7 @@ public class FooAsmProxyFactory extends FooProxyFactory {
         generateMethod(cw, Opcodes.ACC_PUBLIC, name, descriptor, new GeneratorApplier() {
             public void apply(GeneratorAdapter generatorAdapter) {
                 if (method.isAnnotationPresent(DoNotProxy.class)) {
-                    generatorAdapter.throwException(Type.getType(RuntimeException.class), null);
+                    generatorAdapter.throwException(Type.getType(IllegalStateException.class), null);
                     return;
                 }
 
@@ -132,13 +134,11 @@ public class FooAsmProxyFactory extends FooProxyFactory {
                             generatorAdapter.push(0);
                         } else if (methodReturnType.equals(Integer.class)) {
                             generatorAdapter.push(0);
-                            //generatorAdapter.invokeConstructor(Type.getType(Integer.class), new org.objectweb.asm.commons.Method("<init>", "(I)V"));
                             generatorAdapter.invokeStatic(Type.getType(Integer.class), new org.objectweb.asm.commons.Method("valueOf", "(I)" + Type.getType(Integer.class).getDescriptor()));
                         } else if (methodReturnType.equals(long.class)) {
                             generatorAdapter.push(0L);
                         } else if (methodReturnType.equals(Long.class)) {
                             generatorAdapter.push(0L);
-                            //generatorAdapter.invokeConstructor(Type.getType(Long.class), new org.objectweb.asm.commons.Method("<init>", "(J)V"));
                             generatorAdapter.invokeStatic(Type.getType(Long.class), new org.objectweb.asm.commons.Method("valueOf", "(J)" + Type.getType(Long.class).getDescriptor()));
                         } else if (methodReturnType.equals(List.class)) {
                             generatorAdapter.invokeConstructor(arrayListType, new org.objectweb.asm.commons.Method("<init>", "()V"));
