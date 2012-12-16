@@ -1,7 +1,5 @@
-package ru.fizteh.fivt.students.almazNasibullin.chat.client;
+package ru.fizteh.fivt.students.almazNasibullin.chatGui;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -14,71 +12,72 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import javax.swing.JTextArea;
+import ru.fizteh.fivt.students.almazNasibullin.chatGui.UtilsGui;
 import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
 import ru.fizteh.fivt.students.almazNasibullin.chat.MessageType;
 import ru.fizteh.fivt.students.almazNasibullin.chat.client.MessageUtils;
 
 /**
- * 21.10.12
+ * 15.12.12
  * @author almaz
  */
 
-public class Client {
-    private static BufferedReader buf;
+public class ChatGuiClient {
+    private JTextArea serverArea;
     // хранит ip-address сервера + номер порта и номер ячейки в массивах selectors
     // и channels, в которых хранятся соответствующий Selector и SocketChannel
-    private static Map<String, Integer> servers = new TreeMap<String, Integer>();
+    private Map<String, Integer> servers = new TreeMap<String, Integer>();
     // ip-address + порт текущего сервера
-    private static String curServer = "";
+    private String curServer = "";
     // номер текущего сервера
-    private static int curServerNumber = -1;
+    private int curServerNumber = -1;
     // подключен или нет клиент к какому-нибудь серверу в данный момент
-    private static boolean connected = false;
+    private boolean connected = false;
     // список SocketChannel каждого сервера
-    private static List<SocketChannel>  channels = new ArrayList<SocketChannel>();
+    private List<SocketChannel>  channels = new ArrayList<SocketChannel>();
     // список Selector каждого сервера
-    private static List<Selector> selectors = new ArrayList<Selector>();
-    private static List<byte[]> messages = new ArrayList<byte[]>();
+    private List<Selector> selectors = new ArrayList<Selector>();
+    private List<byte[]> messages = new ArrayList<byte[]>();
     // ник клиента
-    private static String nick = "";
+    private String nick = "";
+    private final Object synchronizedObject;
 
-    public static void main(String[] args) {
+    public ChatGuiClient(String nick, JTextArea serverArea) {
+        this.nick = nick;
+        this.serverArea = serverArea;
+        this.synchronizedObject = new Object();
+    }
+
+    public void run() {
         try {
-            buf = new BufferedReader(new InputStreamReader(System.in));
-            if (args.length != 1) {
-                IOUtils.printErrorAndExit("Put your nick");
-            } else {
-                nick = args[0];
-            }
-
             for (;;) {
-                if (buf.ready()) {
-                    handlerConsole();
-                }
-                if (connected) {
-                    int num = selectors.get(curServerNumber).selectNow();
-                    if (num == 0) {
-                        continue;
+                synchronized(synchronizedObject) {
+                    if (connected) {
+                        int num = selectors.get(curServerNumber).selectNow();
+                        if (num == 0) {
+                            continue;
+                        }
+                        handlerServer();
                     }
-                    handlerServer();
                 }
             }
         } catch (Exception e) {
-            IOUtils.printErrorAndExit("main: " + e.getMessage());
+            UtilsGui.showErrorMessageAndExit("main: " + e.getMessage());
         }
     }
 
-    public static void closeSelector(Selector selector) {
+    public void closeSelector(Selector selector) {
         try {
             if (selector != null) {
                 selector.close();
             }
         } catch (Exception e) {
-            IOUtils.printErrorAndExit("Bad closing: " + e.getMessage());
+            UtilsGui.showErrorMessageAndExit("Bad closing: " + e.getMessage());
         }
     }
 
-    public static void connect(StringTokenizer st) {
+    public void connect(StringTokenizer st) {
         // при вызове команды сonnect клиент переходит в чат-комнату нового сервера
         try {
             if (st.hasMoreTokens()) {
@@ -88,7 +87,7 @@ public class Client {
                     String host = cur.substring(0, pos);
                     String portNumber = cur.substring(pos + 1, cur.length());
                     if (servers.containsKey(cur)) {
-                        System.out.println("You are already connected to this server");
+                        serverArea.append("You .are already connected to this server\n");
                     } else {
                         int port = Integer.parseInt(portNumber);
                         try {
@@ -103,7 +102,8 @@ public class Client {
                             channels.get(channels.size() - 1).
                                     configureBlocking(false);
                             channels.get(channels.size() - 1).register
-                                    (selectors.get(selectors.size() - 1), SelectionKey.OP_READ);
+                                    (selectors.get(selectors.size() - 1),
+                                    SelectionKey.OP_READ);
                             servers.put(cur, channels.size() - 1);
                             curServer = cur;
                             connected = true;
@@ -111,100 +111,102 @@ public class Client {
                             sendMessage(channels.get(curServerNumber),
                                     MessageUtils.hello(nick));
                         } catch (Exception e) {
-                            IOUtils.printErrorAndExit(e.getMessage());
+                            UtilsGui.showErrorMessageAndExit(e.getMessage());
                         }
                     }
                 } else {
-                    IOUtils.printErrorAndExit("Usage: /connect host:port");
+                    UtilsGui.showErrorMessageAndExit("Usage: /connect host:port");
                 }
             } else {
-                IOUtils.printErrorAndExit("Usage: /connect host port");
+                UtilsGui.showErrorMessageAndExit("Usage: /connect host port");
             }
         } catch (Exception e) {
-            IOUtils.printErrorAndExit("Bad connecting: " + e.getMessage());
+            UtilsGui.showErrorMessageAndExit("Bad connecting: " + e.getMessage());
         }
     }
 
-    public static void disconnect() {
+    public void disconnect() {
         sendMessage(channels.get(curServerNumber), MessageUtils.bye());
         IOUtils.closeOrExit(channels.get(curServerNumber));
         closeSelector(selectors.get(curServerNumber));
         servers.remove(curServer);
         connected = false;
         curServerNumber = -1;
-        System.out.println("You are disconnected from " + curServer);
+        serverArea.append("You are disconnected from " + curServer + "\n");
     }
 
-    public static void handlerConsole() {
-        try {
-            String str = buf.readLine();
-            StringTokenizer st = new StringTokenizer(str, " \t");
-            if (st.hasMoreTokens()) {
-                String cmd = st.nextToken();
-                if (cmd.equals("/connect")) {
-                    connect(st);
-                } else if (cmd.equals("/disconnect")) {
-                    if (connected) {
-                        disconnect();
-                    } else {
-                        System.out.println("You are not connected");
-                    }
-                } else if (cmd.equals("/whereami")) {
-                    if (connected) {
-                        System.out.println(curServer);
-                    } else {
-                        System.out.println("You are not connected");
-                    }
-                } else if (cmd.equals("/list")) {
-                    Iterator it = servers.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry pair = (Map.Entry)it.next();
-                        System.out.println((String)pair.getKey());
-                    }
-                } else if (cmd.equals("/use")) {
-                    if (st.hasMoreTokens()) {
-                        String server = st.nextToken();
-                        if (servers.containsKey(server)) {
-                            connected = true;
-                            curServer = server;
-                            curServerNumber = servers.get(curServer);
+    public void handlerConsole(String str) {
+        synchronized(synchronizedObject) {
+            try {
+                StringTokenizer st = new StringTokenizer(str, " \n\t");
+                if (st.hasMoreTokens()) {
+                    String cmd = st.nextToken();
+                    if (cmd.equals("/connect")) {
+                        connect(st);
+                    } else if (cmd.equals("/disconnect")) {
+                        if (connected) {
+                            disconnect();
                         } else {
-                            IOUtils.printErrorAndExit(server + ": there is no such server");
+                            serverArea.append("You are not connected\n");
                         }
+                    } else if (cmd.equals("/whereami")) {
+                        if (connected) {
+                            serverArea.append(curServer + "\n");
+                        } else {
+                            serverArea.append("You are not connected\n");
+                        }
+                    } else if (cmd.equals("/list")) {
+                        Iterator it = servers.entrySet().iterator();
+                        while (it.hasNext()) {
+                            Map.Entry pair = (Map.Entry)it.next();
+                            serverArea.append((String)pair.getKey() + "\n");
+                        }
+                    } else if (cmd.equals("/use")) {
+                        if (st.hasMoreTokens()) {
+                            String server = st.nextToken();
+                            if (servers.containsKey(server)) {
+                                connected = true;
+                                curServer = server;
+                                curServerNumber = servers.get(curServer);
+                            } else {
+                                UtilsGui.showErrorMessageAndExit(server
+                                        + ": there is no such server");
+                            }
+                        } else {
+                            UtilsGui.showErrorMessageAndExit("Usage: /use hostName");
+                        }
+                    } else if (cmd.equals("/exit")) {
+                        Iterator it = servers.entrySet().iterator();
+                        while (it.hasNext()) {
+                            Map.Entry pair = (Map.Entry)it.next();
+                            sendMessage(channels.get((Integer)pair.getValue()),
+                                    MessageUtils.bye());
+                            IOUtils.closeOrExit(channels.get((Integer)pair.getValue()));
+                            closeSelector(selectors.get((Integer)pair.getValue()));
+                        }
+                        servers.clear();
+                        channels.clear();
+                        selectors.clear();
+                        messages.clear();
+                        System.exit(0);
                     } else {
-                        IOUtils.printErrorAndExit("Usage: /use hostName");
-                    }
-                } else if (cmd.equals("/exit")) {
-                    Iterator it = servers.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry pair = (Map.Entry)it.next();
-                        sendMessage(channels.get((Integer)pair.getValue()),
-                                MessageUtils.bye());
-                        IOUtils.closeOrExit(channels.get((Integer)pair.getValue()));
-                        closeSelector(selectors.get((Integer)pair.getValue()));
-                    }
-                    servers.clear();
-                    channels.clear();
-                    selectors.clear();
-                    messages.clear();
-                    System.exit(0);
-                } else {
-                    // отправка сообщения в чат
-                    if (connected) {
-                        sendMessage(channels.get(curServerNumber),
-                                MessageUtils.message(nick, str));
-                    } else {
-                        System.out.println("You are not connected. You can't "  +
-                                "send messages.");
+                        // отправка сообщения в чат
+                        if (connected) {
+                            sendMessage(channels.get(curServerNumber),
+                                    MessageUtils.message(nick, str));
+                        } else {
+                            serverArea.append("You are not connected. You can't "
+                                    + "send messages.\n");
+                        }
                     }
                 }
+            } catch (Exception e) {
+                UtilsGui.showErrorMessageAndExit("handlerConsole: " + e.getMessage());
             }
-        } catch (Exception e) {
-            IOUtils.printErrorAndExit("handlerConsole: " + e.getMessage());
         }
     }
 
-    public static void handlerServer()  {
+    public void handlerServer()  {
         try {
             Set<SelectionKey> keys = selectors.get(curServerNumber).selectedKeys();
             Iterator iter = keys.iterator();
@@ -228,16 +230,21 @@ public class Client {
                                     for (int i = 2; i < l.size(); ++i) {
                                         sb.append(l.get(i));
                                     }
-                                    System.out.println(sb.toString());
+                                    serverArea.append(sb.toString() + "\n");
                                 } else if (l.get(0).equals("ERROR")) {
-                                    System.out.println("error message");
+                                    serverArea.append("Error message is got\n");
                                     disconnect();
                                 } else {
                                     disconnect();
                                 }
                             }
-                        } catch (Exception e) {
-                            System.out.println("Error during geting message: " + e.getMessage());
+                        } catch (RuntimeException e) {
+                            if (e.getMessage().equals("BYE from server")) {
+                                serverArea.append(e.getMessage() + "\n");
+                            } else {
+                                serverArea.append("Error during geting message: "
+                                        + e.getMessage() + "\n");
+                            }
                             disconnect();
                         }
                     }
@@ -245,31 +252,31 @@ public class Client {
             }
             keys.clear();
         } catch (Exception e) {
-            IOUtils.printErrorAndExit("Smth bad occured during getting message from"
+            UtilsGui.showErrorMessageAndExit("Smth bad occured during getting message from"
                     + " server: " + e.getMessage());
         }
     }
 
-    public static void sendMessage(SocketChannel sc, byte[] message) {
+    public void sendMessage(SocketChannel sc, byte[] message) {
         try {
             if(sc != null) {
                 ByteBuffer bf = ByteBuffer.wrap(message);
                 sc.write(bf);
             } else {
-                IOUtils.printErrorAndExit("Bad SocketChannel");
+                UtilsGui.showErrorMessageAndExit("Bad SocketChannel");
             }
         } catch (Exception e) {
-            IOUtils.printErrorAndExit("Bad sending message!" + e.getMessage());
+            UtilsGui.showErrorMessageAndExit("Bad sending message!" + e.getMessage());
         }
     }
 
-    public static boolean getMessage(SocketChannel sc) {
+    public boolean getMessage(SocketChannel sc) {
         try {
             ByteBuffer message = ByteBuffer.allocate(10000);
             int count = sc.read(message);
             if (count == 10000) {
                 disconnect();
-                System.out.println("Big message");
+                serverArea.append("Big message is found\n");
                 return true;
             }
             if (count == 0) {
@@ -292,7 +299,7 @@ public class Client {
             }
             messages.add(curServerNumber, mess);
         } catch (Exception e) {
-            IOUtils.printErrorAndExit("Bad geting message!" + e.getMessage());
+            UtilsGui.showErrorMessageAndExit("Bad geting message!" + e.getMessage());
         }
         return false;
     }
