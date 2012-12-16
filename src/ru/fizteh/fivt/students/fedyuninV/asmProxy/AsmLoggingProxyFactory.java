@@ -158,7 +158,7 @@ public class AsmLoggingProxyFactory implements LoggingProxyFactory{
                         ga.loadArgs();
                         ga.invokeInterface(interfazeType, new Method(method.getName(), Type.getMethodDescriptor(method)));
                         if (!method.getReturnType().equals(void.class)) {
-                            ga.dup();
+                            //ga.dup();
                             int resultLocal = ga.newLocal(Type.getType(Object.class));
                             ga.storeLocal(resultLocal);
                             ga.loadThis();
