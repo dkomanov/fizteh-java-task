@@ -16,7 +16,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
 import ru.fizteh.fivt.students.almazNasibullin.chat.MessageType;
-import ru.fizteh.fivt.students.almazNasibullin.chat.MessageUtils;
+import ru.fizteh.fivt.students.almazNasibullin.chat.client.MessageUtils;
 
 /**
  * 21.10.12
@@ -38,13 +38,14 @@ public class Client {
     private static List<SocketChannel>  channels = new ArrayList<SocketChannel>();
     // список Selector каждого сервера
     private static List<Selector> selectors = new ArrayList<Selector>();
+    private static List<byte[]> messages = new ArrayList<byte[]>();
     // ник клиента
     private static String nick = "";
 
     public static void main(String[] args) {
         try {
             buf = new BufferedReader(new InputStreamReader(System.in));
-            if (args.length == 0) {
+            if (args.length != 1) {
                 IOUtils.printErrorAndExit("Put your nick");
             } else {
                 nick = args[0];
@@ -63,7 +64,7 @@ public class Client {
                 }
             }
         } catch (Exception e) {
-            IOUtils.printErrorAndExit(e.getMessage());
+            IOUtils.printErrorAndExit("main: " + e.getMessage());
         }
     }
 
@@ -95,6 +96,7 @@ public class Client {
                             channels.add(SocketChannel.open());
                             // создаем новый selector для нового сервера
                             selectors.add(Selector.open());
+                            messages.add(new byte[0]);
                             channels.get(channels.size() - 1).
                                     connect(new InetSocketAddress(host, port));
                             // делаем канал неблокирующим для использования Selector
@@ -163,6 +165,7 @@ public class Client {
                     if (st.hasMoreTokens()) {
                         String server = st.nextToken();
                         if (servers.containsKey(server)) {
+                            connected = true;
                             curServer = server;
                             curServerNumber = servers.get(curServer);
                         } else {
@@ -183,6 +186,7 @@ public class Client {
                     servers.clear();
                     channels.clear();
                     selectors.clear();
+                    messages.clear();
                     System.exit(0);
                 } else {
                     // отправка сообщения в чат
@@ -196,7 +200,7 @@ public class Client {
                 }
             }
         } catch (Exception e) {
-            IOUtils.printErrorAndExit(e.getMessage());
+            IOUtils.printErrorAndExit("handlerConsole: " + e.getMessage());
         }
     }
 
@@ -210,29 +214,30 @@ public class Client {
                         SelectionKey.OP_READ) {
                     // в SocketChannel пришло новое сообщение
                     SocketChannel sc = (SocketChannel)key.channel();
-                    ByteBuffer mes = ByteBuffer.allocate(10000000);
-                    boolean crash = getMessage(sc, mes);
+                    boolean crash = getMessage(sc);
                     if (!crash) {
                         try {
-                            List<String> l = MessageUtils.getMessage(mes.array());
-                            if (l.get(0).equals("MESSAGE")) {
-                                StringBuilder sb = new StringBuilder(l.get(1) + ": ");
-                                for (int i = 2; i < l.size(); ++i) {
-                                    sb.append(l.get(i));
-                                }
-                                System.out.println(sb.toString());
-                            } else if (l.get(0).equals("ERROR")) {
-                                StringBuilder sb = new StringBuilder();
-                                for (int i = 1; i < l.size(); ++i) {
-                                    sb.append(l.get(i));
-                                }
-                                System.out.println(sb.toString());
-                                disconnect();
-                            } else {
-                                disconnect();
+                            List<List<String>> mess = MessageUtils.getMessages(messages,
+                                    curServerNumber);
+                            if (mess.isEmpty()) {
+                                continue;
                             }
-                        } catch (RuntimeException re) {
-                            System.out.println(re.getMessage());
+                            for (List<String> l : mess) {
+                                if (l.get(0).equals("MESSAGE")) {
+                                    StringBuilder sb = new StringBuilder(l.get(1) + ": ");
+                                    for (int i = 2; i < l.size(); ++i) {
+                                        sb.append(l.get(i));
+                                    }
+                                    System.out.println(sb.toString());
+                                } else if (l.get(0).equals("ERROR")) {
+                                    System.out.println("error message");
+                                    disconnect();
+                                } else {
+                                    disconnect();
+                                }
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Error during geting message: " + e.getMessage());
                             disconnect();
                         }
                     }
@@ -258,14 +263,34 @@ public class Client {
         }
     }
 
-    public static boolean getMessage(SocketChannel sc, ByteBuffer message) {
+    public static boolean getMessage(SocketChannel sc) {
         try {
+            ByteBuffer message = ByteBuffer.allocate(10000);
             int count = sc.read(message);
+            if (count == 10000) {
+                disconnect();
+                System.out.println("Big message");
+                return true;
+            }
+            if (count == 0) {
+                return true;
+            }
             if (count == -1) {
                 // проверка на случай экстренного выхода сервера
                 disconnect();
                 return true;
             }
+
+            byte[] bytes = messages.remove(curServerNumber);
+            byte[] mess = new byte[bytes.length + count];
+
+            for (int i = 0; i < bytes.length; ++i) {
+                mess[i] = bytes[i];
+            }
+            for (int i = bytes.length; i < bytes.length + count; ++i) {
+                mess[i] = message.get(i - bytes.length);
+            }
+            messages.add(curServerNumber, mess);
         } catch (Exception e) {
             IOUtils.printErrorAndExit("Bad geting message!" + e.getMessage());
         }
