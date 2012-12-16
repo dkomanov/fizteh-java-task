@@ -10,7 +10,6 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 
 public class FooProxyFactory implements ShardingProxyFactory {
-    @Override
     public Object createProxy(Object[] targets, Class[] interfaces) {
         assertCorrectArgument(targets != null && targets.length > 0);
         assertCorrectArgument(interfaces != null && interfaces.length > 0);
