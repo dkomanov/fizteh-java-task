@@ -106,28 +106,4 @@ public class ProxySharingClass {
         }
         throw new IllegalArgumentException("Incorrect arguments.");
     }
-
-    public static void throwExceptionIfInterfacesContainsEqualsMethodSignature(
-            Class<?>[] interfaces) {
-        HashSet<String> signatures = new HashSet<>();
-        for (Class<?> interfc : interfaces) {
-            Method[] methods = interfc.getDeclaredMethods();
-            for (Method method : methods) {
-                StringBuilder signature = new StringBuilder();
-                signature.append(method.getName()).append("(");
-                Class<?>[] argTypes = method.getParameterTypes();
-                for (Class<?> type : argTypes) {
-                    signature.append(Type.getDescriptor(type));
-                }
-                signature.append(")");
-                if (signatures.contains(signature.toString())) {
-                    throw new IllegalArgumentException(
-                            "Conflict methods in interfaces.");
-                } else {
-                    signatures.add(signature.toString());
-                }
-            }
-        }
-    }
-
 }
