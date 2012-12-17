@@ -230,14 +230,19 @@ public class Client {
                                     }
                                     System.out.println(sb.toString());
                                 } else if (l.get(0).equals("ERROR")) {
-                                    System.out.println("error message");
+                                    System.out.println("Error message is got");
                                     disconnect();
                                 } else {
                                     disconnect();
                                 }
                             }
                         } catch (Exception e) {
-                            System.out.println("Error during geting message: " + e.getMessage());
+                            if (e.getMessage().equals("BYE from server")) {
+                                System.out.println(e.getMessage());
+                            } else {
+                                System.out.println("Error during geting message: "
+                                        + e.getMessage());
+                            }
                             disconnect();
                         }
                     }
