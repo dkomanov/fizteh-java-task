@@ -20,6 +20,7 @@ public class Server implements Runnable {
     private static int curPort;
     private static ServerSocketChannel curServerSocketChannel;
     private static Map<String, SocketChannel> clients;
+    private static Map<SocketChannel, Queue<Byte>> forClientsMessages;
     private static Set<SocketChannel> connectionSocketChannels = new HashSet<SocketChannel>();
     private static boolean isListening = false;
     private final ByteBuffer buffer = ByteBuffer.allocate(512);
@@ -27,6 +28,7 @@ public class Server implements Runnable {
     public Server(int port) {
         this.curPort = port;
         this.clients = new HashMap<String, SocketChannel>();
+        this.forClientsMessages = new HashMap<SocketChannel, Queue<Byte>>();
         new Thread(this).start();
     }
 
@@ -56,6 +58,7 @@ public class Server implements Runnable {
                         System.out.println("Got connection from " + s);
                         SocketChannel sc = s.getChannel();
                         connectionSocketChannels.add(sc);
+                        forClientsMessages.put(sc, new LinkedList<Byte>());
                         sc.configureBlocking(false);
                         sc.register(selector, SelectionKey.OP_READ);
                     } else if ((key.readyOps() & SelectionKey.OP_READ) ==
@@ -115,7 +118,6 @@ public class Server implements Runnable {
         } catch (Exception ex) {
             String badGuy = getKey(sc);
             if (sc != null && len > 0) {
-                System.out.println("I am here!!!! len = " + len);
                 send(sc, MessageUtils.error("Bad message was send from you."));
                 kill(badGuy, false);
                 return true;
@@ -134,15 +136,21 @@ public class Server implements Runnable {
         if (buffer.limit() == 0) {
             return false;
         }
-        byte[] byteMessage = buffer.array();
+
+        for (int i = 0; i < len; ++i) {
+            forClientsMessages.get(sc).add(buffer.array()[i]);
+        }
+
+        Byte[] bm = new Byte[forClientsMessages.get(sc).size()];
+        byte[] byteMessage = MessageUtils.toPrimitive(forClientsMessages.get(sc).toArray(bm));
+        ArrayList<String> message;
+        message = getMessage(sc, byteMessage);
+        if (message == null) {
+            return true;
+        }
+
         switch (byteMessage[0]) {
             case 1:
-                ArrayList<String> message = getMessage(byteMessage);
-                if (message == null) {
-                    send(sc, MessageUtils.error("Too large hello message."));
-                    connectionSocketChannels.remove(sc);
-                    return true;
-                }
                 String nick = message.get(0);
                 if (nick.replace("\\s", "").equals("")) {
                     send(sc, MessageUtils.error("Nick must be visible."));
@@ -172,12 +180,6 @@ public class Server implements Runnable {
                 }
                 break;
             case 2:
-                message = getMessage(byteMessage);
-                if (message == null) {
-                    send(sc, MessageUtils.error("Don't send bad messages!"));
-                    kill(getKey(sc), false);
-                    return true;
-                }
                 String sender = message.get(0);
                 if (!clients.containsKey(sender)) {
                     System.err.println("No such user!");
@@ -202,21 +204,12 @@ public class Server implements Runnable {
                 }
                 break;
             case 3:
-                message = getMessage(byteMessage);
-                //sender = message.get(0);
-                //kill(sender, false);
                 kill(getKey(sc), false);
                 System.out.println("one exited.");
                 break;
             case 127:
-                message = getMessage(byteMessage);
                 sender = getKey(sc);
                 sb = new StringBuilder("");
-                if (message != null) {
-                    for (int i = 1; i < message.size(); ++i) {
-                        sb.append(message.get(i));
-                    }
-                }
                 System.out.println("Error from " + sender + ": " + sb.toString());
                 it = clients.entrySet().iterator();
                 while (it.hasNext()) {
@@ -229,9 +222,13 @@ public class Server implements Runnable {
                 exit();
                 break;
             default:
-                sc.write(buffer);
+                System.out.println("Wrong message type got from " + getKey(sc));
+                kill(getKey(sc), true);
         }
         System.out.println("Processed " + buffer.limit() + " from " + sc);
+        byte[] b = {2, 1, 0, 0, 0, 2, 'h', 'i'};
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        sc.write(bb);
         return true;
     }
 
@@ -292,6 +289,7 @@ public class Server implements Runnable {
                     send(sc, MessageUtils.bye());
                 }
                 sc.close();
+                forClientsMessages.remove(clients.get(clientToKill));
                 clients.remove(clientToKill);
                 sendAll(MessageUtils.message("<server>",
                         clientToKill + " exit from the chat."));
@@ -310,26 +308,56 @@ public class Server implements Runnable {
         System.exit(0);
     }
 
-    static public ArrayList<String> getMessage(byte[] byteMessage) {
+    static public ArrayList<String> getMessage(SocketChannel sc, byte[] byteMessage) {
         ArrayList<String> message = new ArrayList<String>();
         ByteBuffer buffer = ByteBuffer.wrap(byteMessage);
-        int messageType = buffer.get();
 
+        if (forClientsMessages.get(sc).size() < 1) {
+            return null;
+        }
+        int messageType = buffer.get();
+        if (messageType != 1 && messageType != 2 && messageType != 3 && messageType != 127) {
+            System.err.println("Bad type");
+            kill(getKey(sc), false);
+            return null;
+        }
+        if (forClientsMessages.get(sc).size() < 2) {
+            return null;
+        }
         int messageCount = buffer.get();
+        if (messageCount < 1) {
+            System.err.println("Bad messages cnt.");
+            kill(getKey(sc), false);
+            return null;
+        }
+
+        int len = 2;
         for (int i = 0; i < messageCount; ++i) {
+            if (forClientsMessages.get(sc).size() < len + 4) {
+                return null;
+            }
             int length = buffer.getInt();
-            if (length <= 0) {
-                System.err.println("array size < 0");
+            len += 4;
+            if (length < 0 && len > 512) {
+                System.err.println("array size < 0 || array size > 512");
+                kill(getKey(sc), false);
                 return null;
             }
             byte[] tmp = new byte[length];
+            if (forClientsMessages.get(sc).size() < len + length) {
+                return null;
+            }
             if (tmp.length < 512) {
                 buffer.get(tmp);
+                len += length;
             } else {
                 System.out.println("Client tried to send very big message.");
                 return null;
             }
             message.add(new String(tmp, Charset.forName("UTF-8")));
+        }
+        for (int i = 0; i < len; ++i) {
+            forClientsMessages.get(sc).remove();
         }
         return message;
     }
@@ -417,7 +445,7 @@ public class Server implements Runnable {
                     exit();
                 }
             } else {
-                System.out.println("Unknown command. Available commands:\n"
+                System.err.println("Unknown command. Available commands:\n"
                         + "/stop, /list, /send, /sendall, "
                         + "/kill, exit.");
             }

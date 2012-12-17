@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.altimin.xmlbinder;
+package ru.fizteh.fivt.students.altimin.binder;
 
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -13,10 +13,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import javax.xml.stream.events.Attribute;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -43,8 +43,77 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
     }
 
+    public String getClassName() {
+        return firstLetterToLower(getClazz().getSimpleName());
+    }
+
     @Override
     public byte[] serialize(T value) {
+        return serializeSingleObjectToString(value).getBytes();
+    }
+
+    public byte[] serialize(T... objects) {
+        return serializeToString(objects).getBytes();
+    }
+
+    @Override
+    public T deserialize(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) {
+            throw new RuntimeException("Failed to deserialize: array is empty");
+        }
+        StringReader reader = new StringReader(new String(bytes));
+        InputSource inputSource = new InputSource(reader);
+        try {
+            Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputSource);
+            if (!document.getDocumentElement().getTagName().equals(getClassName())) {
+                throw new RuntimeException("Failed to deserialize: class name doesn't match");
+            }
+            return (T) deserialize(getClazz(), document.getDocumentElement());
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException("Failed to deserialize: failed to parse XML");
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to deserialize: failed to parse XML");
+        } catch (SAXException e) {
+            throw new RuntimeException("Failed to deserialize: failed to parse XML");
+        } finally {
+            reader.close();
+        }
+    }
+
+    public T[] deserializeObjects(byte[] bytes) {
+        List<Object> list = new ArrayList<Object>();
+        if (bytes == null || bytes.length == 0) {
+            throw new RuntimeException("Failed to deserialize: array is empty");
+        }
+        StringReader reader = new StringReader(new String(bytes));
+        InputSource inputSource = new InputSource(reader);
+        try {
+            Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputSource);
+            if (!document.getDocumentElement().getTagName().equals(getClassName() + "s")) {
+                throw new RuntimeException("Failed to deserialize: file header to not match");
+            }
+            NodeList childrenNodes = document.getDocumentElement().getChildNodes();
+            for (int i = 0; i < childrenNodes.getLength(); i ++) {
+                Node node = childrenNodes.item(i);
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    if (((Element) node).getTagName().equals(getClassName())) {
+                        list.add(deserialize(getClazz(), (Element) node));
+                    }
+                }
+            }
+            return list.toArray((T[]) Array.newInstance(getClazz(), 0));
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException("Failed to deserialize: failed to parse XML");
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to deserialize: failed to parse XML");
+        } catch (SAXException e) {
+            throw new RuntimeException("Failed to deserialize: failed to parse XML");
+        } finally {
+            reader.close();
+        }
+    }
+
+    private String serializeSingleObjectToString(T value) {
         if (value == null) {
             throw new RuntimeException("Failed to serialize: impossible to serialize null");
         }
@@ -56,8 +125,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         XMLStreamWriter xmlWriter = null;
         try {
             xmlWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
-            xmlWriter.writeStartElement(value.getClass().getSimpleName());
-            serialize(value, xmlWriter);
+            xmlWriter.writeStartElement(getClassName());
+            serialize(getClazz(), value, xmlWriter);
             xmlWriter.writeEndElement();
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to serialize: failed to create XMLStreamWriter");
@@ -67,9 +136,22 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             } catch (IOException e) {
             }
         }
-        return writer.getBuffer().toString().getBytes();
+        return writer.getBuffer().toString();
     }
 
+    private String serializeToString(T... objects) {
+        String typeName = getClassName() + "s";
+        if (objects == null) {
+            return "<" + typeName + "> </" + typeName + ">" ;
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("<" + typeName + ">");
+        for (T object: objects) {
+            stringBuilder.append(serializeSingleObjectToString(object));
+        }
+        stringBuilder.append("</" + typeName + ">");
+        return stringBuilder.toString();
+    }
 
     private boolean isPrimitive(Class clazz) {
         return clazz.isPrimitive() || clazz.isEnum() || clazz.equals(String.class)
@@ -98,6 +180,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
 
     private Object primitiveValueToObject(Class clazz, String value) {
         if (clazz.equals(Boolean.class) || clazz.equals(boolean.class)) {
+            if (!value.equals("true") && !value.equals("false")) {
+                throw new RuntimeException(value + " is not a boolean value");
+            }
             return Boolean.parseBoolean(value);
         }
         if (clazz.equals(Byte.class) || clazz.equals(byte.class)) {
@@ -176,6 +261,15 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         if (isPrimitive(clazz)) {
             return primitiveValueToObject(clazz, element.getTextContent());
         }
+        /*if (!element.getTagName().equals(clazz.getSimpleName())) {
+            throw new RuntimeException(
+                    String.format(
+                            "Failed to deserialize: expected %s class, found %s class",
+                            element.getTagName(),
+                            clazz.getSimpleName()
+                    )
+            );
+        }*/
         Object object = createObject(clazz);
         BindingType annotation = (BindingType) clazz.getAnnotation(BindingType.class);
         boolean serializeAll = (annotation == null || annotation.value() == MembersToBind.FIELDS);
@@ -204,7 +298,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     String name = firstLetterToUpper(((Element) node).getTagName());
                     Method setter = getSetter(clazz, name);
                     if (setter == null) {
-                        throw new RuntimeException("Failed to deserialize: no such method get" + name);
+                        throw new RuntimeException("Failed to deserialize: no such method set" + name);
                     }
                     Class newClass = setter.getParameterTypes()[0];
                     try {
@@ -215,30 +309,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 }
             }
             return object;
-        }
-    }
-
-    @Override
-    public T deserialize(byte[] bytes) {
-        if (bytes == null || bytes.length == 0) {
-            throw new RuntimeException("Failed to deserialize: array is empty");
-        }
-        StringReader reader = new StringReader(new String(bytes));
-        InputSource inputSource = new InputSource(reader);
-        try {
-            Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputSource);
-            if (!document.getDocumentElement().getTagName().equals(getClazz().getSimpleName())) {
-                throw new RuntimeException("Failed to deserialize: class name doesn't match");
-            }
-            return (T) deserialize(getClazz(), document.getDocumentElement());
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException("Failed to deserialize: failed to parse XML");
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to deserialize: failed to parse XML");
-        } catch (SAXException e) {
-            throw new RuntimeException("Failed to deserialize: failed to parse XML");
-        } finally {
-            reader.close();
         }
     }
 
@@ -302,13 +372,13 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
 
     private String updateName(String string) {
         if (string.matches("get.+")) {
-            return firstLetterToLower(string.substring(3));
+            return string.substring(3);
         }
         if (string.matches("is.+")) {
-            return firstLetterToLower(string.substring(2));
+            return string.substring(2);
         }
         if (string.matches("set.+")) {
-            return firstLetterToLower(string.substring(3));
+            return string.substring(3);
         }
         throw new RuntimeException("Unexpected string to update");
     }
@@ -360,12 +430,11 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         return string != null && string.length() > 0;
     }
 
-    private void serialize(Object object, XMLStreamWriter xmlWriter) {
-        if (serializedObjects.containsKey(object)) {
+    private void serialize(Class clazz, Object object, XMLStreamWriter xmlWriter) {
+        if (serializedObjects.get(object) != null) {
             throw new RuntimeException("Failed to serialize");
         }
-        serializedObjects.put(object, null);
-        Class clazz = object.getClass();
+        serializedObjects.put(object, true);
         try {
             if (isPrimitive(clazz)) {
                 xmlWriter.writeCharacters(object.toString());
@@ -399,7 +468,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     if (XmlAttributeAnnotation == null) {
                         if (obj != null) {
                             xmlWriter.writeStartElement(fieldName);
-                            serialize(obj, xmlWriter);
+                            serialize(field.getType(), obj, xmlWriter);
                             xmlWriter.writeEndElement();
                         }
                     }
@@ -425,8 +494,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         AsXmlAttribute XMLAnnotation = (AsXmlAttribute) getterAndSetter.getter.getAnnotation(
                                 AsXmlAttribute.class);
                         if (XMLAnnotation == null) {
-                            xmlWriter.writeStartElement(getterAndSetter.fieldName);
-                            serialize(obj, xmlWriter);
+                            xmlWriter.writeStartElement(firstLetterToLower(getterAndSetter.fieldName));
+                            serialize(getterAndSetter.getter.getReturnType(), obj, xmlWriter);
                             xmlWriter.writeEndElement();
                         }
                     }
@@ -438,6 +507,8 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             throw new RuntimeException("Failed to serialize");
         } catch (InvocationTargetException e) {
             throw new RuntimeException("Failed to serialize");
+        } finally {
+            serializedObjects.put(object, null);
         }
     }
 }

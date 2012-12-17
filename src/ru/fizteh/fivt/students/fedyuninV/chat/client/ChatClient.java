@@ -1,14 +1,13 @@
 package ru.fizteh.fivt.students.fedyuninV.chat.client;
 
-
-import ru.fizteh.fivt.students.fedyuninV.chat.message.MessageUtils;
-import ru.fizteh.fivt.students.fedyuninV.CommandLine;
-import ru.fizteh.fivt.students.fedyuninV.CommandLineParser;
-import ru.fizteh.fivt.students.fedyuninV.chat.message.Message;
-
 import java.io.IOException;
 import java.util.Set;
 import java.util.TreeMap;
+
+import ru.fizteh.fivt.students.almazNasibullin.chat.server.MessageUtils;
+import ru.fizteh.fivt.students.fedyuninV.CommandLine;
+import ru.fizteh.fivt.students.fedyuninV.CommandLineParser;
+import ru.fizteh.fivt.students.fedyuninV.chat.message.Message;
 
 /**
  * Fedyunin Valeriy

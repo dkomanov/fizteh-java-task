@@ -46,4 +46,12 @@ public final class MessageUtils {
         }
         return buffer.array();
     }
+
+    static byte[] toPrimitive(Byte[] bm) {
+        byte[] byteMessage = new byte[bm.length];
+        for (int i = 0; i < byteMessage.length; ++i) {
+            byteMessage[i] = bm[i].byteValue();
+        }
+        return byteMessage;
+    }
 }

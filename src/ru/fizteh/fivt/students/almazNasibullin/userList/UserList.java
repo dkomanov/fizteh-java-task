@@ -56,7 +56,12 @@ public class UserList extends JFrame {
                         showErrorMessage("File doesn't exist", "Open file");
                         f = null;
                     } else {
-                        updateTable(new ReadUsers().readUsers(f));
+                        try {
+                            List<User> users = new ReadUsers().readUsers(f);
+                            updateTable(users);
+                        } catch (Exception e) {
+                            showErrorMessage("Could not open file", "Open file");
+                        }
                     }
                 }
             } else if (event.getActionCommand().equals("Save")) {
@@ -110,10 +115,32 @@ public class UserList extends JFrame {
 
         public void save(File f) {
             List<User> users = new ArrayList<User>();
-            for (Vector<Object> user : ((MyTableModel) table.getModel()).getData()) {
+            Vector<Vector<Object>> data  = ((MyTableModel)table.getModel()).getData();
+            if (data.isEmpty()) {
+                showErrorMessage("No users to save", "Save");
+                return;
+            }
+            for (int i = 0; i < table.getColumnCount(); ++i) {
+                table.getColumnModel().getColumn(i).setCellRenderer(new CellRenderer(false));
+            }
+            for (int i = 0; i < table.getRowCount(); ++i) {
+                for (int j = 0; j < table.getColumnCount(); ++j) {
+                    table.getCellRenderer(i, j).getTableCellRendererComponent
+                            (table, table.getModel().getValueAt(i, j), false, false, i, j);
+                }
+            }
+            for (Vector<Object> user : data) {
                 int id = (Integer)user.get(0);
                 UserType ut = (UserType)user.get(1);
                 UserName un = new UserName((String)user.get(2), (String)user.get(3));
+                if (un.getFirstName().equals("")) {
+                    showErrorMessage("User with an empty first name is found", "Save");
+                    return;
+                }
+                if (un.getLastName().equals("")) {
+                    showErrorMessage("User with an empty last name is found", "Save");
+                    return;
+                }
                 Permissions p = new Permissions();
                 p.setRoot((Boolean)user.get(4));
                 p.setQuota((Integer)user.get(5));
@@ -216,69 +243,18 @@ public class UserList extends JFrame {
             }
         };
 
-        TableCellRenderer renderer = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value,
-            boolean isSelected, boolean hasFocus, int row, int column) {
-                Component cell;
-                switch (column) {
-                    case 0:
-                        cell =  super.getTableCellRendererComponent(table,
-                                (Integer)value, isSelected,hasFocus, row, column);
-                        break;
-                    case 1:
-                        cell =  super.getTableCellRendererComponent(table,
-                                (UserType)value, isSelected,hasFocus, row, column);
-                        break;
-                    case 2:
-                        cell =  super.getTableCellRendererComponent(table,
-                                (String)value, isSelected,hasFocus, row, column);
-                        break;
-                    case 3:
-                        cell =  super.getTableCellRendererComponent(table,
-                                (String)value, isSelected,hasFocus, row, column);
-                        break;
-                    case 4:
-                        cell =  super.getTableCellRendererComponent(table,
-                                (Boolean)value, isSelected,hasFocus, row, column);
-                        break;
-                    case 5:
-                        cell =  super.getTableCellRendererComponent(table,
-                                (Integer)value, isSelected,hasFocus, row, column);
-                        break;
-                    default:
-                        cell =  super.getTableCellRendererComponent(table,
-                                (String)value, isSelected,hasFocus, row, column);
-                }
-                if (table.getSelectedRow() == -1) {
-                    setBackground(Color.white);
-                } else {
-                    if (isSelected) {
-                        setBackground(Color.green);
-                    } else {
-                        String s = (String)table.getModel().getValueAt(row, 2);
-                        String selected = (String)table.getModel().getValueAt(table.getSelectedRow(), 2);
-                        if (s.equals(selected)) {
-                            setBackground(Color.red);
-                        } else {
-                            setBackground(Color.white);
-                        }
-                    }
-                }
-                ((MyTableModel) table.getModel()).fireTableCellUpdated(row, column);
-		return cell;
-            }
-        };
-
         for (int i = 0; i < table.getColumnCount(); ++i) {
-            table.getColumnModel().getColumn(i).setCellRenderer(renderer);
+            table.getColumnModel().getColumn(i).setCellRenderer(new CellRenderer(true));
         }
-        
+
         ListSelectionModel selModel = table.getSelectionModel();
         selModel.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 int selectedRow = table.getSelectedRow();
+                for (int i = 0; i < table.getColumnCount(); ++i) {
+                    table.getColumnModel().getColumn(i).setCellRenderer(new CellRenderer(true));
+                }
                 for (int i = 0; i < table.getRowCount(); ++i) {
                     for (int j = 0; j < table.getColumnCount(); ++j) {
                         table.getCellRenderer(i, j).getTableCellRendererComponent
@@ -289,6 +265,79 @@ public class UserList extends JFrame {
             }
         });
         add(new JScrollPane(table));
+    }
+}
+
+class CellRenderer extends DefaultTableCellRenderer {
+    private boolean sameLines;
+
+    public CellRenderer (boolean sameLines) {
+        this.sameLines = sameLines;
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value,
+    boolean isSelected, boolean hasFocus, int row, int column) {
+        Component cell;
+        switch (column) {
+            case 0:
+                cell =  super.getTableCellRendererComponent(table,
+                        (Integer)value, isSelected,hasFocus, row, column);
+                break;
+            case 1:
+                cell =  super.getTableCellRendererComponent(table,
+                        (UserType)value, isSelected,hasFocus, row, column);
+                break;
+            case 2:
+                cell =  super.getTableCellRendererComponent(table,
+                        (String)value, isSelected,hasFocus, row, column);
+                break;
+            case 3:
+                cell =  super.getTableCellRendererComponent(table,
+                        (String)value, isSelected,hasFocus, row, column);
+                break;
+            case 4:
+                cell =  super.getTableCellRendererComponent(table,
+                        (Boolean)value, isSelected,hasFocus, row, column);
+                break;
+            case 5:
+                cell =  super.getTableCellRendererComponent(table,
+                        (Integer)value, isSelected,hasFocus, row, column);
+                break;
+            default:
+                cell =  super.getTableCellRendererComponent(table,
+                        (String)value, isSelected,hasFocus, row, column);
+        }
+
+        if (sameLines) {
+            if (table.getSelectedRow() == -1) {
+                setBackground(Color.white);
+            } else {
+                if (isSelected) {
+                    setBackground(Color.green);
+                } else {
+                    String s = (String)table.getModel().getValueAt(row, 2);
+                    String selected = (String)table.getModel().getValueAt(table.getSelectedRow(), 2);
+                    if (s.equals(selected)) {
+                        setBackground(Color.red);
+                    } else {
+                        setBackground(Color.white);
+                    }
+                }
+            }
+        } else {
+            String firstName = (String)table.getModel().getValueAt(row, 2);
+            String lastName = (String)table.getModel().getValueAt(row, 3);
+
+            if (firstName.equals("") || lastName.equals("")) {
+                setBackground(Color.yellow);
+            } else {
+                setBackground(Color.white);
+            }
+        }
+
+        ((MyTableModel)table.getModel()).fireTableCellUpdated(row, column);
+        return cell;
     }
 }
 

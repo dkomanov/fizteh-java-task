@@ -19,11 +19,9 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import ru.fizteh.fivt.bind.AsXmlAttribute;
 import ru.fizteh.fivt.bind.MembersToBind;
 import ru.fizteh.fivt.bind.BindingType;
 import ru.fizteh.fivt.students.frolovNikolay.Closer;
@@ -34,7 +32,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         public String name;
         public Field field;
         public Class<?> type;
-        public boolean asXmlAttribute;
     }
     
     private class MethodMeta {
@@ -42,7 +39,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         public Method setter;
         public Method getter;
         public Class<?> type;
-        public boolean asXmlAttribute;
     }
 
     private HashMap<Class<?>, ArrayList<FieldMeta>> fields;
@@ -127,7 +123,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     fieldInfo.field = iter;
                     fieldInfo.field.setAccessible(true);
                     fieldInfo.type = iter.getType();
-                    fieldInfo.asXmlAttribute = iter.getAnnotation(AsXmlAttribute.class) != null;
                     classFields.add(fieldInfo);
                 }
                 fields.put(clazz, classFields);
@@ -174,8 +169,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 added.getter = getter;
                 added.setter = setter;
                 added.type = getter.getReturnType();
-                added.asXmlAttribute = getter.getAnnotation(AsXmlAttribute.class) != null
-                                       || setter.getAnnotation(AsXmlAttribute.class) != null;
                 classMethods.add(added);
                 returnStatement =  getter.getReturnType();
             }
@@ -196,7 +189,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                 StringWriter sWriter = new StringWriter();
                 XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(sWriter);
                 writer.writeStartElement(lowerFirstCharacter(getClazz().getSimpleName()));
-                recursiveSerialize(value, writer, cycleLinkInterrupter);
+                serializeToStream(value, writer, cycleLinkInterrupter);
                 writer.writeEndElement();
                 return sWriter.getBuffer().toString().getBytes();
             } catch (Throwable exception) {
@@ -213,33 +206,6 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
         }
     }
     
-    private String getSpecificXmlName(FieldMeta fieldMeta) throws Exception {
-        if (fieldMeta.field.getAnnotation(AsXmlAttribute.class) != null) {
-            return fieldMeta.field.getAnnotation(AsXmlAttribute.class).name(); 
-        } else {
-            return fieldMeta.name;
-        }
-    }
-    
-    private String getSpecificXmlName(MethodMeta methodMeta) throws Exception {
-        if (methodMeta.getter.getAnnotation(AsXmlAttribute.class) != null
-            && methodMeta.setter.getAnnotation(AsXmlAttribute.class) != null
-            && methodMeta.getter.getAnnotation(AsXmlAttribute.class).name()
-                == methodMeta.setter.getAnnotation(AsXmlAttribute.class).name()) {
-            return methodMeta.getter.getAnnotation(AsXmlAttribute.class).name(); 
-        } else if (methodMeta.setter.getAnnotation(AsXmlAttribute.class) == null
-                   && methodMeta.getter.getAnnotation(AsXmlAttribute.class) == null) {
-            return methodMeta.name;
-        } else if (methodMeta.getter.getAnnotation(AsXmlAttribute.class) != null
-            && methodMeta.setter.getAnnotation(AsXmlAttribute.class) != null) {
-            throw new Exception("different annotation names");
-        } else if (methodMeta.getter.getAnnotation(AsXmlAttribute.class) != null) {
-            return methodMeta.getter.getAnnotation(AsXmlAttribute.class).name();
-        } else {
-            return methodMeta.setter.getAnnotation(AsXmlAttribute.class).name();
-        }
-    }
-    
     static boolean isWriteable(Class<?> clazz) {
         return clazz.isPrimitive() || clazz.isEnum() || clazz.equals(String.class)
                || clazz.equals(Character.class) || clazz.equals(Short.class)
@@ -248,7 +214,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                || clazz.equals(Boolean.class) || clazz.equals(Byte.class);
     }
     
-    private void recursiveSerialize(Object value, XMLStreamWriter writer, IdentityHashMap<Object, Object> cycleLinkInterrupter) throws Throwable {
+    public void serializeToStream(Object value, XMLStreamWriter writer, IdentityHashMap<Object, Object> cycleLinkInterrupter) throws Throwable {
         if (cycleLinkInterrupter.containsKey(value)) {
             throw new Exception("Can't serialize");
         }
@@ -266,20 +232,9 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     FieldMeta fieldInfo = classFields.get(i);
                     Object tempValue = fieldInfo.field.get(value);
                     if (tempValue != null) {
-                        if (fieldInfo.asXmlAttribute) {
-                            writer.writeAttribute(getSpecificXmlName(fieldInfo), tempValue.toString());
-                        } else {
-                            writer.writeStartElement(fieldInfo.name);
-                            int attributeSearchIdx = i + 1;
-                            while (attributeSearchIdx < classFields.size() && classFields.get(attributeSearchIdx).asXmlAttribute) {
-                                writer.writeAttribute(getSpecificXmlName(classFields.get(attributeSearchIdx)), 
-                                        classFields.get(attributeSearchIdx).field.get(value).toString());
-                                ++attributeSearchIdx;
-                            }
-                            i = --attributeSearchIdx;
-                            recursiveSerialize(fieldInfo.field.get(value), writer, cycleLinkInterrupter);
-                            writer.writeEndElement();
-                        }
+                        writer.writeStartElement(fieldInfo.name);
+                        serializeToStream(fieldInfo.field.get(value), writer, cycleLinkInterrupter);
+                        writer.writeEndElement();
                     }
                 }
             } else {
@@ -288,27 +243,16 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                     MethodMeta methodInfo = classMethods.get(i);
                     Object tempValue = methodInfo.getter.invoke(value);
                     if (tempValue != null) {
-                        if (methodInfo.asXmlAttribute) {
-                            writer.writeAttribute(getSpecificXmlName(methodInfo), tempValue.toString());
-                        } else {
-                            writer.writeStartElement(methodInfo.name);
-                            int attributeSearchIdx = i + 1;
-                            while (attributeSearchIdx < classMethods.size() && classMethods.get(attributeSearchIdx).asXmlAttribute) {
-                                writer.writeAttribute(getSpecificXmlName(methodInfo), tempValue.toString());
-                                ++attributeSearchIdx;
-                            }
-                            i = --attributeSearchIdx;
-                            recursiveSerialize(tempValue, writer, cycleLinkInterrupter);
-                            writer.writeEndElement();
-                        }
-                        
+                        writer.writeStartElement(methodInfo.name);
+                        serializeToStream(tempValue, writer, cycleLinkInterrupter);
+                        writer.writeEndElement();
                     }
                 }
             }
         }
     }
 
-    private Object recursiveDeserialize(Element element, Class<?> clazz) throws Throwable {
+    public Object objectDeserialize(Element element, Class<?> clazz) throws Throwable {
         if (isWriteable(clazz)) {
             return getWriteableValue(element.getTextContent(), clazz);
         }
@@ -324,21 +268,11 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         Element newElement = (Element) node;
                         for (MethodMeta method : classMethods) {
                             if (method.name.equals(newElement.getTagName())) {
-                                method.setter.invoke(object, recursiveDeserialize(newElement, method.type));
+                                method.setter.invoke(object, objectDeserialize(newElement, method.type));
                                 break;
                             }
                         }
                     }
-                }
-                NamedNodeMap attributes = element.getAttributes();
-                for (int i = 0; i < attributes.getLength(); ++i) {
-                    Node node = attributes.item(i);
-                    for (MethodMeta method : classMethods) {
-                        if (getSpecificXmlName(method).equals(node.getNodeName())) {
-                            method.setter.invoke(object, getWriteableValue(node.getNodeValue(), method.type));
-                            break;
-                        }
-                    }    
                 }
             }
         } else {
@@ -352,21 +286,10 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
                         Element newElement = (Element) node;
                         for (FieldMeta field : classFields) {
                             if (field.name.equals(newElement.getTagName())) {
-                                field.field.set(object, recursiveDeserialize(newElement, field.type));
+                                field.field.set(object, objectDeserialize(newElement, field.type));
                                 nullTestFields.remove(field);
                                 break;
                             }
-                        }
-                    }
-                }
-                NamedNodeMap attributes = element.getAttributes();
-                for (int i = 0; i < attributes.getLength(); ++i) {
-                    Node node = attributes.item(i);
-                    for (FieldMeta field : classFields) {
-                        if (getSpecificXmlName(field).equals(node.getNodeName())) {
-                            field.field.set(object, getWriteableValue(node.getNodeValue(), field.type));
-                            nullTestFields.remove(field);
-                            break;
                         }
                     }
                 }
@@ -395,7 +318,7 @@ public class XmlBinder<T> extends ru.fizteh.fivt.bind.XmlBinder<T> {
             if (!document.getDocumentElement().getTagName().equals(lowerFirstCharacter(getClazz().getSimpleName()))) {
                 throw new Exception("incorrect class for deserialize: " + document.getDocumentElement().getTagName());
             }
-            return (T) recursiveDeserialize(document.getDocumentElement(), getClazz());
+            return (T) objectDeserialize(document.getDocumentElement(), getClazz());
         } catch (Throwable exception) {
             throw new RuntimeException("deserialize crush for unknown reason", exception);
         } finally {

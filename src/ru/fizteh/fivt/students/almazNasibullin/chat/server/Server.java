@@ -17,7 +17,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import ru.fizteh.fivt.students.almazNasibullin.IOUtils;
 import ru.fizteh.fivt.students.almazNasibullin.chat.MessageType;
-import ru.fizteh.fivt.students.almazNasibullin.chat.MessageUtils;
+import ru.fizteh.fivt.students.almazNasibullin.chat.server.MessageUtils;
 
 /**
  * 17.10.12
@@ -30,6 +30,7 @@ public class Server {
     private static Selector selector;
     // хранит ник и SocketChannel клиента
     private static Map<String, SocketChannel> clients = new TreeMap<String, SocketChannel>();
+    private static List<Client> clientMessages = new ArrayList<Client>();
     /* хранит SocketChannel клиентов, у которых не утвержден ник,
     * т.е. возможно, что ник клиента совпадает с уже имеющимся
     */
@@ -102,6 +103,7 @@ public class Server {
                     }
                 }
                 clients.clear();
+                clientMessages.clear();
             } else {
                 IOUtils.printErrorAndExit("Nothing to stop");
             }
@@ -120,6 +122,12 @@ public class Server {
                 } else {
                     SocketChannel clientToClose = clients.get(name);
                     clients.remove(name);
+                    for (Client c : clientMessages) {
+                        if (c.sc.equals(clientToClose)) {
+                            clientMessages.remove(c);
+                            break;
+                        }
+                    }
                     withoutName.remove(clientToClose);
                     sendMessage(clientToClose, MessageUtils.bye());
                     IOUtils.closeOrExit(clientToClose);
@@ -189,13 +197,14 @@ public class Server {
                         IOUtils.printErrorAndExit("Bad closing selector: " + e.getMessage());
                     }
                     clients.clear();
+                    clientMessages.clear();
                     System.exit(0);
                 } else {
                     IOUtils.printErrorAndExit(cmd + ": bad command");
                 }
             }
         } catch (Exception e) {
-            IOUtils.printErrorAndExit(e.getMessage());
+            IOUtils.printErrorAndExit("handlerConsole: " + e.getMessage());
         }
     }
 
@@ -214,88 +223,104 @@ public class Server {
                         IOUtils.printErrorAndExit("Bad accepting");
                     }
                     withoutName.add(sc);
+                    clientMessages.add(new Client(sc, new byte[0]));
                     sc.configureBlocking(false);
                     sc.register(selector, SelectionKey.OP_READ);
                 } else if ((key.readyOps() & SelectionKey.OP_READ) ==
                         SelectionKey.OP_READ) {
                     // в какой-то SocketChannel пришло сообщение
                     SocketChannel sc = (SocketChannel)key.channel();
-                    ByteBuffer mes = ByteBuffer.allocate(10000000);
-                    boolean crash = getMessage(sc, mes);
+                    boolean crash = getMessage(sc);
                     if (!crash) {
                         try {
-                            List<String> l = MessageUtils.getMessage(mes.array());
-                            if (l.get(0).equals("HELLO")) {
-                                String nick = MessageUtils.getNickname(l);
-                                if (clients.containsKey(nick)) {
-                                    // проверяем на уникальность ника
-                                    sendMessage(sc, MessageUtils.error("server: This nick"
-                                            + " already exists! Try to connect with "
-                                            + "another nick!"));
-                                    sendMessage(sc, MessageUtils.bye());
-                                    withoutName.remove(sc);
-                                    IOUtils.closeOrExit(sc);
-                                } else {
-                                    // если ник уникален то добавляем нового клиента
-                                    if (nick.length() >= 3 && nick.length() <=20) {
-                                        System.out.println(nick + " is online");
-                                        StringBuilder sb = new StringBuilder("Online Clients:");
+                            List<List<String>> mess = MessageUtils.getMessages(clientMessages,
+                                    sc);
+                            if (mess.isEmpty()) {
+                                continue;
+                            }
+                            for (List<String> l : mess) {
+                                if (l.get(0).equals("HELLO")) {
+                                    String nick = MessageUtils.getNickname(l);
+                                    if (clients.containsKey(nick)) {
+                                        // проверяем на уникальность ника
+                                        sendMessage(sc, MessageUtils.error("server: This nick"
+                                                + " already exists! Try to connect with "
+                                                + "another nick!"));
+                                        withoutName.remove(sc);
+                                        for (Client c : clientMessages) {
+                                            if (c.sc.equals(sc)) {
+                                                clientMessages.remove(c);
+                                                break;
+                                            }
+                                        }
+                                        IOUtils.closeOrExit(sc);
+                                    } else {
+                                        // если ник уникален то добавляем нового клиента
+                                        if (nick.length() >= 3 && nick.length() <=20) {
+                                            System.out.println(nick + " is online");
+                                            StringBuilder sb = new StringBuilder("Online Clients:");
+                                            Iterator it = clients.entrySet().iterator();
+                                            while (it.hasNext()) {
+                                                Map.Entry pair = (Map.Entry)it.next();
+                                                sb.append("\n").append((String)pair.getKey());
+                                            }
+                                            sendMessageAll(nick + " is online", "server");
+                                            String msg = "";
+                                            if (clients.isEmpty()) {
+                                                msg = "You are first client!";
+                                            } else {
+                                                msg = sb.toString();
+                                            }
+                                            // сообщение новому клиенту с никами уже имеющихся
+                                            sendMessage(sc, MessageUtils.message("server", msg));
+                                            clients.put(nick, sc);
+                                        } else {
+                                            sendMessage(sc, MessageUtils.error("Nick "
+                                                + "should be in length between 3 and 20"));
+                                            sendMessage(sc, MessageUtils.bye());
+                                            closeClient(sc);
+                                        }
+                                        withoutName.remove(sc);
+                                    }
+                                } else if (l.get(0).equals("MESSAGE")) {
+                                    String nick = l.get(1);
+                                    if (!clients.containsKey(nick)) {
+                                        System.out.println("Client didn't send a nickname");
+                                        closeClient(sc);
+                                    } else if (!clients.get(nick).equals(sc)) {
+                                        System.out.println("Client writes with another nickname");
+                                        closeClient(sc);
+                                    } else {
+                                        StringBuilder sb = new StringBuilder();
+                                        for (int i = 2; i < l.size(); ++i) {
+                                            sb.append(l.get(i));
+                                        }
                                         Iterator it = clients.entrySet().iterator();
                                         while (it.hasNext()) {
                                             Map.Entry pair = (Map.Entry)it.next();
-                                            sb.append("\n").append((String)pair.getKey());
+                                            SocketChannel cur = (SocketChannel)pair.getValue();
+                                            if (!sc.equals(cur)) {
+                                                sendMessage(cur, MessageUtils.message(nick,
+                                                    sb.toString()));
+                                            }
                                         }
-                                        sendMessageAll(nick + " is online", "server");
-                                        String msg = "";
-                                        if (clients.isEmpty()) {
-                                            msg = "You are first client!";
-                                        } else {
-                                            msg = sb.toString();
-                                        }
-                                        // сообщение новому клиенту с никами уже имеющихся
-                                        sendMessage(sc, MessageUtils.message("server", msg));
-                                        clients.put(nick, sc);
-                                    } else {
-                                        sendMessage(sc, MessageUtils.error("Nick "
-                                            + "should be in length between 3 and 20"));
-                                        sendMessage(sc, MessageUtils.bye());
-                                        closeClient(sc);
                                     }
-                                    withoutName.remove(sc);
-                                }
-                            } else if (l.get(0).equals("MESSAGE")) {
-                                String nick = l.get(1);
-                                if (!clients.containsKey(nick)) {
+                                } else if (l.get(0).equals("BYE")) {
+                                    closeClient(sc);
+                                } else if (l.get(0).equals("ERROR")) {
+                                    System.out.println("error message");
                                     closeClient(sc);
                                 } else {
-                                    StringBuilder sb = new StringBuilder();
-                                    for (int i = 2; i < l.size(); ++i) {
-                                        sb.append(l.get(i));
+                                    if (!withoutName.contains(sc)) {
+                                        sendMessage(sc, MessageUtils.error("You sent "
+                                                + "bad type of message"));
+                                        sendMessage(sc, MessageUtils.bye());
                                     }
-                                    Iterator it = clients.entrySet().iterator();
-                                    while (it.hasNext()) {
-                                        Map.Entry pair = (Map.Entry)it.next();
-                                        SocketChannel cur = (SocketChannel)pair.getValue();
-                                        if (!sc.equals(cur)) {
-                                            sendMessage(cur, MessageUtils.message(nick,
-                                                sb.toString()));
-                                        }
-                                    }
+                                    closeClient(sc);
                                 }
-                            } else if (l.get(0).equals("BYE")) {
-                                closeClient(sc);
-                            } else if (l.get(0).equals("ERROR")) {
-                                closeClient(sc);
-                            } else {
-                                if (!withoutName.contains(sc)) {
-                                    sendMessage(sc, MessageUtils.error("You sent "
-                                            + "bad type of message"));
-                                    sendMessage(sc, MessageUtils.bye());
-                                }
-                                closeClient(sc);
                             }
                         } catch (RuntimeException re) {
-                            System.out.println(re.getMessage());
+                            System.out.println("RuntimeException: " + re.getMessage());
                             closeClient(sc);
                         }
                     }
@@ -327,14 +352,40 @@ public class Server {
         }
     }
 
-    public static boolean getMessage(SocketChannel sc, ByteBuffer message) {
+    public static boolean getMessage(SocketChannel sc) {
         try {
+            ByteBuffer message = ByteBuffer.allocate(10000);
             int count = sc.read(message);
+            if (count == 10000) {
+                closeClient(sc);
+                System.out.println("Big message");
+                return true;
+            }
+            if (count == 0) {
+                return true;
+            }
             if (count == -1) {
                 // проверка на случай экстренного выхода клиента
                 closeClient(sc);
                 return true;
             }
+            byte[] bytes = new byte[0];
+            for (Client c : clientMessages) {
+                if (c.sc.equals(sc)) {
+                    bytes = c.bytes;
+                    clientMessages.remove(c);
+                    break;
+                }
+            }
+            byte[] mess = new byte[bytes.length + count];
+
+            for (int i = 0; i < bytes.length; ++i) {
+                mess[i] = bytes[i];
+            }
+            for (int i = bytes.length; i < bytes.length + count; ++i) {
+                mess[i] = message.get(i - bytes.length);
+            }
+            clientMessages.add(new Client(sc, mess));
         } catch (Exception e) {
             IOUtils.printErrorAndExit("Bad geting message!" + e.getMessage());
         }
@@ -365,6 +416,12 @@ public class Server {
             System.out.println(nick + " is offline");
         }
         withoutName.remove(sc);
+        for (Client c : clientMessages) {
+            if (c.sc.equals(sc)) {
+                clientMessages.remove(c);
+                break;
+            }
+        }
         IOUtils.closeOrExit(sc);
     }
 }

@@ -50,7 +50,7 @@ public class MessageReader {
         } else if (messageType == MessageType.MESSAGE.getId()) {
             result.type = MessageType.MESSAGE;
         } else {
-            throw new RuntimeException("Unexpected message type");
+            throw new IOException("Unexpected message type");
         }
         int dataLength = readByte();
         for (int i = 0; i < dataLength; i ++) {

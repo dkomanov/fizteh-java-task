@@ -2,3 +2,4 @@
 *.test
 *.py
 *.sh
+!chat/compile.sh

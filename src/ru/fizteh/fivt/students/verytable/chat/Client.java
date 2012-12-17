@@ -17,13 +17,15 @@ import java.util.*;
 public class Client implements Runnable {
 
 
-    private final ByteBuffer buffer = ByteBuffer.allocate(512);
+    private final ByteBuffer buffer = ByteBuffer.allocate(512 * 1024);
     private static String curHost;
     private static int curPort;
     private static String clientName;
     private static boolean isConnected = false;
     private static SocketChannel curSocketChannel;
     private static Map<String, SocketChannel> servers = new HashMap<String, SocketChannel>();
+    private static int curMessageStartPos = 0;
+    private static Queue<Byte> forMessages = new LinkedList<Byte>();
 
     public Client(String host, int port, String name) {
 
@@ -113,22 +115,45 @@ public class Client implements Runnable {
     }
 
     private boolean processInput(SocketChannel sc) throws Exception {
+        System.out.println("Processing input ");
         buffer.clear();
-        sc.read(buffer);
-        buffer.flip();
+        int len = 0;
+        try {
+            len = sc.read(buffer);
+        } catch (Exception ex) {
+            if (sc != null && len > 0) {
+                System.out.println("Message len = " + len);
+                send(sc, MessageUtils.error("Bad message was send from you."));
+                disconnect(false);
+                return true;
+            }
+        }
+        if (len <= 0) {
+            System.err.println("Emergency server exit.");
+            String exitedUser = getKey(sc);
+            if (exitedUser != null) {
+                disconnect(false);
+                return false;
+            }
+        }
 
         if (buffer.limit() == 0) {
             return false;
         }
-        byte[] byteMessage = buffer.array();
-        switch (byteMessage[0]) {
+        for (int i = 0; i < len; ++i) {
+            forMessages.add(buffer.array()[i]);
+        }
+        Byte[] bm1 = new Byte[forMessages.size()];
+        byte[] byteMessage1 = MessageUtils.toPrimitive(forMessages.toArray(bm1));
+        ArrayList<String> message;
+        message = getMessage(byteMessage1);
+        if (message == null) {
+            return true;
+        }
+
+        switch (byteMessage1[0]) {
             case 2:
-                ArrayList<String> message = getMessage(byteMessage);
-                if (message == null) {
-                    System.out.println("I received too large message.");
-                    disconnect(true);
-                    return true;
-                }
+                System.out.println("Got simple message");
                 String sender = message.get(0);
                 StringBuilder sb = new StringBuilder();
                 for (int i = 1; i < message.size(); ++i) {
@@ -137,10 +162,12 @@ public class Client implements Runnable {
                 System.out.println(sender + ": " + sb.toString());
                 break;
             case 3:
+                System.out.println("Got bye message");
                 disconnect(false);
                 break;
             case 127:
-                message = getMessage(byteMessage);
+                System.out.println("Got error message.");
+                //message = getMessage(byteMessage);
                 sender = message.get(0);
                 sb = new StringBuilder();
                 for (int i = 1; i < message.size(); ++i) {
@@ -150,6 +177,7 @@ public class Client implements Runnable {
                 disconnect(false);
                 break;
             default:
+                System.out.println("Unknown message type");
                 disconnect(false);
         }
         return true;
@@ -164,6 +192,7 @@ public class Client implements Runnable {
                 curSocketChannel.close();
                 servers.remove(curHost);
                 isConnected = false;
+                forMessages.removeAll(forMessages);
             }
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
@@ -226,25 +255,56 @@ public class Client implements Runnable {
     }
 
     static public ArrayList<String> getMessage(byte[] byteMessage) {
+
         ArrayList<String> message = new ArrayList<String>();
         ByteBuffer buffer = ByteBuffer.wrap(byteMessage);
+
+        if (forMessages.size() < 1) {
+            return null;
+        }
         int messageType = buffer.get();
-        int messageCount = buffer.get();
-        if (messageCount == -1) {
+        if (messageType != 2 && messageType != 3 && messageType != 127) {
+            System.out.println("wrong message type");
             disconnect(false);
+        }
+
+        if (forMessages.size() < 2) {
+            return null;
+        }
+        int messageCount = buffer.get();
+
+        if (messageCount < 1) {
             System.err.println("error in message reading");
+            disconnect(false);
             System.exit(1);
         }
+
+        int len = 2;
         for (int i = 0; i < messageCount; ++i) {
+            if (forMessages.size() < 6) {
+                return null;
+            }
             int length = buffer.getInt();
+            len += 4;
+            if (length < 0 || length > 512) {
+                System.out.println("Array size < 0 || array size > 512");
+                disconnect(false);
+            }
             byte[] tmp = new byte[length];
+            if (forMessages.size() < len + length) {
+                return null;
+            }
             if (tmp.length < 512) {
                 buffer.get(tmp);
+                len += length;
             } else {
                 System.err.println("To large message was received from server.");
                 return null;
             }
             message.add(new String(tmp, Charset.forName("UTF-8")));
+        }
+        for (int i = 0; i < len; ++i) {
+            forMessages.remove();
         }
         return message;
     }

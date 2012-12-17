@@ -4,12 +4,13 @@ import ru.fizteh.fivt.bind.test.*;
 import ru.fizteh.fivt.students.myhinMihail.xmlBinder.XmlBinder;
 
 import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.*;
 import org.w3c.dom.*;
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
@@ -117,6 +118,50 @@ public class UserList extends JFrame {
         }
     }
     
+    public class TableRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, 
+                boolean hasFocus, int row, int column) {
+            Component cell;
+            switch (column) {
+                case 0:
+                case 5:
+                    cell = super.getTableCellRendererComponent(table,
+                            (int)value, isSelected,hasFocus, row, column);
+                    break;
+                    
+                case 1:
+                    cell = super.getTableCellRendererComponent(table,
+                            (UserType)value, isSelected,hasFocus, row, column);
+                    break;
+                    
+                case 2:
+                case 3:
+                default:
+                    cell = super.getTableCellRendererComponent(table,
+                            (String)value, isSelected,hasFocus, row, column);
+                    break;
+                    
+                case 4:
+                    cell = super.getTableCellRendererComponent(table,
+                            (boolean)value, isSelected,hasFocus, row, column);
+                    break;
+            }
+
+            String firstName = (String) table.getModel().getValueAt(row, 2);
+            String lastName = (String) table.getModel().getValueAt(row, 3);
+
+            if (firstName.equals("") || lastName.equals("")) {
+                setBackground(Color.yellow);
+            } else {
+                setBackground(Color.white);
+            }
+
+            ((UserListTable)table.getModel()).fireTableCellUpdated(row, column);
+            return cell;
+        }
+    };
+    
     public class ActionRunner implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent event) {
@@ -222,6 +267,10 @@ public class UserList extends JFrame {
             try {
                 ArrayList<User> usersList = new ArrayList<>();
                 for (ArrayList<Object> list : ((UserListTable) table.getModel()).getData()) {
+                    if (((String) list.get(2)).isEmpty() || ((String) list.get(3)).isEmpty()) {
+                        JOptionPane.showMessageDialog(frame, "User with empty first name or last name in the table");
+                        return false;
+                    }
                     UserName name = new UserName((String) list.get(2), (String) list.get(3));
                     Permissions permissions = new Permissions();
                     permissions.setRoot((boolean) list.get(4));
@@ -381,8 +430,12 @@ public class UserList extends JFrame {
             }
         };
         
-        table.setRowSorter(new TableRowSorter<>(table.getModel()));
         add(new JScrollPane(table));
+        
+        for (int i = 0; i < table.getColumnCount(); ++i) {
+            table.getColumnModel().getColumn(i).setCellRenderer(new TableRenderer());
+        }
+        
     }
     
     public void loadUsers(File file) {
@@ -450,4 +503,5 @@ public class UserList extends JFrame {
             Utils.tryClose(writer);
         }
     }
+    
 }
