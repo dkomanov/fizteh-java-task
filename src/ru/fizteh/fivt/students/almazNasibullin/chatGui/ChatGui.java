@@ -223,7 +223,6 @@ class Chat extends JFrame {
             }
             host.setText("host");
             port.setText("port");
-            System.out.println(1 + curServer);
             servers.setSelectedIndex(listModel.indexOf(curServer));
         }
     }
@@ -245,7 +244,6 @@ class Chat extends JFrame {
             int selectedIndex = servers.getSelectedIndex();
             if (selectedIndex != -1) {
                 curServer = (String)listModel.get(selectedIndex);
-                System.out.println(2 + curServer);
                 mis.setData(" /use " + curServer);
             }
         }
