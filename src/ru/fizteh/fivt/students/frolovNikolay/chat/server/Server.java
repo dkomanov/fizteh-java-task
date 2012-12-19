@@ -101,7 +101,6 @@ public class Server {
                     
                         // Hello message
                         case 1: {
-                            System.out.println("have hello");
                             String nickName = MsgHandler.parseHelloAndError(clientsBuffer.get(clientSock));
                             boolean badNick = false;
                             if (nickName == null || nickName.isEmpty()) {
