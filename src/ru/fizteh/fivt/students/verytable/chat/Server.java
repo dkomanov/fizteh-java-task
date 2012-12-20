@@ -5,6 +5,7 @@ import ru.fizteh.fivt.students.verytable.IOUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.System;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -225,10 +226,6 @@ public class Server implements Runnable {
                 System.out.println("Wrong message type got from " + getKey(sc));
                 kill(getKey(sc), true);
         }
-        System.out.println("Processed " + buffer.limit() + " from " + sc);
-        byte[] b = {2, 1, 0, 0, 0, 2, 'h', 'i'};
-        ByteBuffer bb = ByteBuffer.wrap(b);
-        sc.write(bb);
         return true;
     }
 
@@ -261,6 +258,7 @@ public class Server implements Runnable {
     }
 
     synchronized static void send(SocketChannel sc, byte[] message) {
+        System.out.println("Sending: " + message.length);
         try {
             if (sc.isConnected()) {
                 ByteBuffer bf = ByteBuffer.wrap(message);
@@ -325,7 +323,7 @@ public class Server implements Runnable {
             return null;
         }
         int messageCount = buffer.get();
-        if (messageCount < 1) {
+        if (messageCount < 0) {
             System.err.println("Bad messages cnt.");
             kill(getKey(sc), false);
             return null;
