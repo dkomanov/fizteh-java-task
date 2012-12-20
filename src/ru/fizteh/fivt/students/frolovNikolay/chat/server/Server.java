@@ -92,7 +92,7 @@ public class Server {
                 int state;
                 while ((state = clientSock.read(buffer)) > 0) {
                     byte[] piece = buffer.array();
-                    for (int i = 0; i < piece.length; ++i) {
+                    for (int i = 0; i < state; ++i) {
                         clientsBuffer.get(clientSock).add(piece[i]);
                     }
                 }
@@ -105,19 +105,15 @@ public class Server {
                             boolean badNick = false;
                             if (nickName == null || nickName.isEmpty()) {
                                 badNick = true;
-                                System.err.println("bad1");
                                 ChatUtils.sendMsg(MsgHandler.error("Incorrect msg"), clientSock);
                             } else if (nickName.length() > 50) {
                                 badNick = true;
-                                System.err.println("bad2");
                                 ChatUtils.sendMsg(MsgHandler.error("Too long nickname(can have a maximum 50 characters)"), clientSock);
                             } else if (nickName.equals("<server>") || clientsNameMapping.containsKey(nickName)) {
-                                System.err.println("bad3");
                                 badNick = true;
                                 ChatUtils.sendMsg(MsgHandler.error("Someone already has this nickname"), clientSock);
                             }
                             if (badNick) {
-                                System.err.println("bad");
                                 ChatUtils.sendMsg(MsgHandler.bye(), clientSock);
                                 Closer.close(clientSock);
                             } else {

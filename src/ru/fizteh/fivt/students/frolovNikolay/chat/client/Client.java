@@ -72,7 +72,7 @@ public class Client {
                 int state;
                 while ((state = serverSocket.read(buffer)) > 0) {
                     byte[] piece = buffer.array();
-                    for (int i = 0; i < piece.length; ++i) {
+                    for (int i = 0; i < state; ++i) {
                         byteBuffer.add(piece[i]);
                     }
                 }
