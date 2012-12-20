@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.verytable.chat;
 
 import ru.fizteh.fivt.students.verytable.IOUtils;
+import ru.fizteh.fivt.students.verytable.chatgui.ChatGui;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,10 +23,11 @@ public class Client implements Runnable {
     private static int curPort;
     private static String clientName;
     private static boolean isConnected = false;
-    private static SocketChannel curSocketChannel;
+    public static SocketChannel curSocketChannel;
     private static Map<String, SocketChannel> servers = new HashMap<String, SocketChannel>();
     private static int curMessageStartPos = 0;
     private static Queue<Byte> forMessages = new LinkedList<Byte>();
+    private static ChatGui cg;
 
     public Client(String host, int port, String name) {
 
@@ -33,6 +35,16 @@ public class Client implements Runnable {
         this.curPort = port;
         this.clientName = name;
         this.isConnected = true;
+        this.cg = null;
+        new Thread(this).start();
+    }
+
+    public Client(String host, int port, String name, ChatGui chatGui) {
+        this.curHost = host;
+        this.curPort = port;
+        this.clientName = name;
+        this.isConnected = true;
+        this.cg = chatGui;
         new Thread(this).start();
     }
 
@@ -89,7 +101,7 @@ public class Client implements Runnable {
                             if (serverToQuitFrom != null) {
                                 IOUtils.closeFile(serverToQuitFrom, sc);
                                 servers.remove(serverToQuitFrom);
-                                System.out.println(serverToQuitFrom + " was closed.");
+                                display(serverToQuitFrom + " was closed.");
                             }
                         }
                     }
@@ -115,20 +127,20 @@ public class Client implements Runnable {
     }
 
     private boolean processInput(SocketChannel sc) throws Exception {
-        System.out.println("Processing input ");
+        display("Processing input ");
         buffer.clear();
         int len = 0;
         try {
             len = sc.read(buffer);
         } catch (Exception ex) {
             if (sc != null && len > 0) {
-                System.out.println("Message len = " + len);
+                display("Message len = " + len);
                 send(sc, MessageUtils.error("Bad message was send from you."));
                 disconnect(false);
                 return true;
             }
         }
-        if (len <= 0) {
+        if (len < 0) {
             System.err.println("Emergency server exit.");
             String exitedUser = getKey(sc);
             if (exitedUser != null) {
@@ -153,31 +165,31 @@ public class Client implements Runnable {
 
         switch (byteMessage1[0]) {
             case 2:
-                System.out.println("Got simple message");
+                display("Got simple message");
                 String sender = message.get(0);
                 StringBuilder sb = new StringBuilder();
                 for (int i = 1; i < message.size(); ++i) {
                     sb.append(message.get(i));
                 }
-                System.out.println(sender + ": " + sb.toString());
+                display(sender + ": " + sb.toString());
                 break;
             case 3:
-                System.out.println("Got bye message");
+                display("Got bye message");
                 disconnect(false);
                 break;
             case 127:
-                System.out.println("Got error message.");
+                display("Got error message.");
                 //message = getMessage(byteMessage);
                 sender = message.get(0);
                 sb = new StringBuilder();
                 for (int i = 1; i < message.size(); ++i) {
                     sb.append(message.get(i));
                 }
-                System.out.println("error message: " + sender + sb.toString());
+                System.err.println("error message: " + sender + sb.toString());
                 disconnect(false);
                 break;
             default:
-                System.out.println("Unknown message type");
+                System.err.println("Unknown message type");
                 disconnect(false);
         }
         return true;
@@ -194,11 +206,14 @@ public class Client implements Runnable {
                 isConnected = false;
                 forMessages.removeAll(forMessages);
             }
+            if (cg != null) {
+                cg.reset();
+            }
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.exit(1);
         }
-        System.out.println("You have successfully disconnected from the server");
+        display("You have successfully disconnected from the server");
     }
 
     static void list() {
@@ -206,7 +221,7 @@ public class Client implements Runnable {
         Map.Entry me;
         while (it.hasNext()) {
             me = (Map.Entry) it.next();
-            System.out.println(me.getKey() + " "
+            display(me.getKey() + " "
                     + me.getValue());
         }
     }
@@ -237,11 +252,11 @@ public class Client implements Runnable {
             System.exit(1);
         }
         servers.clear();
-        System.out.println("Exit successfully.");
+        display("Exit successfully.");
         System.exit(0);
     }
 
-    static void send(SocketChannel sc, byte[] message) {
+    static public void send(SocketChannel sc, byte[] message) {
         try {
             if (Client.isConnected) {
                 ByteBuffer bf = ByteBuffer.wrap(message);
@@ -264,7 +279,7 @@ public class Client implements Runnable {
         }
         int messageType = buffer.get();
         if (messageType != 2 && messageType != 3 && messageType != 127) {
-            System.out.println("wrong message type");
+            System.err.println("wrong message type");
             disconnect(false);
         }
 
@@ -272,9 +287,8 @@ public class Client implements Runnable {
             return null;
         }
         int messageCount = buffer.get();
-        System.out.println("MEssage cnt " + messageCount);
 
-        if (messageCount < 1) {
+        if (messageCount < 0) {
             System.err.println("error in message reading");
             disconnect(false);
             System.exit(1);
@@ -286,10 +300,9 @@ public class Client implements Runnable {
                 return null;
             }
             int length = buffer.getInt();
-            System.out.println("Hello " + length);
             len += 4;
             if (length < 0 || length > 512) {
-                System.out.println("Array size < 0 || array size > 512");
+                System.err.println("Array size < 0 || array size > 512");
                 disconnect(false);
             }
             byte[] tmp = new byte[length];
@@ -298,19 +311,24 @@ public class Client implements Runnable {
             }
             if (tmp.length < 512) {
                 buffer.get(tmp);
-                System.out.println("hELLO " + length);
                 len += length;
             } else {
                 System.err.println("To large message was received from server.");
                 return null;
             }
             message.add(new String(tmp, Charset.forName("UTF-8")));
-            System.out.println("Added");
         }
         for (int i = 0; i < len; ++i) {
             forMessages.remove();
         }
         return message;
+    }
+
+    static void display(String msg) {
+        if(cg == null)
+            System.out.println(msg);
+        else
+            cg.append(msg + "\n");
     }
 
     static public void main(String args[]) throws Exception {
@@ -358,9 +376,9 @@ public class Client implements Runnable {
                         System.err.println("Invalid hostPort: " + hostPort);
                         continue;
                     }
-                    System.out.println(host + ":" + port);
+                    display(host + ":" + port);
                     if (servers.containsKey(host)) {
-                        System.out.println("You are already connected to this host");
+                        System.err.println("You are already connected to this host");
                     } else {
                         new Client(host, port, nickname);
                     }
@@ -373,10 +391,10 @@ public class Client implements Runnable {
                 }
             } else if (curCommand.equals("/whereami")) {
                 if (Client.isConnected) {
-                    System.out.println("You are using this host: "
+                    display("You are using this host: "
                             + Client.curHost);
                 } else {
-                    System.out.println("You haven't connected yet.");
+                    display("You haven't connected yet.");
                 }
             } else if (curCommand.equals("/list")) {
                 if (tokenizer.countTokens() != 0) {
