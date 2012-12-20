@@ -272,6 +272,7 @@ public class Client implements Runnable {
             return null;
         }
         int messageCount = buffer.get();
+        System.out.println("MEssage cnt " + messageCount);
 
         if (messageCount < 1) {
             System.err.println("error in message reading");
@@ -281,10 +282,11 @@ public class Client implements Runnable {
 
         int len = 2;
         for (int i = 0; i < messageCount; ++i) {
-            if (forMessages.size() < 6) {
+            if (forMessages.size() < len + 4) {
                 return null;
             }
             int length = buffer.getInt();
+            System.out.println("Hello " + length);
             len += 4;
             if (length < 0 || length > 512) {
                 System.out.println("Array size < 0 || array size > 512");
@@ -296,12 +298,14 @@ public class Client implements Runnable {
             }
             if (tmp.length < 512) {
                 buffer.get(tmp);
+                System.out.println("hELLO " + length);
                 len += length;
             } else {
                 System.err.println("To large message was received from server.");
                 return null;
             }
             message.add(new String(tmp, Charset.forName("UTF-8")));
+            System.out.println("Added");
         }
         for (int i = 0; i < len; ++i) {
             forMessages.remove();
