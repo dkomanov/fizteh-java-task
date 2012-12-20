@@ -7,6 +7,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -30,6 +32,8 @@ public class Client {
     private String nickName;
     private String currentServer;
     private SortedMap<String, ServerPair> servers;
+    private List<Byte> byteBuffer = new ArrayList<Byte>();
+    private int badTries = 0;
 
     public Client(String nickName) {
         this.nickName = nickName;
@@ -65,17 +69,32 @@ public class Client {
             if (ChatUtils.hasKey(key, SelectionKey.OP_READ)) {
                 ByteBuffer buffer = ByteBuffer.allocate(1024);
                 SocketChannel serverSocket = (SocketChannel) key.channel();
-                if (serverSocket.read(buffer) == -1) {
+                int state;
+                while ((state = serverSocket.read(buffer)) > 0) {
+                    byte[] piece = buffer.array();
+                    for (int i = 0; i < piece.length; ++i) {
+                        byteBuffer.add(piece[i]);
+                    }
+                }
+                if (state == -1) {
                     disconnect(currentServer);
                 } else {
-                    byte[] msg = buffer.array();
-                    switch (msg[0]) {
+                    switch (byteBuffer.get(0)) {
                         
                         // ordinary message
                         case 2: {
-                            String[] nickAndMsg = MsgHandler.parseMessage(msg);
+                            String[] nickAndMsg = MsgHandler.parseMessage(byteBuffer);
+                            if (nickAndMsg == null) {
+                                ++badTries;
+                                if (badTries > 1000) {
+                                    throw new RuntimeException("Bad message from server");
+                                }
+                                break;
+                            } else {
+                                badTries = 0;
+                            }
                             if (nickAndMsg[0] == null || nickAndMsg[1] == null) {
-                                System.err.println("Error: bad message from server");
+                                throw new RuntimeException("Incorrect msg from server. Shutdown");
                             } else {
                                 System.out.println(nickAndMsg[0] + ": " + nickAndMsg[1]);
                             }
@@ -90,14 +109,17 @@ public class Client {
                         
                         // error message
                         case 127: {
-                            String errorMsg = MsgHandler.parseHelloAndError(msg);
+                            String errorMsg = MsgHandler.parseHelloAndError(byteBuffer);
+                            if (errorMsg == null) {
+                                throw new RuntimeException("Bad error msg");
+                            }
                             System.err.println("Error: " + errorMsg);
-                            break;
+                            throw new RuntimeException("Have error msg");
                         }
                         
-                        // someone's trying to do evil things. Just ignore him.
+                        // someone's trying to do evil things. Just shutdown client.
                         default: {
-                            
+                            throw new RuntimeException("Incorrect type of msg from server. Shutdown");
                         }
                     }
                 }
