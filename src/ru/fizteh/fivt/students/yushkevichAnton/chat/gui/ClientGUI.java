@@ -1,6 +1,8 @@
 package ru.fizteh.fivt.students.yushkevichAnton.chat.client.gui;
 
 import ru.fizteh.fivt.students.yushkevichAnton.chat.client.Client;
+import ru.fizteh.fivt.students.yushkevichAnton.chat.gui.dialogs.ConnectDialog;
+import ru.fizteh.fivt.students.yushkevichAnton.chat.gui.dialogs.SelectConnectionDialog;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -15,17 +17,16 @@ public class ClientGUI {
     private JButton sendButton;
     private JPanel panel;
     private JTextArea logTextArea;
+    private JMenuBar menuBar = new JMenuBar();
 
     public ClientGUI() {
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String command = inputTextField.getText();
-                chatTextArea.append(command);
-                chatTextArea.append("\n");
                 inputTextField.setText("");
 
-                send(command);
+                sendMessage(command);
             }
         });
         inputTextField.addKeyListener(new KeyAdapter() {
@@ -36,11 +37,73 @@ public class ClientGUI {
                 }
             }
         });
+
+        JMenu menu = new JMenu("Actions");
+        menuBar.add(menu);
+
+        JMenuItem menuItem = new JMenuItem("Connect");
+        menu.add(menuItem);
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new ConnectDialog(client);
+            }
+        });
+
+        menuItem = new JMenuItem("Disconnect");
+        menu.add(menuItem);
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                client.processCommand("/disconnect");
+            }
+        });
+
+        menuItem = new JMenuItem("Where am I?");
+        menu.add(menuItem);
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                client.processCommand("/whereami");
+            }
+        });
+
+        menu.addSeparator();
+
+        menuItem = new JMenuItem("List connections");
+        menu.add(menuItem);
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                client.processCommand("/list");
+            }
+        });
+
+        menuItem = new JMenuItem("Select connection");
+        menu.add(menuItem);
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new SelectConnectionDialog(client);
+            }
+        });
+
+        menu.addSeparator();
+
+        menuItem = new JMenuItem("Exit");
+        menu.add(menuItem);
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                client.processCommand("/exit");
+            }
+        });
     }
 
     private Client client;
 
-    private void send(String s) {
+    private void sendMessage(String s) {
+        if (s.startsWith("/")) s = Character.DIRECTIONALITY_LEFT_TO_RIGHT + s; // mwahaha
         client.processCommand(s);
     }
 
@@ -65,6 +128,9 @@ public class ClientGUI {
     public static void main(String[] args) {
         JFrame frame = new JFrame("ClientGUI");
         ClientGUI clientGUI = new ClientGUI();
+
+        frame.setJMenuBar(clientGUI.menuBar);
+
         frame.setContentPane(clientGUI.panel);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
