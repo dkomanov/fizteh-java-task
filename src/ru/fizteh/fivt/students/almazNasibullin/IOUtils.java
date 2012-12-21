@@ -14,6 +14,10 @@ public class IOUtils {
         System.err.println(error);
         System.exit(1);
     }
+    
+    public static void printError(String error) {
+        System.err.println(error);
+    }
 
     public static void closeOrExit(Closeable cl) {
         try {
