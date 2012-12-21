@@ -3,18 +3,24 @@ package ru.fizteh.fivt.students.almazNasibullin.chatGui;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.text.BadLocationException;
 import ru.fizteh.fivt.students.almazNasibullin.chat.client.Client;
 
 /**
@@ -64,6 +70,8 @@ class Chat extends JFrame {
     String curServer = "";
     Client client;
     final Object sync = new Object();
+    final Object syncServerArea = new Object();
+    Map<String, List<String>> history = new TreeMap<String, List<String>>();
 
     Chat(String s) {
         super("Chat");
@@ -80,6 +88,7 @@ class Chat extends JFrame {
         clientArea = new JTextArea();
         clientArea.setBackground(Color.lightGray);
         clientArea.setEditable(true);
+        clientArea.addKeyListener(new KeyBoard());
         clientAreaPane = new JScrollPane(clientArea);
         clientAreaPane.setBounds(10, 390, 265, 50);
 
@@ -165,50 +174,75 @@ class Chat extends JFrame {
                     }
                     if (!client.handlerServer()) {
                         listModel.remove(listModel.indexOf(curServer));
+                        history.remove(curServer);
+                        synchronized(syncServerArea) {
+                            serverArea.setText("You are disconnected from " + curServer);
+                        }
+                        curServer = "";
                     }
                 }
             }
         }
     }
-    
+
+    private void sendMessage() {
+        String s = clientArea.getText();
+        if (!s.equals("")) {
+            if (s.indexOf("/connect") == 0) {
+                clientArea.setText("");
+                ShowErrorMessage.showErrorMessage("Message isn't sent");
+                return;
+            }
+            if (s.indexOf("/disconnect") == 0) {
+                clientArea.setText("");
+                ShowErrorMessage.showErrorMessage("Message isn't sent");
+                return;
+            }
+            if (s.indexOf("/whereami") == 0) {
+                ShowErrorMessage.showErrorMessage("Message isn't sent");
+                clientArea.setText("");
+                return;
+            }
+            if (s.indexOf("/list") == 0) {
+                ShowErrorMessage.showErrorMessage("Message isn't sent");
+                clientArea.setText("");
+                return;
+            }
+            if (s.indexOf("/use") == 0) {
+                clientArea.setText("");
+                ShowErrorMessage.showErrorMessage("Message isn't sent");
+                return;
+            }
+            if (s.indexOf("/exit") == 0) {
+                clientArea.setText("");
+                ShowErrorMessage.showErrorMessage("Message isn't sent");
+                return;
+            }
+            mis.setData(s);
+        }
+        clientArea.setText("");
+    }
+
+    private class KeyBoard implements KeyListener {
+
+        @Override
+        public void keyTyped(KeyEvent e) {}
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyChar() == KeyEvent.VK_ENTER) {
+                sendMessage();
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {}
+    }
+
     private class SendActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            String s = clientArea.getText();
-            if (!s.equals("")) {
-                if (s.indexOf("/connect") == 0) {
-                    clientArea.setText("");
-                    ShowErrorMessage.showErrorMessage("Message isn't sent");
-                    return;
-                }
-                if (s.indexOf("/disconnect") == 0) {
-                    clientArea.setText("");
-                    ShowErrorMessage.showErrorMessage("Message isn't sent");
-                    return;
-                }
-                if (s.indexOf("/whereami") == 0) {
-                    ShowErrorMessage.showErrorMessage("Message isn't sent");
-                    clientArea.setText("");
-                    return;
-                }
-                if (s.indexOf("/list") == 0) {
-                    ShowErrorMessage.showErrorMessage("Message isn't sent");
-                    clientArea.setText("");
-                    return;
-                }
-                if (s.indexOf("/use") == 0) {
-                    clientArea.setText("");
-                    ShowErrorMessage.showErrorMessage("Message isn't sent");
-                    return;
-                }
-                if (s.indexOf("/exit") == 0) {
-                    clientArea.setText("");
-                    ShowErrorMessage.showErrorMessage("Message isn't sent");
-                    return;
-                }
-                mis.setData(s);
-            }
-            clientArea.setText("");
+           sendMessage();
         }
     }
 
@@ -235,10 +269,14 @@ class Chat extends JFrame {
                 return;
             }
 
+            synchronized(syncServerArea) {
+                serverArea.setText("");
+            }
             synchronized (sync) {
                 if (client.connect(hostName, portNumber)) {
                     curServer = hostName + ":" + portNumber;
                     listModel.addElement(curServer);
+                    history.put(curServer, new ArrayList<String>());
                     servers.setSelectedIndex(listModel.indexOf(curServer));
                 } else {
                     servers.clearSelection();
@@ -252,11 +290,16 @@ class Chat extends JFrame {
     private class DisconnectActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            mis.setData("/disconnect");
+            history.remove(curServer);
+            synchronized(syncServerArea) {
+                serverArea.setText("");
+            }
             int index = listModel.indexOf(curServer);
             if (index != -1) {
                 listModel.remove(index);
             }
+            curServer = "";
+            mis.setData("/disconnect");
         }
     }
 
@@ -267,7 +310,51 @@ class Chat extends JFrame {
             if (selectedIndex != -1) {
                 curServer = (String)listModel.get(selectedIndex);
                 mis.setData(" /use " + curServer);
+                synchronized(syncServerArea) {
+                    serverArea.setText("");
+                }
+                for (String s : history.get(curServer)) {
+                    serverArea.append(s);
+                }
             }
+        }
+    }
+
+    class MyOutputStream extends OutputStream {
+        private JTextArea area;
+        private StringBuilder sb = new StringBuilder();
+
+        MyOutputStream(JTextArea area) {
+            this.area = area;
+        }
+
+        @Override
+        public void flush() {}
+
+        @Override
+        public void close() {}
+
+        @Override
+        public void write(int b) throws IOException {
+            if (b == '\r') {
+                return;
+            }
+
+            if (b == '\n') {
+                String text = sb.toString() + "\n";
+                if (!curServer.equals("")) {
+                    if (history.get(curServer).size() == 100) {
+                        history.get(curServer).remove(0);
+                    }
+                    history.get(curServer).add(text);
+                }
+                synchronized(syncServerArea) {
+                    area.append(text);
+                }
+                sb.setLength(0);
+                return;
+            }
+            sb.append((char) b);
         }
     }
 }
@@ -295,6 +382,7 @@ class Authorization extends JFrame {
         nickname = new JTextField();
         nickname.setBackground(Color.white);
         nickname.setBounds(25, 50, 200, 20);
+        nickname.addKeyListener(new KeyBoard());
 
         log = new JButton("log");
         log.addActionListener(new LogActionListener());
@@ -311,34 +399,54 @@ class Authorization extends JFrame {
         setVisible(true);
     }
 
+    private void startChat() {
+        String s = nickname.getText();
+        if (!s.equals("")) {
+            if (s.indexOf(" ") != -1) {
+                ShowErrorMessage.showErrorMessage("Nickname includes spaces");
+                nickname.setText("");
+                return;
+            }
+            if (s.indexOf("\t") != -1) {
+                ShowErrorMessage.showErrorMessage("Nickname includes tabs");
+                nickname.setText("");
+                return;
+            }
+            if (s.length() > 20) {
+                ShowErrorMessage.showErrorMessage("Nickname is too long");
+                nickname.setText("");
+                return;
+            }
+            dispose();
+            chat = new Chat(s);
+            synchronized(sync) {
+                finish = true;
+            }
+        } else {
+            ShowErrorMessage.showErrorMessage("Put your nick");
+        }
+    }
+
+    private class KeyBoard implements KeyListener {
+
+        @Override
+        public void keyTyped(KeyEvent e) {}
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyChar() == KeyEvent.VK_ENTER) {
+                startChat();
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {}
+    }
+
     class LogActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            String s = nickname.getText();
-            if (!s.equals("")) {
-                if (s.indexOf(" ") != -1) {
-                    ShowErrorMessage.showErrorMessage("Nickname includes spaces");
-                    nickname.setText("");
-                    return;
-                }
-                if (s.indexOf("\t") != -1) {
-                    ShowErrorMessage.showErrorMessage("Nickname includes tabs");
-                    nickname.setText("");
-                    return;
-                }
-                if (s.length() > 20) {
-                    ShowErrorMessage.showErrorMessage("Nickname is too long");
-                    nickname.setText("");
-                    return;
-                }
-                dispose();
-                chat = new Chat(s);
-                synchronized(sync) {
-                    finish = true;
-                }
-            } else {
-                ShowErrorMessage.showErrorMessage("Put your nick");
-            }
+            startChat();
         }
     }
 }
@@ -350,36 +458,6 @@ class ShowErrorMessage {
                 JOptionPane.DEFAULT_OPTION);
         JDialog dialog = optionPane.createDialog(jf, "Error");
         dialog.setVisible(true);
-    }
-}
-
-class MyOutputStream extends OutputStream {
-    private JTextArea area;
-    private StringBuilder sb = new StringBuilder();
-
-    MyOutputStream(JTextArea area) {
-        this.area = area;
-    }
-
-    @Override
-    public void flush() {}
-
-    @Override
-    public void close() {}
-
-    @Override
-    public void write(int b) throws IOException {
-        if (b == '\r') {
-            return;
-        }
-
-        if (b == '\n') {
-            String text = sb.toString() + "\n";
-            area.append(text);
-            sb.setLength(0);
-            return;
-        }
-        sb.append((char) b);
     }
 }
 
