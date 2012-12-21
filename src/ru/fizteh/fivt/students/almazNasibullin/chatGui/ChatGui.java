@@ -236,7 +236,11 @@ class Chat extends JFrame {
         }
 
         @Override
-        public void keyReleased(KeyEvent e) {}
+        public void keyReleased(KeyEvent e) {
+            if (e.getKeyChar() == KeyEvent.VK_ENTER) {
+                clientArea.setText("");
+            }
+        }
     }
 
     private class SendActionListener implements ActionListener {
