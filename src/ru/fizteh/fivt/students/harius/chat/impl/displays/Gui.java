@@ -11,7 +11,7 @@ import javax.swing.*;
 
 public class Gui extends DisplayBase
 {
-    private ChatPanel main = new ChatPanel();
+    private ChatPanel main = new ChatPanel(this);
 
     public Gui() {
         JFrame fr = new JFrame("Free chat without SMS or registration");
@@ -23,17 +23,17 @@ public class Gui extends DisplayBase
 
     @Override
     public void message(String user, String message) {
-        throw new RuntimeException("Not implemented yet");
+        main.message(user, message);
     }
 
     @Override
     public void warn(String warn) {
-        throw new RuntimeException("Not implemented yet");
+        main.warn(warn);
     }
 
     @Override
-    public void error(String warn) {
-        throw new RuntimeException("Not implemented yet");
+    public void error(String error) {
+        main.error(error);
     }
 
     @Override
@@ -44,5 +44,20 @@ public class Gui extends DisplayBase
     @Override
     public void close() {
         throw new RuntimeException("Not implemented yet");
+    }
+
+    @Override
+    public void processServerAdded(String desc) {
+        main.addServer(desc);
+    }
+
+    @Override
+    public void processServerRemoved(int index) {
+        main.removeServer(index);
+    }
+
+    @Override
+    public void processServerChanged(int index) {
+        main.changeServerTo(index);
     }
 }

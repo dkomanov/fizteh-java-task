@@ -57,5 +57,20 @@ public class Terminal extends DisplayBase
         } catch (IOException ioEx) {
             System.err.println("i/o error while closing terminal: " + ioEx.getMessage());
         }
-    }      
+    }  
+
+    @Override
+    public void processServerAdded(String input) {
+
+    }
+
+    @Override
+    public void processServerRemoved(int index) {
+
+    }
+
+    @Override
+    public void processServerChanged(int index) {
+
+    }    
 }

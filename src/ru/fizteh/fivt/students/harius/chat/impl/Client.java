@@ -33,6 +33,8 @@ public final class Client {
                     = new NetworkService(connection);
                 current = servers.size();
                 servers.add(observable);
+                notifier.notifyServerAdded(observable.repr());
+                notifier.notifyServerChanged(current);
                 observable.setObserver(networkProcessor);
                 observable.send(Packet.hello(name));
                 new Thread(observable).start();
@@ -85,6 +87,7 @@ public final class Client {
                     display.error("Invalid server id");
                 } else {
                     current = index;
+                    notifier.notifyServerChanged(index);
                 }
             } catch (NumberFormatException notNum) {
                 display.error("Invalid server id");
@@ -194,19 +197,24 @@ public final class Client {
                 display.error("internal error: unknown server deleted: " + caller.repr());
             } else {
                 servers.remove(index);
+                notifier.notifyServerRemoved(index);
                 if (current == index) {
                     current = -1;
                 } else if (current > index) {
                     --current;
                 }
+                notifier.notifyServerChanged(index);
             }
         }
     };
+    public final ClientObservable notifier
+        = new ClientObservable() {};
 
     public Client(DisplayBase display, String name) {
         this.display = display;
         this.name = name;
         display.setObserver(inputProcessor);
+        notifier.setObserver(display);
         new Thread(display).start();
     }
 }
