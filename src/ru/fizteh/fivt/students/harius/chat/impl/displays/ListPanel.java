@@ -10,28 +10,55 @@ import ru.fizteh.fivt.students.harius.chat.base.DisplayBase;
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 
 public class ListPanel extends JPanel {
-    java.util.List<JPanel> rows = new ArrayList<>();
-    java.util.List<Component> struts = new ArrayList<>();
+    private java.util.List<JPanel> rows = new ArrayList<>();
+    private java.util.List<Component> struts = new ArrayList<>();
+    private Gui gui;
+    private Component puff = Box.createVerticalGlue();
 
-    public ListPanel() {
+    public ListPanel(Gui gui) {
+        this.gui = gui;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(puff);
     }
 
     public void addRow(Component... components) {
-        JPanel row = new JPanel();
+        remove(puff);
+        final JPanel row = new JPanel();
+        row.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent event) {
+                gui.notifyObserver("/use " + rows.indexOf(event.getSource()));
+            }
+        });
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
-        row.add(Box.createHorizontalStrut(3));    
+        row.add(Box.createHorizontalStrut(3)); 
+        row.setMinimumSize(new Dimension(10, 30));   
+        row.setMaximumSize(new Dimension(1000, 30));
         for (Component component : components) {
             row.add(component);
         }
-        row.add(Box.createHorizontalStrut(3)); 
+        JButton red = new JButton("x");
+        red.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int deleted = rows.indexOf(row);
+                gui.notifyObserver("/use " + deleted);
+                gui.notifyObserver("/disconnect");
+            }
+        });
+        red.setBackground(Color.PINK.darker());
+        red.setForeground(Color.WHITE);
+        row.add(Box.createHorizontalGlue()); 
+        row.add(red);
         rows.add(row);
         Component strut = Box.createVerticalStrut(5);
         struts.add(strut);
         add(row);
         add(strut);
+        add(puff);
     }
 
     public void removeRow(int index) {

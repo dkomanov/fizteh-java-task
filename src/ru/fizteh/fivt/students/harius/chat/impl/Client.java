@@ -87,7 +87,7 @@ public final class Client {
                     display.error("Invalid server id");
                 } else {
                     current = index;
-                    notifier.notifyServerChanged(index);
+                    notifier.notifyServerChanged(current);
                 }
             } catch (NumberFormatException notNum) {
                 display.error("Invalid server id");
@@ -203,7 +203,7 @@ public final class Client {
                 } else if (current > index) {
                     --current;
                 }
-                notifier.notifyServerChanged(index);
+                notifier.notifyServerChanged(current);
             }
         }
     };

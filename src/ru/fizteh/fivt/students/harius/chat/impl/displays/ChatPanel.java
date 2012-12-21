@@ -35,14 +35,14 @@ public class ChatPanel extends JPanel implements ActionListener {
         JPanel right = new JPanel();
         // right.setBackground(Color.GREEN);
         right.setLayout(new BoxLayout(right, BoxLayout.Y_AXIS));
-        connect = new JButton("Connect");
+        connect = new JButton("Connect");        
         connect.addActionListener(this);
         connect.setBackground(Color.GREEN.darker());
         connect.setForeground(Color.WHITE);
         right.add(connect);
         right.add(Box.createVerticalStrut(10));
-        list = new ListPanel();
-        right.add(list);        
+        list = new ListPanel(gui);
+        right.add(new JScrollPane(list));        
         add(right, BorderLayout.EAST);
         JPanel center = new JPanel();
         center.setLayout(new GridLayout(1, 1));
@@ -62,11 +62,11 @@ public class ChatPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent event) {
         if (event.getSource() == connect) {
-            String address = JOptionPane.showInputDialog(this, "Enter the address: ", 
+            Object address = JOptionPane.showInputDialog(this, "Enter the address: ", 
                 "Connect to server", JOptionPane.PLAIN_MESSAGE,
-                null, null, "host:port").toString();
+                null, null, "host:port");
             if (address != null) {
-                gui.notifyObserver("/connect " + address);
+                gui.notifyObserver("/connect " + address.toString());
             }
         } else if (event.getSource() == send || event.getSource() == field) {
             String message = field.getText();
@@ -103,10 +103,7 @@ public class ChatPanel extends JPanel implements ActionListener {
     }
 
     public void addServer(String desc) {
-        JButton red = new JButton("x");
-        red.setBackground(Color.PINK.darker());
-        red.setForeground(Color.WHITE);
-        list.addRow(new JLabel(desc), Box.createHorizontalGlue(), red);
+        list.addRow(new JLabel(desc));
     }
 
     public void removeServer(int index) {
