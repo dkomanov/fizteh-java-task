@@ -226,21 +226,17 @@ class Chat extends JFrame {
     private class KeyBoard implements KeyListener {
 
         @Override
-        public void keyTyped(KeyEvent e) {}
-
-        @Override
-        public void keyPressed(KeyEvent e) {
+        public void keyTyped(KeyEvent e) {
             if (e.getKeyChar() == KeyEvent.VK_ENTER) {
                 sendMessage();
             }
         }
 
         @Override
-        public void keyReleased(KeyEvent e) {
-            if (e.getKeyChar() == KeyEvent.VK_ENTER) {
-                clientArea.setText("");
-            }
-        }
+        public void keyPressed(KeyEvent e) {}
+
+        @Override
+        public void keyReleased(KeyEvent e) {}
     }
 
     private class SendActionListener implements ActionListener {
