@@ -5,16 +5,35 @@ import java.util.*;
 
 public class Client {
     public static void main(String[] args) {
-        new Client().run(args);
+        new Client(args).run();
+    }
+    
+    public final PrintStream out;
+    public final PrintStream err;
+    private String[] args;
+    
+    public Client(String[] args) {
+        this.args = args;
+        this.out = System.out;
+        this.err = System.err;
+    }
+
+    private boolean reading = true;
+    
+    public Client(PrintStream out, PrintStream err, String[] args) {
+        this.out = out;
+        this.err = err;
+        this.args = args;
+        reading = false;
     }
 
     private String nickName = null;
     private ArrayList<ServerConnection> servers = new ArrayList<ServerConnection>();
     private ServerConnection currentServer = null;
 
-    private void run(String[] args) {
+    public void run() {
         if (args.length != 1) {
-            System.err.println("Wrong syntax");
+            err.println("Wrong syntax");
             System.exit(1);
         }
 
@@ -22,7 +41,7 @@ public class Client {
 
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 
-        while (true) {
+        while (true && reading) {
             String command = null;
             try {
                 command = input.readLine();
@@ -30,14 +49,14 @@ public class Client {
                     throw new IOException();
                 }
             } catch (IOException e) {
-                System.err.println("Cannot read from cin");
+                err.println("Cannot read from cin");
                 System.exit(1);
             }
             processCommand(command);
         }
     }
 
-    private void processCommand(String command) {
+    public void processCommand(String command) {
         if (command.length() > 0 && command.charAt(0) == '/') {
             if (command.matches("/connect\\s.+:\\d+")) {
                 connect(command.split(" ")[1]);
@@ -52,7 +71,7 @@ public class Client {
             } else if (command.matches("/exit")) {
                 exit();
             } else {
-                System.err.println("Wrong syntax");
+                err.println("Wrong syntax");
             }
         } else {
             post(command);
@@ -71,14 +90,14 @@ public class Client {
             int port = Integer.parseInt(split[1]);
             server = new ServerConnection(address, port, nickName, this);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            err.println(e.getMessage());
             return;
         }
 
         servers.add(server);
         currentServer = server;
 
-        System.out.println("Successfully connected to " + server);
+        out.println("Successfully connected to " + server);
     }
 
     boolean isCurrentServer(ServerConnection server) {
@@ -107,15 +126,15 @@ public class Client {
 
     private void whereAmI() {
         if (currentServer == null) {
-            System.out.println("You are nowhere, mwhahahaha");
+            out.println("You are nowhere, mwhahahaha");
         } else {
-            System.out.println("You are at " + currentServer);
+            out.println("You are at " + currentServer);
         }
     }
 
     private void list() {
         for (int i = 0; i < servers.size(); i++) {
-            System.out.println(i + ") " + servers.get(i));
+            out.println(i + ") " + servers.get(i));
         }
     }
 
@@ -127,7 +146,7 @@ public class Client {
                 throw new IllegalAccessException("Wrong index");
             }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            err.println(e.getMessage());
             return;
 
         }
@@ -144,7 +163,7 @@ public class Client {
 
     private void post(String message) {
         if (currentServer == null) {
-            System.err.println("You are not connected to a server");
+            err.println("You are not connected to a server");
         } else {
             currentServer.post(message);
         }

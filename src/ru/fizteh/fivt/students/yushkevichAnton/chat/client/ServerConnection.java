@@ -4,15 +4,19 @@ import java.net.Socket;
 
 class ServerConnection {
     private String nickName;
-    private Client client;
+    Client client;
 
     private boolean alive = true;
 
     private CommunicationThread communicationThread;
 
+    String id;
+
     ServerConnection(String address, int port, String nickName, Client client) {
         this.nickName = nickName;
         this.client = client;
+
+        id = address + ":" + port;
 
         try {
             Socket socket = new Socket(address, port);
@@ -51,7 +55,7 @@ class ServerConnection {
         communicationThread.flush();
         communicationThread.interrupt();
 
-        System.out.println("You got disconnected from " + this);
+        client.out.println("You got disconnected from " + this);
 
         client.validateServers();
     }
@@ -62,5 +66,10 @@ class ServerConnection {
         } catch (Exception e) {
             disconnect();
         }
+    }
+
+    @Override
+    public String toString() {
+        return id;
     }
 }
