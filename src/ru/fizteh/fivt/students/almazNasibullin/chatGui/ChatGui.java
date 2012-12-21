@@ -191,32 +191,9 @@ class Chat extends JFrame {
         StringTokenizer st = new StringTokenizer(s, " \n\t");
         if (st.hasMoreTokens()) {
             String badString = st.nextToken();
-            if (badString.equals("/connect")) {
-                clientArea.setText("");
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                return;
-            }
-            if (badString.equals("/disconnect")) {
-                clientArea.setText("");
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                return;
-            }
-            if (badString.equals("/whereami")) {
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                clientArea.setText("");
-                return;
-            }
-            if (badString.equals("/list")) {
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                clientArea.setText("");
-                return;
-            }
-            if (badString.equals("/use")) {
-                clientArea.setText("");
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                return;
-            }
-            if (badString.equals("/exit")) {
+            if (badString.equals("/connect") || badString.equals("/disconnect")
+                    || badString.equals("/whereami") || badString.equals("/list")
+                    || badString.equals("/use") || badString.equals("/exit")) {
                 clientArea.setText("");
                 ShowErrorMessage.showErrorMessage("Message isn't sent");
                 return;
