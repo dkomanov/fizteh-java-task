@@ -13,6 +13,8 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import ru.fizteh.fivt.students.almazNasibullin.chat.client.Client;
 
 /**
@@ -29,11 +31,7 @@ public class ChatGui {
             for (;;) {
                 synchronized(auto.sync) {
                     if (auto.finish) {
-                        System.setOut(new PrintStream(new MyOutputStream(auto.chat.serverArea)));
-                        System.setIn(auto.chat.mis);
-                        String[] arg = new String[1];
-                        arg[0] = auto.chat.name;
-                        Client.main(arg);
+                        auto.chat.run();
                     }
                 }
             }
@@ -63,8 +61,9 @@ class Chat extends JFrame {
     JTextArea clientArea;
     DefaultListModel listModel;
     MyInputStream mis = new MyInputStream();
-    String name;
     String curServer = "";
+    Client client;
+    final Object sync = new Object();
 
     Chat(String s) {
         super("Chat");
@@ -146,11 +145,32 @@ class Chat extends JFrame {
         panel.add(advertisement);
         add(panel);
 
-        name = s;
+        System.setOut(new PrintStream(new MyOutputStream(serverArea)));
+        System.setIn(mis);
+        client = new Client(s);
         setVisible(true);
         repaint();
     }
 
+    public void run() {
+        for (;;) {
+            synchronized(sync) {
+                if (client.isBufReady()) {
+                    client.handlerConsole();
+                }
+                if (client.isConnected()) {
+                    int num = client.getSelectedCount();
+                    if (num == 0) {
+                        continue;
+                    }
+                    if (!client.handlerServer()) {
+                        listModel.remove(listModel.indexOf(curServer));
+                    }
+                }
+            }
+        }
+    }
+    
     private class SendActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -215,15 +235,17 @@ class Chat extends JFrame {
                 return;
             }
 
-            curServer = hostName + ":" + portNumber;
-            mis.setData("/connect " + curServer);
-            int index = listModel.indexOf(curServer);
-            if (index == -1) {
-                listModel.addElement(curServer);
+            synchronized (sync) {
+                if (client.connect(hostName, portNumber)) {
+                    curServer = hostName + ":" + portNumber;
+                    listModel.addElement(curServer);
+                    servers.setSelectedIndex(listModel.indexOf(curServer));
+                } else {
+                    servers.clearSelection();
+                }
             }
             host.setText("host");
             port.setText("port");
-            servers.setSelectedIndex(listModel.indexOf(curServer));
         }
     }
 
@@ -239,7 +261,7 @@ class Chat extends JFrame {
     }
 
     private class ServersListSelectionListener implements ListSelectionListener {
-
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             int selectedIndex = servers.getSelectedIndex();
             if (selectedIndex != -1) {
