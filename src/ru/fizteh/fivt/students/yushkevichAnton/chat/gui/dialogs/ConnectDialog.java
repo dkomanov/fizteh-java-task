@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.yushkevichAnton.chat.client.gui.dialogs;
+package ru.fizteh.fivt.students.yushkevichAnton.chat.gui.dialogs;
 
 import ru.fizteh.fivt.students.yushkevichAnton.chat.client.Client;
 
