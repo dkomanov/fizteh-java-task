@@ -30,7 +30,7 @@ class CommunicationThread extends Thread {
                 getMessage();
             }
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            server.client.err.println(e.getMessage());
             server.disconnect();
         }
     }
@@ -82,7 +82,7 @@ class CommunicationThread extends Thread {
     }
 
     void flush() {
-        System.out.print(buffer.toString());
+        server.client.out.print(buffer.toString());
         buffer = new StringBuilder();
     }
 }
