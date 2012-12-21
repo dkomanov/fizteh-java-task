@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -187,33 +188,35 @@ class Chat extends JFrame {
 
     private void sendMessage() {
         String s = clientArea.getText();
-        if (!s.equals("")) {
-            if (s.indexOf("/connect") == 0) {
+        StringTokenizer st = new StringTokenizer(s, " \n\t");
+        if (st.hasMoreTokens()) {
+            String badString = st.nextToken();
+            if (badString.equals("/connect")) {
                 clientArea.setText("");
                 ShowErrorMessage.showErrorMessage("Message isn't sent");
                 return;
             }
-            if (s.indexOf("/disconnect") == 0) {
+            if (badString.equals("/disconnect")) {
                 clientArea.setText("");
                 ShowErrorMessage.showErrorMessage("Message isn't sent");
                 return;
             }
-            if (s.indexOf("/whereami") == 0) {
+            if (badString.equals("/whereami")) {
                 ShowErrorMessage.showErrorMessage("Message isn't sent");
                 clientArea.setText("");
                 return;
             }
-            if (s.indexOf("/list") == 0) {
+            if (badString.equals("/list")) {
                 ShowErrorMessage.showErrorMessage("Message isn't sent");
                 clientArea.setText("");
                 return;
             }
-            if (s.indexOf("/use") == 0) {
+            if (badString.equals("/use")) {
                 clientArea.setText("");
                 ShowErrorMessage.showErrorMessage("Message isn't sent");
                 return;
             }
-            if (s.indexOf("/exit") == 0) {
+            if (badString.equals("/exit")) {
                 clientArea.setText("");
                 ShowErrorMessage.showErrorMessage("Message isn't sent");
                 return;
