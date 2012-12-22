@@ -59,10 +59,11 @@ public class ChatPanel extends JPanel implements ActionListener {
         send.setBackground(new Color(140, 140, 250));
         send.setForeground(Color.WHITE);
         bottom.add(send);
-        bottom.add(Box.createHorizontalStrut(3));
+        bottom.add(Box.createHorizontalStrut(15));
         JPanel right = new JPanel();
         right.setLayout(new BoxLayout(right, BoxLayout.Y_AXIS));
         connect = new JButton("Connect"); 
+        connect.setAlignmentX(JComponent.RIGHT_ALIGNMENT);
         connect.setFont(font); 
         connect.setPreferredSize(new Dimension(250, 30));      
         connect.addActionListener(this);

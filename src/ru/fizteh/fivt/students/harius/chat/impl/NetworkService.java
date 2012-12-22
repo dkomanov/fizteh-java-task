@@ -9,6 +9,7 @@ package ru.fizteh.fivt.students.harius.chat.impl;
 import ru.fizteh.fivt.students.harius.chat.base.NetworkObservable;
 import ru.fizteh.fivt.students.harius.chat.io.*;
 import java.net.Socket;
+import java.net.InetAddress;
 import java.io.IOException;
 
 public class NetworkService extends NetworkObservable {
@@ -72,6 +73,7 @@ public class NetworkService extends NetworkObservable {
 
     @Override
     public String repr() {
-        return socket.getInetAddress().toString();
+        InetAddress addr = socket.getInetAddress();
+        return addr.getHostName() + ":" + socket.getPort();
     }
 }
