@@ -19,6 +19,7 @@ public class ChatPanel extends JPanel implements ActionListener {
     private JButton send;
     private JTextArea field;
     private ListPanel list;
+    private JTabbedPane center;
     private java.util.List<String> history
         = new ArrayList<>();
     private int current = -1;
@@ -72,7 +73,7 @@ public class ChatPanel extends JPanel implements ActionListener {
         list = new ListPanel(gui);
         right.add(new JScrollPane(list));        
         add(right, BorderLayout.EAST);
-        JTabbedPane center = new JTabbedPane();
+        center = new JTabbedPane();
         center.setFont(font);
         edit = new JTextArea();
         edit.setFont(font2);
@@ -117,15 +118,18 @@ public class ChatPanel extends JPanel implements ActionListener {
     }
 
     public synchronized void message(String user, String message) {
+        center.setSelectedIndex(0);
         edit.append("<" + user + ">");
         edit.append(" " + message + "\n");
     }
 
     public synchronized void warn(String warn) {
+        center.setSelectedIndex(1);
         errors.append(warn + "\n\n");
     }
 
     public synchronized void error(String error) {
+        center.setSelectedIndex(1);
         errors.append(error + "\n\n");
     }
 
