@@ -22,8 +22,15 @@ public final class Client {
 
     private final String name;
 
+    private final Object lock = new Object();
+
     private ClientConsoleAdapter inputProcessor
         = new ClientConsoleAdapter() {
+
+        @Override
+        public void processClosed() {
+            exit();
+        }
         
         @Override
         public void connect(String host, int port) {
@@ -31,13 +38,12 @@ public final class Client {
                 Socket connection = new Socket(host, port);
                 NetworkObservable observable
                     = new NetworkService(connection);
-                current = servers.size();
                 servers.add(observable);
                 notifier.notifyServerAdded(observable.repr());
-                notifier.notifyServerChanged(current);
                 observable.setObserver(networkProcessor);
                 observable.send(Packet.hello(name));
                 new Thread(observable).start();
+                use((servers.size() - 1) + "");
             } catch (IOException badHost) {
                 display.error("Bad server address");
             }
@@ -83,11 +89,14 @@ public final class Client {
         public void use(String server) {
             try {
                 int index = Integer.parseInt(server);
-                if (index < 0 || index > servers.size()) {
+                if (index < -1 || index > servers.size()) {
                     display.error("Invalid server id");
                 } else {
                     current = index;
                     notifier.notifyServerChanged(current);
+                    synchronized(lock) {
+                        lock.notifyAll();
+                    }
                 }
             } catch (NumberFormatException notNum) {
                 display.error("Invalid server id");
@@ -116,7 +125,11 @@ public final class Client {
                 display.error("Cannot send message, no active server");
             } else {
                 try {
-                    server.send(Packet.message(name, message));
+                    Packet messagePacket = Packet.message(name, message);
+                    if (display.needsReflect()) {
+                        networkProcessor.processNetwork(messagePacket, getCurrent());
+                    }
+                    server.send(messagePacket);
                 } catch (IOException ioEx) {
                     display.error("i/o exception while sending packet: " + ioEx.getMessage());
                     try {
@@ -162,9 +175,22 @@ public final class Client {
                         caller.send(Packet.error("Message without a nickname was received"));
                         caller.close();
                     } else {
-                        String nick = data.get(0);
-                        for (String msg : data.subList(1, data.size())) {
-                            display.message(nick, msg);
+                        while (servers.contains(caller)
+                            && (current == -1 || caller != servers.get(current))) {
+
+                            try {
+                                synchronized(lock) {
+                                    lock.wait();
+                                }
+                            } catch (InterruptedException interrupted) {
+                                break;
+                            }
+                        }
+                        if (servers.contains(caller) && current != -1 && caller == servers.get(current)) {
+                            String nick = data.get(0);
+                            for (String msg : data.subList(1, data.size())) {
+                                display.message(nick, msg);
+                            }
                         }
                     }
                 } else if (packet.isError()) {
@@ -199,11 +225,14 @@ public final class Client {
                 servers.remove(index);
                 notifier.notifyServerRemoved(index);
                 if (current == index) {
-                    current = -1;
+                    inputProcessor.use("-1");
                 } else if (current > index) {
-                    --current;
+                    inputProcessor.use((current - 1) + "");
+                } else {
+                    synchronized(lock) {
+                        lock.notifyAll();
+                    }
                 }
-                notifier.notifyServerChanged(current);
             }
         }
     };

@@ -8,15 +8,22 @@ package ru.fizteh.fivt.students.harius.chat.impl.displays;
 
 import ru.fizteh.fivt.students.harius.chat.base.DisplayBase;
 import javax.swing.*;
+import java.awt.event.*;
 
 public class Gui extends DisplayBase
 {
     private ChatPanel main = new ChatPanel(this);
+    private JFrame fr;
 
     public Gui() {
-        JFrame fr = new JFrame("Free chat without SMS or registration");
+        fr = new JFrame("Free chat without SMS or registration");
         fr.setSize(800, 600);
-        fr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        fr.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                close();
+            }
+        });
         fr.add(main);
         fr.setVisible(true);
     }
@@ -43,7 +50,11 @@ public class Gui extends DisplayBase
 
     @Override
     public void close() {
-        throw new RuntimeException("Not implemented yet");
+        if (fr.isEnabled()) {
+            fr.setEnabled(false);
+            fr.dispose();
+            notifyClosed();
+        }
     }
 
     @Override
@@ -60,4 +71,9 @@ public class Gui extends DisplayBase
     public void processServerChanged(int index) {
         main.changeServerTo(index);
     }
+
+    @Override  
+    public boolean needsReflect() {
+        return true;
+    }  
 }

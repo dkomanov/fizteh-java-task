@@ -9,14 +9,21 @@ package ru.fizteh.fivt.students.harius.chat.impl.displays;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 public class ChatPanel extends JPanel implements ActionListener {
     private Gui gui;
     private JButton connect;
     private JTextArea edit;
+    private JTextArea errors;
     private JButton send;
     private JTextField field;
     private ListPanel list;
+    private java.util.List<String> history
+        = new ArrayList<>();
+    private int current = -1;
+    private Font font = new Font(null, Font.BOLD, 24);
+    private Font font2 = new Font(null, Font.PLAIN, 20);
 
     public ChatPanel(Gui gui) {
         this.gui = gui;
@@ -25,17 +32,23 @@ public class ChatPanel extends JPanel implements ActionListener {
         bottom.setLayout(new BoxLayout(bottom, BoxLayout.X_AXIS));
         add(bottom, BorderLayout.SOUTH);
         field = new JTextField();
+        field.setFont(font2);
         field.addActionListener(this);
         bottom.add(field);
+        bottom.add(Box.createHorizontalStrut(3));
         send = new JButton("Send");
+        send.setFont(font);
+        send.setPreferredSize(new Dimension(150, 30));   
         send.addActionListener(this);
         send.setBackground(new Color(140, 140, 250));
         send.setForeground(Color.WHITE);
         bottom.add(send);
+        bottom.add(Box.createHorizontalStrut(3));
         JPanel right = new JPanel();
-        // right.setBackground(Color.GREEN);
         right.setLayout(new BoxLayout(right, BoxLayout.Y_AXIS));
-        connect = new JButton("Connect");        
+        connect = new JButton("Connect"); 
+        connect.setFont(font); 
+        connect.setPreferredSize(new Dimension(250, 30));      
         connect.addActionListener(this);
         connect.setBackground(Color.GREEN.darker());
         connect.setForeground(Color.WHITE);
@@ -44,11 +57,16 @@ public class ChatPanel extends JPanel implements ActionListener {
         list = new ListPanel(gui);
         right.add(new JScrollPane(list));        
         add(right, BorderLayout.EAST);
-        JPanel center = new JPanel();
-        center.setLayout(new GridLayout(1, 1));
+        JTabbedPane center = new JTabbedPane();
+        center.setFont(font);
         edit = new JTextArea();
-        // edit.setEditable(false);
-        center.add(edit);
+        edit.setFont(font2);
+        edit.setEditable(false);
+        center.add(new JScrollPane(edit), "Chat");
+        errors = new JTextArea();
+        errors.setEditable(false);
+        errors.setFont(font2);
+        center.add(new JScrollPane(errors), "Log");
         add(center, BorderLayout.CENTER);
         add(new JPanel(), BorderLayout.WEST);
         add(new JPanel(), BorderLayout.NORTH);
@@ -70,47 +88,48 @@ public class ChatPanel extends JPanel implements ActionListener {
             }
         } else if (event.getSource() == send || event.getSource() == field) {
             String message = field.getText();
-            if (!message.isEmpty()) {
+            if (message.isEmpty()) {
+                warn("Cannot send empty message");
+            } else if (message.startsWith("/")) {
+                warn("Cannot use command sequences with GUI");
+            } else {
                 gui.notifyObserver(message);
                 field.setText("");
             }
         }
     }
 
-    public void message(String user, String message) {
-        // RectanglePainter painter = new RectanglePainter(Color.BLUE.darker());
-        int start = edit.getCaretPosition();
+    public synchronized void message(String user, String message) {
         edit.append("<" + user + ">");
-        int end = edit.getCaretPosition();
         edit.append(" " + message + "\n");
-        // edit.getHighlighter().addHighlight(start, end, painter);
     }
 
-    public void warn(String warn) {
-        // RectanglePainter painter = new RectanglePainter(Color.YELLOW.darker());
-        int start = edit.getCaretPosition();
-        edit.append(warn + "\n");
-        int end = edit.getCaretPosition();
-        // edit.getHighlighter().addHighlight(start, end, painter);
+    public synchronized void warn(String warn) {
+        errors.append(warn + "\n\n");
     }
 
-    public void error(String error) {
-        // RectanglePainter painter = new RectanglePainter(Color.RED.darker());
-        int start = edit.getCaretPosition();
-        edit.append(error + "\n");
-        int end = edit.getCaretPosition();
-        // edit.getHighlighter().addHighlight(start, end, painter);
+    public synchronized void error(String error) {
+        errors.append(error + "\n\n");
     }
 
-    public void addServer(String desc) {
+    public synchronized void addServer(String desc) {
         list.addRow(new JLabel(desc));
+        history.add("");
     }
 
-    public void removeServer(int index) {
+    public synchronized void removeServer(int index) {
         list.removeRow(index);
+        history.remove(index);
     }
 
-    public void changeServerTo(int index) {
+    public synchronized void changeServerTo(int index) {
+        if (current >=0 && current < history.size()) {
+            history.set(current, edit.getText());
+        }
+        current = index;
         list.selectRow(index);
+        if (current != -1) {
+            edit.setText(history.get(current));
+        }
     }
 }

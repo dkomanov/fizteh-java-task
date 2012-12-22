@@ -38,9 +38,10 @@ public class Terminal extends DisplayBase
             try {
                 String line = input.readLine();
                 if (line == null) {
-                    throw new IOException("Terminal stream end");
+                    close();
+                }else {
+                    notifyObserver(line);
                 }
-                notifyObserver(line);
             } catch (IOException ioEx) {
                 if (!closed) {
                     System.err.println("i/o error while reading from terminal: " + ioEx.getMessage());
@@ -51,26 +52,28 @@ public class Terminal extends DisplayBase
 
     @Override
     public void close() {
-        closed = true;
-        try {
-            input.close();
-        } catch (IOException ioEx) {
-            System.err.println("i/o error while closing terminal: " + ioEx.getMessage());
+        if (!closed) {
+            closed = true;
+            try {
+                input.close();
+            } catch (IOException ioEx) {
+                System.err.println("i/o error while closing terminal: " + ioEx.getMessage());
+            }
+            notifyClosed();
         }
     }  
 
     @Override
-    public void processServerAdded(String input) {
-
-    }
+    public void processServerAdded(String input) {}
 
     @Override
-    public void processServerRemoved(int index) {
-
-    }
+    public void processServerRemoved(int index) {}
 
     @Override
-    public void processServerChanged(int index) {
+    public void processServerChanged(int index) {}
 
-    }    
+    @Override  
+    public boolean needsReflect() {
+        return false;
+    }  
 }

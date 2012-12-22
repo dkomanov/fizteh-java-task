@@ -10,4 +10,5 @@ public interface Display {
     void message(String nickname, String message);
     void warn(String warning);
     void error(String error);
+    boolean needsReflect();
 }

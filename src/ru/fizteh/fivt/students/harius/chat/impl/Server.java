@@ -20,6 +20,11 @@ public final class Server {
 
     private ServerConsoleAdapter inputProcessor
         = new ServerConsoleAdapter() {
+
+        @Override
+        public void processClosed() {
+            exit();
+        }
         
         @Override
         public void listen(int port) {

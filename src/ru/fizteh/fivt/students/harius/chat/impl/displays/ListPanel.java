@@ -34,9 +34,9 @@ public class ListPanel extends JPanel {
             }
         });
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
-        row.add(Box.createHorizontalStrut(3)); 
+        // row.add(Box.createHorizontalStrut(3)); 
         row.setMinimumSize(new Dimension(10, 30));   
-        row.setMaximumSize(new Dimension(1000, 30));
+        row.setMaximumSize(new Dimension(250, 30));
         for (Component component : components) {
             row.add(component);
         }
@@ -59,6 +59,8 @@ public class ListPanel extends JPanel {
         add(row);
         add(strut);
         add(puff);
+        repaint();
+        updateUI();
     }
 
     public void removeRow(int index) {
@@ -66,6 +68,8 @@ public class ListPanel extends JPanel {
         remove(struts.get(index));
         rows.remove(index);
         struts.remove(index);
+        repaint();
+        updateUI();
     }
 
     public void selectRow(int index) {
@@ -81,5 +85,7 @@ public class ListPanel extends JPanel {
         if (index != -1) {
             rows.get(index).setBackground(new Color(170, 250, 170));
         }
+        repaint();
+        updateUI();
     }
 }
