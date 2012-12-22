@@ -119,6 +119,31 @@ public class Client {
         System.out.println("You are disconnected from " + curServer);
     }
 
+    public void use(String server) {
+        if (servers.containsKey(server)) {
+            connected = true;
+            curServer = server;
+            curServerNumber = servers.get(curServer);
+        } else {
+            IOUtils.printError(server + ": there is no such server");
+        }
+    }
+
+    public void messageSender() {
+        try {
+            String str = buf.readLine();
+            if (isConnected()) {
+                sendMessage(channels.get(curServerNumber),
+                MessageUtils.message(nick, str));
+            } else {
+                System.out.println("You are not connected. You can't "  +
+                        "send messages.");
+            }
+        } catch (Exception e) {
+            IOUtils.printError("handlerConsole: " + e.getMessage());
+        }
+    }
+
     public void handlerConsole() {
         try {
             String str = buf.readLine();
@@ -164,13 +189,7 @@ public class Client {
                 } else if (cmd.equals("/use")) {
                     if (st.hasMoreTokens()) {
                         String server = st.nextToken();
-                        if (servers.containsKey(server)) {
-                            connected = true;
-                            curServer = server;
-                            curServerNumber = servers.get(curServer);
-                        } else {
-                            IOUtils.printError(server + ": there is no such server");
-                        }
+                        use(server);
                     } else {
                         IOUtils.printError("Usage: /use hostName");
                     }

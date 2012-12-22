@@ -16,12 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.BadLocationException;
 import ru.fizteh.fivt.students.almazNasibullin.chat.client.Client;
 
 /**
@@ -71,7 +68,6 @@ class Chat extends JFrame {
     String curServer = "";
     Client client;
     final Object sync = new Object();
-    final Object syncServerArea = new Object();
     Map<String, List<String>> history = new TreeMap<String, List<String>>();
 
     Chat(String s) {
@@ -166,7 +162,7 @@ class Chat extends JFrame {
         for (;;) {
             synchronized(sync) {
                 if (client.isBufReady()) {
-                    client.handlerConsole();
+                    client.messageSender();
                 }
                 if (client.isConnected()) {
                     int num = client.getSelectedCount();
@@ -176,9 +172,8 @@ class Chat extends JFrame {
                     if (!client.handlerServer()) {
                         listModel.remove(listModel.indexOf(curServer));
                         history.remove(curServer);
-                        synchronized(syncServerArea) {
-                            serverArea.setText("You are disconnected from " + curServer);
-                        }
+                        serverArea.setText("You are disconnected from " + curServer);
+                        serverArea.append("\n");
                         curServer = "";
                     }
                 }
@@ -190,14 +185,6 @@ class Chat extends JFrame {
         String s = clientArea.getText();
         StringTokenizer st = new StringTokenizer(s, " \n\t");
         if (st.hasMoreTokens()) {
-            String badString = st.nextToken();
-            if (badString.equals("/connect") || badString.equals("/disconnect")
-                    || badString.equals("/whereami") || badString.equals("/list")
-                    || badString.equals("/use") || badString.equals("/exit")) {
-                clientArea.setText("");
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                return;
-            }
             mis.setData(s);
         }
         clientArea.setText("");
@@ -249,10 +236,8 @@ class Chat extends JFrame {
                 return;
             }
 
-            synchronized(syncServerArea) {
-                serverArea.setText("");
-            }
             synchronized (sync) {
+                serverArea.setText("");
                 if (client.connect(hostName, portNumber)) {
                     curServer = hostName + ":" + portNumber;
                     listModel.addElement(curServer);
@@ -271,15 +256,15 @@ class Chat extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             history.remove(curServer);
-            synchronized(syncServerArea) {
-                serverArea.setText("");
-            }
             int index = listModel.indexOf(curServer);
             if (index != -1) {
                 listModel.remove(index);
             }
             curServer = "";
-            mis.setData("/disconnect");
+            synchronized (sync) {
+                serverArea.setText("");
+                client.disconnect();
+            }
         }
     }
 
@@ -289,8 +274,8 @@ class Chat extends JFrame {
             int selectedIndex = servers.getSelectedIndex();
             if (selectedIndex != -1) {
                 curServer = (String)listModel.get(selectedIndex);
-                mis.setData(" /use " + curServer);
-                synchronized(syncServerArea) {
+                synchronized (sync) {
+                    client.use(curServer);
                     serverArea.setText("");
                 }
                 for (String s : history.get(curServer)) {
@@ -328,7 +313,7 @@ class Chat extends JFrame {
                     }
                     history.get(curServer).add(text);
                 }
-                synchronized(syncServerArea) {
+                synchronized(sync) {
                     area.append(text);
                 }
                 sb.setLength(0);
