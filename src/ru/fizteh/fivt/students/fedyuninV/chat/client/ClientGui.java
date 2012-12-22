@@ -100,10 +100,6 @@ public class ClientGui extends JFrame {
         client = null;
         authorized = false;
         initFrame();
-        try {
-            System.in.close();
-        } catch (IOException ignored) {
-        }
         System.setOut(new PrintStream(new TextAreaOutputStream(chatArea)));
         System.setErr(new PrintStream(new TextAreaOutputStream(errArea)));
     }

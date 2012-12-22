@@ -38,7 +38,7 @@ public final class MessageUtils {
         int nextByte;
         for (int i = 0; i < 4; i++) {
             if ((nextByte = inputStream.read()) < 0) {
-                System.out.println("Cannot get string length");
+                System.err.println("Cannot get string length");
                 throw new Exception("Cannot get string length");
             }
             buffer.put((byte) nextByte);
@@ -50,14 +50,14 @@ public final class MessageUtils {
     private static String getString(InputStream inputStream) throws Exception{
         int length = getLength(inputStream);
         if (length < 0  ||  length > MAX_LENGTH) {
-            System.out.println("Incorrect length of message");
+            System.err.println("Incorrect length of message");
             throw new Exception("Incorrect length of message");
         }
         byte[] text = new byte[length];
         int nextByte;
         for (int i = 0; i < length; i++) {
             if ((nextByte = inputStream.read()) < 0) {
-                System.out.println("Can't get message");
+                System.err.println("Can't get message");
                 throw new Exception("Can't get message");
             }
             text[i] = (byte) nextByte;
@@ -68,7 +68,7 @@ public final class MessageUtils {
     public static Message getMessage(InputStream inputStream) throws Exception {
         int typeInt;
         if ((typeInt = inputStream.read()) < 0) {
-            System.out.println("Can't get type of message");
+            System.err.println("Can't get type of message");
             throw new Exception("Can't get type of message");
         }
         Message message = new Message(MessageType.getMessageType((byte) typeInt));
@@ -80,7 +80,7 @@ public final class MessageUtils {
             switch (message.getType()) {
                 case MESSAGE:
                     if (stringsNum != 2) {
-                        System.out.println("Incorrect string num in message");
+                        System.err.println("Incorrect string num in message");
                         throw new Exception("Incorrect string num in message");
                     }
                     message.setName(getString(inputStream));
@@ -90,14 +90,14 @@ public final class MessageUtils {
                     break;
                 case ERROR:
                     if (stringsNum != 1) {
-                        System.out.println("Incorrect string num in message");
+                        System.err.println("Incorrect string num in message");
                         throw new Exception("Incorrect string num in message");
                     }
                     message.setText(getString(inputStream));
                     break;
                 case HELLO:
                     if (stringsNum != 1) {
-                        System.out.println("Incorrect string num in message");
+                        System.err.println("Incorrect string num in message");
                         throw new Exception("Incorrect string num in message");
                     }
                     message.setName(getString(inputStream));
@@ -105,7 +105,7 @@ public final class MessageUtils {
             }
         } catch (Exception ex) {
             if (ex.getMessage().equals("")) {
-                System.out.println("Incorrect type of message");
+                System.err.println("Incorrect type of message");
             }
             throw ex;
         }
@@ -128,6 +128,6 @@ public final class MessageUtils {
     }
 
     public static void printMessage(Message message) {
-        System.out.println('<' + message.getName() + ">:" + message.getText());
+        System.err.println('<' + message.getName() + ">:" + message.getText());
     }
 }
