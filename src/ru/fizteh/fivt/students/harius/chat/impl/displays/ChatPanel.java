@@ -17,7 +17,7 @@ public class ChatPanel extends JPanel implements ActionListener {
     private JTextArea edit;
     private JTextArea errors;
     private JButton send;
-    private JTextField field;
+    private JTextArea field;
     private ListPanel list;
     private java.util.List<String> history
         = new ArrayList<>();
@@ -31,14 +31,29 @@ public class ChatPanel extends JPanel implements ActionListener {
         JPanel bottom = new JPanel();
         bottom.setLayout(new BoxLayout(bottom, BoxLayout.X_AXIS));
         add(bottom, BorderLayout.SOUTH);
-        field = new JTextField();
+        field = new JTextArea();
         field.setFont(font2);
-        field.addActionListener(this);
-        bottom.add(field);
+        field.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent event) {
+                if (event.getKeyChar() == KeyEvent.VK_ENTER) {
+                    if ((event.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) == 0) {
+                        String text = field.getText();
+                        field.setText(field.getText().substring(0, text.length() - 1));
+                        messageSent();
+                    } else {
+                        field.append("\n");
+                    }
+                }
+            }
+        });
+        JScrollPane scrollField = new JScrollPane(field);
+        scrollField.setPreferredSize(new Dimension(0, 100));
+        bottom.add(scrollField);
         bottom.add(Box.createHorizontalStrut(3));
         send = new JButton("Send");
         send.setFont(font);
-        send.setPreferredSize(new Dimension(150, 30));   
+        send.setPreferredSize(new Dimension(150, 100));   
         send.addActionListener(this);
         send.setBackground(new Color(140, 140, 250));
         send.setForeground(Color.WHITE);
@@ -87,13 +102,17 @@ public class ChatPanel extends JPanel implements ActionListener {
                 gui.notifyObserver("/connect " + address.toString());
             }
         } else if (event.getSource() == send || event.getSource() == field) {
-            String message = field.getText();
-            if (message.isEmpty()) {
-                warn("Cannot send empty message");
-            } else {
-                gui.notifyObserver(message);
-                field.setText("");
-            }
+            messageSent();
+        }
+    }
+
+    public void messageSent() {
+        String message = field.getText();
+        if (message.isEmpty()) {
+            warn("Cannot send empty message");
+        } else {
+            gui.notifyObserver(message);
+            field.setText("");
         }
     }
 
