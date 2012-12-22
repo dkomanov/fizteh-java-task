@@ -151,8 +151,8 @@ public class Processor implements Runnable {
             if (selfWriter == null) {
 
             } else {
-                //message.getBytes()
-                selfWriter.write(new byte[]{2, 1, 0, 0, 0, 1, 66, 97, 100, -1,-1});
+                selfWriter.write(message.getBytes());
+                //selfWriter.write(new byte[]{2, 1, 0, 0, 0, 1, 66, 97, 100, -1,-1});
             }
         } catch (Exception e) {
             System.out.println("in sendto " + e.getMessage());
