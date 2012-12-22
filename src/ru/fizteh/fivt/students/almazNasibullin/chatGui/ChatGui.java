@@ -18,7 +18,8 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;import ru.fizteh.fivt.students.almazNasibullin.chat.client.Client;
+import javax.swing.event.ListSelectionListener;
+import ru.fizteh.fivt.students.almazNasibullin.chat.client.Client;
 
 /**
  * 15.12.12
