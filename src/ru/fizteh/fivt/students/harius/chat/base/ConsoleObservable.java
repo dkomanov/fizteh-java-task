@@ -20,4 +20,10 @@ public abstract class ConsoleObservable implements Runnable, Closeable {
             observer.processConsole(message);
         }
     }
+
+    public final void notifyClosed() {
+        if (observer != null) {
+            observer.processClosed();
+        }
+    }
 }
