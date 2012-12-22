@@ -18,8 +18,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import ru.fizteh.fivt.students.almazNasibullin.chat.client.Client;
+import javax.swing.event.ListSelectionListener;import ru.fizteh.fivt.students.almazNasibullin.chat.client.Client;
 
 /**
  * 15.12.12
@@ -216,6 +215,9 @@ class Chat extends JFrame {
     private class ConnectActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            host.setText("host");
+            port.setText("port");
+            curServer = "";
             String hostName = host.getText();
             String portNumber = port.getText();
             
@@ -238,27 +240,38 @@ class Chat extends JFrame {
 
             synchronized (sync) {
                 serverArea.setText("");
-                if (client.connect(hostName, portNumber)) {
-                    curServer = hostName + ":" + portNumber;
-                    listModel.addElement(curServer);
-                    history.put(curServer, new ArrayList<String>());
-                    servers.setSelectedIndex(listModel.indexOf(curServer));
-                } else {
+                curServer = hostName + ":" + portNumber;
+                if (listModel.contains(curServer)) {
+                    curServer = "";
+                    System.out.println("You are already connected to: " + hostName
+                            + ":" + portNumber);
                     servers.clearSelection();
+                } else {
+                    if (client.connect(hostName, portNumber)) {
+                        listModel.addElement(curServer);
+                        history.put(curServer, new ArrayList<String>());
+                        servers.setSelectedIndex(listModel.indexOf(curServer));
+                    } else {
+                        curServer = "";
+                        servers.clearSelection();
+                    }
                 }
             }
-            host.setText("host");
-            port.setText("port");
         }
     }
 
     private class DisconnectActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            history.remove(curServer);
-            int index = listModel.indexOf(curServer);
-            if (index != -1) {
-                listModel.remove(index);
+            if (!curServer.equals("")) {
+                int index = listModel.indexOf(curServer);
+                if (index != -1) {
+                    listModel.remove(index);
+                    history.remove(curServer);
+                }
+            } else {
+                System.out.println("You are not connected");
+                return;
             }
             curServer = "";
             synchronized (sync) {
@@ -445,11 +458,7 @@ class ErrorOutputStream extends OutputStream {
 
         if (b == '\n') {
             String text = sb.toString();
-            JFrame jf = new JFrame();
-            JOptionPane optionPane = new JOptionPane(text, JOptionPane.ERROR_MESSAGE,
-                    JOptionPane.DEFAULT_OPTION);
-            JDialog dialog = optionPane.createDialog(jf, "Error");
-            dialog.setVisible(true);
+            ShowErrorMessage.showErrorMessage(text);
             sb.setLength(0);
             return;
         }
@@ -458,7 +467,7 @@ class ErrorOutputStream extends OutputStream {
 }
 
 class MyInputStream extends InputStream {
-    List<Byte> list = Collections.synchronizedList(new LinkedList<Byte>());
+    List<Byte> list = new ArrayList<Byte>();
     final Object sync;
 
     MyInputStream() {
