@@ -106,8 +106,11 @@ public class ParallelSorterRunner {
                 prevValue = curValue;
             }
         } finally {
-            if (hasOpenedFile) {
+            try {
                 printer.flush();
+            } catch (Exception e) {
+            }
+            if (hasOpenedFile) {
                 try {
                     printer.close();
                 } catch (Exception e) {
