@@ -66,7 +66,7 @@ public class UserWorker implements Runnable{
                 } catch (Exception ex) {
                     try {
                         if (ex.getMessage() == null) {
-                            sendMessage(MessageUtils.error("An error occured"));
+                            sendMessage(MessageUtils.error(ex.getClass().getName()));
                         } else {
                             sendMessage(MessageUtils.error(ex.getMessage()));
                         }

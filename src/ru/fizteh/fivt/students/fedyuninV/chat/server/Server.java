@@ -144,98 +144,100 @@ public class Server implements Runnable{
     public void processMessage(Message message, UserWorker worker) {
         String name = worker.getName();
         String text;
-        switch (message.getType()) {
-            case HELLO:
-                String newName = message.getName();
-                if (name != null) {
-                    try {
-                        worker.sendMessage(MessageUtils.message("server", "Already authorized"));
-                    } catch (Exception ex) {
+        synchronized (worker) {
+            switch (message.getType()) {
+                case HELLO:
+                    String newName = message.getName();
+                    if (name != null) {
                         try {
-                            worker.sendMessage(MessageUtils.error("can't deliver previous messages to you"));
-                        } catch (Exception ignored) {
+                            worker.sendMessage(MessageUtils.message("server", "Already authorized"));
+                        } catch (Exception ex) {
+                            try {
+                                worker.sendMessage(MessageUtils.error("can't deliver previous messages to you"));
+                            } catch (Exception ignored) {
+                            }
+                            worker.kill();
+                            worker.join();
                         }
-                        worker.kill();
-                        worker.join();
-                    }
-                    return;
-                }
-                synchronized (usersOnline) {
-                    if (usersOnline.containsKey(newName)  ||  newName == null  ||  newName.matches("[ \n\t]*")) {
-                        try {
-                            worker.sendMessage(MessageUtils.error("Cannot authorize with this name"));
-                        } catch (Exception ignored) {
-                        }
-                        worker.kill();
-                        worker.join();
                         return;
                     }
-                }
-                synchronized (unauthorizedUsers) {
-                    unauthorizedUsers.remove(worker);
-                }
-                worker.setName(newName);
-                synchronized (usersOnline) {
-                    usersOnline.put(newName, worker);
-                }
-                System.out.println(newName + " suddenly appeared");
-                break;
-            case BYE:
-                text = " left the chat";
-                if (name != null) {
-                    System.out.println("User " + name + text);
-                    kill(null, name);
                     synchronized (usersOnline) {
-                        usersOnline.remove(name);
+                        if (usersOnline.containsKey(newName)  ||  newName == null  ||  newName.matches("[ \n\t]*")) {
+                            try {
+                                worker.sendMessage(MessageUtils.error("Cannot authorize with this name"));
+                            } catch (Exception ignored) {
+                            }
+                            worker.kill();
+                            worker.join();
+                            return;
+                        }
                     }
-                } else {
-                    System.out.println("Unauthorized user " + text);
                     synchronized (unauthorizedUsers) {
                         unauthorizedUsers.remove(worker);
                     }
-                }
-                worker.kill();
-                break;
-            case ERROR:
-                text = " left because of error";
-                if (name != null) {
-                    System.out.println("User " + name + text);
-                    kill(null, name);
+                    worker.setName(newName);
                     synchronized (usersOnline) {
-                        usersOnline.remove(name);
+                        usersOnline.put(newName, worker);
                     }
-                } else {
-                    System.out.println("Unauthorized user " + text);
-                    synchronized (unauthorizedUsers) {
-                        unauthorizedUsers.remove(worker);
-                    }
-                }
-                worker.kill();
-                break;
-            case MESSAGE:
-                if (name == null) {
-                    try {
-                        worker.sendMessage(MessageUtils.message("server", "You need to authorize"));
-                    } catch (Exception ex) {
-                        try {
-                            worker.sendMessage(MessageUtils.error("can't deliver previous messages to you"));
-                        } catch (Exception ignored) {
+                    System.out.println(newName + " suddenly appeared");
+                    break;
+                case BYE:
+                    text = " left the chat";
+                    if (name != null) {
+                        System.out.println("User " + name + text);
+                        kill(null, name);
+                        synchronized (usersOnline) {
+                            usersOnline.remove(name);
                         }
-                        worker.kill();
-                        worker.join();
-                    }
-                } else {
-                    if (!message.getName().equals(name)) {
-                        try{
-                            worker.sendMessage(MessageUtils.error("Don't even try to change your"));
-                        } catch (Exception ignored) {
-                        }
-                        kill(null, worker.getName());
-                        sendAll(MessageType.MESSAGE, "server", name + "was kicked from chat.");
                     } else {
-                        sendAll(MessageType.MESSAGE, message.getName(), message.getText());
+                        System.out.println("Unauthorized user " + text);
+                        synchronized (unauthorizedUsers) {
+                            unauthorizedUsers.remove(worker);
+                        }
                     }
-                }
+                    worker.kill();
+                    break;
+                case ERROR:
+                    text = " left because of error";
+                    if (name != null) {
+                        System.out.println("User " + name + text);
+                        kill(null, name);
+                        synchronized (usersOnline) {
+                            usersOnline.remove(name);
+                        }
+                    } else {
+                        System.out.println("Unauthorized user " + text);
+                        synchronized (unauthorizedUsers) {
+                            unauthorizedUsers.remove(worker);
+                        }
+                    }
+                    worker.kill();
+                    break;
+                case MESSAGE:
+                    if (name == null) {
+                        try {
+                            worker.sendMessage(MessageUtils.message("server", "You need to authorize"));
+                        } catch (Exception ex) {
+                            try {
+                                worker.sendMessage(MessageUtils.error("can't deliver previous messages to you"));
+                            } catch (Exception ignored) {
+                            }
+                            worker.kill();
+                            worker.join();
+                        }
+                    } else {
+                        if (!message.getName().equals(name)) {
+                            try{
+                                worker.sendMessage(MessageUtils.error("Don't even try to change your"));
+                            } catch (Exception ignored) {
+                            }
+                            kill(null, worker.getName());
+                            sendAll(MessageType.MESSAGE, "server", name + "was kicked from chat.");
+                        } else {
+                            sendAll(MessageType.MESSAGE, message.getName(), message.getText());
+                        }
+                    }
+            }
         }
     }
 
