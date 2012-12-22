@@ -1,18 +1,11 @@
 package ru.fizteh.fivt.students.tolyapro.chat.client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
-
 import ru.fizteh.fivt.students.tolyapro.chat.MessageUtils;
+import ru.fizteh.fivt.students.tolyapro.chat.TextAreaWriter;
 
 /**
  * @author tolyapro
@@ -25,9 +18,14 @@ public class ChatClient {
     static ArrayList<String> serverNames;
     static ArrayList<OutputStream> streams;
     static ArrayList<Integer> toDelete;
+    static TextAreaWriter areaWriter;
+    static TextAreaWriter errorWriter;
 
-    public ChatClient(String name) {
+    public ChatClient(String name, TextAreaWriter areaWriter,
+            TextAreaWriter errorWriter) {
         this.name = name;
+        this.areaWriter = areaWriter;
+        this.errorWriter = errorWriter;
         servers = new ArrayList<ServerConnection>();
         serverNames = new ArrayList<String>();
         streams = new ArrayList<OutputStream>();
@@ -37,9 +35,10 @@ public class ChatClient {
     synchronized void disconnectFromActive() {
         for (int i = 0; i < servers.size(); ++i) {
             if (servers.get(i).isActive()) {
-                servers.remove(i);
-                serverNames.remove(i);
-                streams.remove(i);
+                // servers.remove(i);
+                // serverNames.remove(i);
+                // streams.remove(i);
+                servers.get(i).disable();
                 // disableAll();
                 return;
             }
@@ -76,7 +75,7 @@ public class ChatClient {
         OutputStream out = server.getOutputStream();
         disableAll();
         ServerConnection sc = new ServerConnection(server, toDelete,
-                servers.size());
+                servers.size(), areaWriter, errorWriter);
         servers.add(sc);
         serverNames.add(host + ":" + portString);
         streams.add(out);
@@ -120,8 +119,31 @@ public class ChatClient {
     void sendMessageFromConsole(String message) throws IOException {
         for (int i = 0; i < servers.size(); ++i) {
             if (servers.get(i).isActive()) {
+                // servers.get(i).history += message;
                 streams.get(i).write(message.getBytes());
                 return;
+            }
+        }
+    }
+
+    String getHistory(String name) {
+        System.out.println("Wnat to get history from " + name);
+        for (int i = 0; i < serverNames.size(); ++i) {
+            System.out.println(serverNames.size());
+            if (serverNames.get(i).equals(name)) {
+                System.out.println("name" + name);
+                System.out.println(servers.get(i).getHistory());
+                return servers.get(i).getHistory();
+            }
+        }
+        System.out.println("Not found");
+        return "";
+    }
+
+    void updateHistory(String name, String message) {
+        for (int i = 0; i < serverNames.size(); ++i) {
+            if (serverNames.get(i).equals(name)) {
+                servers.get(i).updateHistory(message);
             }
         }
     }

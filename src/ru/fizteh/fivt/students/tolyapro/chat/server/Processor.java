@@ -1,23 +1,15 @@
 package ru.fizteh.fivt.students.tolyapro.chat.server;
 
-import java.awt.List;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.*;
-import java.nio.channels.*;
-import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ru.fizteh.fivt.students.tolyapro.chat.MessageUtils;
-import ru.fizteh.fivt.students.tolyapro.chat.client.Client;
 import ru.fizteh.fivt.students.tolyapro.wordCounter.BufferCloser;
 
 /**
@@ -151,8 +143,9 @@ public class Processor implements Runnable {
             if (selfWriter == null) {
 
             } else {
-                //message.getBytes()
-                selfWriter.write(new byte[]{2, 1, 0, 0, 0, 1, 66, 97, 100, -1,-1});
+                selfWriter.write(message.getBytes());
+                // selfWriter.write(new byte[]{2, 1, 0, 0, 0, 1, 66, 97, 100,
+                // -1,-1});
             }
         } catch (Exception e) {
             System.out.println("in sendto " + e.getMessage());
