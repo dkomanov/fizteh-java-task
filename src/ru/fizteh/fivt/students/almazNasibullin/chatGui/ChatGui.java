@@ -216,11 +216,11 @@ class Chat extends JFrame {
     private class ConnectActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            host.setText("host");
-            port.setText("port");
             curServer = "";
             String hostName = host.getText();
             String portNumber = port.getText();
+            host.setText("host");
+            port.setText("port");
             
             if (hostName.equals("")) {
                 ShowErrorMessage.showErrorMessage("Put host!");
