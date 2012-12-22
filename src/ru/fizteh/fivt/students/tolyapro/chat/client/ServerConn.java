@@ -1,14 +1,9 @@
 package ru.fizteh.fivt.students.tolyapro.chat.client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.List;
-
 import ru.fizteh.fivt.students.tolyapro.chat.MessageUtils;
 import ru.fizteh.fivt.students.tolyapro.chat.TextAreaWriter;
 
@@ -26,12 +21,12 @@ class ServerConnection implements Runnable {
     synchronized public String getHistory() {
         return history;
     }
-    
+
     synchronized public void updateHistory(String string) {
         history += string;
         history += '\n';
     }
-    
+
     public ServerConnection(Socket server, ArrayList<Integer> toDelete,
             int number, TextAreaWriter areaWriter, TextAreaWriter errorWriter)
             throws IOException {

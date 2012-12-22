@@ -21,7 +21,7 @@ public class TextAreaWriter extends Writer {
         text.append(new String(c, off, len));
         moveCaret(); //
     }
-    
+
     public void moveCaret() {
         text.setCaretPosition(text.getDocument().getLength());
     }

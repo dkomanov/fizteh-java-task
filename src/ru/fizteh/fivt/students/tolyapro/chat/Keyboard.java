@@ -7,11 +7,11 @@ import javax.swing.JTextArea;
 
 import ru.fizteh.fivt.students.tolyapro.chat.client.GuiClient;
 
-public class KeyBoard implements KeyListener {
+public class Keyboard implements KeyListener {
 
     JTextArea area;
 
-    public KeyBoard(JTextArea jTextArea) {
+    public Keyboard(JTextArea jTextArea) {
         area = jTextArea;
     }
 
@@ -21,12 +21,12 @@ public class KeyBoard implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-       //System.out.print(e.getKeyChar());
-       if (e.getKeyChar() == KeyEvent.VK_ENTER) {
-           GuiClient.sendMyMessage(area.getText().replaceAll("\n", ""));
-           area.setText("");
-           area.setCaretPosition(0);
-       }
+        // System.out.print(e.getKeyChar());
+        if (e.getKeyChar() == KeyEvent.VK_ENTER) {
+            GuiClient.sendMyMessage(area.getText().replaceAll("\n", ""));
+            area.setText("");
+            area.setCaretPosition(0);
+        }
     }
 
     @Override
