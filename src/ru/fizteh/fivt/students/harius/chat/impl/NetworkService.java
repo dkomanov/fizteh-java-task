@@ -58,7 +58,7 @@ public class NetworkService extends NetworkObservable {
 
     @Override
     public void close() throws IOException {
-        close("disconnecting");
+        close("Disconnected");
     }
 
     public void close(String reason) throws IOException {
