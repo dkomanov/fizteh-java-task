@@ -170,8 +170,11 @@ class Chat extends JFrame {
                         continue;
                     }
                     if (!client.handlerServer()) {
-                        listModel.remove(listModel.indexOf(curServer));
-                        history.remove(curServer);
+                        int index = listModel.indexOf(curServer);
+                        if (index != -1) {
+                            listModel.remove(index);
+                            history.remove(curServer);
+                        }
                         serverArea.setText("You are disconnected from " + curServer);
                         serverArea.append("\n");
                         curServer = "";
@@ -264,18 +267,18 @@ class Chat extends JFrame {
     private class DisconnectActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (!curServer.equals("")) {
-                int index = listModel.indexOf(curServer);
-                if (index != -1) {
-                    listModel.remove(index);
-                    history.remove(curServer);
-                }
-            } else {
-                System.out.println("You are not connected");
-                return;
-            }
-            curServer = "";
             synchronized (sync) {
+                if (!curServer.equals("")) {
+                    int index = listModel.indexOf(curServer);
+                    if (index != -1) {
+                        listModel.remove(index);
+                        history.remove(curServer);
+                    }
+                } else {
+                    System.out.println("You are not connected");
+                    return;
+                }
+                curServer = "";
                 serverArea.setText("");
                 client.disconnect();
             }
@@ -285,15 +288,15 @@ class Chat extends JFrame {
     private class ServersListSelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            int selectedIndex = servers.getSelectedIndex();
-            if (selectedIndex != -1) {
-                curServer = (String)listModel.get(selectedIndex);
-                synchronized (sync) {
+            synchronized(sync) {
+                int selectedIndex = servers.getSelectedIndex();
+                if (selectedIndex != -1) {
+                    curServer = (String)listModel.get(selectedIndex);
                     client.use(curServer);
                     serverArea.setText("");
-                }
-                for (String s : history.get(curServer)) {
-                    serverArea.append(s);
+                    for (String s : history.get(curServer)) {
+                        serverArea.append(s);
+                    }
                 }
             }
         }
@@ -320,17 +323,17 @@ class Chat extends JFrame {
             }
 
             if (b == '\n') {
-                String text = sb.toString() + "\n";
-                if (!curServer.equals("")) {
-                    if (history.get(curServer).size() == 100) {
-                        history.get(curServer).remove(0);
-                    }
-                    history.get(curServer).add(text);
-                }
                 synchronized(sync) {
+                    String text = sb.toString() + "\n";
+                    if (!curServer.equals("")) {
+                        if (history.get(curServer).size() == 100) {
+                            history.get(curServer).remove(0);
+                        }
+                        history.get(curServer).add(text);
+                    }
                     area.append(text);
+                    sb.setLength(0);
                 }
-                sb.setLength(0);
                 return;
             }
             sb.append((char) b);
