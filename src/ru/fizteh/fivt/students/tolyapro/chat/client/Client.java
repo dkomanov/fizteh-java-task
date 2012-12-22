@@ -9,14 +9,42 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import javax.swing.JTextArea;
+
 import ru.fizteh.fivt.students.tolyapro.chat.MessageUtils;
+import ru.fizteh.fivt.students.tolyapro.chat.TextAreaWriter;
 
 public class Client {
+    private String nickname;
+    private ChatClient client;
+    
+    Client(String nick) {
+        nickname = nick;
+    }
+    
+    public void connect(String host, String port) throws Exception {
+        client.connect(host, port);        
+    }
+    
+    public void use(String name) {
+        String[] arg = name.split(":");
+        client.use(arg[0], arg[1]);
+    }
+    
+    public void disconnect() {
+        client.disconnectFromActive();
+    }
+    
+    public void sendMessage(String string) throws IOException {
+        client.sendMessageFromConsole(new String(MessageUtils
+                .message(nickname, string)));
+    }
 
-    public static void main(String[] args) throws IOException {
+    public void parse(JTextArea jTextArea) throws IOException {
         //byte[] expected = new byte[]{12, 1, 0, 0, 0, 3, 66, 97, 100};
         //System.out.println(expected);
-        ChatClient client = new ChatClient(args[0]);
+        TextAreaWriter areaWriter = new TextAreaWriter(jTextArea);
+        //client = new ChatClient(nickname, areaWriter, );
         Scanner scanner = new Scanner(System.in);
         String string = null;
         try {
@@ -68,7 +96,7 @@ public class Client {
                     } else {
                         System.out.println("In mes");
                         client.sendMessageFromConsole(new String(MessageUtils
-                                .message(args[0], string)));
+                                .message(nickname, string)));
                         break;
                     }
                 }
