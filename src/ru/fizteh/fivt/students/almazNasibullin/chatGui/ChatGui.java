@@ -14,13 +14,11 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.BadLocationException;
 import ru.fizteh.fivt.students.almazNasibullin.chat.client.Client;
 
 /**
@@ -70,7 +68,6 @@ class Chat extends JFrame {
     String curServer = "";
     Client client;
     final Object sync = new Object();
-    final Object syncServerArea = new Object();
     Map<String, List<String>> history = new TreeMap<String, List<String>>();
 
     Chat(String s) {
@@ -165,7 +162,7 @@ class Chat extends JFrame {
         for (;;) {
             synchronized(sync) {
                 if (client.isBufReady()) {
-                    client.handlerConsole();
+                    client.messageSender();
                 }
                 if (client.isConnected()) {
                     int num = client.getSelectedCount();
@@ -175,9 +172,8 @@ class Chat extends JFrame {
                     if (!client.handlerServer()) {
                         listModel.remove(listModel.indexOf(curServer));
                         history.remove(curServer);
-                        synchronized(syncServerArea) {
-                            serverArea.setText("You are disconnected from " + curServer);
-                        }
+                        serverArea.setText("You are disconnected from " + curServer);
+                        serverArea.append("\n");
                         curServer = "";
                     }
                 }
@@ -187,37 +183,8 @@ class Chat extends JFrame {
 
     private void sendMessage() {
         String s = clientArea.getText();
-        if (!s.equals("")) {
-            if (s.indexOf("/connect") == 0) {
-                clientArea.setText("");
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                return;
-            }
-            if (s.indexOf("/disconnect") == 0) {
-                clientArea.setText("");
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                return;
-            }
-            if (s.indexOf("/whereami") == 0) {
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                clientArea.setText("");
-                return;
-            }
-            if (s.indexOf("/list") == 0) {
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                clientArea.setText("");
-                return;
-            }
-            if (s.indexOf("/use") == 0) {
-                clientArea.setText("");
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                return;
-            }
-            if (s.indexOf("/exit") == 0) {
-                clientArea.setText("");
-                ShowErrorMessage.showErrorMessage("Message isn't sent");
-                return;
-            }
+        StringTokenizer st = new StringTokenizer(s, " \n\t");
+        if (st.hasMoreTokens()) {
             mis.setData(s);
         }
         clientArea.setText("");
@@ -249,8 +216,11 @@ class Chat extends JFrame {
     private class ConnectActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            curServer = "";
             String hostName = host.getText();
             String portNumber = port.getText();
+            host.setText("host");
+            port.setText("port");
             
             if (hostName.equals("")) {
                 ShowErrorMessage.showErrorMessage("Put host!");
@@ -269,37 +239,46 @@ class Chat extends JFrame {
                 return;
             }
 
-            synchronized(syncServerArea) {
-                serverArea.setText("");
-            }
             synchronized (sync) {
-                if (client.connect(hostName, portNumber)) {
-                    curServer = hostName + ":" + portNumber;
-                    listModel.addElement(curServer);
-                    history.put(curServer, new ArrayList<String>());
-                    servers.setSelectedIndex(listModel.indexOf(curServer));
-                } else {
+                serverArea.setText("");
+                curServer = hostName + ":" + portNumber;
+                if (listModel.contains(curServer)) {
+                    curServer = "";
+                    System.out.println("You are already connected to: " + hostName
+                            + ":" + portNumber);
                     servers.clearSelection();
+                } else {
+                    if (client.connect(hostName, portNumber)) {
+                        listModel.addElement(curServer);
+                        history.put(curServer, new ArrayList<String>());
+                        servers.setSelectedIndex(listModel.indexOf(curServer));
+                    } else {
+                        curServer = "";
+                        servers.clearSelection();
+                    }
                 }
             }
-            host.setText("host");
-            port.setText("port");
         }
     }
 
     private class DisconnectActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            history.remove(curServer);
-            synchronized(syncServerArea) {
-                serverArea.setText("");
-            }
-            int index = listModel.indexOf(curServer);
-            if (index != -1) {
-                listModel.remove(index);
+            if (!curServer.equals("")) {
+                int index = listModel.indexOf(curServer);
+                if (index != -1) {
+                    listModel.remove(index);
+                    history.remove(curServer);
+                }
+            } else {
+                System.out.println("You are not connected");
+                return;
             }
             curServer = "";
-            mis.setData("/disconnect");
+            synchronized (sync) {
+                serverArea.setText("");
+                client.disconnect();
+            }
         }
     }
 
@@ -309,8 +288,8 @@ class Chat extends JFrame {
             int selectedIndex = servers.getSelectedIndex();
             if (selectedIndex != -1) {
                 curServer = (String)listModel.get(selectedIndex);
-                mis.setData(" /use " + curServer);
-                synchronized(syncServerArea) {
+                synchronized (sync) {
+                    client.use(curServer);
                     serverArea.setText("");
                 }
                 for (String s : history.get(curServer)) {
@@ -348,7 +327,7 @@ class Chat extends JFrame {
                     }
                     history.get(curServer).add(text);
                 }
-                synchronized(syncServerArea) {
+                synchronized(sync) {
                     area.append(text);
                 }
                 sb.setLength(0);
@@ -480,11 +459,7 @@ class ErrorOutputStream extends OutputStream {
 
         if (b == '\n') {
             String text = sb.toString();
-            JFrame jf = new JFrame();
-            JOptionPane optionPane = new JOptionPane(text, JOptionPane.ERROR_MESSAGE,
-                    JOptionPane.DEFAULT_OPTION);
-            JDialog dialog = optionPane.createDialog(jf, "Error");
-            dialog.setVisible(true);
+            ShowErrorMessage.showErrorMessage(text);
             sb.setLength(0);
             return;
         }
@@ -493,7 +468,7 @@ class ErrorOutputStream extends OutputStream {
 }
 
 class MyInputStream extends InputStream {
-    List<Byte> list = Collections.synchronizedList(new LinkedList<Byte>());
+    List<Byte> list = new ArrayList<Byte>();
     final Object sync;
 
     MyInputStream() {
