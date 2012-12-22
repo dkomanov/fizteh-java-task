@@ -23,7 +23,7 @@ public class Client {
         this.name = name;
     }
 
-    public static void println(String s) {
+    public void print(String s) {
         synchronized (System.out) {
             System.out.println(s);
         }
@@ -52,6 +52,7 @@ public class Client {
         }
 
         void close() {
+            thread.interrupt();
             try {
                 out.write((new Message(MessageType.BYE)).toByteArray());
             } catch (IOException e) {
@@ -68,7 +69,6 @@ public class Client {
                 socket.close();
             } catch (Exception e) {
             }
-            thread.interrupt();
         }
     }
 
@@ -100,30 +100,30 @@ public class Client {
                 try {
                     message = messageReader.read();
                 } catch (IOException e) {
-                    System.err.println("Failed to read message " + e.getMessage());
+                    log("Failed to read message " + e.getMessage());
                     Client.this.deleteServer(serverName);
                     break;
                 }
                 log("Got message " + message.type.toString());
                 if (message.type == MessageType.ERROR) {
                     if (message.data.size() > 0) {
-                        System.err.println("Server " + serverName + "reported error: " + message.data.get(0));
+                        log("Server " + serverName + "reported error: " + message.data.get(0));
                     } else {
-                        System.err.println("Server " + serverName + "reported error");
+                        log("Server " + serverName + "reported error");
                     }
                     close();
                     Client.this.deleteServer(serverName);
                     break;
                 }
                 if (message.type == MessageType.BYE) {
-                    System.err.println("Server " + serverName + " closed connection: BYE message got");
+                    log("Server " + serverName + " closed connection: BYE message got");
                     close();
                     Client.this.deleteServer(serverName);
                     break;
                 }
                 if (message.type != MessageType.MESSAGE || message.data.size() != 2) {
                     Client.this.deleteServer(serverName);
-                    System.err.println("Server " + serverName + " returned unexpected message");
+                    log("Server " + serverName + " returned unexpected message");
                     close();
                     Client.this.deleteServer(serverName);
                     break;
@@ -133,7 +133,7 @@ public class Client {
                     isActive = currentActiveServer.equals(serverName);
                 }
                 if (isActive) {
-                    println(message.data.get(0) + ": " + message.data.get(1));
+                    print(message.data.get(0) + ": " + message.data.get(1));
                 }
             }
         }
@@ -160,21 +160,21 @@ public class Client {
 
     public void listServers() {
         synchronized (activeServerListSync) {
-            synchronized (System.out) {
-                System.out.println("Active servers:");
-                for (Connection connection: activeServers) {
-                    System.out.println(connection.serverName);
-                }
+            StringBuilder buffer = new StringBuilder();
+            buffer.append("Active servers:\n");
+            for (Connection connection: activeServers) {
+                buffer.append(connection.serverName + "\n");
             }
+            print(buffer.toString());
         }
     }
 
     public void printLocation() {
         synchronized (activeServerSync) {
             if (currentActiveServer != null) {
-                println("Current server: " + currentActiveServer);
+                print("Current server: " + currentActiveServer);
             } else {
-                println("No current server");
+                print("No current server");
             }
         }
     }
@@ -182,7 +182,7 @@ public class Client {
     public void disconnect() {
         synchronized (activeServerSync) {
             if (currentActiveServer != null) {
-                println("Disconnected from" + currentActiveServer);
+                log("Disconnected from " + currentActiveServer);
                 synchronized (activeServerListSync) {
                     activeServers.remove(currentActiveConnection);
                     currentActiveConnection.close();
@@ -190,7 +190,7 @@ public class Client {
                     currentActiveServer = null;
                 }
             } else {
-                println("No active server");
+                log("No active server");
             }
         }
     }
@@ -213,7 +213,7 @@ public class Client {
                         return;
                     }
                 }
-                println("No such server " + serverName);
+                log("No such server " + serverName);
             }
         }
     }
@@ -224,7 +224,7 @@ public class Client {
             connection = new Connection(host, port);
             connection.out.write((new Message(MessageType.HELLO, name)).toByteArray());
         } catch (Exception e) {
-            println("Failed to connect to server " + host + ":" + port.toString());
+            log("Failed to connect to server " + host + ":" + port.toString());
             return;
         }
         synchronized (activeServerListSync) {
@@ -235,20 +235,55 @@ public class Client {
             currentActiveServer = connection.serverName;
         }
         connection.thread.start();
-        println("Connection to server " + host + ":" + port.toString() + " established");
+        log("Connection to server " + host + ":" + port.toString() + " established");
     }
 
     public void sendMessage(String string) {
         if (currentActiveConnection == null) {
-            println("No active connection");
+            log("No active connection");
             return;
         }
         try {
             currentActiveConnection.out.write(new Message(MessageType.MESSAGE, name, string).toByteArray());
         } catch (Exception e) {
             deleteServer(currentActiveConnection.serverName);
-            println("Failed to send message");
+            log("Failed to send message");
         }
+    }
+
+    synchronized public boolean processCommand(String string) {
+        if (string.startsWith("/connect ")) {
+            String[] serverName = string.substring(9).split(":");
+            if (serverName.length != 2) {
+                log(string.substring(9) + " is not valid address");
+                return true;
+            }
+            String host = serverName[0];
+            int port;
+            try {
+                port = Integer.parseInt(serverName[1]);
+            } catch (RuntimeException e) {
+                log(serverName[1] + " is not valid port number");
+                return false;
+            }
+            Client.this.connect(host, port);
+        } else if (string.equals("/list")) {
+            Client.this.listServers();
+        } else if (string.equals("/disconnect")) {
+            Client.this.disconnect();
+        } else if (string.equals("/whereami")) {
+            Client.this.printLocation();
+        } else if (string.startsWith("/use ")) {
+            Client.this.setActiveServer(string.substring(5));
+        } else if (string.startsWith("/exit")) {
+            Client.this.disconnectAll();
+        } else if (string.startsWith("/")) {
+            Client.this.disconnectAll();
+            log("No such command " + string);
+        } else {
+            Client.this.sendMessage(string);
+        }
+        return true;
     }
 
     public class ConsoleHandler {
@@ -258,36 +293,8 @@ public class Client {
 
             try {
                 while ((string = reader.readLine()) != null) {
-                    if (string.startsWith("/connect ")) {
-                        String[] serverName = string.substring(9).split(":");
-                        if (serverName.length != 2) {
-                            println(string.substring(9) + " is not valid address");
-                            continue;
-                        }
-                        String host = serverName[0];
-                        int port;
-                        try {
-                            port = Integer.parseInt(serverName[1]);
-                        } catch (RuntimeException e) {
-                            println(serverName[1] + " is not valid port number");
-                            break;
-                        }
-                        Client.this.connect(host, port);
-                    } else if (string.equals("/list")) {
-                        Client.this.listServers();
-                    } else if (string.equals("/disconnect")) {
-                        Client.this.disconnect();
-                    } else if (string.equals("/whereami")) {
-                        Client.this.printLocation();
-                    } else if (string.startsWith("/use ")) {
-                        Client.this.setActiveServer(string.substring(5));
-                    } else if (string.startsWith("/exit")) {
-                        Client.this.disconnectAll();
-                    } else if (string.startsWith("/")) {
-                        Client.this.disconnectAll();
-                        System.err.println("No such command " + string);
-                    } else {
-                        Client.this.sendMessage(string);
+                    if (!Client.this.processCommand(string)) {
+                        break;
                     }
                 }
             } catch (IOException e) {
@@ -313,7 +320,7 @@ public class Client {
         client.run();
     }
 
-    public static void log(String s) {
+    public void log(String s) {
         synchronized (System.err) {
             System.err.println(s);
         }
