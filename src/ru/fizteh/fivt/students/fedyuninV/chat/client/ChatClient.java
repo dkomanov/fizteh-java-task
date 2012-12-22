@@ -24,7 +24,7 @@ public class ChatClient implements CommandLine {
     }
 
     public void printUsage() {
-        System.out.println("Incorrect usage of client");
+        System.err.println("Incorrect usage of client");
     }
 
     public static void main(String[] args) {
@@ -93,7 +93,6 @@ public class ChatClient implements CommandLine {
                 activeConnection = newConnection;
             } catch (IOException ex) {
                 System.err.println("Can't create connection to " + args[0]);
-                System.err.println(ex.getMessage());
             } catch (Exception ex) {
                 printUsage();
             }
@@ -103,6 +102,10 @@ public class ChatClient implements CommandLine {
                 return;
             }
             if (activeConnection != null) {
+                try {
+                    activeConnection.sendMessage(MessageUtils.bye());
+                } catch (Exception ignored) {
+                }
                 activeConnection.setActive(false);
                 activeConnection.kill();
                 activeConnection.join();
@@ -176,6 +179,7 @@ public class ChatClient implements CommandLine {
                 if (client.isActive()) {
                     System.out.println('<' + message.getName() + ">:" + message.getText());
                 }
+                client.addToHistory('<' + message.getName() + ">:" + message.getText() + '\n');
         }
     }
 
@@ -188,6 +192,25 @@ public class ChatClient implements CommandLine {
             return activeConnection.getName();
         } else {
             return null;
+        }
+    }
+
+    public Object[] getServerList() {
+        synchronized (connections) {
+            if (connections.size() != 0) {
+                return connections.keySet().toArray();
+            } else {
+                return new Object[0];
+            }
+        }
+    }
+
+    public String getHistory()
+    {
+        if (activeConnection != null) {
+            return activeConnection.getHistory();
+        } else {
+            return "";
         }
     }
 }

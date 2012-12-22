@@ -20,12 +20,14 @@ public class Client implements Runnable{
     private Thread clientThread;
     private boolean active;
     private final String name;
+    private String history;
 
     public Client(ChatClient chatClient, String name, String host, int port) throws IOException{
         this.chatClient = chatClient;
         this.socket = new Socket(host, port);
         this.name = name;
         this.active = true;
+        history = new String();
     }
 
     public void start() {
@@ -92,5 +94,13 @@ public class Client implements Runnable{
 
     public String getName() {
         return name;
+    }
+
+    public void addToHistory(String msg) {
+        history += msg;
+    }
+
+    public String getHistory() {
+        return history;
     }
 }

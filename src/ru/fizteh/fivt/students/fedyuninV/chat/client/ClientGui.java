@@ -1,11 +1,11 @@
 package ru.fizteh.fivt.students.fedyuninV.chat.client;
 
-import ru.fizteh.fivt.students.fedyuninV.CommandLineParser;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -73,22 +73,32 @@ class TextAreaOutputStream extends OutputStream {
 public class ClientGui extends JFrame {
     private ChatClient client;
 
+    private JTextField nameField;
+    private JButton authorizeButton;
+
     private JLabel currentServer;
     private JButton exitButton;
 
     private JTextField serverNameField;
     private JButton connectButton;
-    private JComboBox<String> serverListBox;
+    private JComboBox<Object> serverListBox;
     private JButton useButton;
 
     private JTextArea chatArea;
+    private JScrollPane chatScrollPane;
     private JTextArea errArea;
+    private JScrollPane errScrollPane;
 
     private JTextField msgField;
     private JButton sendButton;
     private JButton disconnectButton;
 
-    public ClientGui(String name) {
+    private boolean authorized;
+
+    public ClientGui() {
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        client = null;
+        authorized = false;
         initFrame();
         try {
             System.in.close();
@@ -96,9 +106,6 @@ public class ClientGui extends JFrame {
         }
         System.setOut(new PrintStream(new TextAreaOutputStream(chatArea)));
         System.setErr(new PrintStream(new TextAreaOutputStream(errArea)));
-        client = new ChatClient(name);
-        CommandLineParser parser = new CommandLineParser(client, System.in, "/exit");
-        parser.run();
     }
 
     private void initFrame() {
@@ -106,24 +113,70 @@ public class ClientGui extends JFrame {
         pane.setLayout(new GridBagLayout());
         GridBagConstraints content = new GridBagConstraints();
 
+        nameField = new JTextField("Type your name here");
+        nameField.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent keyEvent) {
+                if (keyEvent.getKeyChar() == KeyEvent.VK_ENTER) {
+                    authorizeButton.doClick();
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent keyEvent) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            public void keyReleased(KeyEvent keyEvent) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+        });
         content.fill = GridBagConstraints.HORIZONTAL;
+        content.gridwidth = 2;
+        content.gridx = 0;
+        content.gridy = 0;
+        pane.add(nameField, content);
+
+        authorizeButton = new JButton("Authorize");
+        authorizeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (authorized) {
+                    System.err.println("Already authorized");
+                } else {
+                    String name = nameField.getText();
+                    if (name.equals(null)  ||  name.equals("")  ||  name.lastIndexOf(' ') != -1  ||  name.matches("[ \n\t]*")) {
+                        System.err.println("Incorrect name");
+                    } else {
+                        authorized = true;
+                        client = new ChatClient(name);
+                        nameField.setEditable(false);
+                    }
+                }
+            }
+        });
+        content.fill = GridBagConstraints.NONE;
         content.gridwidth = 1;
-        content.gridx = 3;
-        content.gridy = 1;
+        content.gridx = 2;
+        content.gridy = 0;
+        pane.add(authorizeButton, content);
 
         currentServer = new JLabel("No active active connections");
         currentServer.setHorizontalAlignment(JLabel.CENTER);
         content.fill = GridBagConstraints.CENTER;
-        content.gridx = 2;
+        content.gridx = 3;
         content.gridy = 0;
-        content.gridwidth = 3;
+        content.gridwidth = 1;
         pane.add(currentServer, content);
 
         exitButton = new JButton("Exit");
         exitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                client.execute("/exit", new String[0]);
+                if (authorized) {
+                    client.execute("/exit", new String[0]);
+                }
                 setVisible(false);
                 dispose();
                 System.exit(0);
@@ -137,6 +190,24 @@ public class ClientGui extends JFrame {
         pane.add(exitButton, content);
 
         serverNameField = new JTextField();
+        serverNameField.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent keyEvent) {
+                if (keyEvent.getKeyChar() == KeyEvent.VK_ENTER) {
+                    connectButton.doClick();
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent keyEvent) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            public void keyReleased(KeyEvent keyEvent) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+        });
         content.fill = GridBagConstraints.HORIZONTAL;
         content.gridx = 0;
         content.gridy = 1;
@@ -147,12 +218,19 @@ public class ClientGui extends JFrame {
         connectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                client.execute("/connect", new String[]{serverNameField.getText()});
-                String activeServerName = client.getActiveServerName();
-                if (activeServerName != null) {
-                    currentServer.setText(activeServerName);
+                if (!authorized) {
+                    System.err.println("You should authorize before connect");
                 } else {
-                    currentServer.setText("No active active connections");
+                    client.execute("/connect", new String[]{serverNameField.getText()});
+                    String activeServerName = client.getActiveServerName();
+                    if (activeServerName != null) {
+                        currentServer.setText(activeServerName);
+                        chatArea.setText(client.getHistory());
+                        chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum());
+                    } else {
+                        currentServer.setText("No active active connections");
+                    }
+                    setServerListBox();
                 }
             }
         });
@@ -175,8 +253,15 @@ public class ClientGui extends JFrame {
         useButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                if (!authorized) {
+                    System.err.println("You should authorize before use");
+                    return;
+                }
                 client.execute("/use", new String[]{serverListBox.getSelectedItem().toString()});
                 currentServer.setText(client.getActiveServerName());
+                chatArea.setText(client.getHistory());
+                chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum());
+                setServerListBox();
             }
         });
         content.weightx = 0;
@@ -187,6 +272,8 @@ public class ClientGui extends JFrame {
         pane.add(useButton, content);
 
         chatArea = new JTextArea(5, 1);
+        chatArea.setEditable(false);
+        chatScrollPane = new JScrollPane(chatArea);
         content.fill = GridBagConstraints.BOTH;
         content.weighty = 1;
         content.weightx = 0.5;
@@ -194,18 +281,39 @@ public class ClientGui extends JFrame {
         content.gridy = 2;
         content.gridwidth = 4;
         content.gridheight = 4;
-        pane.add(chatArea, content);
+        pane.add(chatScrollPane, content);
 
         errArea = new JTextArea(5, 1);
+        errArea.setEditable(false);
+        errScrollPane = new JScrollPane(errArea);
         content.fill = GridBagConstraints.BOTH;
         content.weightx = 0.5;
         content.gridx = 4;
         content.gridy = 2;
         content.gridwidth = 3;
         content.gridheight = 4;
-        pane.add(errArea, content);
+        pane.add(errScrollPane, content);
+
 
         msgField = new JTextField();
+        msgField.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent keyEvent) {
+                if (keyEvent.getKeyChar() == KeyEvent.VK_ENTER) {
+                    sendButton.doClick();
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent keyEvent) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            public void keyReleased(KeyEvent keyEvent) {
+
+            }
+        });
         content.fill = GridBagConstraints.BOTH;
         content.weighty = 0;
         content.weightx = 1;
@@ -218,7 +326,13 @@ public class ClientGui extends JFrame {
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                client.execute("", new String[]{msgField.getText()});
+                if (!authorized) {
+                    System.err.println("You should authorize before send");
+                } else {
+                    client.execute("", new String[]{msgField.getText()});
+                    chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum());
+                    msgField.setText("");
+                }
             }
         });
         content.weightx = 0;
@@ -232,12 +346,19 @@ public class ClientGui extends JFrame {
         disconnectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                client.execute("/disconnect", new String[0]);
-                String activeServerName = client.getActiveServerName();
-                if (activeServerName != null) {
-                    currentServer.setText(activeServerName);
+                if (authorized) {
+                    client.execute("/disconnect", new String[0]);
+                    String activeServerName = client.getActiveServerName();
+                    if (activeServerName != null) {
+                        currentServer.setText(activeServerName);
+                        chatArea.setText(client.getHistory());
+                        chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum());
+                    } else {
+                        currentServer.setText("No active active connections");
+                    }
+                    setServerListBox();
                 } else {
-                    currentServer.setText("No active active connections");
+                    System.err.println("You should authorize before disconnect");
                 }
             }
         });
@@ -250,7 +371,13 @@ public class ClientGui extends JFrame {
         setVisible(true);
     }
 
+    private void setServerListBox() {
+        if (client != null) {
+            serverListBox.setModel(new DefaultComboBoxModel<Object>(client.getServerList()));
+        }
+    }
+
     public static void main(String[] args) {
-        new ClientGui("BAJIEPbI4");
+        new ClientGui();
     }
 }
