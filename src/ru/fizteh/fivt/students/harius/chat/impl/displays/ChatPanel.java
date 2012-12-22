@@ -78,11 +78,15 @@ public class ChatPanel extends JPanel implements ActionListener {
         edit = new JTextArea();
         edit.setFont(font2);
         edit.setEditable(false);
-        center.add(new JScrollPane(edit), "Chat");
+        JScrollPane editScroll = new JScrollPane(edit);
+        editScroll.setAutoscrolls(true);
+        center.add(editScroll, "Chat");
         errors = new JTextArea();
         errors.setEditable(false);
         errors.setFont(font2);
-        center.add(new JScrollPane(errors), "Log");
+        JScrollPane errorScroll = new JScrollPane(errors);
+        errorScroll.setAutoscrolls(true);
+        center.add(errorScroll, "Log");
         add(center, BorderLayout.CENTER);
         add(new JPanel(), BorderLayout.WEST);
         add(new JPanel(), BorderLayout.NORTH);
