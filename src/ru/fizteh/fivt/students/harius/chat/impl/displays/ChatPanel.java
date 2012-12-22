@@ -90,8 +90,6 @@ public class ChatPanel extends JPanel implements ActionListener {
             String message = field.getText();
             if (message.isEmpty()) {
                 warn("Cannot send empty message");
-            } else if (message.startsWith("/")) {
-                warn("Cannot use command sequences with GUI");
             } else {
                 gui.notifyObserver(message);
                 field.setText("");
