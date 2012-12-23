@@ -218,6 +218,9 @@ public class Client {
         }
     }
 
+    public void addServer(String serverName) {
+    }
+
     public void connect(String host, Integer port) {
         Connection connection;
         try {
@@ -236,6 +239,7 @@ public class Client {
         }
         connection.thread.start();
         log("Connection to server " + host + ":" + port.toString() + " established");
+        addServer(connection.serverName);
     }
 
     public void sendMessage(String string) {
@@ -278,7 +282,6 @@ public class Client {
         } else if (string.startsWith("/exit")) {
             Client.this.disconnectAll();
         } else if (string.startsWith("/")) {
-            Client.this.disconnectAll();
             log("No such command " + string);
         } else {
             Client.this.sendMessage(string);
@@ -309,7 +312,6 @@ public class Client {
         ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.run();
     }
-
 
     public static void main(String[] args) {
         if (args.length != 1) {
