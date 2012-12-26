@@ -58,12 +58,8 @@ public class MsgHandler {
                 }
             }
             result[1] = message.toString().trim();
-            if (position == byteBuffer.size()) {
-                byteBuffer.clear();
-            } else {
-                for (int i = 0; i < position; ++i) {
-                    byteBuffer.remove(0);
-                }
+            for (int i = 0; i < position; ++i) {
+                byteBuffer.remove(0);
             }
             return result;
         } catch (Throwable ignoringException) {
