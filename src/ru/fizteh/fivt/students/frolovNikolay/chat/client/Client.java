@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.frolovNikolay.chat.client;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import ru.fizteh.fivt.chat.MessageUtils;
 import ru.fizteh.fivt.students.frolovNikolay.Closer;
 import ru.fizteh.fivt.students.frolovNikolay.chat.MsgHandler;
 import ru.fizteh.fivt.students.frolovNikolay.chat.ChatUtils;
@@ -32,8 +34,34 @@ public class Client {
     private String nickName;
     private String currentServer;
     private SortedMap<String, ServerPair> servers;
-    private List<Byte> byteBuffer = new ArrayList<Byte>();
+    private SortedMap<String, List<Byte>> byteBuffer = new TreeMap<String, List<Byte>>();
     private int badTries = 0;
+    private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+    
+    public boolean isBufferReady() {
+        boolean result = false;
+        try {
+            result = reader.ready();
+        } catch (Throwable ignoringError) {}
+        return result;
+    }
+    
+    public void sendMessage() {
+        try {
+            String text = reader.readLine();
+            if (currentServer != null) {
+                ChatUtils.sendMsg(MsgHandler.message(nickName, text), servers.get(currentServer).socket);
+            } else {
+                System.out.println("You can't send messages because you are not connected to any server");
+            }
+        } catch (Throwable ignoringError) {
+            System.out.println("Some troubles with sending message");
+        }
+    }
+    
+    public boolean isConnected() {
+        return currentServer != null;
+    }
 
     public Client(String nickName) {
         this.nickName = nickName;
@@ -41,129 +69,132 @@ public class Client {
         currentServer = null;
     }
     
-    private void disconnect(String serverName) throws Throwable {
-        if (servers.containsKey(serverName)) {
-            ChatUtils.sendMsg(MsgHandler.bye(), servers.get(serverName).socket);
-            Closer.close(servers.get(serverName).socket);
-            Closer.close(servers.get(serverName).multiplexor);
-            servers.remove(serverName);
-            System.out.println("you disconnected from " + serverName);
-            if (serverName.equals(currentServer)) {
-                if (servers.isEmpty()) {
-                    currentServer = null;
-                    System.out.println("Now you aren't connected to anyserver");
-                } else {
-                    currentServer = servers.firstKey();
-                    System.out.println("Now you are connected to " + currentServer);
-                }
-            }
+    public void use(String newCurrentServer) {
+        currentServer = newCurrentServer;
+    }
+    
+    public void disconnect() {
+        try {
+            ChatUtils.sendMsg(MsgHandler.bye(), servers.get(currentServer).socket);
+            Closer.close(servers.get(currentServer).socket);
+            Closer.close(servers.get(currentServer).multiplexor);
+            servers.remove(currentServer);
+            byteBuffer.remove(currentServer);
+            currentServer = null;
+        } catch (Throwable ignoringError) {}
+    }
+    
+    public int selectedNumber() {
+        if (currentServer == null) {
+            return 0;
+        } else {
+            int result = 0;
+            try {
+                result = servers.get(currentServer).multiplexor.selectNow();
+            } catch (Throwable ignoringError) {}
+            return result;
         }
     }
     
-    private void checkServer() throws Throwable {
-        if (currentServer == null || servers.get(currentServer).multiplexor.selectNow() == 0) {
-            return;
-        }
-        Set<SelectionKey> keys = servers.get(currentServer).multiplexor.selectedKeys();
-        for (SelectionKey key : keys) {
-            if (ChatUtils.hasKey(key, SelectionKey.OP_READ)) {
-                ByteBuffer buffer = ByteBuffer.allocate(1024);
-                SocketChannel serverSocket = (SocketChannel) key.channel();
-                int state;
-                while ((state = serverSocket.read(buffer)) > 0) {
-                    byte[] piece = buffer.array();
-                    for (int i = 0; i < state; ++i) {
-                        byteBuffer.add(piece[i]);
+    public boolean checkServer() {
+        try {
+            Set<SelectionKey> keys = servers.get(currentServer).multiplexor.selectedKeys();
+            for (SelectionKey key : keys) {
+                if (ChatUtils.hasKey(key, SelectionKey.OP_READ)) {
+                    ByteBuffer buffer = ByteBuffer.allocate(1024);
+                    SocketChannel serverSocket = (SocketChannel) key.channel();
+                    int state;
+                    while ((state = serverSocket.read(buffer)) > 0) {
+                        byte[] piece = buffer.array();
+                        for (int i = 0; i < state; ++i) {
+                            byteBuffer.get(currentServer).add(piece[i]);
+                        }
                     }
-                }
-                if (state == -1) {
-                    disconnect(currentServer);
-                } else {
-                    switch (byteBuffer.get(0)) {
-                        
-                        // ordinary message
-                        case 2: {
-                            String[] nickAndMsg = MsgHandler.parseMessage(byteBuffer);
-                            if (nickAndMsg == null) {
-                                ++badTries;
-                                if (badTries > 1000) {
-                                    throw new RuntimeException("Bad message from server");
+                    if (state == -1) {
+                        disconnect();
+                        return false;
+                    } else {
+                        switch (byteBuffer.get(currentServer).get(0)) {
+                            
+                            // ordinary message
+                            case 2: {
+                                String[] nickAndMsg = MsgHandler.parseMessage(byteBuffer.get(currentServer));
+                                if (nickAndMsg == null) {
+                                    ++badTries;
+                                    if (badTries > 1000) {
+                                        return false;
+                                    }
+                                    break;
+                                } else {
+                                    badTries = 0;
+                                }
+                                if (nickAndMsg[0] == null || nickAndMsg[1] == null) {
+                                    return false;
+                                } else {
+                                    System.out.println(nickAndMsg[0] + ": " + nickAndMsg[1]);
                                 }
                                 break;
-                            } else {
-                                badTries = 0;
                             }
-                            if (nickAndMsg[0] == null || nickAndMsg[1] == null) {
-                                throw new RuntimeException("Incorrect msg from server. Shutdown");
-                            } else {
-                                System.out.println(nickAndMsg[0] + ": " + nickAndMsg[1]);
+                            
+                            // bye message
+                            case 3: {
+                                disconnect();
+                                return false;
                             }
-                            break;
-                        }
-                        
-                        // bye message
-                        case 3: {
-                            disconnect(currentServer);
-                            break;
-                        }
-                        
-                        // error message
-                        case 127: {
-                            String errorMsg = MsgHandler.parseHelloAndError(byteBuffer);
-                            if (errorMsg == null) {
-                                throw new RuntimeException("Bad error msg");
+                            
+                            // error message
+                            case 127: {
+                                disconnect();
+                                return false;
                             }
-                            System.err.println("Error: " + errorMsg);
-                            throw new RuntimeException("Have error msg");
-                        }
-                        
-                        // someone's trying to do evil things. Just shutdown client.
-                        default: {
-                            throw new RuntimeException("Incorrect type of msg from server. Shutdown");
+                            
+                            // someone's trying to do evil things. Just shutdown client.
+                            default: {
+                                disconnect();
+                                return false;
+                            }
                         }
                     }
                 }
             }
+            keys.clear();
+        } catch (Throwable ignoringException) {
+            disconnect();
+            return false;
         }
-        keys.clear();
+        return true;
     }
     
-    private void connect(String serverAddress) throws Throwable {
+    public boolean connect(String serverAddress) {
         String[] address = serverAddress.split(":");
         if (address.length != 2) {
-            System.err.println("Incorrect server address: " + serverAddress);
+            return false;
         } else if (servers.containsKey(address[0])) {
-            System.err.println("You are already connected to: " + address[0]);
+            return false;
         } else {
-            int port = -1;
             try {
+                int port = -1;
                 port = Integer.parseInt(address[1]);
-            } catch (Throwable error) {
-                System.err.println("connect: incorrect port");
-                return;
-            }
-            if (port < 0 || port > 65535) {
-                System.err.println("connect: incorrect port");
-            }
-            ServerPair addedServer = new ServerPair(SocketChannel.open(), Selector.open());
-            try {
+                if (port < 0 || port > 65535) {
+                    return false;
+                }
+                ServerPair addedServer = new ServerPair(SocketChannel.open(), Selector.open());
                 addedServer.socket.connect(new InetSocketAddress(address[0], port));
-            } catch (Throwable error) {
-                System.err.println("Error: can't connect to this server");
-                return;
+                addedServer.socket.configureBlocking(false);
+                addedServer.socket.register(addedServer.multiplexor, SelectionKey.OP_READ);
+                byteBuffer.put(serverAddress, new ArrayList());
+                servers.put(serverAddress, addedServer);
+                currentServer = serverAddress;
+                ChatUtils.sendMsg(MsgHandler.hello(nickName), addedServer.socket);
+            } catch (Throwable ignoringError) {
+                return false;
             }
-            addedServer.socket.configureBlocking(false);
-            addedServer.socket.register(addedServer.multiplexor, SelectionKey.OP_READ);
-            servers.put(serverAddress, addedServer);
-            currentServer = serverAddress;
-            ChatUtils.sendMsg(MsgHandler.hello(nickName), addedServer.socket);
-            System.out.println("You are connected to: " + serverAddress);
         }
+        return true;
     }
-    
+     
     public void run() throws Throwable {
         String command = null;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
             if (reader.ready()) {
                 command = reader.readLine();
@@ -171,7 +202,7 @@ public class Client {
                     connect(command.replaceFirst("/connect\\s+", "").trim());
                 } else if (command.equals("/disconnect")) {
                     if (currentServer != null) {
-                        disconnect(currentServer);
+                        disconnect();
                     } else {
                         System.out.println("You aren't connected to any server");
                     }
